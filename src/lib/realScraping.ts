@@ -386,10 +386,8 @@ function generateFallbackScrapingResults(query: string): ScrapingResult[] {
       title: `${query}: Análisis de tendencias actuales`,
       content: `Reporte detallado sobre ${query} basado en análisis de medios digitales y tendencias de comunicación.`,
       url: `https://${randomSource.toLowerCase().replace(/\s+/g, '')}.com/noticia/${Date.now() + i}`,
-      timestamp: newsDate.toISOString(),
-      sentiment: randomSentiment,
-      credibility: 0.85,
-      region: 'Colombia'
+      date: newsDate.toISOString(),
+      sentiment: randomSentiment
     });
   }
   
