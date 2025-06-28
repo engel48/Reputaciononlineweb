@@ -6,10 +6,11 @@
 console.log('🚀 Iniciando aplicación Reputación Online...');
 
 // Configurar variables de entorno requeridas si no están presentes
-if (!process.env.DATABASE_URL) {
-  process.env.DATABASE_URL = 'file:/app/prisma/dev.db';
-  console.log('🔧 DATABASE_URL configurada: file:/app/prisma/dev.db');
-}
+// No necesitamos DATABASE_URL para SQLite directo
+// if (!process.env.DATABASE_URL) {
+//   process.env.DATABASE_URL = 'file:/app/data/app.db';
+//   console.log('🔧 DATABASE_URL configurada: file:/app/data/app.db');
+// }
 
 if (!process.env.NEXTAUTH_SECRET) {
   process.env.NEXTAUTH_SECRET = 'reputacion-online-secret-' + Date.now();
@@ -32,66 +33,41 @@ if (!process.env.NEXTAUTH_URL) {
 
 console.log('✅ Variables de entorno configuradas para runtime');
 
-// Verificar que la base de datos existe o crearla
+// Crear directorio para SQLite si no existe
 const fs = require('fs');
 const path = require('path');
 
-const dbPath = '/app/prisma/dev.db';
-const dbDir = path.dirname(dbPath);
-
-// Crear directorio prisma si no existe
-if (!fs.existsSync(dbDir)) {
-  fs.mkdirSync(dbDir, { recursive: true });
-  console.log('📁 Directorio prisma creado');
+const dataDir = '/app/data';
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir, { recursive: true });
+  console.log('📁 Directorio /app/data creado para SQLite');
 }
 
-// Si la base de datos no existe, intentar crearla
-if (!fs.existsSync(dbPath)) {
-  console.log('🔍 Base de datos no encontrada, intentando crear...');
-  
-  // Ejecutar migraciones de Prisma para crear la base de datos
-  const { spawn } = require('child_process');
-  
-  const migrate = spawn('npx', ['prisma', 'migrate', 'deploy'], {
-    stdio: 'inherit',
-    env: process.env
-  });
-  
-  migrate.on('close', (code) => {
-    if (code === 0) {
-      console.log('✅ Migraciones aplicadas exitosamente');
-      
-      // Ejecutar seed si existe
-      const seed = spawn('npm', ['run', 'db:seed'], {
-        stdio: 'inherit',
-        env: process.env
-      });
-      
-      seed.on('close', (seedCode) => {
-        if (seedCode === 0) {
-          console.log('✅ Datos de prueba cargados');
-        }
-        startNextJs();
-      });
-    } else {
-      console.log('⚠️  Error en migraciones, continuando sin base de datos...');
-      startNextJs();
-    }
-  });
-} else {
-  console.log('✅ Base de datos encontrada');
-  startNextJs();
-}
+console.log('🗄️  SQLite se inicializará automáticamente al importar database.ts');
+startNextJs();
 
 function startNextJs() {
   console.log('🎯 Iniciando Next.js...');
   
-  // Iniciar Next.js
+  // Para Next.js con output: standalone, usar server.js directamente
   const { spawn } = require('child_process');
-  const nextProcess = spawn('npx', ['next', 'start'], {
-    stdio: 'inherit',
-    env: process.env
-  });
+  const serverPath = '.next/standalone/server.js';
+  
+  // Verificar si existe el archivo server.js (build standalone)
+  const fs = require('fs');
+  if (fs.existsSync(serverPath)) {
+    console.log('📦 Usando modo standalone de Next.js');
+    const nextProcess = spawn('node', [serverPath], {
+      stdio: 'inherit',
+      env: process.env
+    });
+  } else {
+    console.log('🔧 Usando modo de desarrollo de Next.js');
+    const nextProcess = spawn('npx', ['next', 'start'], {
+      stdio: 'inherit',
+      env: process.env
+    });
+  }
   
   nextProcess.on('close', (code) => {
     console.log(`Next.js terminó con código: ${code}`);

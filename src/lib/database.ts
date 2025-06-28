@@ -3,7 +3,7 @@ import Database from 'better-sqlite3';
 import { join } from 'path';
 import bcrypt from 'bcryptjs';
 
-// Ruta de la base de datos
+// Ruta de la base de datos SQLite
 const dbPath = join(process.cwd(), 'data', 'app.db');
 
 // Crear directorio data si no existe
@@ -194,6 +194,19 @@ const initTables = () => {
       FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
       FOREIGN KEY (mediaSourceId) REFERENCES media_sources(id) ON DELETE CASCADE,
       UNIQUE(userId, mediaSourceId)
+    )
+  `);
+
+  // Tabla de plataformas sociales
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS social_platforms (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      platform TEXT UNIQUE NOT NULL,
+      isActive BOOLEAN DEFAULT 1,
+      oauthConfig TEXT,
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
 
@@ -504,9 +517,234 @@ const createAdminUser = async () => {
   }
 };
 
-// Solo crear admin en runtime, no durante build
+// Poblar plataformas sociales con configuración OAuth
+const populateSocialPlatforms = async () => {
+  try {
+    const platforms = [
+      { 
+        name: 'Facebook', 
+        platform: 'facebook', 
+        isActive: true,
+        oauthConfig: JSON.stringify({
+          clientId: process.env.FACEBOOK_CLIENT_ID || '',
+          clientSecret: process.env.FACEBOOK_CLIENT_SECRET || '',
+          scope: 'pages_read_engagement,pages_show_list,email',
+          redirectUri: (process.env.NEXTAUTH_URL || 'http://localhost:3000') + '/api/auth/callback/facebook'
+        })
+      },
+      { 
+        name: 'X', 
+        platform: 'x', 
+        isActive: true,
+        oauthConfig: JSON.stringify({
+          clientId: process.env.TWITTER_CLIENT_ID || '',
+          clientSecret: process.env.TWITTER_CLIENT_SECRET || '',
+          scope: 'tweet.read,users.read,follows.read',
+          redirectUri: (process.env.NEXTAUTH_URL || 'http://localhost:3000') + '/api/auth/callback/twitter'
+        })
+      },
+      { 
+        name: 'Instagram', 
+        platform: 'instagram', 
+        isActive: true,
+        oauthConfig: JSON.stringify({
+          clientId: process.env.INSTAGRAM_CLIENT_ID || '',
+          clientSecret: process.env.INSTAGRAM_CLIENT_SECRET || '',
+          scope: 'user_profile,user_media',
+          redirectUri: (process.env.NEXTAUTH_URL || 'http://localhost:3000') + '/api/auth/callback/instagram'
+        })
+      },
+      { 
+        name: 'Threads', 
+        platform: 'threads', 
+        isActive: true,
+        oauthConfig: JSON.stringify({
+          clientId: process.env.INSTAGRAM_CLIENT_ID || '',
+          clientSecret: process.env.INSTAGRAM_CLIENT_SECRET || '',
+          scope: 'threads_basic,threads_content_publish',
+          redirectUri: (process.env.NEXTAUTH_URL || 'http://localhost:3000') + '/api/auth/callback/threads'
+        })
+      },
+      { 
+        name: 'LinkedIn', 
+        platform: 'linkedin', 
+        isActive: true,
+        oauthConfig: JSON.stringify({
+          clientId: process.env.LINKEDIN_CLIENT_ID || '',
+          clientSecret: process.env.LINKEDIN_CLIENT_SECRET || '',
+          scope: 'r_liteprofile,r_emailaddress,w_member_social',
+          redirectUri: (process.env.NEXTAUTH_URL || 'http://localhost:3000') + '/api/auth/callback/linkedin'
+        })
+      },
+      { 
+        name: 'YouTube', 
+        platform: 'youtube', 
+        isActive: true,
+        oauthConfig: JSON.stringify({
+          clientId: process.env.YOUTUBE_CLIENT_ID || '',
+          clientSecret: process.env.YOUTUBE_CLIENT_SECRET || '',
+          scope: 'https://www.googleapis.com/auth/youtube.readonly',
+          redirectUri: (process.env.NEXTAUTH_URL || 'http://localhost:3000') + '/api/auth/callback/youtube'
+        })
+      },
+      { 
+        name: 'TikTok', 
+        platform: 'tiktok', 
+        isActive: true,
+        oauthConfig: JSON.stringify({
+          clientId: process.env.TIKTOK_CLIENT_ID || '',
+          clientSecret: process.env.TIKTOK_CLIENT_SECRET || '',
+          scope: 'user.info.basic,video.list',
+          redirectUri: (process.env.NEXTAUTH_URL || 'http://localhost:3000') + '/api/auth/callback/tiktok'
+        })
+      }
+    ];
+
+    for (const platform of platforms) {
+      const existingPlatform = db.prepare('SELECT * FROM social_platforms WHERE platform = ?').get(platform.platform);
+      if (!existingPlatform) {
+        const id = generateId();
+        const stmt = db.prepare(`
+          INSERT INTO social_platforms (id, name, platform, isActive, oauthConfig, createdAt, updatedAt)
+          VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        `);
+        stmt.run(id, platform.name, platform.platform, platform.isActive ? 1 : 0, platform.oauthConfig);
+      }
+    }
+    console.log('✅ Plataformas sociales pobladas correctamente');
+  } catch (error) {
+    console.error('Error poblando plataformas sociales:', error);
+  }
+};
+
+// Poblar medios de comunicación colombianos
+const populateMediaSources = async () => {
+  try {
+    const mediaSources = [
+      // Medios nacionales
+      { name: 'El Tiempo', url: 'https://www.eltiempo.com', category: 'nacional', description: 'Periódico nacional de Colombia', isDefault: true },
+      { name: 'El Espectador', url: 'https://www.elespectador.com', category: 'nacional', description: 'Periódico nacional de Colombia', isDefault: true },
+      { name: 'Semana', url: 'https://www.semana.com', category: 'nacional', description: 'Revista semanal de noticias', isDefault: true },
+      { name: 'Caracol Radio', url: 'https://caracol.com.co', category: 'nacional', description: 'Cadena radial nacional', isDefault: true },
+      { name: 'BluRadio', url: 'https://www.bluradio.com', category: 'nacional', description: 'Cadena radial nacional', isDefault: true },
+      { name: 'RCN Radio', url: 'https://www.rcnradio.com', category: 'nacional', description: 'Cadena radial nacional', isDefault: true },
+      { name: 'Noticias Caracol', url: 'https://noticias.caracoltv.com', category: 'nacional', description: 'Noticiero televisivo nacional', isDefault: true },
+      { name: 'Noticias RCN', url: 'https://www.noticiasrcn.com', category: 'nacional', description: 'Noticiero televisivo nacional', isDefault: true },
+      { name: 'CM&', url: 'https://www.cmi.com.co', category: 'nacional', description: 'Canal de televisión nacional', isDefault: true },
+      { name: 'Canal 1', url: 'https://www.canal1.com.co', category: 'nacional', description: 'Canal de televisión nacional', isDefault: true },
+      
+      // Medios regionales
+      { name: 'El Colombiano', url: 'https://www.elcolombiano.com', category: 'regional', description: 'Periódico de Medellín y Antioquia', isDefault: true },
+      { name: 'El País', url: 'https://www.elpais.com.co', category: 'regional', description: 'Periódico de Cali y Valle del Cauca', isDefault: true },
+      { name: 'El Heraldo', url: 'https://www.elheraldo.co', category: 'regional', description: 'Periódico de Barranquilla y Costa Caribe', isDefault: true },
+      { name: 'El Universal', url: 'https://www.eluniversal.com.co', category: 'regional', description: 'Periódico de Cartagena y Bolívar', isDefault: true },
+      { name: 'Vanguardia', url: 'https://www.vanguardia.com', category: 'regional', description: 'Periódico de Bucaramanga y Santander', isDefault: true },
+      { name: 'La Opinión', url: 'https://www.laopinion.com.co', category: 'regional', description: 'Periódico de Cúcuta y Norte de Santander', isDefault: true },
+      { name: 'Diario del Huila', url: 'https://www.diariodelhuila.com', category: 'regional', description: 'Periódico del Huila', isDefault: true },
+      { name: 'La Patria', url: 'https://www.lapatria.com', category: 'regional', description: 'Periódico de Manizales y Caldas', isDefault: true },
+      
+      // Medios especializados
+      { name: 'Portafolio', url: 'https://www.portafolio.co', category: 'especializado', description: 'Diario económico y financiero', isDefault: true },
+      { name: 'La República', url: 'https://www.larepublica.co', category: 'especializado', description: 'Diario económico y empresarial', isDefault: true },
+      { name: 'KIENYKE', url: 'https://www.kienyke.com', category: 'especializado', description: 'Medio digital de política y actualidad', isDefault: true },
+      { name: 'Las2Orillas', url: 'https://www.las2orillas.co', category: 'especializado', description: 'Medio digital de opinión y análisis', isDefault: true },
+      { name: 'El Nuevo Siglo', url: 'https://www.elnuevosiglo.com.co', category: 'especializado', description: 'Periódico de política y análisis', isDefault: true },
+      { name: 'Razón Pública', url: 'https://www.razonpublica.com', category: 'especializado', description: 'Portal de análisis político y social', isDefault: true },
+      
+      // Medios internacionales relevantes
+      { name: 'BBC Mundo', url: 'https://www.bbc.com/mundo', category: 'internacional', description: 'Servicio en español de BBC', isDefault: true },
+      { name: 'CNN en Español', url: 'https://cnnespanol.cnn.com', category: 'internacional', description: 'Noticiero internacional en español', isDefault: true },
+      { name: 'El País España', url: 'https://elpais.com', category: 'internacional', description: 'Diario español con cobertura latinoamericana', isDefault: true },
+      { name: 'Infobae', url: 'https://www.infobae.com', category: 'internacional', description: 'Portal de noticias latinoamericano', isDefault: true }
+    ];
+
+    for (const media of mediaSources) {
+      const existingMedia = db.prepare('SELECT * FROM media_sources WHERE url = ?').get(media.url);
+      if (!existingMedia) {
+        const id = generateId();
+        const stmt = db.prepare(`
+          INSERT INTO media_sources (id, name, url, category, description, isActive, isDefault, createdAt, updatedAt)
+          VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        `);
+        stmt.run(id, media.name, media.url, media.category, media.description, 1, media.isDefault ? 1 : 0);
+      }
+    }
+    console.log('✅ Medios de comunicación poblados correctamente');
+  } catch (error) {
+    console.error('Error poblando medios de comunicación:', error);
+  }
+};
+
+// Crear usuarios de prueba
+const createTestUsers = async () => {
+  try {
+    const testUsers = [
+      {
+        email: 'elmer.zapata@example.com',
+        password: 'password123',
+        name: 'Elmer Zapata',
+        company: 'Política Colombiana',
+        phone: '+57 300 123 4567',
+        bio: 'Líder político comprometido con el desarrollo social y económico del país.',
+        role: 'user',
+        plan: 'pro',
+        credits: 2500,
+        profileType: 'political',
+        category: 'Sector político y gubernamental',
+        onboardingCompleted: true
+      },
+      {
+        email: 'lucia.morales@example.com',
+        password: 'password123',
+        name: 'Lucía Morales',
+        company: 'StartUp Tech',
+        phone: '+57 301 987 6543',
+        bio: 'Emprendedora en el sector tecnológico, enfocada en innovación y desarrollo digital.',
+        role: 'user',
+        plan: 'basic',
+        credits: 500,
+        profileType: 'business',
+        category: 'Marca / empresa',
+        brandName: 'StartUp Tech Solutions',
+        onboardingCompleted: false
+      }
+    ];
+
+    for (const userData of testUsers) {
+      const existingUser = userService.findByEmail(userData.email);
+      if (!existingUser) {
+        console.log(`🔧 Creando usuario de prueba: ${userData.email}...`);
+        await userService.create(userData);
+        
+        // Actualizar campos adicionales
+        const user = userService.findByEmail(userData.email);
+        if (user) {
+          userService.update(user.id, { 
+            phone: userData.phone,
+            bio: userData.bio,
+            role: userData.role,
+            plan: userData.plan,
+            credits: userData.credits,
+            profileType: userData.profileType,
+            category: userData.category,
+            brandName: userData.brandName,
+            onboardingCompleted: userData.onboardingCompleted ? 1 : 0
+          });
+        }
+      }
+    }
+    console.log('✅ Usuarios de prueba creados correctamente');
+  } catch (error) {
+    console.error('Error creando usuarios de prueba:', error);
+  }
+};
+
+// Solo ejecutar en runtime, no durante build
 if (!process.env.NIXPACKS_PATH) {
   createAdminUser();
+  populateSocialPlatforms();
+  populateMediaSources();
+  createTestUsers();
 }
 
 export default db;
