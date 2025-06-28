@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+let openai: OpenAI | null = null;
+
+function getOpenAI() {
+  if (!openai && process.env.OPENAI_API_KEY) {
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  }
+  return openai;
+}
 
 interface MediaAnalytics {
   sourceId: string;
@@ -76,7 +83,13 @@ async function generateRealMediaAnalytics(sourceName: string): Promise<MediaAnal
   try {
     console.log(`📊 Generando analytics reales para: ${sourceName}`);
 
-    const completion = await openai.chat.completions.create({
+    const openaiClient = getOpenAI();
+    if (!openaiClient) {
+      console.log('OpenAI no disponible, usando datos de respaldo');
+      return generateFallbackAnalytics(sourceName);
+    }
+
+    const completion = await openaiClient.chat.completions.create({
       model: "gpt-4o",
       messages: [
         {
