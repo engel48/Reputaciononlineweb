@@ -1,0 +1,51 @@
+# Dependencies
+node_modules
+npm-debug.log*
+
+# Build outputs
+.next/
+dist/
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE files
+.vscode/
+.idea/
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+.cache/
+.tmp/
+
+# Test files
+coverage/
+.nyc_output/
+
+# Documentation
+README.md
+docs/
+
+# Database files during development
+data/app.db
+data/app.db-shm
+data/app.db-wal
+prisma/dev.db

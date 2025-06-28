@@ -1,50 +1,48 @@
-# Dockerfile for Next.js 13.5.11 with Prisma - Debian base for better compatibility
-FROM node:18-bullseye-slim AS base
+# Multi-stage Dockerfile for Next.js with better-sqlite3
+FROM node:20-alpine AS base
 
-# Install dependencies only when needed
-FROM base AS deps
-# Install dependencies required by Prisma
-RUN apt-get update && apt-get install -y \
-    openssl \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+# Install build dependencies for better-sqlite3
+RUN apk add --no-cache libc6-compat python3 make g++
+
+# Set working directory
 WORKDIR /app
 
+# Dependencies stage
+FROM base AS deps
 # Copy package files
 COPY package.json package-lock.json* ./
-RUN npm ci --only=production
 
-# Rebuild the source code only when needed
+# Install dependencies
+RUN npm ci --production=false
+
+# Builder stage
 FROM base AS builder
 WORKDIR /app
-# Install build dependencies
-RUN apt-get update && apt-get install -y \
-    openssl \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+
+# Copy dependencies
 COPY --from=deps /app/node_modules ./node_modules
+
+# Copy source code
 COPY . .
 
-# Generate Prisma client
-RUN npx prisma generate
-
-# Build Next.js application
+# Disable Next.js telemetry
 ENV NEXT_TELEMETRY_DISABLED=1
+
+# Build the application
 RUN npm run build
 
-# Production image, copy all the files and run next
-FROM base AS runner
+# Production stage
+FROM node:20-alpine AS runner
 WORKDIR /app
 
 # Install runtime dependencies
-RUN apt-get update && apt-get install -y \
-    openssl \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache libc6-compat
 
+# Set environment
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# Create user
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
@@ -52,11 +50,12 @@ RUN adduser --system --uid 1001 nextjs
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
-# Create SQLite database directory
-RUN mkdir -p /app/prisma && chown -R nextjs:nodejs /app/prisma
+# Create database directory
+RUN mkdir -p /app/data && chown -R nextjs:nodejs /app/data
+
+# Change ownership
+RUN chown -R nextjs:nodejs /app
 
 USER nextjs
 
