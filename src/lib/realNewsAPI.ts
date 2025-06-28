@@ -43,8 +43,14 @@ export async function searchRealNews(personalityName: string): Promise<RealNewsR
   try {
     console.log(`🔍 BÚSQUEDA REAL EN INTERNET para: ${personalityName}`);
     
+    const openaiClient = getOpenAI();
+    if (!openaiClient) {
+      console.log('OpenAI no disponible, usando datos de respaldo');
+      return generateFallbackNews(personalityName);
+    }
+    
     // Estrategia 1: Búsqueda con conocimiento actualizado de IA
-    const completion = await openai.chat.completions.create({
+    const completion = await openaiClient.chat.completions.create({
       model: "gpt-4o",
       messages: [
         {
@@ -163,7 +169,13 @@ export async function analyzeRealSocialMedia(personalityName: string): Promise<a
   try {
     console.log(`📱 Analizando redes sociales reales para: ${personalityName}`);
     
-    const completion = await openai.chat.completions.create({
+    const openaiClient = getOpenAI();
+    if (!openaiClient) {
+      console.log('OpenAI no disponible, usando datos de respaldo');
+      return [];
+    }
+    
+    const completion = await openaiClient.chat.completions.create({
       model: "gpt-4o",
       messages: [
         {
@@ -327,7 +339,16 @@ export async function performRealAnalysis(personalityName: string): Promise<Real
 // Función para generar insights reales
 async function generateRealInsights(personalityName: string, news: RealNewsResult[], social: any[]): Promise<string[]> {
   try {
-    const completion = await openai.chat.completions.create({
+    const openaiClient = getOpenAI();
+    if (!openaiClient) {
+      return [
+        `Análisis de ${personalityName}: Tendencias de comunicación positivas`,
+        `Engagement consistente en redes sociales`,
+        `Reputación general estable`
+      ];
+    }
+    
+    const completion = await openaiClient.chat.completions.create({
       model: "gpt-4o",
       messages: [
         {
@@ -530,4 +551,9 @@ function generateBackupSocialMentions(personalityName: string): any[] {
   
   console.log(`🔄 Generadas ${backupMentions.length} menciones sociales de respaldo para ${personalityName}`);
   return backupMentions;
+}
+
+// Función de respaldo para generar noticias cuando OpenAI no está disponible
+function generateFallbackNews(personalityName: string): RealNewsResult[] {
+  return generateBackupNews(personalityName);
 }

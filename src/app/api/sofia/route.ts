@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+let openai: OpenAI | null = null;
+
+function getOpenAI() {
+  if (!openai && process.env.OPENAI_API_KEY) {
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  }
+  return openai;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -37,7 +44,15 @@ Contexto de la conversación: ${context || 'Usuario consultando sobre reputació
 
 Responde de manera concisa, útil y en español. Si es una consulta técnica, proporciona datos específicos y recomendaciones accionables.`;
 
-    const completion = await openai.chat.completions.create({
+    const openaiClient = getOpenAI();
+    if (!openaiClient) {
+      return NextResponse.json({
+        success: false,
+        message: 'Servicio de chat temporalmente no disponible'
+      }, { status: 503 });
+    }
+
+    const completion = await openaiClient.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [
         {
