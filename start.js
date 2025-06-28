@@ -31,6 +31,17 @@ if (!process.env.NEXTAUTH_URL) {
   console.log(`🔧 NEXTAUTH_URL configurada: ${url}`);
 }
 
+// Configurar puerto para Next.js
+if (!process.env.PORT) {
+  process.env.PORT = '3000';
+  console.log('🔧 PORT configurado: 3000');
+}
+
+if (!process.env.HOSTNAME) {
+  process.env.HOSTNAME = '0.0.0.0';
+  console.log('🔧 HOSTNAME configurado: 0.0.0.0');
+}
+
 console.log('✅ Variables de entorno configuradas para runtime');
 
 // Crear directorio para SQLite si no existe
