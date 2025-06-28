@@ -17,9 +17,16 @@ try {
 // Inicializar base de datos
 const db = new Database(dbPath);
 
-// Configuraciones de SQLite
+// Configuraciones de SQLite para manejar concurrencia
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
+db.pragma('synchronous = NORMAL');
+db.pragma('cache_size = 1000000');
+db.pragma('locking_mode = NORMAL');
+db.pragma('temp_store = MEMORY');
+
+// Configurar timeouts para evitar locks durante build
+db.timeout(30000); // 30 segundos timeout
 
 // Crear tablas
 const initTables = () => {
@@ -431,8 +438,10 @@ export const notificationService = {
   }
 };
 
-// Inicializar base de datos
-initTables();
+// Inicializar base de datos solo si no es durante el build
+if (process.env.NODE_ENV !== 'production' || !process.env.NIXPACKS_PATH) {
+  initTables();
+}
 
 // Migraciones para añadir columnas faltantes
 const runMigrations = () => {
@@ -461,7 +470,10 @@ const runMigrations = () => {
   }
 };
 
-runMigrations();
+// Solo ejecutar migraciones y crear admin en runtime, no durante build
+if (process.env.NODE_ENV !== 'production' || !process.env.NIXPACKS_PATH) {
+  runMigrations();
+}
 
 // Crear usuario admin si no existe
 const createAdminUser = async () => {
@@ -493,6 +505,9 @@ const createAdminUser = async () => {
   }
 };
 
-createAdminUser();
+// Solo crear admin en runtime, no durante build
+if (process.env.NODE_ENV !== 'production' || !process.env.NIXPACKS_PATH) {
+  createAdminUser();
+}
 
 export default db;
