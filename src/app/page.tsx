@@ -96,7 +96,7 @@ export default function Home() {
         gsap.fromTo(".stat-number", 
           { textContent: 0 },
           {
-            textContent: (i, el) => el.getAttribute('data-target'),
+            textContent: (i: number, el: Element) => el.getAttribute('data-target'),
             duration: 2,
             ease: "power2.out",
             snap: { textContent: 1 },

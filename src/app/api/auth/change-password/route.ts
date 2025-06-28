@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Hashear nueva contraseña
-    const bcrypt = require('bcrypt');
+    const bcrypt = require('bcryptjs');
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
 
     // Actualizar contraseña
