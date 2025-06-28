@@ -55,15 +55,17 @@ function startNextJs() {
   
   // Verificar si existe el archivo server.js (build standalone)
   const fs = require('fs');
+  let nextProcess;
+  
   if (fs.existsSync(serverPath)) {
     console.log('📦 Usando modo standalone de Next.js');
-    const nextProcess = spawn('node', [serverPath], {
+    nextProcess = spawn('node', [serverPath], {
       stdio: 'inherit',
       env: process.env
     });
   } else {
     console.log('🔧 Usando modo de desarrollo de Next.js');
-    const nextProcess = spawn('npx', ['next', 'start'], {
+    nextProcess = spawn('npx', ['next', 'start'], {
       stdio: 'inherit',
       env: process.env
     });
