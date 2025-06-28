@@ -489,7 +489,7 @@ const createAdminUser = async () => {
       }
     }
   } catch (error) {
-    console.log('Usuario admin ya existe o error al crear:', error.message);
+    console.log('Usuario admin ya existe o error al crear:', error instanceof Error ? error.message : error);
   }
 };
 
