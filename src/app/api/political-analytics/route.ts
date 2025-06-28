@@ -1,15 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+let openai: OpenAI | null = null;
+
+function getOpenAI() {
+  if (!openai && process.env.OPENAI_API_KEY) {
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  }
+  return openai;
+}
 
 export async function GET(request: NextRequest) {
   try {
     console.log('🏛️ Generando métricas políticas con IA...');
 
-    const completion = await openai.chat.completions.create({
+    const openaiClient = getOpenAI();
+    if (!openaiClient) {
+      console.log('OpenAI no disponible, usando datos de respaldo');
+      return NextResponse.json({
+        success: true,
+        data: generateFallbackPoliticalData(),
+        source: 'fallback'
+      });
+    }
+
+    const completion = await openaiClient.chat.completions.create({
       model: "gpt-4o",
       messages: [
         {
@@ -161,4 +178,33 @@ export async function GET(request: NextRequest) {
       source: 'fallback_data'
     });
   }
+}
+
+function generateFallbackPoliticalData() {
+  return {
+    approvalRating: 47,
+    previousApproval: 44,
+    voterSentiment: {
+      positive: 40,
+      negative: 33,
+      neutral: 27
+    },
+    demographicData: {
+      youngVoters: 35,
+      adultVoters: 42,
+      seniorVoters: 23
+    },
+    keyIssues: [
+      { issue: "Economía y Empleo", sentiment: "negative", mentions: 1350 },
+      { issue: "Seguridad Ciudadana", sentiment: "negative", mentions: 1120 },
+      { issue: "Reforma de Salud", sentiment: "neutral", mentions: 890 },
+      { issue: "Educación Pública", sentiment: "positive", mentions: 720 },
+      { issue: "Infraestructura", sentiment: "neutral", mentions: 560 }
+    ],
+    campaignMetrics: {
+      donations: 1450000,
+      volunteers: 3800,
+      events: 32
+    }
+  };
 }

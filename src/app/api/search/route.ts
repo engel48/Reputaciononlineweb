@@ -3,9 +3,16 @@ import OpenAI from 'openai';
 import { searchPersonalitiesOnline, searchAndAnalyzePersonality } from '@/lib/realScraping';
 import { performRealAnalysis } from '@/lib/realNewsAPI';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+let openai: OpenAI | null = null;
+
+function getOpenAI() {
+  if (!openai && process.env.OPENAI_API_KEY) {
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  }
+  return openai;
+}
 
 // Base de datos expandida de personalidades latinoamericanas
 const personalitiesDB = [
@@ -238,7 +245,18 @@ export async function GET(request: NextRequest) {
     if (allResults.length === 0) {
       // Sugerencias con IA si no hay resultados
       try {
-        const aiCompletion = await openai.chat.completions.create({
+        const openaiClient = getOpenAI();
+        if (!openaiClient) {
+          return NextResponse.json({
+            success: true,
+            results: [],
+            suggestions: 'No se encontraron resultados para la búsqueda.',
+            query: query,
+            total: 0
+          });
+        }
+
+        const aiCompletion = await openaiClient.chat.completions.create({
           model: "gpt-3.5-turbo",
           messages: [
             {
@@ -375,7 +393,11 @@ export async function POST(request: NextRequest) {
         const analysis: any = generateSentimentAnalysis(personality);
         
         try {
-          const aiInsights = await openai.chat.completions.create({
+          const openaiClient = getOpenAI();
+          let aiContent = '';
+          
+          if (openaiClient) {
+            const aiInsights = await openaiClient.chat.completions.create({
             model: "gpt-3.5-turbo",
             messages: [
               {
@@ -389,11 +411,13 @@ export async function POST(request: NextRequest) {
             ],
             max_tokens: 500,
             temperature: 0.7,
-          });
+            });
 
-          const aiResponse = aiInsights.choices[0]?.message?.content;
-          if (aiResponse) {
-            analysis.ai_insights = { insights: [aiResponse] };
+            aiContent = aiInsights.choices[0]?.message?.content || '';
+          }
+          
+          if (aiContent) {
+            analysis.ai_insights = { insights: [aiContent] };
           }
         } catch (aiError) {
           console.error('Error en análisis IA:', aiError);
