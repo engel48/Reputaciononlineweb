@@ -436,8 +436,9 @@ export const notificationService = {
   }
 };
 
-// Inicializar base de datos solo si no es durante el build
-if (process.env.NODE_ENV !== 'production' || !process.env.NIXPACKS_PATH) {
+// Inicializar base de datos solo si no es durante el build de Nixpacks
+// NIXPACKS_PATH solo existe durante el build, no en runtime
+if (!process.env.NIXPACKS_PATH) {
   initTables();
 }
 
@@ -469,7 +470,7 @@ const runMigrations = () => {
 };
 
 // Solo ejecutar migraciones y crear admin en runtime, no durante build
-if (process.env.NODE_ENV !== 'production' || !process.env.NIXPACKS_PATH) {
+if (!process.env.NIXPACKS_PATH) {
   runMigrations();
 }
 
@@ -504,7 +505,7 @@ const createAdminUser = async () => {
 };
 
 // Solo crear admin en runtime, no durante build
-if (process.env.NODE_ENV !== 'production' || !process.env.NIXPACKS_PATH) {
+if (!process.env.NIXPACKS_PATH) {
   createAdminUser();
 }
 
