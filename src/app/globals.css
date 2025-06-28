@@ -1,0 +1,118 @@
+/* TailwindCSS Directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand-blue: #01257D;
+  --brand-blue-hover: #013AAA;
+  --background: #ffffff;
+  --foreground: #000000;
+}
+
+.dark {
+  --background: #0A0A0A;
+  --foreground: #ffffff;
+}
+
+/* Estilos globales para botones */
+.btn-primary {
+  background-color: #01257D;
+  color: #1f2937;
+  border-radius: 0.375rem;
+  padding: 0.5rem 1rem;
+  transition-property: color, background-color;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+.btn-primary:hover {
+  background-color: #013AAA;
+}
+
+.btn-secondary {
+  background-color: white;
+  color: #1f2937;
+  border: 1px solid #01257D;
+  border-radius: 0.375rem;
+  padding: 0.5rem 1rem;
+  transition-property: color, background-color;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+.btn-secondary:hover {
+  background-color: #f3f4f6;
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: #01257D;
+  border: 1px solid #01257D;
+  border-radius: 0.375rem;
+  padding: 0.5rem 1rem;
+  transition-property: color, background-color;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+.btn-outline:hover {
+  background-color: rgba(1, 37, 125, 0.1);
+}
+
+.link {
+  color: #01257D;
+  transition-property: color;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+.link:hover {
+  color: #013AAA;
+}
+
+/* Estilos para elementos interactivos */
+input:focus, 
+select:focus, 
+textarea:focus {
+  outline: none;
+  ring: 2px solid rgba(1, 37, 125, 0.5);
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  color: #0f172a;
+}
+.sidebar-item:hover {
+  background-color: rgba(1, 37, 125, 0.1);
+  color: #01257D;
+}
+
+.sidebar-item.active {
+  background-color: rgba(1, 37, 125, 0.1);
+  color: #01257D;
+}
+
+/* Iconos interactivos */
+.icon-interactive {
+  color: #6b7280;
+  transition-property: color;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+.icon-interactive:hover {
+  color: #01257D;
+}
+
+/* Badge estilizado */
+.badge {
+  border-radius: 9999px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.badge-primary {
+  background-color: rgba(1, 37, 125, 0.2);
+  color: #01257D;
+}

@@ -1,0 +1,101 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id               Int          @id @default(autoincrement())
+  nombre           String
+  email            String       @unique
+  password         String
+  rol              String       @default("usuario") // "admin" o "usuario"
+  estado           String       @default("activo") // "activo" o "inactivo"
+  fechaCreacion    DateTime     @default(now())
+  fechaActualizacion DateTime?  
+  ultimoAcceso     DateTime?
+  planId           Int?
+  plan             Plan?        @relation(fields: [planId], references: [id])
+  creditos         Credito[]
+  redesSociales    RedSocial[]
+  busquedas        Busqueda[]
+  analisis         Analisis[]
+  pagos            Pago[]
+}
+
+model Plan {
+  id            Int       @id @default(autoincrement())
+  nombre         String
+  descripcion    String
+  precio         Float
+  creditos       Int
+  duracion       Int      // En du00edas
+  activo         Boolean  @default(true)
+  usuarios       Usuario[]
+  pagos          Pago[]
+}
+
+model Credito {
+  id            Int       @id @default(autoincrement())
+  usuarioId      Int
+  usuario        Usuario   @relation(fields: [usuarioId], references: [id])
+  cantidad       Int
+  tipo           String    // "asignacion" o "consumo"
+  descripcion    String
+  fecha          DateTime  @default(now())
+}
+
+model RedSocial {
+  id            Int       @id @default(autoincrement())
+  usuarioId      Int
+  usuario        Usuario   @relation(fields: [usuarioId], references: [id])
+  plataforma     String    // "twitter", "facebook", "instagram", etc.
+  nombreUsuario  String
+  token          String?
+  tokenSecret    String?
+  activo         Boolean   @default(true)
+  fechaConexion  DateTime  @default(now())
+}
+
+model Busqueda {
+  id            Int       @id @default(autoincrement())
+  usuarioId      Int
+  usuario        Usuario   @relation(fields: [usuarioId], references: [id])
+  termino        String
+  tipoEntidad    String    // "persona", "empresa", etc.
+  ubicacion      String?
+  fecha          DateTime  @default(now())
+  resultados     Int       @default(0)
+  creditosUsados Int       @default(0)
+}
+
+model Analisis {
+  id             Int       @id @default(autoincrement())
+  usuarioId       Int
+  usuario         Usuario   @relation(fields: [usuarioId], references: [id])
+  tipoAnalisis    String    // "reputacion", "menciones", "sentimiento", etc.
+  entidadAnalizada String
+  fecha           DateTime  @default(now())
+  resultado       String?   // JSON con los resultados
+  creditosUsados  Int       @default(0)
+}
+
+model Pago {
+  id             Int       @id @default(autoincrement())
+  usuarioId       Int
+  usuario         Usuario   @relation(fields: [usuarioId], references: [id])
+  planId          Int
+  plan            Plan      @relation(fields: [planId], references: [id])
+  monto           Float
+  metodoPago      String    // "tarjeta", "transferencia", "efectivo", etc.
+  estado          String    // "pendiente", "completado", "rechazado"
+  referenciaPago  String?
+  fecha           DateTime  @default(now())
+  descripcion     String?
+}
