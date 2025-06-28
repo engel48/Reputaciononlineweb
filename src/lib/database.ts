@@ -24,9 +24,7 @@ db.pragma('synchronous = NORMAL');
 db.pragma('cache_size = 1000000');
 db.pragma('locking_mode = NORMAL');
 db.pragma('temp_store = MEMORY');
-
-// Configurar timeouts para evitar locks durante build
-db.timeout(30000); // 30 segundos timeout
+db.pragma('busy_timeout = 30000'); // 30 segundos timeout
 
 // Crear tablas
 const initTables = () => {
