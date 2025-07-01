@@ -54,8 +54,27 @@ if (!fs.existsSync(dataDir)) {
   console.log('📁 Directorio /app/data creado para SQLite');
 }
 
-console.log('🗄️  SQLite se inicializará automáticamente al importar database.ts');
-startNextJs();
+console.log('🗄️  Inicializando base de datos SQLite...');
+initializeDatabase();
+
+async function initializeDatabase() {
+  try {
+    // Importar dinámicamente para evitar problemas en build
+    const { forceInitializeDatabase } = await import('./src/lib/database.ts');
+    const success = await forceInitializeDatabase();
+    if (success) {
+      console.log('🎯 Base de datos lista, iniciando Next.js...');
+      startNextJs();
+    } else {
+      console.error('❌ Error inicializando base de datos, iniciando Next.js de todas formas...');
+      startNextJs();
+    }
+  } catch (error) {
+    console.error('❌ Error importando database:', error);
+    console.log('🎯 Iniciando Next.js sin inicialización de base de datos...');
+    startNextJs();
+  }
+}
 
 function startNextJs() {
   console.log('🎯 Iniciando Next.js...');

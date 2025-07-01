@@ -34,7 +34,8 @@ const initDatabase = () => {
 };
 
 // Solo inicializar durante runtime, no durante build
-if (!process.env.NIXPACKS_PATH && !process.env.NEXT_PHASE) {
+// NIXPACKS_PATH solo existe durante el build en Nixpacks
+if (!process.env.NIXPACKS_PATH) {
   db = initDatabase();
 }
 
@@ -480,7 +481,7 @@ export const notificationService = {
 
 // Inicializar base de datos solo si no es durante el build de Nixpacks
 // NIXPACKS_PATH solo existe durante el build, no en runtime
-if (!process.env.NIXPACKS_PATH && !process.env.NEXT_PHASE) {
+if (!process.env.NIXPACKS_PATH) {
   initTables();
 }
 
@@ -513,7 +514,7 @@ const runMigrations = () => {
 };
 
 // Solo ejecutar migraciones y crear admin en runtime, no durante build
-if (!process.env.NIXPACKS_PATH && !process.env.NEXT_PHASE) {
+if (!process.env.NIXPACKS_PATH) {
   runMigrations();
 }
 
@@ -772,7 +773,7 @@ const createTestUsers = async () => {
 };
 
 // Solo ejecutar en runtime, no durante build
-if (!process.env.NIXPACKS_PATH && !process.env.NEXT_PHASE) {
+if (!process.env.NIXPACKS_PATH) {
   createAdminUser();
   populateSocialPlatforms();
   populateMediaSources();
@@ -782,6 +783,25 @@ if (!process.env.NIXPACKS_PATH && !process.env.NEXT_PHASE) {
 export const getDatabase = () => {
   if (!db) db = initDatabase();
   return db;
+};
+
+// Función para forzar la inicialización de la base de datos
+export const forceInitializeDatabase = async () => {
+  console.log('🗄️  Forzando inicialización de base de datos...');
+  try {
+    if (!db) db = initDatabase();
+    initTables();
+    runMigrations();
+    await createAdminUser();
+    await populateSocialPlatforms();
+    await populateMediaSources();
+    await createTestUsers();
+    console.log('✅ Base de datos inicializada correctamente');
+    return true;
+  } catch (error) {
+    console.error('❌ Error inicializando base de datos:', error);
+    return false;
+  }
 };
 
 export default getDatabase;
