@@ -148,52 +148,31 @@ export default function LoginPage() {
       clearTimeout(timeoutId);
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      
-      if (data.success) {
-        // Login exitoso - resetear intentos
-        setIntentosLogin(0);
-        setBloqueadoHasta(null);
-        setExitoLogin(true);
-        
-        // Mostrar mensaje de éxito brevemente
-        setTimeout(() => {
-          // Si hay usuario, redireccionar basado en onboarding y tipo de perfil
-          if (data.user) {
-            if (data.user.onboardingCompleted) {
-              // Redireccionar según el tipo de perfil
-              if (data.user.profileType === 'political') {
-                window.location.href = '/dashboard-politico';
-              } else {
-                window.location.href = '/dashboard';
-              }
-            } else {
-              window.location.href = '/onboarding';
-            }
-          } else {
-            // Si no hay usuario pero login exitoso, ir al dashboard por defecto
-            window.location.href = '/dashboard';
-          }
-        }, 500);
-        
-      } else {
-        // Login fallido - incrementar intentos
+        // Si el servidor devuelve error, procesar la respuesta
+        const errorData = await response.json();
         const nuevosIntentos = intentosLogin + 1;
         setIntentosLogin(nuevosIntentos);
         
-        // Bloquear después de 5 intentos fallidos
         if (nuevosIntentos >= 5) {
-          const bloqueoHasta = new Date(Date.now() + 5 * 60 * 1000); // 5 minutos
+          const bloqueoHasta = new Date(Date.now() + 5 * 60 * 1000);
           setBloqueadoHasta(bloqueoHasta);
           setError('Demasiados intentos fallidos. Cuenta bloqueada por 5 minutos.');
         } else {
           const intentosRestantes = 5 - nuevosIntentos;
-          setError(`${data.message || 'Credenciales incorrectas.'} Te quedan ${intentosRestantes} intentos.`);
+          setError(`${errorData.message || 'Credenciales incorrectas.'} Te quedan ${intentosRestantes} intentos.`);
         }
+        return;
       }
+
+      // Si llegamos aquí, response.ok es true = login exitoso
+      setIntentosLogin(0);
+      setBloqueadoHasta(null);
+      setExitoLogin(true);
+      
+      // Redirección forzada al dashboard
+      setTimeout(() => {
+        window.location.href = '/dashboard';
+      }, 300);
     } catch (err: any) {
       console.error('Error de autenticación:', err);
       
