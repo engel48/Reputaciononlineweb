@@ -49,7 +49,7 @@ export default function AnalysisModal({ isOpen, onClose, personalityName, onAnal
         
         if (deepData.success && deepData.analysis) {
           // Combinar análisis básico con análisis profundo
-          setAnalysis(prev => ({
+          setAnalysis((prev: any) => ({
             ...prev,
             analysis: {
               ...prev.analysis,
