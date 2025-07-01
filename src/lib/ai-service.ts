@@ -1,10 +1,18 @@
-// Servicio de IA centralizado usando DeepSeek R1
-// Este servicio reemplaza todas las llamadas a OpenAI con DeepSeek
-// Pero mantiene el branding como "Sofia" para el usuario
+// Servicio de IA centralizado con fallback OpenAI -> DeepSeek R1
+// Intenta primero OpenAI, si falla, usa DeepSeek R1 como respaldo
+// Mantiene el branding como "Sofia" para el usuario
 
-interface DeepSeekMessage {
+interface AIMessage {
   role: 'system' | 'user' | 'assistant';
   content: string;
+}
+
+interface OpenAIResponse {
+  choices: Array<{
+    message: {
+      content: string;
+    };
+  }>;
 }
 
 interface DeepSeekResponse {
@@ -28,51 +36,105 @@ interface DeepSeekResponse {
 }
 
 class AIService {
-  private apiKey: string;
-  private apiUrl: string = 'https://api.deepseek.com/v1/chat/completions';
-  private model: string = 'deepseek-chat';
+  private openaiApiKey: string;
+  private deepseekApiKey: string;
+  private openaiUrl: string = 'https://api.openai.com/v1/chat/completions';
+  private deepseekUrl: string = 'https://api.deepseek.com/v1/chat/completions';
 
   constructor() {
-    // Usar la API key de DeepSeek proporcionada
-    this.apiKey = process.env.DEEPSEEK_API_KEY || 'sk-f2e5fc3f3e2e448ba0c757ea91c0f88c';
+    this.openaiApiKey = process.env.OPENAI_API_KEY || '';
+    this.deepseekApiKey = process.env.DEEPSEEK_API_KEY || 'sk-f2e5fc3f3e2e448ba0c757ea91c0f88c';
   }
 
-  async chat(messages: DeepSeekMessage[], options?: {
+  private async tryOpenAI(messages: AIMessage[], options?: {
+    temperature?: number;
+    max_tokens?: number;
+  }): Promise<string | null> {
+    if (!this.openaiApiKey) {
+      console.log('🤖 Sofia: Método primario no disponible, usando método alternativo');
+      return null;
+    }
+
+    try {
+      console.log('🤖 Sofia: Procesando con método primario...');
+      const response = await fetch(this.openaiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.openaiApiKey}`
+        },
+        body: JSON.stringify({
+          model: 'gpt-3.5-turbo',
+          messages: messages,
+          temperature: options?.temperature || 0.7,
+          max_tokens: options?.max_tokens || 2000
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Sofia primary method error: ${response.status}`);
+      }
+
+      const data: OpenAIResponse = await response.json();
+      console.log('✅ Sofia: Respuesta generada exitosamente');
+      return data.choices[0]?.message?.content || '';
+    } catch (error) {
+      console.log('❌ Sofia: Método primario falló, usando método alternativo:', error);
+      return null;
+    }
+  }
+
+  private async tryDeepSeek(messages: AIMessage[], options?: {
+    temperature?: number;
+    max_tokens?: number;
+  }): Promise<string> {
+    console.log('🤖 Sofia: Procesando con método alternativo...');
+    const response = await fetch(this.deepseekUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.deepseekApiKey}`
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: messages,
+        temperature: options?.temperature || 0.7,
+        max_tokens: options?.max_tokens || 2000
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Sofia alternative method error: ${response.status}`);
+    }
+
+    const data: DeepSeekResponse = await response.json();
+    console.log('✅ Sofia: Respuesta generada con método alternativo');
+    return data.choices[0]?.message?.content || '';
+  }
+
+  async chat(messages: AIMessage[], options?: {
     temperature?: number;
     max_tokens?: number;
     stream?: boolean;
   }): Promise<string> {
     try {
-      const response = await fetch(this.apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`
-        },
-        body: JSON.stringify({
-          model: this.model,
-          messages: messages,
-          temperature: options?.temperature || 0.7,
-          max_tokens: options?.max_tokens || 2000,
-          stream: options?.stream || false
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`DeepSeek API error: ${response.status}`);
+      // Intentar primero con OpenAI
+      const openaiResult = await this.tryOpenAI(messages, options);
+      if (openaiResult) {
+        return openaiResult;
       }
 
-      const data: DeepSeekResponse = await response.json();
-      return data.choices[0]?.message?.content || '';
+      // Si OpenAI falla, usar DeepSeek R1 como respaldo
+      return await this.tryDeepSeek(messages, options);
     } catch (error) {
-      console.error('Error en servicio de IA:', error);
-      throw error;
+      console.error('🚨 Sofia: Error en servicio de IA:', error);
+      throw new Error('Sofia no puede procesar la solicitud en este momento');
     }
   }
 
   // Método específico para Sofia
   async sofiaChat(userMessage: string, context?: string): Promise<string> {
-    const messages: DeepSeekMessage[] = [
+    const messages: AIMessage[] = [
       {
         role: 'system',
         content: `Eres Sofia, una asistente de IA especializada en análisis de reputación online y monitoreo de redes sociales. 
@@ -99,7 +161,7 @@ class AIService {
     score: number;
     explanation: string;
   }> {
-    const messages: DeepSeekMessage[] = [
+    const messages: AIMessage[] = [
       {
         role: 'system',
         content: 'Eres un experto en análisis de sentimientos. Debes analizar el texto y devolver SOLO un JSON válido con el formato: {"sentiment": "positive|negative|neutral", "score": 0.0-1.0, "explanation": "breve explicación"}'
@@ -130,7 +192,7 @@ class AIService {
     socialPresence: string[];
     reputationInsights: string;
   }> {
-    const messages: DeepSeekMessage[] = [
+    const messages: AIMessage[] = [
       {
         role: 'system',
         content: 'Eres un experto en investigación de perfiles públicos y análisis de reputación online. Proporciona información profesional y relevante sobre personas basándote en datos públicos disponibles.'
@@ -162,7 +224,7 @@ class AIService {
 
   // Método para análisis político
   async analyzePoliticalMetrics(data: any): Promise<any> {
-    const messages: DeepSeekMessage[] = [
+    const messages: AIMessage[] = [
       {
         role: 'system',
         content: 'Eres un analista político experto. Analiza métricas políticas y proporciona insights valiosos sobre tendencias, sentimiento público y estrategias de comunicación.'
@@ -194,7 +256,7 @@ class AIService {
       email: 'Eres un experto en email marketing. Genera contenido persuasivo y profesional.'
     };
 
-    const messages: DeepSeekMessage[] = [
+    const messages: AIMessage[] = [
       {
         role: 'system',
         content: systemPrompts[type]

@@ -1,16 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import OpenAI from 'openai';
-
-let openai: OpenAI | null = null;
-
-function getOpenAI() {
-  if (!openai && process.env.OPENAI_API_KEY) {
-    openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
-  }
-  return openai;
-}
+import { aiService } from '@/lib/ai-service';
 
 interface DashboardAnalytics {
   mentions: {
@@ -54,73 +43,63 @@ interface DashboardAnalytics {
 
 async function generateRealTimeAnalytics(): Promise<DashboardAnalytics> {
   try {
-    // Usar OpenAI para generar datos basados en información real actual
-    const openaiClient = getOpenAI();
-    if (openaiClient) {
-        const completion = await openaiClient.chat.completions.create({
-        model: "gpt-4o", // Usar modelo más avanzado
-        messages: [
-          {
-            role: "system",
-            content: `Eres un analista de datos de reputación online especializado en Latinoamérica. Tu tarea es generar un reporte analítico basado en DATOS REALES y TENDENCIAS ACTUALES del mercado latinoamericano. 
-            
-            IMPORTANTE: Usa información real y actual sobre:
-            - Tendencias actuales en redes sociales en Colombia, México, Argentina, Brasil
-            - Menciones típicas de empresas/personalidades reales
-            - Patrones de comportamiento digital latinoamericano
-            - Datos demográficos y de engagement reales
-            
-            Responde en formato JSON exacto:`
-          },
-          {
-            role: "user", 
-            content: `Genera un reporte de reputación online para una empresa/personalidad promedio de Latinoamérica basado en datos REALES de los últimos 7 días. 
-            
-            Considera:
-            - Horarios de actividad típicos de Latinoamérica
-            - Menciones reales comunes en español
-            - Tendencias actuales del mercado digital latinoamericano
-            - Comportamiento real de usuarios en X, Facebook, Instagram
-            
-            Incluye menciones reales y específicas, no genéricas.`
-          }
-        ],
-        max_tokens: 2000,
-        temperature: 0.3, // Más determinístico para datos "reales"
-      });
-
-      const response = completion.choices[0]?.message?.content;
-      if (response) {
-        try {
-          // Limpiar la respuesta de posibles bloques de código
-          let cleanResponse = response.trim();
-          if (cleanResponse.startsWith('```json')) {
-            cleanResponse = cleanResponse.replace(/```json\s*/, '').replace(/```\s*$/, '');
-          } else if (cleanResponse.startsWith('```')) {
-            cleanResponse = cleanResponse.replace(/```\s*/, '').replace(/```\s*$/, '');
-          }
-          
-          const aiData = JSON.parse(cleanResponse);
-          
-          // Validar y ajustar datos para que sean realistas
-          if (aiData && aiData.mentions && typeof aiData.mentions.total !== 'undefined') {
-            // Asegurar que los datos sumen correctamente
-            const total = aiData.mentions.total || 0;
-            if (total > 0) {
-              const positive = Math.min(aiData.mentions.positive || 0, total);
-              const negative = Math.min(aiData.mentions.negative || 0, total - positive);
-              const neutral = total - positive - negative;
-              
-              aiData.mentions.positive = positive;
-              aiData.mentions.negative = negative;
-              aiData.mentions.neutral = Math.max(0, neutral);
-            }
-          }
-          
-          return aiData;
-        } catch (e) {
-          console.error('Error parsing AI analytics:', e);
+    // Usar Sofia AI para generar datos basados en información real actual
+    const response = await aiService.chat([
+      {
+        role: "system",
+        content: `Eres Sofia, un analista de datos de reputación online especializado en Latinoamérica. Tu tarea es generar un reporte analítico basado en DATOS REALES y TENDENCIAS ACTUALES del mercado latinoamericano. 
+        
+        IMPORTANTE: Usa información real y actual sobre:
+        - Tendencias actuales en redes sociales en Colombia, México, Argentina, Brasil
+        - Menciones típicas de empresas/personalidades reales
+        - Patrones de comportamiento digital latinoamericano
+        - Datos demográficos y de engagement reales
+        
+        Responde en formato JSON exacto:`
+      },
+      {
+        role: "user", 
+        content: `Genera un reporte de reputación online para una empresa/personalidad promedio de Latinoamérica basado en datos REALES de los últimos 7 días. 
+        
+        Considera:
+        - Horarios de actividad típicos de Latinoamérica
+        - Menciones reales comunes en español
+        - Tendencias actuales del mercado digital latinoamericano
+        - Comportamiento real de usuarios en X, Facebook, Instagram
+        
+        Incluye menciones reales y específicas, no genéricas.`
+      }
+    ], { max_tokens: 2000, temperature: 0.3 });
+    if (response) {
+      try {
+        // Limpiar la respuesta de posibles bloques de código
+        let cleanResponse = response.trim();
+        if (cleanResponse.startsWith('```json')) {
+          cleanResponse = cleanResponse.replace(/```json\s*/, '').replace(/```\s*$/, '');
+        } else if (cleanResponse.startsWith('```')) {
+          cleanResponse = cleanResponse.replace(/```\s*/, '').replace(/```\s*$/, '');
         }
+        
+        const aiData = JSON.parse(cleanResponse);
+        
+        // Validar y ajustar datos para que sean realistas
+        if (aiData && aiData.mentions && typeof aiData.mentions.total !== 'undefined') {
+          // Asegurar que los datos sumen correctamente
+          const total = aiData.mentions.total || 0;
+          if (total > 0) {
+            const positive = Math.min(aiData.mentions.positive || 0, total);
+            const negative = Math.min(aiData.mentions.negative || 0, total - positive);
+            const neutral = total - positive - negative;
+            
+            aiData.mentions.positive = positive;
+            aiData.mentions.negative = negative;
+            aiData.mentions.neutral = Math.max(0, neutral);
+          }
+        }
+        
+        return aiData;
+      } catch (e) {
+        console.error('🚨 Sofia: Error parsing AI analytics:', e);
       }
     }
   } catch (error) {

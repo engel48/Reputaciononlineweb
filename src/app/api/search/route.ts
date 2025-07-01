@@ -1,18 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import OpenAI from 'openai';
+import { aiService } from '@/lib/ai-service';
 import { searchPersonalitiesOnline, searchAndAnalyzePersonality } from '@/lib/realScraping';
 import { performRealAnalysis } from '@/lib/realNewsAPI';
-
-let openai: OpenAI | null = null;
-
-function getOpenAI() {
-  if (!openai && process.env.OPENAI_API_KEY) {
-    openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
-  }
-  return openai;
-}
 
 // Base de datos expandida de personalidades latinoamericanas
 const personalitiesDB = [
@@ -245,34 +234,17 @@ export async function GET(request: NextRequest) {
     if (allResults.length === 0) {
       // Sugerencias con IA si no hay resultados
       try {
-        const openaiClient = getOpenAI();
-        if (!openaiClient) {
-          return NextResponse.json({
-            success: true,
-            results: [],
-            suggestions: 'No se encontraron resultados para la búsqueda.',
-            query: query,
-            total: 0
-          });
-        }
-
-        const aiCompletion = await openaiClient.chat.completions.create({
-          model: "gpt-3.5-turbo",
-          messages: [
-            {
-              role: "system",
-              content: `Eres un experto en personalidades latinoamericanas. Sugiere personalidades reales similares cuando no encuentres resultados exactos.`
-            },
-            {
-              role: "user",
-              content: `No se encontró "${query}". Sugiere 3 personalidades similares de Latinoamérica con nombres exactos.`
-            }
-          ],
-          max_tokens: 200,
-          temperature: 0.3,
-        });
-
-        const suggestions = aiCompletion.choices[0]?.message?.content || '';
+        const suggestionsPrompt = `No se encontró "${query}". Sugiere 3 personalidades similares de Latinoamérica con nombres exactos y una breve descripción de por qué son relevantes.`;
+        const suggestions = await aiService.chat([
+          {
+            role: 'system',
+            content: 'Eres Sofia, un experto en personalidades latinoamericanas. Sugiere personalidades reales similares cuando no encuentres resultados exactos. Responde en español con sugerencias útiles y precisas.'
+          },
+          {
+            role: 'user',
+            content: suggestionsPrompt
+          }
+        ], { max_tokens: 200, temperature: 0.3 });
         
         return NextResponse.json({
           success: true,
@@ -393,28 +365,16 @@ export async function POST(request: NextRequest) {
         const analysis: any = generateSentimentAnalysis(personality);
         
         try {
-          const openaiClient = getOpenAI();
-          let aiContent = '';
-          
-          if (openaiClient) {
-            const aiInsights = await openaiClient.chat.completions.create({
-            model: "gpt-3.5-turbo",
-            messages: [
-              {
-                role: "system",
-                content: `Eres un analista experto en reputación digital de Latinoamérica. Proporciona insights detallados en español.`
-              },
-              {
-                role: "user",
-                content: `Analiza la reputación de ${personalityNameToAnalyze}. Proporciona insights sobre su presencia digital, tendencias de sentimiento y recomendaciones estratégicas.`
-              }
-            ],
-            max_tokens: 500,
-            temperature: 0.7,
-            });
-
-            aiContent = aiInsights.choices[0]?.message?.content || '';
-          }
+          const aiContent = await aiService.chat([
+            {
+              role: 'system',
+              content: 'Eres Sofia, un analista experto en reputación digital de Latinoamérica. Proporciona insights detallados en español sobre personalidades públicas.'
+            },
+            {
+              role: 'user',
+              content: `Analiza la reputación de ${personalityNameToAnalyze}. Proporciona insights sobre su presencia digital, tendencias de sentimiento y recomendaciones estratégicas.`
+            }
+          ], { max_tokens: 500, temperature: 0.7 });
           
           if (aiContent) {
             analysis.ai_insights = { insights: [aiContent] };
