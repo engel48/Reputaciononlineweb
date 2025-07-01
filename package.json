@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && node scripts/post-build.js",
     "start": "node start.js",
     "lint": "next lint",
     "test": "echo \"Error: no test specified\" && exit 1",
