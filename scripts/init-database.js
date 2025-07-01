@@ -8,13 +8,21 @@ const path = require('path');
 const fs = require('fs');
 const bcrypt = require('bcryptjs');
 
-const dbPath = path.join(process.cwd(), 'data', 'app.db');
+// Usar la misma lógica de rutas que database.ts
+// En producción standalone (Docker), usar ruta absoluta /app/data
+const isDockerProduction = process.env.NODE_ENV === 'production' && process.cwd() === '/app';
+const dbPath = isDockerProduction
+  ? '/app/data/app.db' 
+  : path.join(process.cwd(), 'data', 'app.db');
 
 console.log('🗄️  Inicializando base de datos SQLite en:', dbPath);
 
 // Crear directorio data si no existe
 try {
-  fs.mkdirSync(path.join(process.cwd(), 'data'), { recursive: true });
+  const dataDir = isDockerProduction
+    ? '/app/data' 
+    : path.join(process.cwd(), 'data');
+  fs.mkdirSync(dataDir, { recursive: true });
 } catch (error) {
   // El directorio ya existe
 }

@@ -4,12 +4,20 @@ import { join } from 'path';
 import bcrypt from 'bcryptjs';
 
 // Ruta de la base de datos SQLite
-const dbPath = join(process.cwd(), 'data', 'app.db');
+// En producción standalone (Docker), usar ruta absoluta /app/data
+// Detectar si estamos en el contenedor Docker por la existencia del directorio /app
+const isDockerProduction = process.env.NODE_ENV === 'production' && process.cwd() === '/app';
+const dbPath = isDockerProduction
+  ? '/app/data/app.db' 
+  : join(process.cwd(), 'data', 'app.db');
 
 // Crear directorio data si no existe
 import { mkdirSync } from 'fs';
 try {
-  mkdirSync(join(process.cwd(), 'data'), { recursive: true });
+  const dataDir = isDockerProduction
+    ? '/app/data' 
+    : join(process.cwd(), 'data');
+  mkdirSync(dataDir, { recursive: true });
 } catch (error) {
   // El directorio ya existe
 }
