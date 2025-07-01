@@ -12,6 +12,9 @@ const targetStatic = path.join('.next', 'standalone', '.next', 'static');
 const sourcePublic = 'public';
 const targetPublic = path.join('.next', 'standalone', 'public');
 
+const sourceScripts = 'scripts';
+const targetScripts = path.join('.next', 'standalone', 'scripts');
+
 // Función para copiar directorios recursivamente
 function copyRecursiveSync(src, dest) {
   if (!fs.existsSync(src)) {
@@ -53,6 +56,29 @@ try {
     console.log('✅ Archivos públicos copiados');
   } else {
     console.log('⚠️  No se encontraron archivos públicos');
+  }
+
+  // Copiar scripts necesarios para producción
+  if (fs.existsSync(sourceScripts)) {
+    // Solo copiar scripts específicos necesarios en producción
+    if (!fs.existsSync(targetScripts)) {
+      fs.mkdirSync(targetScripts, { recursive: true });
+    }
+    
+    // Copiar init-database.js si existe
+    const initDbScript = path.join(sourceScripts, 'init-database.js');
+    if (fs.existsSync(initDbScript)) {
+      fs.copyFileSync(initDbScript, path.join(targetScripts, 'init-database.js'));
+      console.log('✅ Script de inicialización de base de datos copiado');
+    }
+  }
+
+  // Copiar start.js al root del standalone
+  const sourceStart = 'start.js';
+  const targetStart = path.join('.next', 'standalone', 'start.js');
+  if (fs.existsSync(sourceStart)) {
+    fs.copyFileSync(sourceStart, targetStart);
+    console.log('✅ Script de inicio copiado');
   }
 
   console.log('🎉 Post-build completado exitosamente');

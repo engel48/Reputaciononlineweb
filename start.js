@@ -59,9 +59,9 @@ initializeDatabase();
 
 async function initializeDatabase() {
   try {
-    // Importar dinámicamente para evitar problemas en build
-    const { forceInitializeDatabase } = await import('./src/lib/database.ts');
-    const success = await forceInitializeDatabase();
+    // Usar script JavaScript puro para evitar problemas con TypeScript en runtime
+    const { initializeDatabase: initDB } = require('./scripts/init-database.js');
+    const success = await initDB();
     if (success) {
       console.log('🎯 Base de datos lista, iniciando Next.js...');
       startNextJs();
