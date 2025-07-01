@@ -22,7 +22,13 @@ export async function POST(request: NextRequest) {
     console.log('🔍 LOGIN: Llamando al servicio de autenticación...');
     // Intentar login
     const result = await login(email, password);
-    console.log('🔍 LOGIN: Resultado del servicio:', { success: result.success, message: result.message });
+    console.log('🔍 LOGIN: Resultado del servicio:', { success: result.success, message: result.message, hasUser: !!result.user });
+    
+    if (result.user) {
+      console.log('🔍 LOGIN: Datos del usuario:', { id: result.user.id, email: result.user.email, name: result.user.name });
+    } else {
+      console.log('❌ LOGIN: No se devolvió objeto usuario');
+    }
 
     if (!result.success) {
       console.log('❌ LOGIN: Fallo en autenticación:', result.message);

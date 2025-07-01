@@ -151,9 +151,12 @@ export const login = async (email: string, password: string): Promise<LoginRespo
     console.log('✅ AUTH: Token JWT generado exitosamente');
 
     // Obtener datos adicionales
+    console.log('🔍 AUTH: Obteniendo datos de redes sociales para usuario:', user.id);
     const socialMedia = await socialMediaService.getByUserId(user.id);
+    console.log('🔍 AUTH: Redes sociales obtenidas:', socialMedia.length, 'elementos');
 
     // Convertir a formato User del contexto
+    console.log('🔍 AUTH: Construyendo objeto usuario completo...');
     const userResponse: User = {
       id: user.id,
       email: user.email,
@@ -183,6 +186,7 @@ export const login = async (email: string, password: string): Promise<LoginRespo
     };
 
     console.log('✅ AUTH: Login exitoso para usuario:', userResponse.name);
+    console.log('🔍 AUTH: Objeto usuario final:', { id: userResponse.id, email: userResponse.email, name: userResponse.name });
     return { success: true, user: userResponse, token };
   } catch (error) {
     console.error('💥 AUTH ERROR:', error);
