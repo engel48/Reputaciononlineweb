@@ -72,13 +72,21 @@ function startNextJs() {
     console.log('📦 Usando modo standalone de Next.js');
     nextProcess = spawn('node', [serverPath], {
       stdio: 'inherit',
-      env: process.env
+      env: {
+        ...process.env,
+        HOSTNAME: '0.0.0.0',
+        PORT: process.env.PORT || '3000'
+      }
     });
   } else {
     console.log('🔧 Usando modo de desarrollo de Next.js');
     nextProcess = spawn('npx', ['next', 'start'], {
       stdio: 'inherit',
-      env: process.env
+      env: {
+        ...process.env,
+        HOSTNAME: '0.0.0.0',
+        PORT: process.env.PORT || '3000'
+      }
     });
   }
   
