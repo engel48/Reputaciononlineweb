@@ -14,20 +14,33 @@ try {
   // El directorio ya existe
 }
 
-// Inicializar base de datos
-const db = new Database(dbPath);
+// Inicializar base de datos solo si no es durante el build
+let db: Database.Database;
 
-// Configuraciones de SQLite para manejar concurrencia
-db.pragma('journal_mode = WAL');
-db.pragma('foreign_keys = ON');
-db.pragma('synchronous = NORMAL');
-db.pragma('cache_size = 1000000');
-db.pragma('locking_mode = NORMAL');
-db.pragma('temp_store = MEMORY');
-db.pragma('busy_timeout = 30000'); // 30 segundos timeout
+const initDatabase = () => {
+  if (!db) {
+    db = new Database(dbPath);
+    
+    // Configuraciones de SQLite para manejar concurrencia
+    db.pragma('journal_mode = WAL');
+    db.pragma('foreign_keys = ON');
+    db.pragma('synchronous = NORMAL');
+    db.pragma('cache_size = 1000000');
+    db.pragma('locking_mode = NORMAL');
+    db.pragma('temp_store = MEMORY');
+    db.pragma('busy_timeout = 30000'); // 30 segundos timeout
+  }
+  return db;
+};
+
+// Solo inicializar durante runtime, no durante build
+if (!process.env.NIXPACKS_PATH && !process.env.NEXT_PHASE) {
+  db = initDatabase();
+}
 
 // Crear tablas
 const initTables = () => {
+  if (!db) db = initDatabase();
   // Tabla de usuarios
   db.exec(`
     CREATE TABLE IF NOT EXISTS users (
@@ -227,6 +240,7 @@ export const userService = {
     name?: string;
     company?: string;
   }) => {
+    if (!db) db = initDatabase();
     const id = generateId();
     const hashedPassword = await bcrypt.hash(userData.password, 12);
     
@@ -241,12 +255,14 @@ export const userService = {
 
   // Buscar por email
   findByEmail: (email: string) => {
+    if (!db) db = initDatabase();
     const stmt = db.prepare('SELECT * FROM users WHERE email = ?');
     return stmt.get(email) as any;
   },
 
   // Buscar por ID
   findById: (id: string) => {
+    if (!db) db = initDatabase();
     const stmt = db.prepare('SELECT * FROM users WHERE id = ?');
     const user = stmt.get(id) as any;
     if (user) {
@@ -257,12 +273,14 @@ export const userService = {
 
   // Buscar por ID con contraseña (para autenticación)
   findByIdWithPassword: (id: string) => {
+    if (!db) db = initDatabase();
     const stmt = db.prepare('SELECT * FROM users WHERE id = ?');
     return stmt.get(id) as any;
   },
 
   // Buscar por email con contraseña (para autenticación)
   findByEmailWithPassword: (email: string) => {
+    if (!db) db = initDatabase();
     const stmt = db.prepare('SELECT * FROM users WHERE email = ?');
     return stmt.get(email) as any;
   },
@@ -284,6 +302,7 @@ export const userService = {
     fields.push('updatedAt = CURRENT_TIMESTAMP');
     values.push(id);
     
+    if (!db) db = initDatabase();
     const stmt = db.prepare(`UPDATE users SET ${fields.join(', ')} WHERE id = ?`);
     const result = stmt.run(...values);
     return result.changes > 0;
@@ -296,12 +315,14 @@ export const userService = {
 
   // Actualizar último login
   updateLastLogin: (id: string) => {
+    if (!db) db = initDatabase();
     const stmt = db.prepare('UPDATE users SET lastLogin = CURRENT_TIMESTAMP WHERE id = ?');
     stmt.run(id);
   },
 
   // Obtener todos los usuarios
   findAll: () => {
+    if (!db) db = initDatabase();
     const stmt = db.prepare('SELECT * FROM users ORDER BY createdAt DESC');
     const users = stmt.all() as any[];
     return users.map(user => {
@@ -312,6 +333,7 @@ export const userService = {
 
   // Eliminar usuario
   delete: (id: string) => {
+    if (!db) db = initDatabase();
     const stmt = db.prepare('DELETE FROM users WHERE id = ?');
     return stmt.run(id).changes > 0;
   }
@@ -321,6 +343,7 @@ export const userService = {
 export const socialMediaService = {
   // Obtener redes sociales del usuario
   getByUserId: (userId: string) => {
+    if (!db) db = initDatabase();
     const stmt = db.prepare('SELECT * FROM social_media WHERE userId = ?');
     return stmt.all(userId);
   },
@@ -340,6 +363,7 @@ export const socialMediaService = {
     refreshToken?: string;
     tokenExpiry?: Date;
   }) => {
+    if (!db) db = initDatabase();
     const id = generateId();
     const stmt = db.prepare(`
       INSERT OR REPLACE INTO social_media 
@@ -371,12 +395,14 @@ export const socialMediaService = {
 export const statsService = {
   // Obtener estadísticas del usuario
   getByUserId: (userId: string) => {
+    if (!db) db = initDatabase();
     const stmt = db.prepare('SELECT * FROM user_stats WHERE userId = ?');
     return stmt.get(userId);
   },
 
   // Crear o actualizar estadísticas
   upsert: (userId: string, stats: any) => {
+    if (!db) db = initDatabase();
     const id = generateId();
     const stmt = db.prepare(`
       INSERT OR REPLACE INTO user_stats 
@@ -412,6 +438,7 @@ export const notificationService = {
     priority?: string;
     metadata?: any;
   }) => {
+    if (!db) db = initDatabase();
     const id = generateId();
     const stmt = db.prepare(`
       INSERT INTO notifications (id, userId, title, message, type, priority, metadata, createdAt)
@@ -433,6 +460,7 @@ export const notificationService = {
 
   // Obtener notificaciones del usuario
   getByUserId: (userId: string, limit = 50) => {
+    if (!db) db = initDatabase();
     const stmt = db.prepare(`
       SELECT * FROM notifications 
       WHERE userId = ? 
@@ -444,6 +472,7 @@ export const notificationService = {
 
   // Marcar como leída
   markAsRead: (id: string) => {
+    if (!db) db = initDatabase();
     const stmt = db.prepare('UPDATE notifications SET isRead = 1 WHERE id = ?');
     return stmt.run(id).changes > 0;
   }
@@ -451,12 +480,13 @@ export const notificationService = {
 
 // Inicializar base de datos solo si no es durante el build de Nixpacks
 // NIXPACKS_PATH solo existe durante el build, no en runtime
-if (!process.env.NIXPACKS_PATH) {
+if (!process.env.NIXPACKS_PATH && !process.env.NEXT_PHASE) {
   initTables();
 }
 
 // Migraciones para añadir columnas faltantes
 const runMigrations = () => {
+  if (!db) db = initDatabase();
   try {
     // Añadir columnas para políticos si no existen
     const columns = ['partidoPolitico', 'cargoActual', 'propuestasPrincipales', 'settings'];
@@ -483,7 +513,7 @@ const runMigrations = () => {
 };
 
 // Solo ejecutar migraciones y crear admin en runtime, no durante build
-if (!process.env.NIXPACKS_PATH) {
+if (!process.env.NIXPACKS_PATH && !process.env.NEXT_PHASE) {
   runMigrations();
 }
 
@@ -601,6 +631,7 @@ const populateSocialPlatforms = async () => {
     ];
 
     for (const platform of platforms) {
+      if (!db) db = initDatabase();
       const existingPlatform = db.prepare('SELECT * FROM social_platforms WHERE platform = ?').get(platform.platform);
       if (!existingPlatform) {
         const id = generateId();
@@ -659,6 +690,7 @@ const populateMediaSources = async () => {
     ];
 
     for (const media of mediaSources) {
+      if (!db) db = initDatabase();
       const existingMedia = db.prepare('SELECT * FROM media_sources WHERE url = ?').get(media.url);
       if (!existingMedia) {
         const id = generateId();
@@ -740,11 +772,16 @@ const createTestUsers = async () => {
 };
 
 // Solo ejecutar en runtime, no durante build
-if (!process.env.NIXPACKS_PATH) {
+if (!process.env.NIXPACKS_PATH && !process.env.NEXT_PHASE) {
   createAdminUser();
   populateSocialPlatforms();
   populateMediaSources();
   createTestUsers();
 }
 
-export default db;
+export const getDatabase = () => {
+  if (!db) db = initDatabase();
+  return db;
+};
+
+export default getDatabase;
