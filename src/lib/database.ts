@@ -59,6 +59,7 @@ export const userService = {
       userData.company || null
     ]);
     
+    console.log('🔍 DB: Usuario creado en PostgreSQL:', result.rows[0]);
     return result.rows[0];
   },
 
@@ -78,7 +79,12 @@ export const userService = {
   findByEmailWithPassword: async (email: string) => {
     const client = initializePool();
     const query = 'SELECT * FROM users WHERE email = $1';
+    console.log('🔍 DB: Ejecutando consulta findByEmailWithPassword para:', email);
     const result = await client.query(query, [email]);
+    console.log('🔍 DB: Resultado consulta - filas encontradas:', result.rows.length);
+    if (result.rows.length > 0) {
+      console.log('🔍 DB: Usuario encontrado con ID:', result.rows[0].id);
+    }
     return result.rows[0];
   },
 
