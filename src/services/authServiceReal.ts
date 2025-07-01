@@ -32,14 +32,14 @@ export const register = async (userData: RegisterData): Promise<LoginResponse> =
     console.log('🔍 REGISTER: Iniciando registro para:', userData.email);
     
     // Verificar si el usuario ya existe
-    const existingUser = userService.findByEmail(userData.email);
+    const existingUser = await userService.findByEmail(userData.email);
 
     if (existingUser) {
       console.log('❌ REGISTER: Usuario ya existe:', userData.email);
       return { success: false, message: 'El usuario ya existe' };
     }
 
-    console.log('🔍 REGISTER: Creando usuario en SQLite...');
+    console.log('🔍 REGISTER: Creando usuario en PostgreSQL...');
     
     // Crear el usuario (hash se hace internamente)
     const newUser = await userService.create({
@@ -60,7 +60,7 @@ export const register = async (userData: RegisterData): Promise<LoginResponse> =
       role: userData.role || 'user'
     };
     
-    userService.update(newUser.id, updateData);
+    await userService.update(newUser.id, updateData);
 
     console.log('✅ REGISTER: Usuario creado exitosamente:', newUser.id);
 
@@ -72,8 +72,8 @@ export const register = async (userData: RegisterData): Promise<LoginResponse> =
     );
 
     // Obtener usuario actualizado
-    const userComplete = userService.findById(newUser.id);
-    const socialMedia = socialMediaService.getByUserId(newUser.id);
+    const userComplete = await userService.findById(newUser.id);
+    const socialMedia = await socialMediaService.getByUserId(newUser.id);
 
     // Convertir a formato User del contexto
     const user: User = {
@@ -116,9 +116,9 @@ export const login = async (email: string, password: string): Promise<LoginRespo
   try {
     console.log('🔍 AUTH: Iniciando login para email:', email);
     
-    // Buscar usuario en SQLite (con contraseña para verificación)
-    console.log('🔍 AUTH: Buscando usuario en SQLite...');
-    const user = userService.findByEmailWithPassword(email);
+    // Buscar usuario en PostgreSQL (con contraseña para verificación)
+    console.log('🔍 AUTH: Buscando usuario en PostgreSQL...');
+    const user = await userService.findByEmailWithPassword(email);
 
     if (!user) {
       console.log('❌ AUTH: Usuario no encontrado en BD:', email);
@@ -139,7 +139,7 @@ export const login = async (email: string, password: string): Promise<LoginRespo
 
     console.log('✅ AUTH: Contraseña válida, actualizando último login...');
     // Actualizar último login
-    userService.updateLastLogin(user.id);
+    await userService.updateLastLogin(user.id);
 
     console.log('🔍 AUTH: Generando token JWT...');
     // Generar token JWT
@@ -151,7 +151,7 @@ export const login = async (email: string, password: string): Promise<LoginRespo
     console.log('✅ AUTH: Token JWT generado exitosamente');
 
     // Obtener datos adicionales
-    const socialMedia = socialMediaService.getByUserId(user.id);
+    const socialMedia = await socialMediaService.getByUserId(user.id);
 
     // Convertir a formato User del contexto
     const userResponse: User = {
@@ -195,11 +195,11 @@ export const getUserByToken = async (token: string): Promise<User | null> => {
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; email: string };
     
-    const user = userService.findById(decoded.userId);
+    const user = await userService.findById(decoded.userId);
     if (!user) return null;
     
-    const socialMedia = socialMediaService.getByUserId(decoded.userId);
-    const userStats = statsService.getByUserId(decoded.userId);
+    const socialMedia = await socialMediaService.getByUserId(decoded.userId);
+    const userStats = await statsService.getByUserId(decoded.userId);
 
     return {
       id: user.id,
@@ -259,15 +259,15 @@ export const updateUserProfile = async (userId: string, updateData: Partial<User
     if (updateData.cargoActual !== undefined) dataToUpdate.cargoActual = updateData.cargoActual;
     if (updateData.propuestasPrincipales !== undefined) dataToUpdate.propuestasPrincipales = updateData.propuestasPrincipales;
     
-    const success = userService.update(userId, dataToUpdate);
+    const success = await userService.update(userId, dataToUpdate);
     
     if (!success) {
       return { success: false, message: 'Error actualizando el perfil' };
     }
     
     // Obtener usuario actualizado
-    const updatedUser = userService.findById(userId);
-    const socialMedia = socialMediaService.getByUserId(userId);
+    const updatedUser = await userService.findById(userId);
+    const socialMedia = await socialMediaService.getByUserId(userId);
 
     const user: User = {
       id: updatedUser.id,
@@ -345,7 +345,7 @@ export const getAllUsers = async () => {
   try {
     console.log('🔍 ADMIN: Obteniendo todos los usuarios...');
     
-    const users = userService.findAll();
+    const users = await userService.findAll();
     
     if (users) {
       console.log('✅ ADMIN: Usuarios obtenidos exitosamente:', users.length);
