@@ -14,7 +14,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Verificar que el usuario existe
-    const existingUser = userService.findById(userId);
+    const existingUser = await userService.findById(userId);
     if (!existingUser) {
       return NextResponse.json(
         { success: false, message: 'Usuario no encontrado' },
@@ -25,14 +25,14 @@ export async function PUT(request: NextRequest) {
     console.log('📝 Actualizando usuario:', userId, 'con datos:', updates);
 
     // Actualizar usuario en la base de datos
-    const success = userService.update(userId, {
+    const success = await userService.update(userId, {
       ...updates,
       updatedAt: new Date().toISOString()
     });
 
     if (success) {
       // Obtener el usuario actualizado
-      const updatedUser = userService.findById(userId);
+      const updatedUser = await userService.findById(userId);
       
       console.log('✅ Usuario actualizado exitosamente:', updatedUser?.plan);
       
@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Buscar usuario
-    const user = userService.findById(userId);
+    const user = await userService.findById(userId);
     
     if (!user) {
       return NextResponse.json(

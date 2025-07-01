@@ -4,7 +4,7 @@ import { userService } from '@/lib/database';
 export async function GET(request: NextRequest) {
   try {
     // Obtener todos los usuarios desde la base de datos local
-    const users = userService.findAll();
+    const users = await userService.findAll();
     
     console.log(`✅ Admin API: Usuarios obtenidos: ${users.length}`);
     

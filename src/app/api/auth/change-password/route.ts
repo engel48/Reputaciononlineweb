@@ -52,8 +52,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Obtener usuario actual
-    const user = userService.findById(decoded.userId);
+    // Obtener usuario actual con contraseña
+    const user = await userService.findByIdWithPassword(decoded.userId);
     if (!user) {
       return NextResponse.json(
         { success: false, message: 'Usuario no encontrado' },
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
 
     // Actualizar contraseña
-    const success = userService.update(decoded.userId, { password: hashedNewPassword });
+    const success = await userService.update(decoded.userId, { password: hashedNewPassword });
 
     if (!success) {
       return NextResponse.json(

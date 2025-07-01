@@ -14,7 +14,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Verificar que el usuario existe
-    const user = userService.findById(userId);
+    const user = await userService.findById(userId);
     if (!user) {
       return NextResponse.json(
         { success: false, message: 'Usuario no encontrado' },
@@ -31,7 +31,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Eliminar usuario
-    const success = userService.delete(userId);
+    const success = await userService.delete(userId);
 
     if (success) {
       return NextResponse.json({

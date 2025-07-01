@@ -54,23 +54,29 @@ if (!fs.existsSync(dataDir)) {
   console.log('📁 Directorio /app/data creado para SQLite');
 }
 
-console.log('🗄️  Inicializando base de datos SQLite...');
+// Configurar DATABASE_URL si no está presente
+if (!process.env.DATABASE_URL) {
+  process.env.DATABASE_URL = 'postgres://postgres:brrfcUVjU4QjzJDzCNzFLcCNCp4pbIQBrhJlMCLMbL1cAPAwf1t66C0o2LdPmIwf@rkgwkkss048ck00skskc08gs:5432/postgres';
+  console.log('🔧 DATABASE_URL configurada para PostgreSQL');
+}
+
+console.log('🐘 Inicializando base de datos PostgreSQL...');
 initializeDatabase();
 
 async function initializeDatabase() {
   try {
-    // Usar script JavaScript puro para evitar problemas con TypeScript en runtime
-    const { initializeDatabase: initDB } = require('./scripts/init-database.js');
+    // Usar script de inicialización de PostgreSQL
+    const { initializeDatabase: initDB } = require('./scripts/init-database-postgres.js');
     const success = await initDB();
     if (success) {
-      console.log('🎯 Base de datos lista, iniciando Next.js...');
+      console.log('🎯 Base de datos PostgreSQL lista, iniciando Next.js...');
       startNextJs();
     } else {
-      console.error('❌ Error inicializando base de datos, iniciando Next.js de todas formas...');
+      console.error('❌ Error inicializando base de datos PostgreSQL, iniciando Next.js de todas formas...');
       startNextJs();
     }
   } catch (error) {
-    console.error('❌ Error importando database:', error);
+    console.error('❌ Error importando database PostgreSQL:', error);
     console.log('🎯 Iniciando Next.js sin inicialización de base de datos...');
     startNextJs();
   }

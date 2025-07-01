@@ -14,7 +14,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Verificar que el usuario existe
-    const user = userService.findById(userId);
+    const user = await userService.findById(userId);
     if (!user) {
       return NextResponse.json(
         { success: false, message: 'Usuario no encontrado' },
@@ -29,7 +29,7 @@ export async function PUT(request: NextRequest) {
     if (profileType) updateData.profileType = profileType;
 
     // Actualizar usuario
-    const success = userService.update(userId, updateData);
+    const success = await userService.update(userId, updateData);
 
     if (success) {
       return NextResponse.json({

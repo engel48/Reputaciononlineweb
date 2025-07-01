@@ -65,11 +65,18 @@ try {
       fs.mkdirSync(targetScripts, { recursive: true });
     }
     
-    // Copiar init-database.js si existe
-    const initDbScript = path.join(sourceScripts, 'init-database.js');
+    // Copiar scripts de inicialización de base de datos
+    const initDbScript = path.join(sourceScripts, 'init-database-postgres.js');
     if (fs.existsSync(initDbScript)) {
-      fs.copyFileSync(initDbScript, path.join(targetScripts, 'init-database.js'));
-      console.log('✅ Script de inicialización de base de datos copiado');
+      fs.copyFileSync(initDbScript, path.join(targetScripts, 'init-database-postgres.js'));
+      console.log('✅ Script de inicialización PostgreSQL copiado');
+    }
+    
+    // También copiar el script SQLite por compatibilidad
+    const initDbSqliteScript = path.join(sourceScripts, 'init-database.js');
+    if (fs.existsSync(initDbSqliteScript)) {
+      fs.copyFileSync(initDbSqliteScript, path.join(targetScripts, 'init-database.js'));
+      console.log('✅ Script de inicialización SQLite copiado (fallback)');
     }
   }
 

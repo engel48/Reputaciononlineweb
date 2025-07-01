@@ -13,7 +13,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Verificar que el usuario existe
-    const user = userService.findById(userId);
+    const user = await userService.findById(userId);
     if (!user) {
       return NextResponse.json(
         { success: false, message: 'Usuario no encontrado' },
@@ -30,7 +30,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Actualizar el estado del usuario
-    const updated = userService.update(userId, { 
+    const updated = await userService.update(userId, { 
       isActive: isActive ? 1 : 0,
       updatedAt: new Date().toISOString()
     });
