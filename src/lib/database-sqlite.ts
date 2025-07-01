@@ -116,7 +116,7 @@ export const userService = {
   // Buscar por email
   findByEmail: async (email: string) => {
     const stmt = db.prepare('SELECT * FROM users WHERE email = ?');
-    const user = stmt.get(email);
+    const user = stmt.get(email) as any;
     if (user && user.password) {
       delete user.password; // No devolver la contraseña
     }
@@ -126,13 +126,13 @@ export const userService = {
   // Buscar por email con contraseña (para autenticación)
   findByEmailWithPassword: async (email: string) => {
     const stmt = db.prepare('SELECT * FROM users WHERE email = ?');
-    return stmt.get(email);
+    return stmt.get(email) as any;
   },
 
   // Buscar por ID
   findById: async (id: string) => {
     const stmt = db.prepare('SELECT * FROM users WHERE id = ?');
-    const user = stmt.get(id);
+    const user = stmt.get(id) as any;
     if (user && user.password) {
       delete user.password; // No devolver la contraseña
     }
@@ -176,7 +176,7 @@ export const userService = {
   // Obtener todos los usuarios
   findAll: async () => {
     const stmt = db.prepare('SELECT * FROM users ORDER BY createdAt DESC');
-    const users = stmt.all();
+    const users = stmt.all() as any[];
     // Eliminar contraseñas antes de devolver
     return users.map(user => {
       const { password, ...userWithoutPassword } = user;
