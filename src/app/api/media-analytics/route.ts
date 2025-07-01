@@ -137,7 +137,8 @@ async function generateRealMediaAnalytics(sourceName: string): Promise<MediaAnal
           }`
         }
       ], { max_tokens: 2000, temperature: 0.1 });
-    if (response) {
+      
+      if (response) {
       try {
         let cleanResponse = response.trim();
         if (cleanResponse.startsWith('```json')) {
@@ -194,6 +195,7 @@ async function generateRealMediaAnalytics(sourceName: string): Promise<MediaAnal
         console.error(`🚨 Sofia: Error parsing analytics for ${sourceName}:`, parseError);
         return generateFallbackAnalytics(sourceName);
       }
+    }
     } catch (aiError) {
       console.error(`🚨 Sofia: AI service error for ${sourceName}:`, aiError);
       return generateFallbackAnalytics(sourceName);
