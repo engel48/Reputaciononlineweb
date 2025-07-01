@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       positive: 0,
       negative: 0,
       neutral: 0,
-      insights: []
+      insights: [] as string[]
     };
 
     if (scrapedContent.length > 0) {
