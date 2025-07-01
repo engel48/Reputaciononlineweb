@@ -152,6 +152,10 @@ export default function LoginPage() {
       }
 
       const data = await response.json();
+      console.log('🔍 FRONTEND: Respuesta del login:', data);
+      console.log('🔍 FRONTEND: data.success:', data.success);
+      console.log('🔍 FRONTEND: data.user:', data.user);
+      console.log('🔍 FRONTEND: Tipo de data.user:', typeof data.user);
       
       if (data.success && data.user) {
         // Login exitoso - resetear intentos
