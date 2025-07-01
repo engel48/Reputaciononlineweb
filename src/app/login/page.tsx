@@ -152,12 +152,8 @@ export default function LoginPage() {
       }
 
       const data = await response.json();
-      console.log('🔍 FRONTEND: Respuesta del login:', data);
-      console.log('🔍 FRONTEND: data.success:', data.success);
-      console.log('🔍 FRONTEND: data.user:', data.user);
-      console.log('🔍 FRONTEND: Tipo de data.user:', typeof data.user);
       
-      if (data.success && data.user) {
+      if (data.success) {
         // Login exitoso - resetear intentos
         setIntentosLogin(0);
         setBloqueadoHasta(null);
@@ -165,16 +161,21 @@ export default function LoginPage() {
         
         // Mostrar mensaje de éxito brevemente
         setTimeout(() => {
-          // Redirección basada en onboarding y tipo de perfil
-          if (data.user.onboardingCompleted) {
-            // Redireccionar según el tipo de perfil
-            if (data.user.profileType === 'political') {
-              window.location.href = '/dashboard-politico';
+          // Si hay usuario, redireccionar basado en onboarding y tipo de perfil
+          if (data.user) {
+            if (data.user.onboardingCompleted) {
+              // Redireccionar según el tipo de perfil
+              if (data.user.profileType === 'political') {
+                window.location.href = '/dashboard-politico';
+              } else {
+                window.location.href = '/dashboard';
+              }
             } else {
-              window.location.href = '/dashboard';
+              window.location.href = '/onboarding';
             }
           } else {
-            window.location.href = '/onboarding';
+            // Si no hay usuario pero login exitoso, ir al dashboard por defecto
+            window.location.href = '/dashboard';
           }
         }, 500);
         
