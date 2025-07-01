@@ -28,8 +28,44 @@ export default function AnalysisModal({ isOpen, onClose, personalityName, onAnal
     setAnalysis(null);
 
     try {
+      // Primero obtener análisis básico
       const result = await onAnalyze(personalityName);
       setAnalysis(result);
+      
+      // Luego obtener análisis profundo con datos reales
+      try {
+        const deepResponse = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            name: personalityName,
+            type: result.personality?.type || 'personalidad'
+          }),
+        });
+        
+        const deepData = await deepResponse.json();
+        
+        if (deepData.success && deepData.analysis) {
+          // Combinar análisis básico con análisis profundo
+          setAnalysis(prev => ({
+            ...prev,
+            analysis: {
+              ...prev.analysis,
+              ...deepData.analysis,
+              real_news: deepData.analysis.recent_news,
+              web_sources: deepData.analysis.web_sources,
+              scraped_content: deepData.analysis.scraped_content,
+              sources_analyzed: deepData.analysis.sources_analyzed,
+              ai_generated_insights: deepData.analysis.sentiment?.insights || []
+            },
+            real_data: true
+          }));
+        }
+      } catch (deepError) {
+        console.error('Error en análisis profundo:', deepError);
+      }
     } catch (err) {
       setError('Error al realizar el análisis. Por favor, inténtalo de nuevo.');
       console.error('Error en análisis:', err);
@@ -113,12 +149,14 @@ export default function AnalysisModal({ isOpen, onClose, personalityName, onAnal
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.3, opacity: 0, y: 100 }}
           transition={{ type: "spring", stiffness: 200, damping: 20, duration: 0.6 }}
-          className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-7xl w-full max-h-[95vh] overflow-hidden relative z-[100000]"
+          className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full overflow-hidden relative z-[100000] mx-4 my-4"
           onClick={(e) => e.stopPropagation()}
           style={{ 
-            minHeight: "80vh",
-            minWidth: "90vw",
-            maxWidth: "95vw"
+            maxHeight: "calc(100vh - 2rem)",
+            maxWidth: "min(95vw, 1400px)",
+            width: "100%",
+            display: 'flex',
+            flexDirection: 'column'
           }}
         >
           {/* Header */}
@@ -156,7 +194,7 @@ export default function AnalysisModal({ isOpen, onClose, personalityName, onAnal
           </div>
 
           {/* Content */}
-          <div className="max-h-[calc(90vh-120px)] overflow-y-auto">
+          <div className="flex-1 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 10rem)' }}>
             {loading && (
               <div className="p-12 text-center">
                 <div className="flex flex-col items-center space-y-4">
@@ -416,11 +454,102 @@ export default function AnalysisModal({ isOpen, onClose, personalityName, onAnal
                   </motion.div>
                 )}
 
+                {/* Real News Section */}
+                {analysis.analysis?.real_news && analysis.analysis.real_news.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1.0 }}
+                    className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-600"
+                  >
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                      <Globe className="w-5 h-5 mr-2 text-[#01257D]" />
+                      Cobertura Mediática en Tiempo Real
+                      {analysis.analysis.sources_analyzed && (
+                        <span className="ml-2 text-sm bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-full">
+                          {analysis.analysis.sources_analyzed} fuentes
+                        </span>
+                      )}
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-96 overflow-y-auto">
+                      {analysis.analysis.real_news.slice(0, 6).map((news: any, index: number) => (
+                        <motion.div
+                          key={index}
+                          className="group p-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 rounded-lg hover:shadow-lg transition-all duration-300 cursor-pointer"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 1.1 + index * 0.05 }}
+                          whileHover={{ scale: 1.02 }}
+                        >
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex items-center space-x-2">
+                              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                              <span className="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                                {news.source}
+                              </span>
+                            </div>
+                            <span className="text-xs text-gray-500 dark:text-gray-500">
+                              {new Date(news.date).toLocaleDateString('es-ES', { 
+                                day: 'numeric', 
+                                month: 'short' 
+                              })}
+                            </span>
+                          </div>
+                          <h5 className="font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2 group-hover:text-[#01257D] transition-colors">
+                            {news.title}
+                          </h5>
+                          <p className="text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-3">
+                            {news.content}
+                          </p>
+                          {news.url && (
+                            <a 
+                              href={news.url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center text-xs font-medium text-[#01257D] hover:text-blue-700 transition-colors"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              Leer artículo completo
+                              <svg className="ml-1 w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                              </svg>
+                            </a>
+                          )}
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* AI Generated Insights */}
+                {analysis.analysis?.ai_generated_insights && analysis.analysis.ai_generated_insights.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1.2 }}
+                    className="bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-lg p-6"
+                  >
+                    <div className="flex items-center space-x-2 mb-4">
+                      <Brain className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                      <h4 className="font-semibold text-purple-900 dark:text-purple-100">
+                        Análisis de IA con Sofia
+                      </h4>
+                    </div>
+                    <div className="space-y-2">
+                      {analysis.analysis.ai_generated_insights.map((insight: string, index: number) => (
+                        <p key={index} className="text-sm text-purple-800 dark:text-purple-200">
+                          • {insight}
+                        </p>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+
                 {/* Data Source Info */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 1.1 }}
+                  transition={{ delay: 1.3 }}
                   className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 border border-purple-200 dark:border-purple-700"
                 >
                   <div className="flex items-center space-x-2 text-sm">

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { aiService } from '@/lib/ai-service';
 import { searchPersonalitiesOnline, searchAndAnalyzePersonality } from '@/lib/realScraping';
 import { performRealAnalysis } from '@/lib/realNewsAPI';
+import { performWebSearch, identifyPersonalities } from '@/lib/realWebSearch';
 
 // Base de datos expandida de personalidades latinoamericanas
 const personalitiesDB = [
@@ -216,22 +217,53 @@ export async function GET(request: NextRequest) {
       return b.followers - a.followers; // Por número de seguidores
     });
 
-    // 2. Buscar en internet usando IA
-    let onlineResults: any[] = [];
+    // 2. Buscar en internet usando búsqueda web real
+    let webSearchResults: any[] = [];
     try {
-      onlineResults = await searchPersonalitiesOnline(query);
-      console.log(`🌐 Encontradas ${onlineResults.length} personalidades online`);
+      // Primero hacer búsqueda web real
+      const { webResults, newsResults, totalResults } = await performWebSearch(query);
+      console.log(`🌐 Búsqueda web real: ${totalResults} resultados encontrados`);
+      
+      // Identificar personalidades en los resultados
+      if (webResults.length > 0) {
+        const personalities = await identifyPersonalities(webResults);
+        webSearchResults = personalities.map((p, index) => ({
+          id: `web-${Date.now()}-${index}`,
+          name: p.name,
+          type: p.type,
+          country: 'Colombia', // Asumimos Colombia por defecto
+          category: p.type,
+          description: p.description,
+          found_online: true,
+          sources: p.sources
+        }));
+      }
     } catch (error) {
-      console.error('Error en búsqueda online:', error);
+      console.error('Error en búsqueda web real:', error);
     }
 
-    // 3. Combinar resultados
+    // 3. Buscar usando IA como complemento
+    let aiResults: any[] = [];
+    try {
+      aiResults = await searchPersonalitiesOnline(query);
+      console.log(`🤖 IA encontró ${aiResults.length} personalidades adicionales`);
+    } catch (error) {
+      console.error('Error en búsqueda con IA:', error);
+    }
+
+    // 4. Combinar todos los resultados
     const allResults = [
       ...localResults.map(r => ({ ...r, found_online: false })),
-      ...onlineResults
+      ...webSearchResults,
+      ...aiResults
     ];
+    
+    // Eliminar duplicados por nombre
+    const uniqueResults = Array.from(
+      new Map(allResults.map(item => [item.name.toLowerCase(), item])).values()
+    );
 
-    if (allResults.length === 0) {
+    if (uniqueResults.length === 0) {
       // Sugerencias con IA si no hay resultados
       try {
         const suggestionsPrompt = `No se encontró "${query}". Sugiere 3 personalidades similares de Latinoamérica con nombres exactos y una breve descripción de por qué son relevantes.`;
@@ -259,9 +291,14 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      results: allResults.slice(0, 10),
-      total: allResults.length,
-      searched_online: true
+      results: uniqueResults.slice(0, 15), // Aumentamos el límite para mostrar más resultados
+      total: uniqueResults.length,
+      searched_online: true,
+      search_methods: {
+        local_db: localResults.length,
+        web_search: webSearchResults.length,
+        ai_search: aiResults.length
+      }
     });
 
   } catch (error) {

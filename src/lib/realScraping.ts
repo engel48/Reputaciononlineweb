@@ -1,15 +1,5 @@
-import OpenAI from 'openai';
-
-let openai: OpenAI | null = null;
-
-function getOpenAI() {
-  if (!openai && process.env.OPENAI_API_KEY) {
-    openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
-  }
-  return openai;
-}
+// Importamos el servicio de IA centralizado en lugar de OpenAI directamente
+// El servicio maneja automáticamente el fallback a DeepSeek cuando OpenAI no está disponible
 
 interface ScrapingResult {
   source: string;
@@ -48,15 +38,9 @@ interface PersonalityAnalysis {
 // Función para buscar noticias reales usando IA con información actualizada
 async function searchNewsWithAI(query: string): Promise<ScrapingResult[]> {
   try {
-    const openaiClient = getOpenAI();
-    if (!openaiClient) {
-      console.log('OpenAI no disponible, usando datos de respaldo');
-      return generateFallbackScrapingResults(query);
-    }
-
-    const completion = await openaiClient.chat.completions.create({
-      model: "gpt-4o", // Modelo más avanzado
-      messages: [
+    const { aiService } = await import('@/lib/ai-service');
+    
+    const response = await aiService.chat([
         {
           role: "system",
           content: `Eres un analista de noticias especializado en Latinoamérica con acceso a información actualizada. Tu tarea es generar un reporte basado en NOTICIAS REALES Y TENDENCIAS ACTUALES.
@@ -82,11 +66,12 @@ async function searchNewsWithAI(query: string): Promise<ScrapingResult[]> {
           Incluye variedad en el sentimiento (positivo, negativo, neutral) basado en la realidad.`
         }
       ],
-      max_tokens: 1200,
-      temperature: 0.2, // Más determinístico para "noticias reales"
-    });
+      {
+        max_tokens: 1200,
+        temperature: 0.2, // Más determinístico para "noticias reales"
+      }
+    );
 
-    const response = completion.choices[0]?.message?.content;
     if (response) {
       try {
         // Limpiar la respuesta de posibles bloques de código
@@ -302,16 +287,10 @@ export async function searchPersonalitiesOnline(query: string): Promise<Array<{
   found_online: boolean;
 }>> {
   try {
-    // Usar Sofia IA para identificar personalidades relevantes
-    const openaiClient = getOpenAI();
-    if (!openaiClient) {
-      console.log('OpenAI no disponible, usando búsqueda básica');
-      return [];
-    }
+    // Usar el servicio de IA centralizado (que maneja el fallback a DeepSeek)
+    const { aiService } = await import('@/lib/ai-service');
     
-    const completion = await openaiClient.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
+    const response = await aiService.chat([
         {
           role: "system",
           content: `Eres un experto en personalidades de Latinoamérica. Cuando busquen una persona, identifica personalidades reales similares o exactas. Responde en JSON con este formato:
@@ -330,11 +309,12 @@ export async function searchPersonalitiesOnline(query: string): Promise<Array<{
           content: `Busca personalidades relacionadas con: "${query}". Incluye políticos, influencers, empresas, deportistas o artistas de Latinoamérica, especialmente Colombia.`
         }
       ],
-      max_tokens: 600,
-      temperature: 0.3,
-    });
+      {
+        max_tokens: 600,
+        temperature: 0.3,
+      }
+    );
 
-    const response = completion.choices[0]?.message?.content;
     if (response) {
       try {
         // Limpiar la respuesta de posibles bloques de código

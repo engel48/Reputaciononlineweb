@@ -1,6 +1,6 @@
 // @ts-nocheck
 // src/services/authServiceReal.ts
-import { userService, socialMediaService, statsService } from '@/lib/database';
+import { userService, socialMediaService, statsService } from '@/lib/database-adapter';
 import jwt from 'jsonwebtoken';
 import { User } from '@/context/UserContext';
 
@@ -197,10 +197,16 @@ export const login = async (email: string, password: string): Promise<LoginRespo
 // Obtener usuario por token
 export const getUserByToken = async (token: string): Promise<User | null> => {
   try {
+    console.log('🔍 TOKEN: Verificando token JWT...');
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; email: string };
+    console.log('🔍 TOKEN: Token decodificado para usuario:', decoded.userId);
     
     const user = await userService.findById(decoded.userId);
-    if (!user) return null;
+    if (!user) {
+      console.log('❌ TOKEN: Usuario no encontrado para ID:', decoded.userId);
+      return null;
+    }
+    console.log('✅ TOKEN: Usuario encontrado:', { id: user.id, email: user.email });
     
     const socialMedia = await socialMediaService.getByUserId(decoded.userId);
     const userStats = await statsService.getByUserId(decoded.userId);

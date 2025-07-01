@@ -71,8 +71,8 @@ export default function UsuariosPage() {
   };
 
   const filteredUsers = users.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = (user.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (user.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (user.company && user.company.toLowerCase().includes(searchTerm.toLowerCase()));
     
     const matchesPlan = filterPlan === 'all' || user.plan === filterPlan;
@@ -410,7 +410,7 @@ export default function UsuariosPage() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
                           <div className="text-sm font-medium text-gray-900 dark:text-white">
-                            {user.name}
+                            {user.name || 'Usuario sin nombre'}
                           </div>
                           <div className="text-sm text-gray-500 dark:text-gray-400">
                             {user.email}

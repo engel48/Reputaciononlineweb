@@ -44,6 +44,28 @@ interface SentimentAnalysis {
     timestamp: string;
   }>;
   ai_insights?: any;
+  // Nuevos campos para datos reales
+  real_news?: Array<{
+    title: string;
+    content: string;
+    url: string;
+    source: string;
+    date: string;
+    imageUrl?: string;
+  }>;
+  web_sources?: Array<{
+    title: string;
+    snippet: string;
+    url: string;
+    source: string;
+  }>;
+  scraped_content?: Array<{
+    url: string;
+    title: string;
+    content: string;
+  }>;
+  sources_analyzed?: number;
+  ai_generated_insights?: string[];
 }
 
 const COLORS = {
@@ -99,18 +121,53 @@ export default function AdvancedSearch() {
     setAnalysis(null);
     
     try {
-      const response = await fetch('/api/search', {
+      // Primero obtener análisis básico
+      const basicResponse = await fetch('/api/search', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ personalityId: personality.id }),
+        body: JSON.stringify({ 
+          personalityName: personality.name,
+          personalityId: personality.id 
+        }),
       });
       
-      const data = await response.json();
+      const basicData = await basicResponse.json();
       
-      if (data.success) {
-        setAnalysis(data.analysis);
+      if (basicData.success) {
+        setAnalysis(basicData.analysis);
+        
+        // Luego obtener análisis profundo con scraping y noticias reales
+        try {
+          const deepResponse = await fetch('/api/analyze', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+              name: personality.name,
+              type: personality.type 
+            }),
+          });
+          
+          const deepData = await deepResponse.json();
+          
+          if (deepData.success && deepData.analysis) {
+            // Combinar análisis básico con análisis profundo
+            setAnalysis(prev => ({
+              ...prev,
+              ...deepData.analysis,
+              real_news: deepData.analysis.recent_news,
+              web_sources: deepData.analysis.web_sources,
+              scraped_content: deepData.analysis.scraped_content,
+              sources_analyzed: deepData.analysis.sources_analyzed,
+              ai_generated_insights: deepData.analysis.sentiment.insights
+            }));
+          }
+        } catch (deepError) {
+          console.error('Error en análisis profundo:', deepError);
+        }
       }
     } catch (error) {
       console.error('Error en análisis:', error);
@@ -312,20 +369,24 @@ export default function AdvancedSearch() {
                       <MapPin className="w-4 h-4 mr-1" />
                       {result.country}
                     </div>
-                    <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                      <Users className="w-4 h-4 mr-1" />
-                      {formatNumber(result.followers)} seguidores
-                    </div>
-                    <div className="flex flex-wrap gap-1">
-                      {result.platforms.map((platform) => (
-                        <span
-                          key={platform}
-                          className="px-2 py-1 bg-gray-100 dark:bg-gray-600 text-xs rounded"
-                        >
-                          {platform}
-                        </span>
-                      ))}
-                    </div>
+                    {result.followers && (
+                      <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                        <Users className="w-4 h-4 mr-1" />
+                        {formatNumber(result.followers)} seguidores
+                      </div>
+                    )}
+                    {result.platforms && result.platforms.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {result.platforms.map((platform) => (
+                          <span
+                            key={platform}
+                            className="px-2 py-1 bg-gray-100 dark:bg-gray-600 text-xs rounded"
+                          >
+                            {platform}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   
                   <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
@@ -620,6 +681,126 @@ export default function AdvancedSearch() {
                     </div>
                   </motion.div>
                 </div>
+
+                {/* Noticias Reales */}
+                {analysis.real_news && analysis.real_news.length > 0 && (
+                  <motion.div
+                    className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1.1 }}
+                  >
+                    <div className="flex items-center space-x-2 mb-4">
+                      <MessageCircle className="w-5 h-5 text-[#01257D]" />
+                      <h4 className="font-semibold text-gray-900 dark:text-white">
+                        Noticias Recientes ({analysis.sources_analyzed || 0} fuentes analizadas)
+                      </h4>
+                    </div>
+                    <div className="space-y-3 max-h-96 overflow-y-auto">
+                      {analysis.real_news.slice(0, 5).map((news, index) => (
+                        <motion.div
+                          key={index}
+                          className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 1.2 + index * 0.1 }}
+                        >
+                          <div className="flex justify-between items-start mb-2">
+                            <h5 className="font-medium text-gray-900 dark:text-white flex-1">
+                              {news.title}
+                            </h5>
+                            <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
+                              {news.source}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                            {news.content.substring(0, 200)}...
+                          </p>
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs text-gray-500">
+                              {new Date(news.date).toLocaleDateString('es-ES')}
+                            </span>
+                            <a 
+                              href={news.url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-xs text-[#01257D] hover:underline"
+                            >
+                              Ver más →
+                            </a>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Insights de IA */}
+                {analysis.ai_generated_insights && analysis.ai_generated_insights.length > 0 && (
+                  <motion.div
+                    className="p-4 bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-lg"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1.3 }}
+                  >
+                    <div className="flex items-center space-x-2 mb-4">
+                      <Brain className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                      <h4 className="font-semibold text-purple-900 dark:text-purple-100">
+                        Análisis de IA con Sofia
+                      </h4>
+                    </div>
+                    <div className="space-y-2">
+                      {analysis.ai_generated_insights.map((insight, index) => (
+                        <p key={index} className="text-sm text-purple-800 dark:text-purple-200">
+                          • {insight}
+                        </p>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Fuentes Web */}
+                {analysis.web_sources && analysis.web_sources.length > 0 && (
+                  <motion.div
+                    className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1.4 }}
+                  >
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-4">
+                      Fuentes Web Analizadas
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {analysis.web_sources.slice(0, 4).map((source, index) => (
+                        <motion.div
+                          key={index}
+                          className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: 1.5 + index * 0.05 }}
+                        >
+                          <h5 className="font-medium text-sm text-gray-900 dark:text-white mb-1">
+                            {source.title}
+                          </h5>
+                          <p className="text-xs text-gray-600 dark:text-gray-300 mb-2">
+                            {source.snippet.substring(0, 100)}...
+                          </p>
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs text-gray-500">{source.source}</span>
+                            <a 
+                              href={source.url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-xs text-[#01257D] hover:underline"
+                            >
+                              Ver →
+                            </a>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
               </div>
             )}
           </motion.div>

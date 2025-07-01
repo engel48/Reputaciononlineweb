@@ -5,6 +5,7 @@ import { login } from '@/services/authServiceReal';
 export async function POST(request: NextRequest) {
   try {
     console.log('🔍 LOGIN: Iniciando proceso de login');
+    
     const body = await request.json();
     const { email, password } = body;
 
@@ -64,6 +65,17 @@ export async function POST(request: NextRequest) {
     return response;
   } catch (error) {
     console.error('💥 LOGIN ERROR:', error);
+    console.error('💥 LOGIN ERROR STACK:', error instanceof Error ? error.stack : 'No stack trace');
+    console.error('💥 LOGIN ERROR MESSAGE:', error instanceof Error ? error.message : String(error));
+    
+    // Si es un error de base de datos en producción, devolver 503
+    if (error instanceof Error && error.message.includes('ENOTFOUND')) {
+      return NextResponse.json(
+        { success: false, message: 'Error de conexión a la base de datos' },
+        { status: 503 }
+      );
+    }
+    
     return NextResponse.json(
       { success: false, message: 'Error interno del servidor' },
       { status: 500 }

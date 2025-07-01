@@ -138,17 +138,17 @@ const PoliticalDashboard: React.FC = () => {
               <TrendingUp className="w-5 h-5 text-green-600" />
             </div>
             <span className={`text-sm font-medium ${
-              politicalData.approvalRating > politicalData.previousApproval 
+              (politicalData?.approvalRating || 0) > (politicalData?.previousApproval || 0) 
                 ? 'text-green-600' : 'text-red-600'
             }`}>
-              {politicalData.approvalRating > politicalData.previousApproval ? '+' : ''}
-              {(politicalData.approvalRating - politicalData.previousApproval).toFixed(1)}%
+              {(politicalData?.approvalRating || 0) > (politicalData?.previousApproval || 0) ? '+' : ''}
+              {((politicalData?.approvalRating || 0) - (politicalData?.previousApproval || 0)).toFixed(1)}%
             </span>
           </div>
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
             Aprobación Ciudadana
           </h3>
-          <p className="text-3xl font-bold text-gray-900 dark:text-white">{politicalData.approvalRating}%</p>
+          <p className="text-3xl font-bold text-gray-900 dark:text-white">{politicalData?.approvalRating || 0}%</p>
           <p className="text-sm text-gray-500 dark:text-gray-400">vs mes anterior</p>
         </motion.div>
 
@@ -168,7 +168,7 @@ const PoliticalDashboard: React.FC = () => {
             Intención de Voto
           </h3>
           <p className="text-3xl font-bold text-gray-900 dark:text-white">
-            {politicalData.voterSentiment.positive}%
+            {politicalData.voterSentiment?.positive || 0}%
           </p>
           <p className="text-sm text-gray-500 dark:text-gray-400">favorable</p>
         </motion.div>
@@ -189,9 +189,9 @@ const PoliticalDashboard: React.FC = () => {
             Alcance Digital
           </h3>
           <p className="text-3xl font-bold text-gray-900 dark:text-white">
-            {(politicalData.demographicData.youngVoters + 
-              politicalData.demographicData.adultVoters + 
-              politicalData.demographicData.seniorVoters).toLocaleString()}
+            {((politicalData?.demographicData?.youngVoters || 0) + 
+              (politicalData?.demographicData?.adultVoters || 0) + 
+              (politicalData?.demographicData?.seniorVoters || 0)).toLocaleString()}
           </p>
           <p className="text-sm text-gray-500 dark:text-gray-400">ciudadanos alcanzados</p>
         </motion.div>
@@ -212,7 +212,7 @@ const PoliticalDashboard: React.FC = () => {
             Temas Clave
           </h3>
           <p className="text-3xl font-bold text-gray-900 dark:text-white">
-            {politicalData.keyIssues.length}
+            {politicalData?.keyIssues?.length || 0}
           </p>
           <p className="text-sm text-gray-500 dark:text-gray-400">issues monitoreados</p>
         </motion.div>
@@ -231,15 +231,15 @@ const PoliticalDashboard: React.FC = () => {
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg">
-            <div className="text-2xl font-bold text-blue-600">{politicalData.demographicData.youngVoters}%</div>
+            <div className="text-2xl font-bold text-blue-600">{politicalData?.demographicData?.youngVoters || 0}%</div>
             <div className="text-sm text-gray-600 dark:text-gray-400">Jóvenes (18-35)</div>
           </div>
           <div className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg">
-            <div className="text-2xl font-bold text-green-600">{politicalData.demographicData.adultVoters}%</div>
+            <div className="text-2xl font-bold text-green-600">{politicalData?.demographicData?.adultVoters || 0}%</div>
             <div className="text-sm text-gray-600 dark:text-gray-400">Adultos (36-55)</div>
           </div>
           <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-lg">
-            <div className="text-2xl font-bold text-purple-600">{politicalData.demographicData.seniorVoters}%</div>
+            <div className="text-2xl font-bold text-purple-600">{politicalData?.demographicData?.seniorVoters || 0}%</div>
             <div className="text-sm text-gray-600 dark:text-gray-400">Mayores (55+)</div>
           </div>
         </div>
@@ -257,7 +257,7 @@ const PoliticalDashboard: React.FC = () => {
           Temas Políticos en Debate
         </h3>
         <div className="space-y-3">
-          {politicalData.keyIssues.map((issue, index) => (
+          {(politicalData?.keyIssues || []).map((issue, index) => (
             <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
               <div className="flex items-center space-x-3">
                 <div className={`w-3 h-3 rounded-full ${
@@ -282,7 +282,7 @@ const PoliticalDashboard: React.FC = () => {
       </motion.div>
 
       {/* Métricas de Campaña (si aplica) */}
-      {politicalData.campaignMetrics && (
+      {politicalData?.campaignMetrics && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -295,15 +295,15 @@ const PoliticalDashboard: React.FC = () => {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="text-center">
-              <div className="text-2xl font-bold">${politicalData.campaignMetrics.donations.toLocaleString()}</div>
+              <div className="text-2xl font-bold">${(politicalData?.campaignMetrics?.donations || 0).toLocaleString()}</div>
               <div className="text-sm text-green-100">Donaciones recaudadas</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold">{politicalData.campaignMetrics.volunteers.toLocaleString()}</div>
+              <div className="text-2xl font-bold">{(politicalData?.campaignMetrics?.volunteers || 0).toLocaleString()}</div>
               <div className="text-sm text-green-100">Voluntarios activos</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold">{politicalData.campaignMetrics.events}</div>
+              <div className="text-2xl font-bold">{politicalData?.campaignMetrics?.events || 0}</div>
               <div className="text-sm text-green-100">Eventos realizados</div>
             </div>
           </div>
