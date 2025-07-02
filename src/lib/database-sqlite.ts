@@ -76,6 +76,15 @@ db.exec(`
     updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
   );
+
+  CREATE TABLE IF NOT EXISTS system_settings (
+    id TEXT PRIMARY KEY,
+    key TEXT UNIQUE NOT NULL,
+    value TEXT NOT NULL,
+    description TEXT,
+    updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updatedBy TEXT
+  );
 `);
 
 // Intentar agregar columna isActive si no existe
@@ -251,6 +260,46 @@ export const statsService = {
   getByUserId: async (userId: string) => {
     const stmt = db.prepare('SELECT * FROM user_stats WHERE userId = ?');
     return stmt.get(userId);
+  }
+};
+
+// Funciones de configuraciones del sistema
+export const systemSettingsService = {
+  // Obtener una configuración por clave
+  get: async (key: string) => {
+    const stmt = db.prepare('SELECT * FROM system_settings WHERE key = ?');
+    return stmt.get(key) as any;
+  },
+
+  // Obtener todas las configuraciones
+  getAll: async () => {
+    const stmt = db.prepare('SELECT * FROM system_settings ORDER BY key');
+    return stmt.all() as any[];
+  },
+
+  // Establecer o actualizar una configuración
+  set: async (key: string, value: string, description?: string, updatedBy?: string) => {
+    const id = generateId();
+    const stmt = db.prepare(`
+      INSERT INTO system_settings (id, key, value, description, updatedBy, updatedAt)
+      VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+      ON CONFLICT(key) 
+      DO UPDATE SET
+        value = excluded.value,
+        description = excluded.description,
+        updatedBy = excluded.updatedBy,
+        updatedAt = CURRENT_TIMESTAMP
+    `);
+    
+    stmt.run(id, key, value, description || null, updatedBy || null);
+    return true;
+  },
+
+  // Eliminar una configuración
+  delete: async (key: string) => {
+    const stmt = db.prepare('DELETE FROM system_settings WHERE key = ?');
+    const result = stmt.run(key);
+    return result.changes > 0;
   }
 };
 

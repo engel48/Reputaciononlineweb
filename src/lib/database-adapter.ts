@@ -15,7 +15,7 @@ console.log('🔍 DATABASE ADAPTER:', {
 });
 
 // Exportar el servicio correcto según el entorno
-export const { userService, socialMediaService, statsService } = usePostgres
+export const { userService, socialMediaService, statsService, systemSettingsService } = usePostgres
   ? require('./database')
   : require('./database-sqlite');
 

@@ -85,9 +85,42 @@ export default function AdvancedSearch() {
   const [showFilters, setShowFilters] = useState(false);
   const [suggestions, setSuggestions] = useState('');
   const searchRef = useRef<HTMLInputElement>(null);
+  
+  // Estados para el estado del sistema
+  const [searchEngineEnabled, setSearchEngineEnabled] = useState(true);
+  const [maintenanceMessage, setMaintenanceMessage] = useState('');
+  const [systemLoading, setSystemLoading] = useState(true);
+
+  // Verificar estado del sistema al cargar
+  useEffect(() => {
+    const checkSystemStatus = async () => {
+      try {
+        const response = await fetch('/api/system/status');
+        const data = await response.json();
+        
+        if (data.success) {
+          setSearchEngineEnabled(data.searchEngineEnabled);
+          setMaintenanceMessage(data.maintenanceMessage);
+        }
+      } catch (error) {
+        console.error('Error verificando estado del sistema:', error);
+        // Por defecto mantener habilitado en caso de error
+      } finally {
+        setSystemLoading(false);
+      }
+    };
+
+    checkSystemStatus();
+  }, []);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
+    
+    // Verificar si el motor de búsqueda está habilitado
+    if (!searchEngineEnabled) {
+      alert(maintenanceMessage || 'El motor de búsqueda está temporalmente deshabilitado.');
+      return;
+    }
     
     setIsSearching(true);
     setSuggestions('');
@@ -223,6 +256,55 @@ export default function AdvancedSearch() {
     { name: 'Negativo', value: analysis.overall_sentiment.negative, color: COLORS.negative },
     { name: 'Neutral', value: analysis.overall_sentiment.neutral, color: COLORS.neutral },
   ] : [];
+
+  // Mostrar estado de carga
+  if (systemLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#01257D]"></div>
+            <span className="ml-2 text-gray-600 dark:text-gray-400">Verificando estado del sistema...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Mostrar mensaje de mantenimiento si el motor está deshabilitado
+  if (!searchEngineEnabled) {
+    return (
+      <div className="space-y-6">
+        <motion.div 
+          className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="text-center py-12">
+            <div className="mx-auto w-16 h-16 bg-yellow-100 dark:bg-yellow-900/20 rounded-full flex items-center justify-center mb-4">
+              <Search className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              Motor de Búsqueda Temporalmente Deshabilitado
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto leading-relaxed">
+              {maintenanceMessage || 'El motor de búsqueda está temporalmente deshabilitado. Por favor, inténtelo más tarde.'}
+            </p>
+            <div className="mt-6">
+              <button 
+                onClick={() => window.location.reload()}
+                className="inline-flex items-center px-4 py-2 bg-[#01257D] text-white rounded-lg hover:bg-[#013AAA] transition-colors"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Actualizar Página
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

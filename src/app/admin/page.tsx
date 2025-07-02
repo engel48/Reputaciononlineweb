@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, Users, Database, BarChart3, Shield, Search, Filter, Download, RefreshCw, Edit, Trash2, DollarSign, Crown, UserPlus, X, Check } from 'lucide-react';
+import { Eye, EyeOff, Users, Database, BarChart3, Shield, Search, Filter, Download, RefreshCw, Edit, Trash2, DollarSign, Crown, UserPlus, X, Check, Settings, Power, MessageSquare } from 'lucide-react';
 
 interface User {
   id: string;
@@ -34,6 +34,65 @@ export default function AdminDashboard() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [editForm, setEditForm] = useState({ plan: '', credits: '', profileType: '' });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+  
+  // Estados para configuraciones del sistema
+  const [activeTab, setActiveTab] = useState('users'); // 'users' o 'settings'
+  const [searchEngineEnabled, setSearchEngineEnabled] = useState(true);
+  const [maintenanceMessage, setMaintenanceMessage] = useState('El motor de búsqueda está temporalmente deshabilitado. Por favor, inténtelo más tarde.');
+  const [settingsLoading, setSettingsLoading] = useState(false);
+
+  // Funciones para configuraciones del sistema
+  const loadSystemSettings = async () => {
+    try {
+      const response = await fetch('/api/admin/settings');
+      const data = await response.json();
+      
+      if (data.success) {
+        const settings = data.settings || [];
+        const searchSetting = settings.find((s: any) => s.key === 'search_engine_enabled');
+        const messageSetting = settings.find((s: any) => s.key === 'maintenance_message');
+        
+        setSearchEngineEnabled(searchSetting?.value === 'true' || searchSetting?.value === undefined);
+        setMaintenanceMessage(messageSetting?.value || 'El motor de búsqueda está temporalmente deshabilitado. Por favor, inténtelo más tarde.');
+      }
+    } catch (error) {
+      console.error('Error cargando configuraciones:', error);
+    }
+  };
+
+  const saveSystemSettings = async () => {
+    setSettingsLoading(true);
+    try {
+      // Guardar estado del motor de búsqueda
+      await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          key: 'search_engine_enabled',
+          value: searchEngineEnabled.toString(),
+          description: 'Habilitar o deshabilitar el motor de búsqueda de personalidades'
+        })
+      });
+
+      // Guardar mensaje de mantenimiento
+      await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          key: 'maintenance_message',
+          value: maintenanceMessage,
+          description: 'Mensaje mostrado cuando el motor de búsqueda está deshabilitado'
+        })
+      });
+
+      alert('Configuraciones guardadas exitosamente');
+    } catch (error) {
+      console.error('Error guardando configuraciones:', error);
+      alert('Error guardando configuraciones');
+    } finally {
+      setSettingsLoading(false);
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,6 +102,7 @@ export default function AdminDashboard() {
     if (username === 'admin' && password === 'admin') {
       setIsAuthenticated(true);
       loadUsers();
+      loadSystemSettings();
       return;
     }
     
@@ -65,6 +125,7 @@ export default function AdminDashboard() {
         if (data.success && data.user && data.user.role === 'admin') {
           setIsAuthenticated(true);
           loadUsers();
+          loadSystemSettings();
           return;
         }
       }
@@ -408,7 +469,44 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Filters and Search */}
+        {/* Navigation Tabs */}
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg mb-6">
+          <div className="border-b border-gray-200 dark:border-gray-700">
+            <nav className="-mb-px flex">
+              <button
+                onClick={() => setActiveTab('users')}
+                className={`py-4 px-6 border-b-2 font-medium text-sm ${
+                  activeTab === 'users'
+                    ? 'border-[#01257D] text-[#01257D]'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                }`}
+              >
+                <div className="flex items-center">
+                  <Users className="w-5 h-5 mr-2" />
+                  Gestión de Usuarios
+                </div>
+              </button>
+              <button
+                onClick={() => setActiveTab('settings')}
+                className={`py-4 px-6 border-b-2 font-medium text-sm ${
+                  activeTab === 'settings'
+                    ? 'border-[#01257D] text-[#01257D]'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                }`}
+              >
+                <div className="flex items-center">
+                  <Settings className="w-5 h-5 mr-2" />
+                  Configuraciones del Sistema
+                </div>
+              </button>
+            </nav>
+          </div>
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === 'users' && (
+          <>
+            {/* Filters and Search */}
         <div className="bg-white dark:bg-gray-800 shadow rounded-lg mb-6">
           <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <div className="flex flex-col sm:flex-row gap-4">
@@ -750,6 +848,122 @@ export default function AdminDashboard() {
                     Eliminar
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+          </>
+        )}
+
+        {/* Settings Tab Content */}
+        {activeTab === 'settings' && (
+          <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                Configuraciones del Sistema
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                Administra las configuraciones globales de la plataforma
+              </p>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              {/* Motor de Búsqueda */}
+              <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h4 className="text-lg font-medium text-gray-900 dark:text-white flex items-center">
+                      <Power className="w-5 h-5 mr-2" />
+                      Motor de Búsqueda de Personalidades
+                    </h4>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                      Habilitar o deshabilitar completamente el motor de búsqueda
+                    </p>
+                  </div>
+                  <div className="flex items-center">
+                    <button
+                      onClick={() => setSearchEngineEnabled(!searchEngineEnabled)}
+                      className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#01257D] focus:ring-offset-2 ${
+                        searchEngineEnabled ? 'bg-[#01257D]' : 'bg-gray-200 dark:bg-gray-600'
+                      }`}
+                    >
+                      <span
+                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                          searchEngineEnabled ? 'translate-x-5' : 'translate-x-0'
+                        }`}
+                      />
+                    </button>
+                    <span className="ml-3 text-sm font-medium text-gray-900 dark:text-white">
+                      {searchEngineEnabled ? 'Habilitado' : 'Deshabilitado'}
+                    </span>
+                  </div>
+                </div>
+                
+                {!searchEngineEnabled && (
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <MessageSquare className="w-4 h-4 inline mr-1" />
+                      Mensaje de Mantenimiento
+                    </label>
+                    <textarea
+                      value={maintenanceMessage}
+                      onChange={(e) => setMaintenanceMessage(e.target.value)}
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#01257D] focus:border-[#01257D] dark:bg-gray-700 dark:text-white"
+                      placeholder="Mensaje que se mostrará cuando el motor esté deshabilitado..."
+                    />
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Este mensaje se mostrará a los usuarios cuando el motor de búsqueda esté deshabilitado
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Estado Actual */}
+              <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+                <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                  Estado Actual del Sistema
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div className={`w-3 h-3 rounded-full mr-3 ${searchEngineEnabled ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        Motor de Búsqueda
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {searchEngineEnabled ? 'Operativo' : 'Fuera de servicio'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div className="w-3 h-3 rounded-full mr-3 bg-green-500"></div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        Panel de Admin
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        Operativo
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Guardar Cambios */}
+              <div className="flex justify-end">
+                <button
+                  onClick={saveSystemSettings}
+                  disabled={settingsLoading}
+                  className="px-6 py-2 bg-[#01257D] text-white rounded-md hover:bg-[#013AAA] focus:outline-none focus:ring-2 focus:ring-[#01257D] focus:ring-offset-2 disabled:opacity-50 flex items-center"
+                >
+                  {settingsLoading ? (
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Check className="w-4 h-4 mr-2" />
+                  )}
+                  {settingsLoading ? 'Guardando...' : 'Guardar Configuraciones'}
+                </button>
               </div>
             </div>
           </div>

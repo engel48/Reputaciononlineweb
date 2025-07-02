@@ -340,6 +340,53 @@ export const notificationService = {
   }
 };
 
+// Funciones de configuraciones del sistema
+export const systemSettingsService = {
+  // Obtener una configuración por clave
+  get: async (key: string) => {
+    const client = initializePool();
+    const query = 'SELECT * FROM system_settings WHERE key = $1';
+    const result = await client.query(query, [key]);
+    return result.rows[0];
+  },
+
+  // Obtener todas las configuraciones
+  getAll: async () => {
+    const client = initializePool();
+    const query = 'SELECT * FROM system_settings ORDER BY key';
+    const result = await client.query(query);
+    return result.rows;
+  },
+
+  // Establecer o actualizar una configuración
+  set: async (key: string, value: string, description?: string, updatedBy?: string) => {
+    const client = initializePool();
+    const id = generateId();
+    
+    const query = `
+      INSERT INTO system_settings (id, key, value, description, "updatedBy", "updatedAt")
+      VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)
+      ON CONFLICT (key)
+      DO UPDATE SET
+        value = EXCLUDED.value,
+        description = EXCLUDED.description,
+        "updatedBy" = EXCLUDED."updatedBy",
+        "updatedAt" = CURRENT_TIMESTAMP
+    `;
+    
+    await client.query(query, [id, key, value, description || null, updatedBy || null]);
+    return true;
+  },
+
+  // Eliminar una configuración
+  delete: async (key: string) => {
+    const client = initializePool();
+    const query = 'DELETE FROM system_settings WHERE key = $1';
+    const result = await client.query(query, [key]);
+    return (result.rowCount || 0) > 0;
+  }
+};
+
 export const getDatabase = () => {
   return initializePool();
 };
