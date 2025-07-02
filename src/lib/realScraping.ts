@@ -38,9 +38,9 @@ interface PersonalityAnalysis {
 // Función para buscar noticias reales usando IA con información actualizada
 async function searchNewsWithAI(query: string): Promise<ScrapingResult[]> {
   try {
-    const aiService = await import('@/lib/aiService');
+    const aiService = await import('./ai-service');
     
-    const response = await aiService.default.chat([
+    const response = await aiService.aiService.chat([
         {
           role: "system",
           content: `Eres un analista de noticias especializado en Latinoamérica con acceso a información actualizada. Tu tarea es generar un reporte basado en NOTICIAS REALES Y TENDENCIAS ACTUALES.
@@ -148,8 +148,8 @@ async function analyzeSentimentWithGPT(contents: string[], personalityName: stri
     const combinedContent = contents.slice(0, 20).join('\n\n'); // Limitar contenido
     
     // Usar el servicio de IA centralizado
-    const aiService = await import('./aiService');
-    const aiAnalysis = await aiService.default.chat([
+    const aiService = await import('./ai-service');
+    const aiAnalysis = await aiService.aiService.chat([
       {
         role: 'system',
         content: 'Eres Sofia, un experto en análisis de sentimientos. Responde ÚNICAMENTE con un objeto JSON válido.'
@@ -256,9 +256,9 @@ export async function searchPersonalitiesOnline(query: string): Promise<Array<{
 }>> {
   try {
     // Usar el servicio de IA centralizado (que maneja el fallback a DeepSeek)
-    const aiService = await import('@/lib/aiService');
+    const aiService = await import('./ai-service');
     
-    const response = await aiService.default.chat([
+    const response = await aiService.aiService.chat([
         {
           role: "system",
           content: `Eres un experto en personalidades de Latinoamérica. Cuando busquen una persona, identifica personalidades reales similares o exactas. Responde en JSON con este formato:
