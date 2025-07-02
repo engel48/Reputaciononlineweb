@@ -38,9 +38,9 @@ interface PersonalityAnalysis {
 // Función para buscar noticias reales usando IA con información actualizada
 async function searchNewsWithAI(query: string): Promise<ScrapingResult[]> {
   try {
-    const { aiService } = await import('@/lib/ai-service');
+    const aiService = await import('@/lib/aiService');
     
-    const response = await aiService.chat([
+    const response = await aiService.default.chat([
         {
           role: "system",
           content: `Eres un analista de noticias especializado en Latinoamérica con acceso a información actualizada. Tu tarea es generar un reporte basado en NOTICIAS REALES Y TENDENCIAS ACTUALES.
@@ -255,9 +255,9 @@ export async function searchPersonalitiesOnline(query: string): Promise<Array<{
 }>> {
   try {
     // Usar el servicio de IA centralizado (que maneja el fallback a DeepSeek)
-    const { aiService } = await import('@/lib/ai-service');
+    const aiService = await import('@/lib/aiService');
     
-    const response = await aiService.chat([
+    const response = await aiService.default.chat([
         {
           role: "system",
           content: `Eres un experto en personalidades de Latinoamérica. Cuando busquen una persona, identifica personalidades reales similares o exactas. Responde en JSON con este formato:
