@@ -171,6 +171,7 @@ async function analyzeSentimentWithGPT(contents: string[], personalityName: stri
         overall_sentiment: { positive: 45, negative: 25, neutral: 30 },
         insights: [`Análisis de sentimiento completado para ${personalityName}`, 'Tendencias generales positivas observadas']
       };
+    }
   } catch (error) {
     console.error('Error with GPT sentiment analysis:', error);
     return {
