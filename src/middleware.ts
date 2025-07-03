@@ -20,14 +20,52 @@ async function verifyJWT(token: string): Promise<boolean> {
     
     // Verificar que no haya expirado
     if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
+      console.log('🔍 MIDDLEWARE: Token expirado');
       return false;
     }
     
-    // Para Edge Runtime, simplificamos la verificación
-    // En un entorno de producción, implementarías verificación completa de firma
-    return true;
+    // Verificar que tenga los campos requeridos
+    if (!payload.userId || !payload.email) {
+      console.log('🔍 MIDDLEWARE: Token sin datos requeridos');
+      return false;
+    }
+    
+    // Verificación de firma simplificada para Edge Runtime
+    // Crear la firma esperada con el mismo algoritmo
+    const encoder = new TextEncoder();
+    const data = parts[0] + '.' + parts[1];
+    const keyData = encoder.encode(JWT_SECRET);
+    
+    try {
+      const key = await crypto.subtle.importKey(
+        'raw',
+        keyData,
+        { name: 'HMAC', hash: 'SHA-256' },
+        false,
+        ['sign']
+      );
+      
+      const signatureBuffer = await crypto.subtle.sign('HMAC', key, encoder.encode(data));
+      const expectedSignature = btoa(String.fromCharCode(...new Uint8Array(signatureBuffer)))
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=/g, '');
+      
+      const isValidSignature = signature === expectedSignature;
+      if (!isValidSignature) {
+        console.log('🔍 MIDDLEWARE: Firma de token inválida');
+        return false;
+      }
+      
+      console.log('✅ MIDDLEWARE: Token válido para usuario:', payload.email);
+      return true;
+    } catch (cryptoError) {
+      // Fallback: validación básica si crypto.subtle falla
+      console.log('⚠️ MIDDLEWARE: Usando validación fallback');
+      return payload.userId && payload.email && (!payload.exp || payload.exp > Math.floor(Date.now() / 1000));
+    }
   } catch (error) {
-    console.error('Error verificando JWT:', error);
+    console.error('❌ MIDDLEWARE: Error verificando JWT:', error);
     return false;
   }
 }

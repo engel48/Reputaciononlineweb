@@ -169,10 +169,14 @@ export default function LoginPage() {
       setBloqueadoHasta(null);
       setExitoLogin(true);
       
-      // Redirección forzada al dashboard
+      // Redirección mejorada al dashboard
+      console.log('✅ LOGIN FRONTEND: Login exitoso, redirigiendo...');
+      
+      // Usar router.push para mejor navegación SPA
       setTimeout(() => {
-        window.location.href = '/dashboard';
-      }, 300);
+        // Forzar recarga para asegurar que el middleware procese la cookie
+        window.location.assign('/dashboard');
+      }, 500);
     } catch (err: any) {
       console.error('Error de autenticación:', err);
       
