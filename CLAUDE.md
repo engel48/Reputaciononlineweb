@@ -5,119 +5,177 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Development Commands
 
 ```bash
-# Development
-npm run dev                    # Start development server
-npm run build                  # Build for production
-npm run start                  # Start production server
+# Main Development
+npm run dev                    # Start Next.js development server
+npm run build                  # Build for production (includes post-build script)
+npm run start                  # Start production server via start.js
 npm run lint                   # Run Next.js linter
 npm run clean                  # Remove .next, out, and data/app.db
 npm run reset                  # Clean and restart development
 
-# Backend (if needed)
-cd backend && npm run dev      # Start Express backend server
+# Backend Admin Panel (separate Express server)
+cd backend && npm run dev      # Start Express backend with nodemon
 cd backend && npm run start    # Start backend in production
+cd backend && npm test         # Run Jest tests
+
+# Database
+npx prisma db push            # Push schema changes to database
+npx prisma studio             # Open Prisma Studio database browser
+node prisma/seed.js           # Seed database with initial data
 ```
 
 ## Environment Setup
 
-The project requires these environment variables in `.env.local`:
+Critical environment variables in `.env.local`:
 
 ```bash
-# Database (PostgreSQL primary, SQLite fallback)
-DATABASE_URL=postgres://...
+# Database Architecture (dual system)
+DATABASE_URL=postgres://...      # PostgreSQL primary (production)
+# SQLite fallback automatic if PostgreSQL unavailable
 
-# Authentication (required)
+# Authentication (dual approach)
 JWT_SECRET=reputacion-online-secret-key-2025
 NEXTAUTH_SECRET=your-secret-key
 NEXTAUTH_URL=http://localhost:3000
 
-# AI Services (optional but recommended)
-OPENAI_API_KEY=sk-...
-DEEPSEEK_API_KEY=sk-...
+# AI Services (Sofia AI assistant)
+OPENAI_API_KEY=sk-...           # Primary AI service
+DEEPSEEK_API_KEY=sk-...         # Fallback AI service
 
-# OAuth Providers (optional for social media integration)
+# Social Media OAuth (7 platforms)
 FACEBOOK_CLIENT_ID=...
 TWITTER_CLIENT_ID=...
 GOOGLE_CLIENT_ID=...
 LINKEDIN_CLIENT_ID=...
+INSTAGRAM_CLIENT_ID=...
+YOUTUBE_CLIENT_ID=...
+THREADS_CLIENT_ID=...
 ```
 
 ## Architecture Overview
 
 ### Dual Database System
+The platform uses a sophisticated dual database approach with automatic failover:
 - **Primary**: PostgreSQL with custom service layer (`/src/lib/database.ts`)
 - **Fallback**: SQLite with Prisma ORM (`/src/lib/prisma.ts`)
-- **Schema**: Prisma schema supports both databases with unified models
+- **Service Layer**: Unified interface through `userService`, `socialMediaService`, `statsService`
+- **Auto-initialization**: Scripts in `/scripts/` handle both database setups
 
 ### Authentication Architecture
-- **JWT-based**: Custom JWT implementation for API routes
-- **NextAuth.js**: OAuth integration for social media platforms
-- **Middleware**: Route protection in `/src/middleware.ts`
-- **Dual approach**: JWT cookies for internal auth, NextAuth for OAuth
+Two parallel authentication systems working together:
+- **Custom JWT**: HTTP-only cookies, 7-day expiration, route protection via `/src/middleware.ts`
+- **NextAuth.js**: OAuth integration for social media platforms with automatic token storage
+- **Database Integration**: OAuth tokens stored in `social_media` table with refresh capabilities
+- **Role-based Access**: Admin/user permissions with protected routes
 
-### AI Service Integration
-- **Sofia AI**: Custom AI assistant specializing in reputation analysis
-- **Service Layer**: `/src/lib/ai-service.ts` with OpenAI primary, DeepSeek fallback
-- **Endpoints**: Multiple AI-powered analytics endpoints in `/src/app/api/`
-
-### API Structure
-- **App Router**: Next.js 13+ with route handlers in `/src/app/api/`
-- **Modular**: Separate route groups for auth, dashboard, admin, social media
-- **Real-time**: Live analytics with AI-generated realistic data
-- **OAuth Callbacks**: Individual callback handlers for each social platform
+### AI Service Integration - "Sofia AI"
+Specialized AI assistant for reputation management:
+- **Service Layer**: `/src/lib/ai-service.ts` with automatic failover
+- **Primary**: OpenAI GPT-3.5-turbo optimized for reputation analysis
+- **Fallback**: DeepSeek R1 model with identical interface
+- **Capabilities**: Sentiment analysis, person search, political metrics, content generation
+- **Character Consistency**: Sofia maintains reputation expert personality across interactions
 
 ### Social Media Integration
-- **Multi-platform**: Facebook, X/Twitter, LinkedIn, Instagram, YouTube, Threads, TikTok
-- **Token Management**: OAuth tokens stored in database with refresh capabilities
+Multi-platform OAuth system with comprehensive token management:
+- **7 Platforms**: Facebook, X/Twitter, LinkedIn, Instagram, YouTube, Threads, TikTok
+- **OAuth Manager**: `/src/lib/oauth/manager.ts` handles all platform interactions
+- **Token Storage**: Automatic storage and refresh via NextAuth callbacks
 - **Fallback Data**: Realistic simulated data when APIs unavailable
-- **Connection States**: Tracks connected/disconnected status per platform
+- **Connection States**: Real-time tracking of connected/disconnected platforms
+
+### API Architecture (Next.js App Router)
+Modular API structure with specialized endpoints:
+```
+/api/
+├── auth/[platform]/          # OAuth handlers for each social platform
+├── dashboard-analytics/      # AI-enhanced analytics data
+├── social-media/            # Platform connection management
+├── sofia/                   # AI assistant endpoint
+├── admin/                   # Admin panel operations
+└── system/status/           # Health checks and system monitoring
+```
 
 ### Frontend Architecture
-- **Component Structure**: Feature-based organization in `/src/components/`
-- **Context Providers**: User, Credits, and Plan contexts for global state
-- **Animations**: GSAP and Framer Motion for AI assistant animations
-- **UI Library**: Custom components based on Radix UI with Tailwind CSS
+Feature-based component organization with advanced animations:
+- **Components**: Organized by feature in `/src/components/`
+- **Global State**: User, Credits, Plan contexts with React Context
+- **Animations**: GSAP and Framer Motion for Sofia AI interactions
+- **UI System**: Custom components based on Radix UI with Tailwind CSS
 
 ## Key Implementation Details
 
-### Database Services
-- Use `userService`, `socialMediaService`, `statsService` from `/src/lib/database.ts`
-- PostgreSQL queries use parameterized queries with proper error handling
-- Auto-initialization scripts in `/scripts/` directory
+### Database Service Usage
+Always use the unified service layer for database operations:
+```typescript
+// Import the service layer
+import { userService, socialMediaService, statsService } from '@/lib/database';
 
-### AI Service Usage
-- Always check for both OpenAI and DeepSeek API keys
-- Sofia AI responses should maintain character consistency (reputation expert)
+// These services automatically handle PostgreSQL/SQLite fallback
+const user = await userService.findById(userId);
+const platforms = await socialMediaService.getConnectedPlatforms(userId);
+```
+
+### AI Service Integration
+The AI service provides automatic fallback between OpenAI and DeepSeek:
+```typescript
+// Sofia AI maintains consistent character across interactions
+const response = await aiService.generateResponse(prompt, 'sofia');
+// Automatically handles API failures and switches providers
+```
+
+### OAuth Implementation Pattern
+Each social platform follows the same pattern:
+1. OAuth initiation: `/api/auth/[platform]/route.ts`
+2. Callback handling: `/api/auth/[platform]/callback/route.ts`
+3. Token storage: Automatic via NextAuth callbacks
+4. Platform integration: `/src/lib/oauth/[platform].ts`
+
+### Real-time Analytics System
+Dashboard endpoints generate AI-enhanced realistic data:
+- **Colombian Media**: Prioritized sources in `/src/lib/realNewsAPI.ts`
+- **Sentiment Analysis**: Combined AI and keyword-based approaches
+- **Political Metrics**: Specialized analysis for political figures
+- **Live Updates**: Polling-based real-time data updates
+
+## Development Workflow
+
+### Database Development
+- Use `npm run dev` to start with auto-initialization
+- PostgreSQL primary, SQLite fallback automatic
+- Run `/scripts/init-database.js` for fresh setup
+- Use Prisma Studio for database inspection
+
+### AI Service Development
+- Test with both OpenAI and DeepSeek API keys
+- Sofia AI responses should maintain character consistency
 - Fallback to keyword-based analysis if both AI services fail
 
-### OAuth Implementation
-- Each platform has dedicated route handlers in `/src/app/api/auth/[platform]/`
-- Tokens automatically stored in `social_media` table via NextAuth callbacks
-- Platform-specific scopes defined in `/src/lib/auth.ts`
+### Social Media Integration Testing
+- Most OAuth providers require valid credentials
+- Use simulated data endpoints when OAuth not configured
+- Check connection status in dashboard for platform availability
 
-### Real-time Analytics
-- Dashboard endpoints generate realistic data with AI enhancement
-- Colombian media sources prioritized in `/src/lib/realNewsAPI.ts`
-- Sentiment analysis combines AI and keyword-based approaches
-
-## Security Considerations
-
-- JWT tokens use secure HTTP-only cookies
-- Database queries use parameterized statements
-- OAuth state parameters prevent CSRF attacks
-- Admin routes protected with role-based access control
-
-## Testing Social Media Integration
-
-Most OAuth providers require valid credentials. For development:
-1. Use simulated data endpoints when OAuth not configured
-2. Check connection status in dashboard to see which platforms are active
-3. Social media data automatically falls back to realistic mock data
+### Frontend Development
+- Components organized by feature, not by type
+- Use existing context providers for global state
+- Follow Radix UI + Tailwind CSS patterns
+- Test animations with GSAP and Framer Motion
 
 ## Production Deployment
 
-The project includes:
-- Docker configuration with standalone Next.js build
-- Automatic environment detection in `start.js`
-- Database initialization scripts for both PostgreSQL and SQLite
-- Health checks and graceful shutdown handling
+Deployment-ready configuration:
+- **Docker**: Multi-stage build with standalone Next.js
+- **Environment Detection**: Automatic via `start.js`
+- **Database Migration**: Auto-initialization for both PostgreSQL and SQLite
+- **Health Checks**: System status monitoring via `/api/system/status`
+- **Graceful Shutdown**: Proper cleanup of database connections
+
+## Security Implementation
+
+The platform implements multiple security layers:
+- **Parameterized Queries**: All database queries use parameterized statements
+- **JWT Security**: HTTP-only cookies with secure configuration
+- **CSRF Protection**: OAuth state parameters prevent attacks
+- **Role-based Access**: Admin routes protected with middleware
+- **Token Management**: Automatic refresh and validation for OAuth tokens

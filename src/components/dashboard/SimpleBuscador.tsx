@@ -19,9 +19,32 @@ export default function SimpleBuscador() {
   const [buscando, setBuscando] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedPersonality, setSelectedPersonality] = useState<string>('');
+  
+  // Estados para el estado del sistema
+  const [searchEngineEnabled, setSearchEngineEnabled] = useState(true);
+  const [maintenanceMessage, setMaintenanceMessage] = useState('');
 
   const buscar = async () => {
     if (!query.trim()) return;
+    
+    // RE-VERIFICAR estado del sistema en tiempo real antes de buscar
+    try {
+      const response = await fetch('/api/system/status');
+      const data = await response.json();
+      
+      if (data.success) {
+        setSearchEngineEnabled(data.searchEngineEnabled);
+        setMaintenanceMessage(data.maintenanceMessage);
+        
+        // Verificar si el motor de búsqueda está habilitado
+        if (!data.searchEngineEnabled) {
+          alert(data.maintenanceMessage || 'El motor de búsqueda está temporalmente deshabilitado.');
+          return;
+        }
+      }
+    } catch (error) {
+      console.error('Error verificando estado:', error);
+    }
     
     setBuscando(true);
     try {

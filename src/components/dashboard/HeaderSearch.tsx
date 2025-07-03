@@ -23,6 +23,29 @@ export default function HeaderSearch() {
   const [selectedPersonality, setSelectedPersonality] = useState<string>('');
   const searchRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Estados para el estado del sistema
+  const [searchEngineEnabled, setSearchEngineEnabled] = useState(true);
+  const [maintenanceMessage, setMaintenanceMessage] = useState('');
+
+  // Verificar estado del sistema al cargar
+  useEffect(() => {
+    const checkSystemStatus = async () => {
+      try {
+        const response = await fetch('/api/system/status');
+        const data = await response.json();
+        
+        if (data.success) {
+          setSearchEngineEnabled(data.searchEngineEnabled);
+          setMaintenanceMessage(data.maintenanceMessage);
+        }
+      } catch (error) {
+        console.error('Error verificando estado del sistema:', error);
+      }
+    };
+
+    checkSystemStatus();
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -52,6 +75,28 @@ export default function HeaderSearch() {
       setIsOpen(false);
       setPreparing(false);
       return;
+    }
+
+    // RE-VERIFICAR estado del sistema en tiempo real antes de buscar
+    try {
+      const response = await fetch('/api/system/status');
+      const data = await response.json();
+      
+      if (data.success) {
+        setSearchEngineEnabled(data.searchEngineEnabled);
+        setMaintenanceMessage(data.maintenanceMessage);
+        
+        // Verificar si el motor de búsqueda está habilitado
+        if (!data.searchEngineEnabled) {
+          alert(data.maintenanceMessage || 'El motor de búsqueda está temporalmente deshabilitado.');
+          setResults([]);
+          setIsOpen(false);
+          setPreparing(false);
+          return;
+        }
+      }
+    } catch (error) {
+      console.error('Error verificando estado:', error);
     }
 
     setPreparing(false);
@@ -127,6 +172,25 @@ export default function HeaderSearch() {
   };
 
   const realizarAnalisisReal = async (name: string) => {
+    // RE-VERIFICAR estado del sistema en tiempo real antes de analizar
+    try {
+      const response = await fetch('/api/system/status');
+      const data = await response.json();
+      
+      if (data.success) {
+        setSearchEngineEnabled(data.searchEngineEnabled);
+        setMaintenanceMessage(data.maintenanceMessage);
+        
+        // Verificar si el motor de búsqueda está habilitado
+        if (!data.searchEngineEnabled) {
+          alert(data.maintenanceMessage || 'El motor de búsqueda está temporalmente deshabilitado.');
+          throw new Error('Motor de búsqueda deshabilitado');
+        }
+      }
+    } catch (error) {
+      console.error('Error verificando estado:', error);
+    }
+
     const response = await fetch('/api/search', {
       method: 'POST',
       headers: {

@@ -95,15 +95,19 @@ export default function AdvancedSearch() {
   useEffect(() => {
     const checkSystemStatus = async () => {
       try {
+        console.log('🔍 Verificando estado del sistema...');
         const response = await fetch('/api/system/status');
+        console.log('📡 Response status:', response.status);
         const data = await response.json();
+        console.log('📄 System status data:', data);
         
         if (data.success) {
           setSearchEngineEnabled(data.searchEngineEnabled);
           setMaintenanceMessage(data.maintenanceMessage);
+          console.log('✅ Estado del motor:', data.searchEngineEnabled ? 'HABILITADO' : 'DESHABILITADO');
         }
       } catch (error) {
-        console.error('Error verificando estado del sistema:', error);
+        console.error('❌ Error verificando estado del sistema:', error);
         // Por defecto mantener habilitado en caso de error
       } finally {
         setSystemLoading(false);
@@ -116,11 +120,30 @@ export default function AdvancedSearch() {
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
     
-    // Verificar si el motor de búsqueda está habilitado
-    if (!searchEngineEnabled) {
-      alert(maintenanceMessage || 'El motor de búsqueda está temporalmente deshabilitado.');
-      return;
+    console.log('🔍 Iniciando búsqueda...');
+    
+    // RE-VERIFICAR estado del sistema en tiempo real antes de buscar
+    try {
+      const response = await fetch('/api/system/status');
+      const data = await response.json();
+      console.log('🔄 Estado actualizado del sistema:', data);
+      
+      if (data.success) {
+        setSearchEngineEnabled(data.searchEngineEnabled);
+        setMaintenanceMessage(data.maintenanceMessage);
+        
+        // Verificar si el motor de búsqueda está habilitado
+        if (!data.searchEngineEnabled) {
+          console.log('🚫 BÚSQUEDA BLOQUEADA - Motor deshabilitado');
+          alert(data.maintenanceMessage || 'El motor de búsqueda está temporalmente deshabilitado.');
+          return;
+        }
+      }
+    } catch (error) {
+      console.error('Error verificando estado:', error);
     }
+    
+    console.log('✅ BÚSQUEDA PERMITIDA - Motor habilitado');
     
     setIsSearching(true);
     setSuggestions('');
@@ -149,6 +172,31 @@ export default function AdvancedSearch() {
   };
 
   const handleAnalyze = async (personality: SearchResult) => {
+    console.log('🔍 Iniciando análisis...');
+    
+    // RE-VERIFICAR estado del sistema en tiempo real antes de analizar
+    try {
+      const response = await fetch('/api/system/status');
+      const data = await response.json();
+      console.log('🔄 Estado actualizado del sistema:', data);
+      
+      if (data.success) {
+        setSearchEngineEnabled(data.searchEngineEnabled);
+        setMaintenanceMessage(data.maintenanceMessage);
+        
+        // Verificar si el motor de búsqueda está habilitado
+        if (!data.searchEngineEnabled) {
+          console.log('🚫 ANÁLISIS BLOQUEADO - Motor deshabilitado');
+          alert(data.maintenanceMessage || 'El motor de búsqueda está temporalmente deshabilitado.');
+          return;
+        }
+      }
+    } catch (error) {
+      console.error('Error verificando estado:', error);
+    }
+    
+    console.log('✅ ANÁLISIS PERMITIDO - Motor habilitado');
+    
     setSelectedPersonality(personality);
     setIsAnalyzing(true);
     setAnalysis(null);
