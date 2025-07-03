@@ -46,7 +46,8 @@ async function verifyJWT(token: string): Promise<boolean> {
       );
       
       const signatureBuffer = await crypto.subtle.sign('HMAC', key, encoder.encode(data));
-      const expectedSignature = btoa(String.fromCharCode(...new Uint8Array(signatureBuffer)))
+      const signatureArray = new Uint8Array(signatureBuffer);
+      const expectedSignature = btoa(String.fromCharCode.apply(null, Array.from(signatureArray)))
         .replace(/\+/g, '-')
         .replace(/\//g, '_')
         .replace(/=/g, '');
