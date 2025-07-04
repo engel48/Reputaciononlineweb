@@ -137,5 +137,10 @@ export const config = {
      * - public folder files
      */
     '/((?!api|_next/static|_next/image|favicon.ico|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.gif|.*\\.svg).*)',
+    // Explicitly include dashboard routes for debugging
+    '/dashboard/:path*',
+    '/login',
+    '/register',
+    '/'
   ],
 }

@@ -209,9 +209,12 @@ export default function LoginPage() {
       // Agregar delay para asegurar que la cookie se establezca
       setTimeout(() => {
         console.log('🔄 LOGIN FRONTEND: Ejecutando redirección...');
-        // Forzar recarga para asegurar que el middleware procese la cookie
-        window.location.assign('/dashboard');
-      }, 800);
+        console.log('🔄 LOGIN FRONTEND: Cookies actuales:', document.cookie);
+        
+        // Probar redirección directa primero
+        console.log('🔄 LOGIN FRONTEND: Intentando redirección a /dashboard');
+        window.location.href = '/dashboard';
+      }, 1000);
     } catch (err: any) {
       console.error('Error de autenticación:', err);
       
