@@ -99,12 +99,28 @@ export async function middleware(request: NextRequest) {
     const token = request.cookies.get('auth-token')?.value;
     
     console.log('🔍 MIDDLEWARE: Token encontrado:', token ? 'Sí' : 'No');
+    console.log('🔍 MIDDLEWARE: Todas las cookies:', request.cookies.getAll());
+    
     if (token) {
       console.log('🔍 MIDDLEWARE: Primeros caracteres del token:', token.substring(0, 20) + '...');
     }
     
     if (!token) {
-      console.log('❌ MIDDLEWARE: No hay token, redirigiendo a login');
+      console.log('❌ MIDDLEWARE: No hay token en cookies');
+      
+      // Para debugging: verificar headers
+      const authHeader = request.headers.get('authorization');
+      console.log('🔍 MIDDLEWARE: Authorization header:', authHeader ? 'Presente' : 'No presente');
+      
+      // Verificar si viene de un login reciente (para dar tiempo a que se establezca la cookie)
+      const referer = request.headers.get('referer');
+      console.log('🔍 MIDDLEWARE: Referer:', referer);
+      
+      if (referer && referer.includes('/login')) {
+        console.log('⚠️ MIDDLEWARE: Viene de login, posible problema de timing');
+      }
+      
+      console.log('❌ MIDDLEWARE: Redirigiendo a login');
       return NextResponse.redirect(new URL('/login', request.url));
     }
     

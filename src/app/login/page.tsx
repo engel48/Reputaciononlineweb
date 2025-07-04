@@ -206,15 +206,42 @@ export default function LoginPage() {
       // Redirección mejorada al dashboard
       console.log('✅ LOGIN FRONTEND: Iniciando redirección al dashboard...');
       
+      // Guardar token en sessionStorage como respaldo
+      if (responseData.user && responseData.user.id) {
+        console.log('🔍 LOGIN FRONTEND: Guardando datos de sesión como respaldo');
+        sessionStorage.setItem('auth-backup', JSON.stringify({
+          userId: responseData.user.id,
+          email: responseData.user.email,
+          timestamp: Date.now()
+        }));
+      }
+      
       // Agregar delay para asegurar que la cookie se establezca
-      setTimeout(() => {
+      setTimeout(async () => {
         console.log('🔄 LOGIN FRONTEND: Ejecutando redirección...');
         console.log('🔄 LOGIN FRONTEND: Cookies actuales:', document.cookie);
         
-        // Probar redirección directa primero
+        // Verificar si la cookie está disponible
+        const hasCookie = document.cookie.includes('auth-token');
+        console.log('🔄 LOGIN FRONTEND: Cookie auth-token presente:', hasCookie);
+        
+        if (!hasCookie) {
+          console.warn('⚠️ LOGIN FRONTEND: Cookie no detectada en el cliente');
+          // Intentar obtener la cookie con una petición adicional
+          try {
+            const verifyResponse = await fetch('/api/auth/me', {
+              credentials: 'include'
+            });
+            console.log('🔄 LOGIN FRONTEND: Verificación adicional:', verifyResponse.ok);
+          } catch (e) {
+            console.error('❌ LOGIN FRONTEND: Error verificando sesión:', e);
+          }
+        }
+        
+        // Probar redirección directa
         console.log('🔄 LOGIN FRONTEND: Intentando redirección a /dashboard');
         window.location.href = '/dashboard';
-      }, 1000);
+      }, 1500);
     } catch (err: any) {
       console.error('Error de autenticación:', err);
       

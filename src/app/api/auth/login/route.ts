@@ -56,7 +56,17 @@ export async function POST(request: NextRequest) {
       console.log('🔍 LOGIN: Estableciendo cookie auth-token');
       console.log('🔍 LOGIN: Token (primeros 20 chars):', result.token.substring(0, 20) + '...');
       
-      const isSecure = process.env.NEXTAUTH_URL?.startsWith('https');
+      // Detectar si estamos en producción o HTTPS
+      const isProduction = process.env.NODE_ENV === 'production';
+      const isSecure = process.env.NEXTAUTH_URL?.startsWith('https') || isProduction;
+      
+      console.log('🔍 LOGIN: Entorno:', { 
+        NODE_ENV: process.env.NODE_ENV,
+        NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+        isProduction,
+        isSecure 
+      });
+      
       const cookieOptions = {
         httpOnly: true,
         secure: Boolean(isSecure),
