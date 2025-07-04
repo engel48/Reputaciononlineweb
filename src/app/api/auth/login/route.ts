@@ -58,21 +58,31 @@ export async function POST(request: NextRequest) {
       
       // Detectar si estamos en producción o HTTPS
       const isProduction = process.env.NODE_ENV === 'production';
-      const isSecure = process.env.NEXTAUTH_URL?.startsWith('https') || isProduction;
+      const nextAuthUrl = process.env.NEXTAUTH_URL || '';
+      const requestProtocol = request.headers.get('x-forwarded-proto') || 'http';
+      const isSecureUrl = nextAuthUrl.startsWith('https');
+      
+      // En Coolify con proxy inverso, confiar en x-forwarded-proto
+      const isSecure = requestProtocol === 'https' || isSecureUrl;
       
       console.log('🔍 LOGIN: Entorno:', { 
         NODE_ENV: process.env.NODE_ENV,
         NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+        requestProtocol,
         isProduction,
+        isSecureUrl,
         isSecure 
       });
       
+      // Usar secure solo si realmente estamos en HTTPS
+      // En Coolify/proxy inverso, el navegador puede usar HTTP internamente
       const cookieOptions = {
         httpOnly: true,
-        secure: Boolean(isSecure),
+        secure: isProduction && isSecure, // Solo secure en producción Y HTTPS real
         sameSite: 'lax' as const,
         path: '/',
-        maxAge: 7 * 24 * 60 * 60 // 7 días
+        maxAge: 7 * 24 * 60 * 60, // 7 días
+        domain: undefined // Dejar que el navegador determine el dominio
       };
       
       console.log('🔍 LOGIN: Opciones de cookie:', cookieOptions);
