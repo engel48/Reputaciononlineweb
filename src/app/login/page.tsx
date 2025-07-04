@@ -175,7 +175,7 @@ export default function LoginPage() {
       console.log('✅ LOGIN FRONTEND: Response OK, procesando datos...');
       
       // Intentar parsear la respuesta JSON
-      let responseData;
+      let responseData: any;
       try {
         responseData = await response.json();
         console.log('🔍 LOGIN FRONTEND: Datos de respuesta:', responseData);
