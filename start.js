@@ -56,7 +56,7 @@ if (!fs.existsSync(dataDir)) {
 
 // Configurar DATABASE_URL si no está presente
 if (!process.env.DATABASE_URL) {
-  process.env.DATABASE_URL = 'postgres://postgres:brrfcUVjU4QjzJDzCNzFLcCNCp4pbIQBrhJlMCLMbL1cAPAwf1t66C0o2LdPmIwf@rkgwkkss048ck00skskc08gs:5432/postgres';
+  process.env.DATABASE_URL = 'postgres://postgres:brrfcUVjU4QjzJDzCNzFLcCNCp4pbIQBrhJlMCLMbL1cAPAwf1t66C0o2LdPmIwf@31.97.138.249:5435/postgres';
   console.log('🔧 DATABASE_URL configurada para PostgreSQL');
 }
 
