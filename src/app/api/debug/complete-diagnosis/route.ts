@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { userService, systemSettingsService } from '@/lib/database-adapter';
 
 export async function GET(request: NextRequest) {
-  const diagnosis = {
+  const diagnosis: any = {
     timestamp: new Date().toISOString(),
     environment: {},
     database: {},
