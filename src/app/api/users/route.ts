@@ -1,12 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { userService } from '@/lib/database';
+import { userService } from '@/lib/database-adapter';
 
 export async function PUT(request: NextRequest) {
   try {
+    console.log('🔍 USERS API PUT: Iniciando actualización de usuario...');
+    console.log('🔍 USERS API PUT: DATABASE_URL configurada:', !!process.env.DATABASE_URL);
+    console.log('🔍 USERS API PUT: Usando engine:', process.env.DATABASE_URL?.startsWith('postgres') ? 'PostgreSQL' : 'SQLite');
+    
     const body = await request.json();
     const { userId, ...updates } = body;
 
+    console.log('🔍 USERS API PUT: Datos recibidos:', { userId, updates });
+
     if (!userId) {
+      console.log('❌ USERS API PUT: Falta userId');
       return NextResponse.json(
         { success: false, message: 'ID de usuario requerido' },
         { status: 400 }
@@ -14,15 +21,18 @@ export async function PUT(request: NextRequest) {
     }
 
     // Verificar que el usuario existe
+    console.log('🔍 USERS API PUT: Verificando si usuario existe...');
     const existingUser = await userService.findById(userId);
     if (!existingUser) {
+      console.log('❌ USERS API PUT: Usuario no encontrado:', userId);
       return NextResponse.json(
         { success: false, message: 'Usuario no encontrado' },
         { status: 404 }
       );
     }
 
-    console.log('📝 Actualizando usuario:', userId, 'con datos:', updates);
+    console.log('✅ USERS API PUT: Usuario existe, procediendo con actualización');
+    console.log('📝 USERS API PUT: Datos a actualizar:', updates);
 
     // Actualizar usuario en la base de datos
     const success = await userService.update(userId, {
