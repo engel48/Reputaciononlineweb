@@ -1,22 +1,24 @@
-// Adaptador de base de datos que detecta el entorno
-// Usa SQLite para desarrollo local y PostgreSQL para producción
+// Adaptador de base de datos - SIEMPRE usar PostgreSQL
+// El sistema debe usar PostgreSQL en todos los entornos
 
-const isProduction = process.env.NODE_ENV === 'production';
-const hasPostgresUrl = process.env.DATABASE_URL && process.env.DATABASE_URL.startsWith('postgres');
+// FORZAR PostgreSQL siempre - no más SQLite fallback
+const usePostgres = true;
 
-// Si estamos en desarrollo o no hay URL de PostgreSQL, usar SQLite
-const usePostgres = isProduction && hasPostgresUrl;
+console.log('🔍 DATABASE ADAPTER: FORZANDO PostgreSQL siempre');
+console.log('🔍 DATABASE_URL:', process.env.DATABASE_URL ? 'Configurada' : 'NO CONFIGURADA - ERROR!');
 
-console.log('🔍 DATABASE ADAPTER:', {
-  isProduction,
-  hasPostgresUrl,
-  usePostgres,
-  databaseUrl: process.env.DATABASE_URL ? 'Configurada' : 'No configurada'
-});
+if (!process.env.DATABASE_URL) {
+  console.error('❌ CRITICAL ERROR: DATABASE_URL no está configurada!');
+  console.error('❌ Debes configurar DATABASE_URL en las variables de entorno');
+  throw new Error('DATABASE_URL es requerida - no se permite fallback a SQLite');
+}
 
-// Exportar el servicio correcto según el entorno
-export const { userService, socialMediaService, statsService, systemSettingsService } = usePostgres
-  ? require('./database')
-  : require('./database-sqlite');
+if (!process.env.DATABASE_URL.startsWith('postgres')) {
+  console.error('❌ CRITICAL ERROR: DATABASE_URL debe ser PostgreSQL!');
+  throw new Error('Solo se permite PostgreSQL - no SQLite');
+}
 
-export default usePostgres ? require('./database').default : require('./database-sqlite').default;
+// SIEMPRE exportar PostgreSQL - nunca SQLite
+export const { userService, socialMediaService, statsService, systemSettingsService } = require('./database');
+
+export default require('./database').default;
