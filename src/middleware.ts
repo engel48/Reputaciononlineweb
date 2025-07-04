@@ -4,7 +4,7 @@ import type { NextRequest } from 'next/server';
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
 // Rutas que requieren autenticación
-const protectedPaths = ['/dashboard', '/onboarding'];
+const protectedPaths = ['/dashboard', '/onboarding', '/admin'];
 // Rutas que no requieren autenticación (públicas)
 const publicPaths = ['/login', '/register', '/'];
 
