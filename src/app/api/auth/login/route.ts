@@ -40,23 +40,38 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('✅ LOGIN: Autenticación exitosa, configurando cookie...');
+    
     // Configurar cookie con el token
-    const response = NextResponse.json({
+    const responseData = {
       success: true,
       user: result.user,
       message: 'Login exitoso'
-    });
+    };
+    
+    console.log('🔍 LOGIN: Datos de respuesta que se enviarán:', responseData);
+    
+    const response = NextResponse.json(responseData);
 
     if (result.token) {
       console.log('🔍 LOGIN: Estableciendo cookie auth-token');
+      console.log('🔍 LOGIN: Token (primeros 20 chars):', result.token.substring(0, 20) + '...');
+      
       const isSecure = process.env.NEXTAUTH_URL?.startsWith('https');
-      response.cookies.set('auth-token', result.token, {
+      const cookieOptions = {
         httpOnly: true,
         secure: Boolean(isSecure),
-        sameSite: 'lax',
+        sameSite: 'lax' as const,
         path: '/',
         maxAge: 7 * 24 * 60 * 60 // 7 días
-      });
+      };
+      
+      console.log('🔍 LOGIN: Opciones de cookie:', cookieOptions);
+      
+      response.cookies.set('auth-token', result.token, cookieOptions);
+      
+      // Verificar que la cookie se estableció
+      const setCookieHeader = response.headers.get('set-cookie');
+      console.log('🔍 LOGIN: Header Set-Cookie:', setCookieHeader);
     } else {
       console.log('⚠️ LOGIN: No se generó token');
     }

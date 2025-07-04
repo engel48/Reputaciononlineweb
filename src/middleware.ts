@@ -73,40 +73,56 @@ async function verifyJWT(token: string): Promise<boolean> {
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  console.log('🔍 MIDDLEWARE: Procesando ruta:', pathname);
   
   // Verificar si la ruta requiere autenticación
   const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path));
   const isPublicPath = publicPaths.some(path => pathname === path || pathname.startsWith(path));
   
+  console.log('🔍 MIDDLEWARE: Análisis de ruta:', {
+    pathname,
+    isProtectedPath,
+    isPublicPath,
+    protectedPaths,
+    publicPaths
+  });
+  
   // Si es una ruta pública, permitir acceso
   if (isPublicPath && !isProtectedPath) {
+    console.log('✅ MIDDLEWARE: Ruta pública, permitiendo acceso');
     return NextResponse.next();
   }
   
   // Si es una ruta protegida, verificar autenticación
   if (isProtectedPath) {
+    console.log('🔐 MIDDLEWARE: Ruta protegida, verificando autenticación...');
     const token = request.cookies.get('auth-token')?.value;
     
+    console.log('🔍 MIDDLEWARE: Token encontrado:', token ? 'Sí' : 'No');
+    if (token) {
+      console.log('🔍 MIDDLEWARE: Primeros caracteres del token:', token.substring(0, 20) + '...');
+    }
+    
     if (!token) {
-      // Redirigir al login si no hay token
+      console.log('❌ MIDDLEWARE: No hay token, redirigiendo a login');
       return NextResponse.redirect(new URL('/login', request.url));
     }
     
+    console.log('🔍 MIDDLEWARE: Verificando validez del token...');
     const isValid = await verifyJWT(token);
     
     if (!isValid) {
-      // Si el token es inválido, redirigir al login
-      console.error('Token inválido o expirado');
+      console.log('❌ MIDDLEWARE: Token inválido o expirado, redirigiendo a login');
       const response = NextResponse.redirect(new URL('/login', request.url));
-      // Limpiar la cookie inválida
       response.cookies.delete('auth-token');
       return response;
     }
     
-    // Si el token es válido, continuar
+    console.log('✅ MIDDLEWARE: Token válido, permitiendo acceso');
     return NextResponse.next();
   }
   
+  console.log('✅ MIDDLEWARE: Ruta no clasificada, permitiendo acceso');
   return NextResponse.next();
 }
 

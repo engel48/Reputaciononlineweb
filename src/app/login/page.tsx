@@ -132,6 +132,7 @@ export default function LoginPage() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 segundos timeout
       
+      console.log('🔍 LOGIN FRONTEND: Enviando request al backend...');
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
@@ -146,6 +147,11 @@ export default function LoginPage() {
       });
       
       clearTimeout(timeoutId);
+      console.log('🔍 LOGIN FRONTEND: Response recibida:', { 
+        ok: response.ok, 
+        status: response.status,
+        headers: Object.fromEntries(response.headers.entries())
+      });
       
       if (!response.ok) {
         // Si el servidor devuelve error, procesar la respuesta
@@ -165,18 +171,47 @@ export default function LoginPage() {
       }
 
       // Si llegamos aquí, response.ok es true = login exitoso
+      console.log('✅ LOGIN FRONTEND: Response OK, procesando datos...');
+      
+      // Intentar parsear la respuesta JSON
+      let responseData;
+      try {
+        responseData = await response.json();
+        console.log('🔍 LOGIN FRONTEND: Datos de respuesta:', responseData);
+      } catch (jsonError) {
+        console.error('❌ LOGIN FRONTEND: Error parseando JSON:', jsonError);
+        setError('Error procesando respuesta del servidor');
+        return;
+      }
+
+      // Verificar que la respuesta tenga los datos esperados
+      if (!responseData.success) {
+        console.error('❌ LOGIN FRONTEND: Backend reporta fallo:', responseData.message);
+        setError(responseData.message || 'Error en autenticación');
+        return;
+      }
+
+      if (!responseData.user) {
+        console.error('❌ LOGIN FRONTEND: No se recibió objeto user');
+        setError('Error: datos de usuario no recibidos');
+        return;
+      }
+
+      console.log('✅ LOGIN FRONTEND: Usuario recibido:', responseData.user);
+      
       setIntentosLogin(0);
       setBloqueadoHasta(null);
       setExitoLogin(true);
       
       // Redirección mejorada al dashboard
-      console.log('✅ LOGIN FRONTEND: Login exitoso, redirigiendo...');
+      console.log('✅ LOGIN FRONTEND: Iniciando redirección al dashboard...');
       
-      // Usar router.push para mejor navegación SPA
+      // Agregar delay para asegurar que la cookie se establezca
       setTimeout(() => {
+        console.log('🔄 LOGIN FRONTEND: Ejecutando redirección...');
         // Forzar recarga para asegurar que el middleware procese la cookie
         window.location.assign('/dashboard');
-      }, 500);
+      }, 800);
     } catch (err: any) {
       console.error('Error de autenticación:', err);
       
