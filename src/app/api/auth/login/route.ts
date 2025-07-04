@@ -60,25 +60,33 @@ export async function POST(request: NextRequest) {
       const isProduction = process.env.NODE_ENV === 'production';
       const nextAuthUrl = process.env.NEXTAUTH_URL || '';
       const requestProtocol = request.headers.get('x-forwarded-proto') || 'http';
+      const origin = request.headers.get('origin') || '';
+      const referer = request.headers.get('referer') || '';
+      
+      // Detectar el protocolo real usado por el navegador
+      const browserProtocol = origin.startsWith('http://') || referer.startsWith('http://') ? 'http' : 'https';
       const isSecureUrl = nextAuthUrl.startsWith('https');
       
-      // En Coolify con proxy inverso, confiar en x-forwarded-proto
-      const isSecure = requestProtocol === 'https' || isSecureUrl;
+      // Solo usar secure si el navegador realmente está usando HTTPS
+      // En Coolify, el proxy puede decir HTTPS pero el navegador usar HTTP
+      const isReallySecure = browserProtocol === 'https' && (requestProtocol === 'https' || isSecureUrl);
       
       console.log('🔍 LOGIN: Entorno:', { 
         NODE_ENV: process.env.NODE_ENV,
         NEXTAUTH_URL: process.env.NEXTAUTH_URL,
         requestProtocol,
+        browserProtocol,
+        origin,
+        referer,
         isProduction,
         isSecureUrl,
-        isSecure 
+        isReallySecure 
       });
       
-      // Usar secure solo si realmente estamos en HTTPS
-      // En Coolify/proxy inverso, el navegador puede usar HTTP internamente
+      // Usar secure solo si el navegador realmente está usando HTTPS
       const cookieOptions = {
         httpOnly: true,
-        secure: isProduction && isSecure, // Solo secure en producción Y HTTPS real
+        secure: isProduction && isReallySecure, // Solo secure si browser usa HTTPS
         sameSite: 'lax' as const,
         path: '/',
         maxAge: 7 * 24 * 60 * 60, // 7 días
