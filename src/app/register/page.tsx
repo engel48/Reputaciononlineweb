@@ -164,11 +164,12 @@ export default function RegisterPage() {
       const data = await response.json();
 
       if (data.success && data.user) {
-        // Guardar usuario en localStorage
-        localStorage.setItem('currentUser', JSON.stringify(data.user));
+        // No guardar en localStorage inmediatamente
+        // Mostrar mensaje de éxito y redirigir al login
+        alert('¡Cuenta creada exitosamente! Ahora puedes iniciar sesión.');
         
-        // Redirección al onboarding para completar el perfil
-        window.location.href = '/onboarding';
+        // Redirección al login para flujo correcto de autenticación
+        window.location.href = '/login';
       } else {
         setError(data.message || 'Error al crear la cuenta. Inténtalo nuevamente.');
       }

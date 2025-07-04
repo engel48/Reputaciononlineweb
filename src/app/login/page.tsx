@@ -239,9 +239,14 @@ export default function LoginPage() {
           }
         }
         
-        // Probar redirección directa
-        console.log('🔄 LOGIN FRONTEND: Intentando redirección a /dashboard');
-        window.location.href = '/dashboard';
+        // Redirección basada en onboardingCompleted
+        if (responseData.user.onboardingCompleted) {
+          console.log('🔄 LOGIN FRONTEND: Usuario con onboarding completo - redirigiendo a dashboard');
+          window.location.href = '/dashboard';
+        } else {
+          console.log('🔄 LOGIN FRONTEND: Usuario sin onboarding - redirigiendo a onboarding');
+          window.location.href = '/onboarding';
+        }
       }, 1500);
     } catch (err: any) {
       console.error('Error de autenticación:', err);
