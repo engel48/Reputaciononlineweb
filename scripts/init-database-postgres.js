@@ -5,7 +5,7 @@ const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 
 // Configuración de conexión
-const connectionString = process.env.DATABASE_URL || 'postgres://postgres:brrfcUVjU4QjzJDzCNzFLcCNCp4pbIQBrhJlMCLMbL1cAPAwf1t66C0o2LdPmIwf@rkgwkkss048ck00skskc08gs:5432/postgres';
+const connectionString = process.env.DATABASE_URL || 'postgres://postgres:admin123@rkgwkkss048ck00skskc08gs:5432/postgres';
 
 console.log('🐘 Conectando a PostgreSQL...');
 

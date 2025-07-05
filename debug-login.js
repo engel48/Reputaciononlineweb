@@ -5,7 +5,7 @@ const { Pool } = require('pg');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
-const DATABASE_URL = 'postgres://postgres:brrfcUVjU4QjzJDzCNzFLcCNCp4pbIQBrhJlMCLMbL1cAPAwf1t66C0o2LdPmIwf@rkgwkkss048ck00skskc08gs:5432/postgres';
+const DATABASE_URL = 'postgres://postgres:admin123@rkgwkkss048ck00skskc08gs:5432/postgres';
 const JWT_SECRET = 'reputacion-online-secret-key-2025';
 
 async function testFullLoginFlow() {
