@@ -2,7 +2,7 @@
 const { Pool } = require('pg');
 
 // Configuración de la base de datos PostgreSQL
-const DATABASE_URL = 'postgres://postgres:admin123@postgresql-database-rkgwkkss048ck00skskc08gs:5432/postgres';
+const DATABASE_URL = 'postgres://postgres:admin123@rkgwkkss048ck00skskc08gs:5432/postgres';
 
 console.log('🔧 CORRIGIENDO onboardingCompleted para usuarios existentes');
 console.log('=' .repeat(60));
