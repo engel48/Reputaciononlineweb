@@ -60,6 +60,14 @@ if (!process.env.DATABASE_URL) {
   console.log('🔧 DATABASE_URL configurada para PostgreSQL');
 }
 
+// Diagnóstico de la configuración
+console.log('\n🔍 DIAGNÓSTICO DE CONFIGURACIÓN:');
+console.log('DATABASE_URL actual:', process.env.DATABASE_URL ? 
+  process.env.DATABASE_URL.replace(/:([^@]+)@/, ':***@') : 
+  'NO DEFINIDA');
+console.log('NODE_ENV:', process.env.NODE_ENV || 'No definido');
+console.log('Verificando conectividad...\n');
+
 console.log('🐘 Inicializando base de datos PostgreSQL...');
 initializeDatabase();
 
