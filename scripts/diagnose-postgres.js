@@ -12,14 +12,40 @@ console.log('DATABASE_URL:', process.env.DATABASE_URL ? '✅ Configurada' : '❌
 console.log('POSTGRES_URL:', process.env.POSTGRES_URL ? '✅ Configurada' : '❌ NO configurada');
 console.log('NODE_ENV:', process.env.NODE_ENV || 'No definido');
 
+// Buscar todas las variables que contengan postgres o database
+const allEnvVars = Object.keys(process.env).filter(key => 
+  key.toLowerCase().includes('postgres') || 
+  key.toLowerCase().includes('database') ||
+  key.toLowerCase().includes('db_')
+);
+
+if (allEnvVars.length > 0) {
+  console.log('\n🔍 Todas las variables relacionadas con DB:');
+  allEnvVars.forEach(key => {
+    const value = process.env[key];
+    if (value && value.includes('postgres://')) {
+      const maskedValue = value.replace(/:([^@]+)@/, ':***@');
+      console.log(`   ${key}: ${maskedValue}`);
+    } else {
+      console.log(`   ${key}: ${value ? (value.length > 50 ? value.substring(0, 50) + '...' : value) : 'undefined'}`);
+    }
+  });
+}
+
 // Mostrar la URL completa (ocultando parte de la contraseña)
 if (process.env.DATABASE_URL) {
   const url = process.env.DATABASE_URL;
   const passwordMatch = url.match(/:([^@]+)@/);
   if (passwordMatch) {
     const password = passwordMatch[1];
-    const maskedUrl = url.replace(password, password.substring(0, 3) + '***');
-    console.log('DATABASE_URL value:', maskedUrl);
+    const maskedUrl = url.replace(password, password.substring(0, 4) + '***');
+    console.log('\n🔐 DATABASE_URL análisis detallado:');
+    console.log('   URL completa:', maskedUrl);
+    console.log('   Longitud de contraseña:', password.length, 'caracteres');
+    console.log('   Primeros 6 chars de contraseña:', password.substring(0, 6) + '***');
+    console.log('   ¿Contiene números?', /\d/.test(password));
+    console.log('   ¿Contiene letras?', /[a-zA-Z]/.test(password));
+    console.log('   ¿Contiene símbolos?', /[^a-zA-Z0-9]/.test(password));
   }
 }
 

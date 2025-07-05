@@ -212,7 +212,32 @@ async function createTables() {
 
     console.log('✅ Tablas PostgreSQL creadas exitosamente');
   } catch (error) {
-    console.error('❌ Error creando tablas:', error);
+    console.error('❌ Error creando tablas:', error.message);
+    console.error('📋 Detalles del error:');
+    console.error('   Código:', error.code);
+    console.error('   Severidad:', error.severity);
+    
+    if (error.code === '28P01') {
+      console.error('\n🔍 ANÁLISIS DEL ERROR DE AUTENTICACIÓN:');
+      console.error('   → Error 28P01 = Autenticación fallida');
+      console.error('   → La contraseña para el usuario "postgres" es incorrecta');
+      console.error('   → Verificar la contraseña en la configuración de Coolify');
+      
+      // Mostrar la configuración actual
+      if (connectionString) {
+        const passwordMatch = connectionString.match(/:([^@]+)@/);
+        if (passwordMatch) {
+          const password = passwordMatch[1];
+          console.error('   → Contraseña actual: longitud', password.length, 'chars, inicia con:', password.substring(0, 4) + '***');
+        }
+      }
+      
+      console.error('\n💡 SOLUCIONES:');
+      console.error('   1. Ejecutar: node scripts/extract-password.js');
+      console.error('   2. Verificar variables de entorno en Coolify');
+      console.error('   3. Comprobar contraseña real en configuración de PostgreSQL');
+    }
+    
     throw error;
   }
 }

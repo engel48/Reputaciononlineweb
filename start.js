@@ -61,12 +61,32 @@ if (!process.env.DATABASE_URL) {
 }
 
 // Diagnóstico de la configuración
-console.log('\n🔍 DIAGNÓSTICO DE CONFIGURACIÓN:');
+console.log('\n🔍 DIAGNÓSTICO COMPLETO DE CONFIGURACIÓN:');
+console.log('=' .repeat(60));
 console.log('DATABASE_URL actual:', process.env.DATABASE_URL ? 
   process.env.DATABASE_URL.replace(/:([^@]+)@/, ':***@') : 
   'NO DEFINIDA');
+
+if (process.env.DATABASE_URL) {
+  // Extraer componentes de la URL para análisis detallado
+  const urlMatch = process.env.DATABASE_URL.match(/postgres:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/);
+  if (urlMatch) {
+    const [, user, password, host, port, database] = urlMatch;
+    console.log('📋 Componentes de DATABASE_URL:');
+    console.log('   Usuario:', user);
+    console.log('   Contraseña: [OCULTA - longitud:', password.length, 'caracteres]');
+    console.log('   Host:', host);
+    console.log('   Puerto:', port);
+    console.log('   Base de datos:', database);
+    console.log('   Primeros 4 caracteres de contraseña:', password.substring(0, 4) + '***');
+  }
+}
+
 console.log('NODE_ENV:', process.env.NODE_ENV || 'No definido');
-console.log('Verificando conectividad...\n');
+console.log('POSTGRES_URL:', process.env.POSTGRES_URL ? 'DEFINIDA' : 'No definida');
+console.log('Variables de entorno que contienen "postgres":', Object.keys(process.env).filter(k => k.toLowerCase().includes('postgres')));
+console.log('Variables de entorno que contienen "database":', Object.keys(process.env).filter(k => k.toLowerCase().includes('database')));
+console.log('=' .repeat(60));
 
 console.log('🐘 Inicializando base de datos PostgreSQL...');
 initializeDatabase();
