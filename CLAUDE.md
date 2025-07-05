@@ -179,3 +179,46 @@ The platform implements multiple security layers:
 - **CSRF Protection**: OAuth state parameters prevent attacks
 - **Role-based Access**: Admin routes protected with middleware
 - **Token Management**: Automatic refresh and validation for OAuth tokens
+
+## Testing and Quality Assurance
+
+### Main Application Testing
+```bash
+npm run lint                  # Run Next.js linter for code quality
+npm run build                 # Build application (includes type checking)
+npm run start                 # Test production build locally
+```
+
+### Backend Testing
+```bash
+cd backend && npm test        # Run Jest test suite for backend
+cd backend && npm run dev     # Start backend with auto-reload for testing
+```
+
+### Database Testing and Debugging
+```bash
+npx prisma studio            # Visual database browser for both SQLite and PostgreSQL
+node scripts/test-user-service.js        # Test database service layer
+node scripts/verify-postgres-connection.js  # Verify PostgreSQL connectivity
+```
+
+## Critical Development Patterns
+
+### Environment Variable Handling
+The application uses automatic environment detection in `start.js`:
+- **Development**: Minimal `.env.local` with `JWT_SECRET` only
+- **Production**: Auto-detection of hosting platform (Vercel, Railway, Coolify)
+- **Database**: Automatic PostgreSQL primary with SQLite fallback
+
+### Database Connection Pattern
+Always use the service layer pattern for database operations:
+```typescript
+import { userService, socialMediaService, statsService } from '@/lib/database';
+// These services handle both PostgreSQL and SQLite automatically
+```
+
+### Component Development Guidelines
+- Feature-based organization in `/src/components/[feature]/`
+- Always use existing UI components from `/src/components/ui/`
+- Follow Radix UI patterns for accessibility
+- Use Tailwind CSS classes consistently with existing patterns
