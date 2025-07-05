@@ -56,7 +56,7 @@ if (!fs.existsSync(dataDir)) {
 
 // Configurar DATABASE_URL si no está presente
 if (!process.env.DATABASE_URL) {
-  process.env.DATABASE_URL = 'postgres://postgres:admin123@rkgwkkss048ck00skskc08gs:5432/postgres';
+  process.env.DATABASE_URL = 'postgres://postgres:admin123@postgresql-database-rkgwkkss048ck00skskc08gs:5432/postgres';
   console.log('🔧 DATABASE_URL configurada para PostgreSQL');
 }
 
