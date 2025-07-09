@@ -57,27 +57,27 @@ async function testUrl(urlString, description) {
   }
 }
 
-// URLs a probar
+// URLs a probar - CREDENCIALES CORRECTAS
 const urls = [
   {
+    url: 'postgres://postgres:ghxdiIxvNX8kjwafpuvS03B6e7M0ECSoZdEqPtLJsEW3WxBxn1f6USpp4vb42HIc@aswcsw80wsoskcskkscwscoo:5432/postgres',
+    description: 'URL correcta Coolify'
+  },
+  {
+    url: 'postgres://thor3:thor44@31.97.138.249:5437/postgres',
+    description: 'URL externa correcta'
+  },
+  {
     url: 'postgres://postgres:admin123@rkgwkkss048ck00skskc08gs:5432/postgres',
-    description: 'URL original'
+    description: 'URL antigua (para comparar)'
   },
   {
-    url: 'postgresql://postgres:admin123@rkgwkkss048ck00skskc08gs:5432/postgres',
-    description: 'URL con postgresql://'
+    url: 'postgresql://postgres:ghxdiIxvNX8kjwafpuvS03B6e7M0ECSoZdEqPtLJsEW3WxBxn1f6USpp4vb42HIc@aswcsw80wsoskcskkscwscoo:5432/postgres',
+    description: 'URL correcta con postgresql://'
   },
   {
-    url: 'postgres://postgres:admin123@rkgwkkss048ck00skskc08gs:5432/postgres?sslmode=disable',
-    description: 'URL con parámetro sslmode'
-  },
-  {
-    url: 'postgres://postgres%3Aadmin123@rkgwkkss048ck00skskc08gs:5432/postgres',
-    description: 'URL con username:password URL-encoded'
-  },
-  {
-    url: 'postgres://postgres:admin%40123@rkgwkkss048ck00skskc08gs:5432/postgres',
-    description: 'URL con @ codificado en password'
+    url: 'postgres://postgres:ghxdiIxvNX8kjwafpuvS03B6e7M0ECSoZdEqPtLJsEW3WxBxn1f6USpp4vb42HIc@aswcsw80wsoskcskkscwscoo:5432/postgres?sslmode=disable',
+    description: 'URL correcta con parámetro sslmode'
   }
 ];
 

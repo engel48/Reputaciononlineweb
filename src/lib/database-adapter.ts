@@ -165,11 +165,25 @@ async function ensureDatabaseUrl() {
 
 // Inicialización asíncrona del adaptador de base de datos
 async function initializeAdapter() {
-  // Verificar y configurar DATABASE_URL
-  await ensureDatabaseUrl();
-
   const env = detectEnvironment();
   console.log('🔍 DATABASE ADAPTER: Entorno detectado:', env.platform);
+  
+  // Verificar si se fuerza SQLite
+  const forceSQLite = process.env.FORCE_SQLITE === 'true';
+  
+  if (forceSQLite) {
+    console.log('🔄 DATABASE ADAPTER: FORCE_SQLITE activado - usando SQLite local');
+    console.log('💡 DATABASE ADAPTER: Para volver a PostgreSQL, comenta FORCE_SQLITE en .env.local');
+    
+    return {
+      usePostgres: false,
+      dbAdapter: require('./database-sqlite'),
+      env
+    };
+  }
+
+  // Verificar y configurar DATABASE_URL para PostgreSQL
+  await ensureDatabaseUrl();
   console.log('🔍 DATABASE_URL:', process.env.DATABASE_URL ? 'Configurada' : 'NO CONFIGURADA');
 
   // Intentar conectar a PostgreSQL primero

@@ -32,7 +32,9 @@ if (process.env.DATABASE_URL) {
     
     console.log('\n🔧 COMPARACIÓN CON CONTRASEÑAS CONOCIDAS:');
     const knownPasswords = [
-      'admin123',
+      'ghxdiIxvNX8kjwafpuvS03B6e7M0ECSoZdEqPtLJsEW3WxBxn1f6USpp4vb42HIc', // Correcta Coolify
+      'thor44', // Externa
+      'admin123', // Antigua
       'Admin123', 
       'ADMIN123',
       'postgres',

@@ -99,10 +99,10 @@ async function main() {
   // Configuraciones a probar
   const configs = [];
   
-  // 1. Connection string directa (hardcoded)
+  // 1. Connection string directa (correcta)
   configs.push({
-    config: 'postgres://postgres:admin123@rkgwkkss048ck00skskc08gs:5432/postgres',
-    name: 'CONNECTION STRING HARDCODED'
+    config: 'postgres://postgres:ghxdiIxvNX8kjwafpuvS03B6e7M0ECSoZdEqPtLJsEW3WxBxn1f6USpp4vb42HIc@aswcsw80wsoskcskkscwscoo:5432/postgres',
+    name: 'CONNECTION STRING CORRECTA COOLIFY'
   });
   
   // 2. Connection string desde DATABASE_URL
@@ -113,17 +113,17 @@ async function main() {
     });
   }
   
-  // 3. Configuración como objeto (hardcoded)
+  // 3. Configuración como objeto (correcta)
   configs.push({
     config: {
-      host: 'rkgwkkss048ck00skskc08gs',
+      host: 'aswcsw80wsoskcskkscwscoo',
       port: 5432,
       user: 'postgres',
-      password: 'admin123',
+      password: 'ghxdiIxvNX8kjwafpuvS03B6e7M0ECSoZdEqPtLJsEW3WxBxn1f6USpp4vb42HIc',
       database: 'postgres',
       ssl: false
     },
-    name: 'OBJETO CONFIG HARDCODED'
+    name: 'OBJETO CONFIG CORRECTA COOLIFY'
   });
   
   // 4. Configuración como objeto desde DATABASE_URL

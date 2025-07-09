@@ -13,10 +13,13 @@ async function checkDNS() {
   console.log('\n📡 Verificando resolución DNS:');
   
   const hosts = [
-    'rkgwkkss048ck00skskc08gs',
+    'aswcsw80wsoskcskkscwscoo', // Host correcto
+    'postgresql-database-aswcsw80wsoskcskkscwscoo',
+    'rkgwkkss048ck00skskc08gs', // Host antiguo
     'postgresql-database-rkgwkkss048ck00skskc08gs',
     'localhost',
-    '127.0.0.1'
+    '127.0.0.1',
+    '31.97.138.249' // Host externo
   ];
   
   for (const host of hosts) {

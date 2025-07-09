@@ -49,23 +49,27 @@ if (process.env.DATABASE_URL) {
   }
 }
 
-// Intentar múltiples configuraciones
+// Intentar múltiples configuraciones - CREDENCIALES ACTUALIZADAS
 const configurations = [
   {
     name: 'Config 1: Variable de entorno DATABASE_URL',
     connectionString: process.env.DATABASE_URL
   },
   {
-    name: 'Config 2: URL hardcodeada con admin123',
+    name: 'Config 2: URL correcta Coolify',
+    connectionString: 'postgres://postgres:ghxdiIxvNX8kjwafpuvS03B6e7M0ECSoZdEqPtLJsEW3WxBxn1f6USpp4vb42HIc@aswcsw80wsoskcskkscwscoo:5432/postgres'
+  },
+  {
+    name: 'Config 3: URL externa correcta',
+    connectionString: 'postgres://thor3:thor44@31.97.138.249:5437/postgres'
+  },
+  {
+    name: 'Config 4: URL antigua (para comparar)',
     connectionString: 'postgres://postgres:admin123@rkgwkkss048ck00skskc08gs:5432/postgres'
   },
   {
-    name: 'Config 3: URL con host localhost',
+    name: 'Config 5: URL con host localhost',
     connectionString: 'postgres://postgres:admin123@localhost:5432/postgres'
-  },
-  {
-    name: 'Config 4: URL con IP del contenedor PostgreSQL',
-    connectionString: 'postgres://postgres:admin123@postgresql-database-rkgwkkss048ck00skskc08gs:5432/postgres'
   }
 ];
 
