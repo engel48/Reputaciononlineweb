@@ -34,17 +34,44 @@ if (connectionString && connectionString.startsWith('postgres://')) {
   if (urlMatch) {
     const [, user, password, host, port, database] = urlMatch;
     console.log('🔧 INIT-DATABASE-POSTGRES: Usando configuración de objeto parseada');
-    poolConfig = {
-      host,
-      port: parseInt(port),
-      user,
-      password,
-      database,
-      ssl: false,
-      max: 10,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 5000,
-    };
+    console.log('📋 INIT-DATABASE-POSTGRES: Configuración detallada:');
+    console.log(`   Host: ${host}`);
+    console.log(`   Puerto: ${port}`);
+    console.log(`   Usuario: ${user}`);
+    console.log(`   Contraseña parseada: "${password}"`);
+    console.log(`   Base de datos: ${database}`);
+    
+    // Verificar si la contraseña tiene caracteres extraños
+    if (password.startsWith('//')) {
+      console.log('⚠️  ADVERTENCIA: La contraseña empieza con //');
+      console.log('   Intentando corregir eliminando prefijo...');
+      const cleanPassword = password.replace(/^\/\//, '');
+      console.log(`   Contraseña limpia: "${cleanPassword}" (${cleanPassword.length} chars)`);
+      
+      poolConfig = {
+        host,
+        port: parseInt(port),
+        user,
+        password: cleanPassword, // Usar contraseña limpia
+        database,
+        ssl: false,
+        max: 10,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 5000,
+      };
+    } else {
+      poolConfig = {
+        host,
+        port: parseInt(port),
+        user,
+        password,
+        database,
+        ssl: false,
+        max: 10,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 5000,
+      };
+    }
   } else {
     console.log('⚠️ INIT-DATABASE-POSTGRES: No se pudo parsear URL, usando connectionString');
     poolConfig = {
