@@ -6,9 +6,11 @@ const { Pool } = require('pg');
 console.log('🔐 PRUEBA DE CONTRASEÑAS POSTGRESQL');
 console.log('=' .repeat(60));
 
-// Lista de posibles contraseñas y variaciones
+// Lista de posibles contraseñas y variaciones - ACTUALIZADAS
 const passwords = [
-  'admin123',
+  'ghxdiIxvNX8kjwafpuvS03B6e7M0ECSoZdEqPtLJsEW3WxBxn1f6USpp4vb42HIc', // Contraseña correcta
+  'thor44', // Contraseña externa
+  'admin123', // Antigua
   'Admin123',
   'ADMIN123',
   'admin123 ', // con espacio al final
@@ -22,9 +24,11 @@ const passwords = [
   'brrfcUVjU4QjzJDzCNzFLcCNCp4pbIQBrhJlMCLMbL1cAPAwf1t66C0o2LdPmIwf'
 ];
 
-// Posibles hosts
+// Posibles hosts - ACTUALIZADOS
 const hosts = [
-  'rkgwkkss048ck00skskc08gs',
+  'aswcsw80wsoskcskkscwscoo', // Host correcto
+  'postgresql-database-aswcsw80wsoskcskkscwscoo',
+  'rkgwkkss048ck00skskc08gs', // Host antiguo
   'postgresql-database-rkgwkkss048ck00skskc08gs',
   'postgres',
   'postgresql',

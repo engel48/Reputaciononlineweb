@@ -5,10 +5,10 @@ console.log('🚀 PRODUCTION-TEST: Iniciando pruebas de conexión...');
 
 const { Pool } = require('pg');
 
-// Configuración de PostgreSQL para Coolify
+// Configuración de PostgreSQL para Coolify - CREDENCIALES CORRECTAS
 const DATABASE_CONFIG = {
-  internal: 'postgres://postgres:admin123@rkgwkkss048ck00skskc08gs:5432/postgres',
-  external: 'postgres://postgres:admin123@localhost:5435/postgres'
+  internal: 'postgres://postgres:ghxdiIxvNX8kjwafpuvS03B6e7M0ECSoZdEqPtLJsEW3WxBxn1f6USpp4vb42HIc@aswcsw80wsoskcskkscwscoo:5432/postgres',
+  external: 'postgres://thor3:thor44@31.97.138.249:5437/postgres'
 };
 
 // Detectar entorno

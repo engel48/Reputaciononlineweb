@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 const { Pool } = require('pg');
 
-// Configuración de la base de datos PostgreSQL
-const DATABASE_URL = 'postgres://postgres:admin123@rkgwkkss048ck00skskc08gs:5432/postgres';
+// Configuración de la base de datos PostgreSQL - CREDENCIALES CORRECTAS
+const DATABASE_URL = 'postgres://postgres:ghxdiIxvNX8kjwafpuvS03B6e7M0ECSoZdEqPtLJsEW3WxBxn1f6USpp4vb42HIc@aswcsw80wsoskcskkscwscoo:5432/postgres';
 
 console.log('🔧 CORRIGIENDO onboardingCompleted para usuarios existentes');
 console.log('=' .repeat(60));

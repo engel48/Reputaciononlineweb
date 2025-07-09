@@ -25,7 +25,7 @@ function extractCredentialsFromEnv() {
   };
 }
 
-// Configuración de base de datos PostgreSQL para Coolify (con fallback automático)
+// Configuración de base de datos PostgreSQL para Coolify - CREDENCIALES CORRECTAS
 const DATABASE_CONFIG = extractCredentialsFromEnv() || {
   internal: 'postgres://postgres:ghxdiIxvNX8kjwafpuvS03B6e7M0ECSoZdEqPtLJsEW3WxBxn1f6USpp4vb42HIc@aswcsw80wsoskcskkscwscoo:5432/postgres',
   external: 'postgres://thor3:thor44@31.97.138.249:5437/postgres',

@@ -5,27 +5,27 @@ console.log('🔍 DIAGNÓSTICO POSTGRES PRODUCCIÓN: Iniciando...');
 
 const { Pool } = require('pg');
 
-// Configuraciones a probar
+// Configuraciones a probar - CREDENCIALES CORRECTAS
 const POSTGRES_CONFIGS = [
   {
-    name: 'COOLIFY_INTERNAL_ORIGINAL',
+    name: 'COOLIFY_INTERNAL_CORRECT',
+    url: 'postgres://postgres:ghxdiIxvNX8kjwafpuvS03B6e7M0ECSoZdEqPtLJsEW3WxBxn1f6USpp4vb42HIc@aswcsw80wsoskcskkscwscoo:5432/postgres',
+    description: 'Configuración interna correcta de Coolify'
+  },
+  {
+    name: 'COOLIFY_EXTERNAL_CORRECT',
+    url: 'postgres://thor3:thor44@31.97.138.249:5437/postgres',
+    description: 'Configuración externa correcta'
+  },
+  {
+    name: 'COOLIFY_INTERNAL_OLD',
     url: 'postgres://postgres:admin123@rkgwkkss048ck00skskc08gs:5432/postgres',
-    description: 'Configuración interna original de Coolify'
+    description: 'Configuración interna antigua (para comparar)'
   },
   {
     name: 'COOLIFY_INTERNAL_ALTERNATIVE',
-    url: 'postgres://postgres:admin123@postgresql-database-rkgwkkss048ck00skskc08gs:5432/postgres',
+    url: 'postgres://postgres:ghxdiIxvNX8kjwafpuvS03B6e7M0ECSoZdEqPtLJsEW3WxBxn1f6USpp4vb42HIc@postgresql-database-aswcsw80wsoskcskkscwscoo:5432/postgres',
     description: 'Configuración interna con nombre completo del servicio'
-  },
-  {
-    name: 'COOLIFY_EXTERNAL_LOCALHOST',
-    url: 'postgres://postgres:admin123@localhost:5435/postgres',
-    description: 'Configuración externa localhost'
-  },
-  {
-    name: 'COOLIFY_EXTERNAL_SERVICE',
-    url: 'postgres://postgres:admin123@host.docker.internal:5435/postgres',
-    description: 'Configuración externa Docker'
   }
 ];
 

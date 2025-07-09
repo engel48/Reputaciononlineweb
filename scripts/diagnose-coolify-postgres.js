@@ -78,7 +78,8 @@ async function testPasswords() {
   // Contraseñas a probar
   const passwords = [
     { pass: envPassword, desc: 'Contraseña de DATABASE_URL' },
-    { pass: 'admin123', desc: 'admin123 (hardcoded)' },
+    { pass: 'ghxdiIxvNX8kjwafpuvS03B6e7M0ECSoZdEqPtLJsEW3WxBxn1f6USpp4vb42HIc', desc: 'Contraseña correcta de Coolify' },
+    { pass: 'admin123', desc: 'admin123 (antigua)' },
     { pass: '//postgres:admin123', desc: '//postgres:admin123 (con prefijo)' },
     { pass: 'postgres', desc: 'postgres (default)' },
     { pass: 'password', desc: 'password (common)' },
@@ -136,13 +137,13 @@ async function checkNetworkConfig() {
   console.log('=' .repeat(50));
   
   // Verificar resolución DNS
-  runCommand('nslookup rkgwkkss048ck00skskc08gs 2>&1 || echo "nslookup no disponible"', 'Resolución DNS');
+  runCommand('nslookup aswcsw80wsoskcskkscwscoo 2>&1 || echo "nslookup no disponible"', 'Resolución DNS');
   
   // Verificar conectividad
-  runCommand('ping -c 1 rkgwkkss048ck00skskc08gs 2>&1 || echo "ping no disponible"', 'Ping al host');
+  runCommand('ping -c 1 aswcsw80wsoskcskkscwscoo 2>&1 || echo "ping no disponible"', 'Ping al host');
   
   // Verificar puertos abiertos
-  runCommand('nc -zv rkgwkkss048ck00skskc08gs 5432 2>&1 || echo "nc no disponible"', 'Puerto 5432');
+  runCommand('nc -zv aswcsw80wsoskcskkscwscoo 5432 2>&1 || echo "nc no disponible"', 'Puerto 5432');
   
   // Verificar rutas
   runCommand('ip route 2>&1 || route -n 2>&1 || echo "comandos de ruta no disponibles"', 'Tabla de rutas');
