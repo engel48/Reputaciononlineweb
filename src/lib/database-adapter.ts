@@ -1,9 +1,6 @@
 // Adaptador de base de datos con detección automática y configuración inteligente
 // Prioriza PostgreSQL pero permite fallback a SQLite en desarrollo local
 
-// Importar configuración automática
-import './env-loader';
-
 interface DatabaseConfig {
   internal: string;
   external: string;

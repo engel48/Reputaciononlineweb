@@ -59,17 +59,30 @@ function detectEnvironment() {
 const env = detectEnvironment();
 console.log('🔍 Entorno detectado:', env.platform);
 
-// FORZAR uso de credenciales correctas en Coolify
-if (env.isCoolify || env.isProduction) {
-  console.log('🔧 COOLIFY DETECTADO: Sobrescribiendo DATABASE_URL con credenciales correctas');
-  process.env.DATABASE_URL = DATABASE_CONFIG.internal;
-  console.log('✅ DATABASE_URL configurada correctamente para Coolify');
-} else if (!process.env.DATABASE_URL) {
-  process.env.DATABASE_URL = DATABASE_CONFIG.external;
-  console.log('🔧 DATABASE_URL configurada para desarrollo (externo)');
+// Verificar si se debe forzar SQLite
+const forceSQLite = process.env.FORCE_SQLITE === 'true';
+
+if (forceSQLite) {
+  console.log('🔄 FORCE_SQLITE detectado - USANDO SQLite local');
+  console.log('💡 Para volver a PostgreSQL, comenta FORCE_SQLITE en .env.local');
+  // No configurar DATABASE_URL para permitir que use SQLite
+} else {
+  // FORZAR uso de credenciales correctas en Coolify
+  if (env.isCoolify || env.isProduction) {
+    console.log('🔧 COOLIFY DETECTADO: Sobrescribiendo DATABASE_URL con credenciales correctas');
+    process.env.DATABASE_URL = DATABASE_CONFIG.internal;
+    console.log('✅ DATABASE_URL configurada correctamente para Coolify');
+  } else if (!process.env.DATABASE_URL) {
+    process.env.DATABASE_URL = DATABASE_CONFIG.external;
+    console.log('🔧 DATABASE_URL configurada para desarrollo (externo)');
+  }
 }
 
-console.log('🔍 DATABASE_URL final:', process.env.DATABASE_URL.replace(/:([^@]+)@/, ':***@'));
+if (process.env.DATABASE_URL) {
+  console.log('🔍 DATABASE_URL final:', process.env.DATABASE_URL.replace(/:([^@]+)@/, ':***@'));
+} else {
+  console.log('🔍 DATABASE_URL final: NO DEFINIDA (usando SQLite)');
+}
 
 // Configurar NEXTAUTH_SECRET
 if (!process.env.NEXTAUTH_SECRET) {
@@ -129,8 +142,14 @@ console.log('Variables de entorno que contienen "postgres":', Object.keys(proces
 console.log('Variables de entorno que contienen "database":', Object.keys(process.env).filter(k => k.toLowerCase().includes('database')));
 console.log('=' .repeat(60));
 
-console.log('🐘 Inicializando base de datos PostgreSQL...');
-initializeDatabase();
+if (forceSQLite) {
+  console.log('🗄️ FORCE_SQLITE activado - saltando inicialización de PostgreSQL');
+  console.log('🎯 Iniciando Next.js directamente con SQLite...');
+  startNextJs();
+} else {
+  console.log('🐘 Inicializando base de datos PostgreSQL...');
+  initializeDatabase();
+}
 
 async function initializeDatabase() {
   try {
