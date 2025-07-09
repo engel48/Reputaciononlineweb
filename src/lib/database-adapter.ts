@@ -174,6 +174,13 @@ async function initializeAdapter() {
   if (forceSQLite) {
     console.log('🔄 DATABASE ADAPTER: FORCE_SQLITE activado - usando SQLite local');
     console.log('💡 DATABASE ADAPTER: Para volver a PostgreSQL, comenta FORCE_SQLITE en .env.local');
+    console.log('📋 DATABASE ADAPTER: Saltando configuración de PostgreSQL completamente');
+    
+    // Limpiar DATABASE_URL para evitar confusiones
+    if (process.env.DATABASE_URL) {
+      console.log('🧹 DATABASE ADAPTER: Limpiando DATABASE_URL para forzar SQLite');
+      delete process.env.DATABASE_URL;
+    }
     
     return {
       usePostgres: false,

@@ -6,7 +6,7 @@ Este documento explica cómo usar SQLite como base de datos local temporal sin e
 
 ### 1. Editar `.env.local`
 
-Descomenta la línea `FORCE_SQLITE=true` en tu archivo `.env.local`:
+**LA LÍNEA `FORCE_SQLITE=true` YA ESTÁ ACTIVADA** en tu archivo `.env.local`:
 
 ```bash
 # CONFIGURACIÓN TEMPORAL: Para usar SQLite local, descomenta la línea FORCE_SQLITE
@@ -14,6 +14,9 @@ Descomenta la línea `FORCE_SQLITE=true` en tu archivo `.env.local`:
 
 # Forzar uso de SQLite (comentar para usar PostgreSQL)
 FORCE_SQLITE=true
+
+# IMPORTANTE: Cuando FORCE_SQLITE=true, el sistema ignorará DATABASE_URL y usará SQLite local
+# Esto funciona tanto en desarrollo como en producción/Coolify
 
 # Base de datos PostgreSQL en Coolify (VPS) - CREDENCIALES CORRECTAS
 DATABASE_URL=postgres://postgres:ghxdiIxvNX8kjwafpuvS03B6e7M0ECSoZdEqPtLJsEW3WxBxn1f6USpp4vb42HIc@aswcsw80wsoskcskkscwscoo:5432/postgres
@@ -33,8 +36,23 @@ npm run dev
 En los logs del servidor deberías ver:
 
 ```
+🔄 ENV-LOADER: FORCE_SQLITE detectado - SALTANDO configuración de PostgreSQL
+💡 ENV-LOADER: Sistema usará SQLite local en lugar de PostgreSQL
 🔄 DATABASE ADAPTER: FORCE_SQLITE activado - usando SQLite local
 💡 DATABASE ADAPTER: Para volver a PostgreSQL, comenta FORCE_SQLITE en .env.local
+📋 DATABASE ADAPTER: Saltando configuración de PostgreSQL completamente
+🧹 DATABASE ADAPTER: Limpiando DATABASE_URL para forzar SQLite
+```
+
+Y también:
+```
+🔍 ADMIN API: Configuración DB: {
+  isProduction: true,
+  hasPostgresUrl: undefined,
+  usePostgres: undefined,
+  databaseEngine: 'SQLite'
+}
+✅ ADMIN API: Usuarios obtenidos: 14
 ```
 
 ## 📋 Funcionalidades Disponibles

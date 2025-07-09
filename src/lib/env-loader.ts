@@ -116,16 +116,25 @@ export function autoConfigureEnvironment(): boolean {
     const env = detectEnvironment();
     console.log('🔍 ENV-LOADER: Entorno detectado:', env);
     
-    // Configurar DATABASE_URL si no existe
-    // FORZAR DATABASE_URL correcta en Coolify
-    if (env.isCoolify || env.isProduction) {
-      console.log('🔧 ENV-LOADER: Coolify/Producción detectado - FORZANDO credenciales correctas');
-      process.env.DATABASE_URL = 'postgres://postgres:ghxdiIxvNX8kjwafpuvS03B6e7M0ECSoZdEqPtLJsEW3WxBxn1f6USpp4vb42HIc@aswcsw80wsoskcskkscwscoo:5432/postgres';
-      console.log('✅ ENV-LOADER: DATABASE_URL sobrescrita con credenciales correctas');
-    } else if (!process.env.DATABASE_URL) {
-      const databaseUrl = configureDatabaseUrl(env);
-      process.env.DATABASE_URL = databaseUrl;
-      console.log('🔧 ENV-LOADER: DATABASE_URL configurada automáticamente');
+    // Verificar si se debe forzar SQLite
+    const forceSQLite = process.env.FORCE_SQLITE === 'true';
+    
+    if (forceSQLite) {
+      console.log('🔄 ENV-LOADER: FORCE_SQLITE detectado - SALTANDO configuración de PostgreSQL');
+      console.log('💡 ENV-LOADER: Sistema usará SQLite local en lugar de PostgreSQL');
+      // No configurar DATABASE_URL para permitir que database-adapter use SQLite
+    } else {
+      // Configurar DATABASE_URL si no existe
+      // FORZAR DATABASE_URL correcta en Coolify
+      if (env.isCoolify || env.isProduction) {
+        console.log('🔧 ENV-LOADER: Coolify/Producción detectado - FORZANDO credenciales correctas');
+        process.env.DATABASE_URL = 'postgres://postgres:ghxdiIxvNX8kjwafpuvS03B6e7M0ECSoZdEqPtLJsEW3WxBxn1f6USpp4vb42HIc@aswcsw80wsoskcskkscwscoo:5432/postgres';
+        console.log('✅ ENV-LOADER: DATABASE_URL sobrescrita con credenciales correctas');
+      } else if (!process.env.DATABASE_URL) {
+        const databaseUrl = configureDatabaseUrl(env);
+        process.env.DATABASE_URL = databaseUrl;
+        console.log('🔧 ENV-LOADER: DATABASE_URL configurada automáticamente');
+      }
     }
     
     // Configurar NEXTAUTH_SECRET si no existe
