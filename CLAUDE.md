@@ -222,3 +222,38 @@ import { userService, socialMediaService, statsService } from '@/lib/database';
 - Always use existing UI components from `/src/components/ui/`
 - Follow Radix UI patterns for accessibility
 - Use Tailwind CSS classes consistently with existing patterns
+
+## Node.js Version Requirements
+
+The project requires Node.js >= 20.0.0 and npm >= 9.0.0 as specified in package.json engines.
+
+## Additional Database Scripts
+
+When working with database issues, these diagnostic scripts are available:
+```bash
+node scripts/diagnose-postgres.js       # Comprehensive PostgreSQL diagnostics
+node scripts/verify-postgres-connection.js  # Test PostgreSQL connectivity
+node scripts/test-passwords.js          # Test password extraction and validation
+node scripts/migrate-sqlite-to-postgres.js  # Migrate data between databases
+```
+
+## Environment Detection and Deployment
+
+The `start.js` script provides automatic environment detection for:
+- **Coolify**: Uses COOLIFY_FQDN for NEXTAUTH_URL
+- **Vercel**: Uses VERCEL_URL for NEXTAUTH_URL  
+- **Railway**: Uses RAILWAY_STATIC_URL for NEXTAUTH_URL
+- **Local**: Defaults to http://localhost:3000
+
+## TypeScript Configuration
+
+The project uses TypeScript with strict configuration. Key TypeScript files:
+- `next-env.d.ts`: Next.js type definitions
+- `src/types/next-auth.d.ts`: NextAuth type extensions
+- `tsconfig.json`: TypeScript configuration with strict mode enabled
+
+# important-instruction-reminders
+Do what has been asked; nothing more, nothing less.
+NEVER create files unless they're absolutely necessary for achieving your goal.
+ALWAYS prefer editing an existing file to creating a new one.
+NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.

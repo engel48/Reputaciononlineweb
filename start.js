@@ -1,63 +1,86 @@
 #!/usr/bin/env node
 
-// Script de inicio para configurar variables de entorno en runtime
-// Este script se ejecuta cada vez que el contenedor inicia en producción
+// Script de inicio mejorado con configuración automática
+// Detecta el entorno y configura variables automáticamente
 
 console.log('🚀 Iniciando aplicación Reputación Online...');
 
-// Configurar variables de entorno requeridas si no están presentes
-// No necesitamos DATABASE_URL para SQLite directo
-// if (!process.env.DATABASE_URL) {
-//   process.env.DATABASE_URL = 'file:/app/data/app.db';
-//   console.log('🔧 DATABASE_URL configurada: file:/app/data/app.db');
-// }
+// Configuración de PostgreSQL para Coolify
+const DATABASE_CONFIG = {
+  internal: 'postgres://postgres:admin123@rkgwkkss048ck00skskc08gs:5432/postgres',
+  external: 'postgres://postgres:admin123@localhost:5435/postgres',
+  name: 'postgresql-database-rkgwkkss048ck00skskc08gs',
+  username: 'postgres',
+  password: 'admin123'
+};
 
-if (!process.env.NEXTAUTH_SECRET) {
-  process.env.NEXTAUTH_SECRET = 'reputacion-online-secret-' + Date.now();
-  console.log('🔧 NEXTAUTH_SECRET configurada con valor generado');
-}
-
-if (!process.env.NEXTAUTH_URL) {
-  // Detectar URL automáticamente basado en el entorno
-  const url = process.env.COOLIFY_FQDN 
-    ? `https://${process.env.COOLIFY_FQDN}`
-    : process.env.VERCEL_URL 
-    ? `https://${process.env.VERCEL_URL}`
-    : process.env.RAILWAY_STATIC_URL
-    ? `https://${process.env.RAILWAY_STATIC_URL}`
-    : 'http://localhost:3000';
+// Detectar entorno automáticamente
+function detectEnvironment() {
+  const nodeEnv = process.env.NODE_ENV;
+  const coolifyFqdn = process.env.COOLIFY_FQDN;
+  const vercelUrl = process.env.VERCEL_URL;
+  const railwayUrl = process.env.RAILWAY_STATIC_URL;
+  const isDockerContainer = process.env.IS_DOCKER || process.cwd() === '/app';
   
-  process.env.NEXTAUTH_URL = url;
-  console.log(`🔧 NEXTAUTH_URL configurada: ${url}`);
+  return {
+    isDevelopment: nodeEnv !== 'production',
+    isProduction: nodeEnv === 'production',
+    isCoolify: !!(coolifyFqdn || process.env.COOLIFY_URL),
+    isVercel: !!vercelUrl,
+    isRailway: !!railwayUrl,
+    isLocal: !coolifyFqdn && !vercelUrl && !railwayUrl && !isDockerContainer,
+    platform: coolifyFqdn ? 'coolify' : 
+              vercelUrl ? 'vercel' : 
+              railwayUrl ? 'railway' : 
+              isDockerContainer ? 'docker' : 'local'
+  };
 }
 
-// Configurar puerto para Next.js
-if (!process.env.PORT) {
-  process.env.PORT = '3000';
-  console.log('🔧 PORT configurado: 3000');
-}
+// Configurar variables de entorno automáticamente
+const env = detectEnvironment();
+console.log('🔍 Entorno detectado:', env.platform);
 
-if (!process.env.HOSTNAME) {
-  process.env.HOSTNAME = '0.0.0.0';
-  console.log('🔧 HOSTNAME configurado: 0.0.0.0');
-}
-
-console.log('✅ Variables de entorno configuradas para runtime');
-
-// Crear directorio para SQLite si no existe
-const fs = require('fs');
-const path = require('path');
-
-const dataDir = '/app/data';
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
-  console.log('📁 Directorio /app/data creado para SQLite');
-}
-
-// Configurar DATABASE_URL si no está presente
+// Configurar DATABASE_URL según el entorno
 if (!process.env.DATABASE_URL) {
-  process.env.DATABASE_URL = 'postgres://postgres:admin123@rkgwkkss048ck00skskc08gs:5432/postgres';
-  console.log('🔧 DATABASE_URL configurada para PostgreSQL');
+  if (env.isCoolify || env.isProduction) {
+    process.env.DATABASE_URL = DATABASE_CONFIG.internal;
+    console.log('🔧 DATABASE_URL configurada para Coolify (interno)');
+  } else {
+    process.env.DATABASE_URL = DATABASE_CONFIG.external;
+    console.log('🔧 DATABASE_URL configurada para desarrollo (externo)');
+  }
+} else {
+  console.log('🔍 DATABASE_URL ya configurada:', process.env.DATABASE_URL.replace(/:([^@]+)@/, ':***@'));
+}
+
+// Configurar NEXTAUTH_SECRET
+if (!process.env.NEXTAUTH_SECRET) {
+  process.env.NEXTAUTH_SECRET = 'reputacion-online-super-secret-key-2025';
+  console.log('🔧 NEXTAUTH_SECRET configurada automáticamente');
+}
+
+// Configurar JWT_SECRET
+if (!process.env.JWT_SECRET) {
+  process.env.JWT_SECRET = 'reputacion-online-secret-key-2025';
+  console.log('🔧 JWT_SECRET configurada automáticamente');
+}
+
+// Configurar NEXTAUTH_URL automáticamente
+if (!process.env.NEXTAUTH_URL) {
+  // URLs posibles para detección automática
+  const possibleUrls = [
+    process.env.APP_URL,
+    process.env.PUBLIC_URL,
+    process.env.COOLIFY_URL,
+    process.env.COOLIFY_FQDN ? `https://${process.env.COOLIFY_FQDN}` : undefined,
+    process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined,
+    process.env.RAILWAY_STATIC_URL ? `https://${process.env.RAILWAY_STATIC_URL}` : undefined,
+    'http://localhost:3000'
+  ].filter(Boolean);
+  
+  const selectedUrl = possibleUrls[0];
+  process.env.NEXTAUTH_URL = selectedUrl;
+  console.log(`🔧 NEXTAUTH_URL configurada automáticamente: ${selectedUrl}`);
 }
 
 // Diagnóstico de la configuración
