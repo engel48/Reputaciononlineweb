@@ -55,18 +55,24 @@ function detectEnvironment() {
   };
 }
 
-// Configurar variables de entorno automáticamente
-const env = detectEnvironment();
-console.log('🔍 Entorno detectado:', env.platform);
-
-// Verificar si se debe forzar SQLite
+// Verificar si se debe forzar SQLite - ABSOLUTO, SIN IMPORTAR EL ENTORNO
 const forceSQLite = process.env.FORCE_SQLITE === 'true';
 
 if (forceSQLite) {
   console.log('🔄 FORCE_SQLITE detectado - USANDO SQLite local');
-  console.log('💡 Para volver a PostgreSQL, comenta FORCE_SQLITE en .env.local');
-  // No configurar DATABASE_URL para permitir que use SQLite
+  console.log('💡 Ignorando TODA la configuración de PostgreSQL y entorno');
+  console.log('🗄️ Base de datos: SQLite local únicamente');
+  
+  // Limpiar completamente cualquier configuración de PostgreSQL
+  delete process.env.DATABASE_URL;
+  delete process.env.POSTGRES_URL;
+  delete process.env.POSTGRESQL_URL;
+  
 } else {
+  // Solo si NO se fuerza SQLite, entonces configurar PostgreSQL
+  const env = detectEnvironment();
+  console.log('🔍 Entorno detectado:', env.platform);
+  
   // FORZAR uso de credenciales correctas en Coolify
   if (env.isCoolify || env.isProduction) {
     console.log('🔧 COOLIFY DETECTADO: Sobrescribiendo DATABASE_URL con credenciales correctas');
