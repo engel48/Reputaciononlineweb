@@ -7,8 +7,27 @@ const { spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-// Configuración de base de datos PostgreSQL para Coolify
-const DATABASE_CONFIG = {
+// Función para extraer credenciales de DATABASE_URL
+function extractCredentialsFromEnv() {
+  const databaseUrl = process.env.DATABASE_URL;
+  if (!databaseUrl) return null;
+  
+  const match = databaseUrl.match(/postgres:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/);
+  if (!match) return null;
+  
+  const [, username, password, host, port, database] = match;
+  
+  return {
+    internal: databaseUrl,
+    external: `postgres://${username}:${password}@localhost:5435/${database}`,
+    name: database,
+    username,
+    password
+  };
+}
+
+// Configuración de base de datos PostgreSQL para Coolify (con fallback automático)
+const DATABASE_CONFIG = extractCredentialsFromEnv() || {
   internal: 'postgres://postgres:admin123@rkgwkkss048ck00skskc08gs:5432/postgres',
   external: 'postgres://postgres:admin123@localhost:5435/postgres',
   name: 'postgresql-database-rkgwkkss048ck00skskc08gs',

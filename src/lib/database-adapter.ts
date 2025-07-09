@@ -11,8 +11,36 @@ interface DatabaseConfig {
   password: string;
 }
 
-// Configuración de PostgreSQL para Coolify
-const postgresConfig: DatabaseConfig = {
+// Función para extraer credenciales de DATABASE_URL
+function extractCredentialsFromEnv(): DatabaseConfig | null {
+  const databaseUrl = process.env.DATABASE_URL;
+  if (!databaseUrl) return null;
+  
+  const match = databaseUrl.match(/postgres:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/);
+  if (!match) return null;
+  
+  const [, username, password, host, port, database] = match;
+  
+  return {
+    internal: databaseUrl,
+    external: `postgres://${username}:${password}@localhost:5435/${database}`,
+    username,
+    password
+  };
+}
+
+// Configuración de PostgreSQL para Coolify (con fallback automático)
+const extractedConfig = extractCredentialsFromEnv();
+if (extractedConfig) {
+  console.log('🔧 DATABASE-ADAPTER: Usando credenciales extraídas de DATABASE_URL');
+  console.log(`   Usuario: ${extractedConfig.username}`);
+  console.log(`   Host: ${extractedConfig.internal.match(/@([^:]+):/)?.[1] || 'N/A'}`);
+  console.log(`   Contraseña: ${extractedConfig.password.length} caracteres`);
+} else {
+  console.log('⚠️ DATABASE-ADAPTER: No se pudo extraer DATABASE_URL, usando credenciales por defecto');
+}
+
+const postgresConfig: DatabaseConfig = extractedConfig || {
   internal: 'postgres://postgres:admin123@rkgwkkss048ck00skskc08gs:5432/postgres',
   external: 'postgres://postgres:admin123@localhost:5435/postgres',
   username: 'postgres',
