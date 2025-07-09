@@ -8,6 +8,22 @@ const bcrypt = require('bcryptjs');
 const connectionString = process.env.DATABASE_URL || 'postgres://postgres:admin123@rkgwkkss048ck00skskc08gs:5432/postgres';
 
 console.log('🐘 Conectando a PostgreSQL...');
+console.log('🔍 INIT-DATABASE-POSTGRES: Configuración de conexión:');
+console.log(`   DATABASE_URL: ${connectionString.replace(/:([^@]+)@/, ':***@')}`);
+
+// Extraer y mostrar componentes
+const urlMatch = connectionString.match(/postgres:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/);
+if (urlMatch) {
+  const [, user, password, host, port, database] = urlMatch;
+  console.log('📋 INIT-DATABASE-POSTGRES: Componentes extraídos:');
+  console.log(`   Usuario: ${user}`);
+  console.log(`   Contraseña: ${password.length} caracteres, inicia con: ${password.substring(0, 4)}***`);
+  console.log(`   Host: ${host}`);
+  console.log(`   Puerto: ${port}`);
+  console.log(`   Base de datos: ${database}`);
+} else {
+  console.log('❌ INIT-DATABASE-POSTGRES: No se pudo parsear la URL de conexión');
+}
 
 const pool = new Pool({
   connectionString,
