@@ -153,10 +153,14 @@ export function autoConfigureEnvironment(): boolean {
       console.log('🔧 ENV-LOADER: HOSTNAME configurado: 0.0.0.0');
     }
     
-    // Configurar NODE_ENV si no existe
+    // Configurar NODE_ENV si no existe (solo para referencia, no modificar en producción)
     if (!process.env.NODE_ENV) {
-      process.env.NODE_ENV = env.isLocal ? 'development' : 'production';
-      console.log('🔧 ENV-LOADER: NODE_ENV configurado:', process.env.NODE_ENV);
+      try {
+        (process.env as any).NODE_ENV = env.isLocal ? 'development' : 'production';
+        console.log('🔧 ENV-LOADER: NODE_ENV configurado:', process.env.NODE_ENV);
+      } catch (error) {
+        console.log('⚠️ ENV-LOADER: No se pudo configurar NODE_ENV (solo lectura)');
+      }
     }
     
     console.log('✅ ENV-LOADER: Configuración automática completada exitosamente');
