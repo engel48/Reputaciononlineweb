@@ -25,13 +25,42 @@ if (urlMatch) {
   console.log('❌ INIT-DATABASE-POSTGRES: No se pudo parsear la URL de conexión');
 }
 
-const pool = new Pool({
-  connectionString,
-  ssl: false, // Coolify interno no usa SSL
-  max: 10,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 5000,
-});
+// Crear configuración del pool
+let poolConfig;
+
+// Si tenemos una URL, intentar parsearla para configuración de objeto
+if (connectionString && connectionString.startsWith('postgres://')) {
+  const urlMatch = connectionString.match(/postgres:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/);
+  if (urlMatch) {
+    const [, user, password, host, port, database] = urlMatch;
+    console.log('🔧 INIT-DATABASE-POSTGRES: Usando configuración de objeto parseada');
+    poolConfig = {
+      host,
+      port: parseInt(port),
+      user,
+      password,
+      database,
+      ssl: false,
+      max: 10,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 5000,
+    };
+  } else {
+    console.log('⚠️ INIT-DATABASE-POSTGRES: No se pudo parsear URL, usando connectionString');
+    poolConfig = {
+      connectionString,
+      ssl: false,
+      max: 10,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 5000,
+    };
+  }
+} else {
+  console.log('❌ INIT-DATABASE-POSTGRES: No hay connectionString válida');
+  throw new Error('No se encontró configuración de base de datos válida');
+}
+
+const pool = new Pool(poolConfig);
 
 // Función para generar IDs
 const generateId = () => {
