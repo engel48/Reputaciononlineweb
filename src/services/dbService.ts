@@ -1,6 +1,6 @@
 // @ts-nocheck
 // Servicio de base de datos SQLite local
-import { userService, socialMediaService, statsService, notificationService } from '@/lib/database';
+import { userService, socialMediaService, statsService, systemSettingsService } from '@/lib/database-adapter';
 
 // ===== USUARIOS =====
 

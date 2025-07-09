@@ -60,7 +60,7 @@ const env = detectEnvironment();
 console.log('🔍 Entorno detectado:', env.platform);
 
 // Verificar si se debe forzar SQLite
-const forceSQLite = process.env.FORCE_SQLITE === 'true' || true; // TEMPORAL: Forzar SQLite siempre
+const forceSQLite = process.env.FORCE_SQLITE === 'true';
 
 if (forceSQLite) {
   console.log('🔄 FORCE_SQLITE detectado - USANDO SQLite local');
