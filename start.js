@@ -59,31 +59,17 @@ function detectEnvironment() {
 const env = detectEnvironment();
 console.log('🔍 Entorno detectado:', env.platform);
 
-// Configurar DATABASE_URL según el entorno
-if (!process.env.DATABASE_URL) {
-  if (env.isCoolify || env.isProduction) {
-    process.env.DATABASE_URL = DATABASE_CONFIG.internal;
-    console.log('🔧 DATABASE_URL configurada para Coolify (interno)');
-  } else {
-    process.env.DATABASE_URL = DATABASE_CONFIG.external;
-    console.log('🔧 DATABASE_URL configurada para desarrollo (externo)');
-  }
-} else {
-  console.log('🔍 DATABASE_URL ya configurada:', process.env.DATABASE_URL.replace(/:([^@]+)@/, ':***@'));
-
-// Verificar si hay múltiples variables de PostgreSQL
-console.log('\n🔍 VERIFICANDO TODAS LAS VARIABLES DE POSTGRESQL:');
-const postgresVars = Object.keys(process.env).filter(key => 
-  key.toLowerCase().includes('postgres') || 
-  key.toLowerCase().includes('database') ||
-  process.env[key]?.includes?.('postgres://')
-);
-
-postgresVars.forEach(varName => {
-  const value = process.env[varName];
-  console.log(`   ${varName}: ${value ? value.replace(/:([^@]+)@/, ':***@') : 'undefined'}`);
-});
+// FORZAR uso de credenciales correctas en Coolify
+if (env.isCoolify || env.isProduction) {
+  console.log('🔧 COOLIFY DETECTADO: Sobrescribiendo DATABASE_URL con credenciales correctas');
+  process.env.DATABASE_URL = DATABASE_CONFIG.internal;
+  console.log('✅ DATABASE_URL configurada correctamente para Coolify');
+} else if (!process.env.DATABASE_URL) {
+  process.env.DATABASE_URL = DATABASE_CONFIG.external;
+  console.log('🔧 DATABASE_URL configurada para desarrollo (externo)');
 }
+
+console.log('🔍 DATABASE_URL final:', process.env.DATABASE_URL.replace(/:([^@]+)@/, ':***@'));
 
 // Configurar NEXTAUTH_SECRET
 if (!process.env.NEXTAUTH_SECRET) {

@@ -117,7 +117,12 @@ export function autoConfigureEnvironment(): boolean {
     console.log('🔍 ENV-LOADER: Entorno detectado:', env);
     
     // Configurar DATABASE_URL si no existe
-    if (!process.env.DATABASE_URL) {
+    // FORZAR DATABASE_URL correcta en Coolify
+    if (env.isCoolify || env.isProduction) {
+      console.log('🔧 ENV-LOADER: Coolify/Producción detectado - FORZANDO credenciales correctas');
+      process.env.DATABASE_URL = 'postgres://postgres:ghxdiIxvNX8kjwafpuvS03B6e7M0ECSoZdEqPtLJsEW3WxBxn1f6USpp4vb42HIc@aswcsw80wsoskcskkscwscoo:5432/postgres';
+      console.log('✅ ENV-LOADER: DATABASE_URL sobrescrita con credenciales correctas');
+    } else if (!process.env.DATABASE_URL) {
       const databaseUrl = configureDatabaseUrl(env);
       process.env.DATABASE_URL = databaseUrl;
       console.log('🔧 ENV-LOADER: DATABASE_URL configurada automáticamente');

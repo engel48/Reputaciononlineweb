@@ -7,10 +7,16 @@ let pool: Pool | null = null;
 
 const initializePool = () => {
   if (!pool) {
-    const connectionString = process.env.DATABASE_URL;
+    // FORZAR credenciales correctas para Coolify
+    const isCoolify = !!(process.env.COOLIFY_FQDN || process.env.COOLIFY_URL);
+    const isProduction = process.env.NODE_ENV === 'production';
     
-    if (!connectionString) {
-      throw new Error('DATABASE_URL no configurada');
+    let connectionString;
+    if (isCoolify || isProduction) {
+      console.log('🔧 DB: Coolify/Producción detectado - usando credenciales correctas');
+      connectionString = 'postgres://postgres:ghxdiIxvNX8kjwafpuvS03B6e7M0ECSoZdEqPtLJsEW3WxBxn1f6USpp4vb42HIc@aswcsw80wsoskcskkscwscoo:5432/postgres';
+    } else {
+      connectionString = process.env.DATABASE_URL || 'postgres://thor3:thor44@31.97.138.249:5437/postgres';
     }
     
     pool = new Pool({
@@ -21,7 +27,7 @@ const initializePool = () => {
       connectionTimeoutMillis: 5000,
     });
     
-    console.log('🐘 PostgreSQL pool inicializado');
+    console.log('🐘 PostgreSQL pool inicializado con:', connectionString.replace(/:([^@]+)@/, ':***@'));
   }
   
   return pool;

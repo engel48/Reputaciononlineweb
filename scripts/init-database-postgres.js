@@ -4,8 +4,19 @@
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 
-// Configuración de conexión
-const connectionString = process.env.DATABASE_URL || 'postgres://postgres:ghxdiIxvNX8kjwafpuvS03B6e7M0ECSoZdEqPtLJsEW3WxBxn1f6USpp4vb42HIc@aswcsw80wsoskcskkscwscoo:5432/postgres';
+// Configuración de conexión - FORZAR credenciales correctas para Coolify
+let connectionString;
+
+// Detectar si estamos en Coolify
+const isCoolify = !!(process.env.COOLIFY_FQDN || process.env.COOLIFY_URL);
+const isProduction = process.env.NODE_ENV === 'production';
+
+if (isCoolify || isProduction) {
+  console.log('🔧 INIT-DATABASE-POSTGRES: Coolify/Producción detectado - usando credenciales correctas');
+  connectionString = 'postgres://postgres:ghxdiIxvNX8kjwafpuvS03B6e7M0ECSoZdEqPtLJsEW3WxBxn1f6USpp4vb42HIc@aswcsw80wsoskcskkscwscoo:5432/postgres';
+} else {
+  connectionString = process.env.DATABASE_URL || 'postgres://thor3:thor44@31.97.138.249:5437/postgres';
+}
 
 console.log('🐘 Conectando a PostgreSQL...');
 console.log('🔍 INIT-DATABASE-POSTGRES: Configuración de conexión:');
