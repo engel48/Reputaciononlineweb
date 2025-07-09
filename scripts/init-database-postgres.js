@@ -36,66 +36,43 @@ if (urlMatch) {
   console.log('❌ INIT-DATABASE-POSTGRES: No se pudo parsear la URL de conexión');
 }
 
-// Crear configuración del pool
+// Crear configuración del pool usando configuración de objeto directa
 let poolConfig;
 
-// Si tenemos una URL, intentar parsearla para configuración de objeto
-if (connectionString && connectionString.startsWith('postgres://')) {
-  const urlMatch = connectionString.match(/postgres:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/);
-  if (urlMatch) {
-    const [, user, password, host, port, database] = urlMatch;
-    console.log('🔧 INIT-DATABASE-POSTGRES: Usando configuración de objeto parseada');
-    console.log('📋 INIT-DATABASE-POSTGRES: Configuración detallada:');
-    console.log(`   Host: ${host}`);
-    console.log(`   Puerto: ${port}`);
-    console.log(`   Usuario: ${user}`);
-    console.log(`   Contraseña parseada: "${password}"`);
-    console.log(`   Base de datos: ${database}`);
-    
-    // Verificar si la contraseña tiene caracteres extraños
-    if (password.startsWith('//')) {
-      console.log('⚠️  ADVERTENCIA: La contraseña empieza con //');
-      console.log('   Intentando corregir eliminando prefijo...');
-      const cleanPassword = password.replace(/^\/\//, '');
-      console.log(`   Contraseña limpia: "${cleanPassword}" (${cleanPassword.length} chars)`);
-      
-      poolConfig = {
-        host,
-        port: parseInt(port),
-        user,
-        password: cleanPassword, // Usar contraseña limpia
-        database,
-        ssl: false,
-        max: 10,
-        idleTimeoutMillis: 30000,
-        connectionTimeoutMillis: 5000,
-      };
-    } else {
-      poolConfig = {
-        host,
-        port: parseInt(port),
-        user,
-        password,
-        database,
-        ssl: false,
-        max: 10,
-        idleTimeoutMillis: 30000,
-        connectionTimeoutMillis: 5000,
-      };
-    }
-  } else {
-    console.log('⚠️ INIT-DATABASE-POSTGRES: No se pudo parsear URL, usando connectionString');
-    poolConfig = {
-      connectionString,
-      ssl: false,
-      max: 10,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 5000,
-    };
-  }
+if (isCoolify || isProduction) {
+  console.log('🔧 INIT-DATABASE-POSTGRES: Usando configuración de objeto directa para Coolify');
+  poolConfig = {
+    host: 'aswcsw80wsoskcskkscwscoo',
+    port: 5432,
+    user: 'postgres',
+    password: 'ghxdiIxvNX8kjwafpuvS03B6e7M0ECSoZdEqPtLJsEW3WxBxn1f6USpp4vb42HIc',
+    database: 'postgres',
+    ssl: false,
+    max: 10,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 5000,
+  };
+  
+  console.log('📋 INIT-DATABASE-POSTGRES: Configuración directa:');
+  console.log(`   Host: ${poolConfig.host}`);
+  console.log(`   Puerto: ${poolConfig.port}`);
+  console.log(`   Usuario: ${poolConfig.user}`);
+  console.log(`   Contraseña: ${poolConfig.password.length} caracteres`);
+  console.log(`   Base de datos: ${poolConfig.database}`);
 } else {
-  console.log('❌ INIT-DATABASE-POSTGRES: No hay connectionString válida');
-  throw new Error('No se encontró configuración de base de datos válida');
+  // Para desarrollo, usar configuración externa
+  console.log('🔧 INIT-DATABASE-POSTGRES: Usando configuración externa para desarrollo');
+  poolConfig = {
+    host: '31.97.138.249',
+    port: 5437,
+    user: 'thor3',
+    password: 'thor44',
+    database: 'thor',
+    ssl: false,
+    max: 10,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 5000,
+  };
 }
 
 const pool = new Pool(poolConfig);

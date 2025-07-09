@@ -7,27 +7,42 @@ let pool: Pool | null = null;
 
 const initializePool = () => {
   if (!pool) {
-    // FORZAR credenciales correctas para Coolify
+    // FORZAR credenciales correctas para Coolify usando configuración de objeto
     const isCoolify = !!(process.env.COOLIFY_FQDN || process.env.COOLIFY_URL);
     const isProduction = process.env.NODE_ENV === 'production';
     
-    let connectionString;
+    let poolConfig;
     if (isCoolify || isProduction) {
-      console.log('🔧 DB: Coolify/Producción detectado - usando credenciales correctas');
-      connectionString = 'postgres://postgres:ghxdiIxvNX8kjwafpuvS03B6e7M0ECSoZdEqPtLJsEW3WxBxn1f6USpp4vb42HIc@aswcsw80wsoskcskkscwscoo:5432/postgres';
+      console.log('🔧 DB: Coolify/Producción detectado - usando configuración de objeto directa');
+      poolConfig = {
+        host: 'aswcsw80wsoskcskkscwscoo',
+        port: 5432,
+        user: 'postgres',
+        password: 'ghxdiIxvNX8kjwafpuvS03B6e7M0ECSoZdEqPtLJsEW3WxBxn1f6USpp4vb42HIc',
+        database: 'postgres',
+        ssl: false,
+        max: 20,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 5000,
+      };
     } else {
-      connectionString = process.env.DATABASE_URL || 'postgres://thor3:thor44@31.97.138.249:5437/postgres';
+      // Para desarrollo, usar configuración externa
+      poolConfig = {
+        host: '31.97.138.249',
+        port: 5437,
+        user: 'thor3',
+        password: 'thor44',
+        database: 'thor',
+        ssl: false,
+        max: 20,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 5000,
+      };
     }
     
-    pool = new Pool({
-      connectionString,
-      ssl: false, // Coolify interno no requiere SSL
-      max: 20,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 5000,
-    });
+    pool = new Pool(poolConfig);
     
-    console.log('🐘 PostgreSQL pool inicializado con:', connectionString.replace(/:([^@]+)@/, ':***@'));
+    console.log('🐘 PostgreSQL pool inicializado con:', `${poolConfig.user}@${poolConfig.host}:${poolConfig.port}/${poolConfig.database}`);
   }
   
   return pool;

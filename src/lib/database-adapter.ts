@@ -40,11 +40,30 @@ if (extractedConfig) {
   console.log('⚠️ DATABASE-ADAPTER: No se pudo extraer DATABASE_URL, usando credenciales configuradas');
 }
 
+// Usar configuración de objeto directa para evitar problemas de parsing
 const postgresConfig: DatabaseConfig = extractedConfig || {
   internal: 'postgres://postgres:ghxdiIxvNX8kjwafpuvS03B6e7M0ECSoZdEqPtLJsEW3WxBxn1f6USpp4vb42HIc@aswcsw80wsoskcskkscwscoo:5432/postgres',
   external: 'postgres://thor3:thor44@31.97.138.249:5437/postgres',
   username: 'postgres',
   password: 'ghxdiIxvNX8kjwafpuvS03B6e7M0ECSoZdEqPtLJsEW3WxBxn1f6USpp4vb42HIc'
+};
+
+// Configuración de objeto directa para evitar problemas de URL parsing
+const directConfig = {
+  production: {
+    host: 'aswcsw80wsoskcskkscwscoo',
+    port: 5432,
+    user: 'postgres',
+    password: 'ghxdiIxvNX8kjwafpuvS03B6e7M0ECSoZdEqPtLJsEW3WxBxn1f6USpp4vb42HIc',
+    database: 'postgres'
+  },
+  development: {
+    host: '31.97.138.249',
+    port: 5437,
+    user: 'thor3',
+    password: 'thor44',
+    database: 'thor'
+  }
 };
 
 // Función para verificar si una URL es accesible
