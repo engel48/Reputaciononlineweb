@@ -37,14 +37,14 @@ if (extractedConfig) {
   console.log(`   Host: ${extractedConfig.internal.match(/@([^:]+):/)?.[1] || 'N/A'}`);
   console.log(`   Contraseña: ${extractedConfig.password.length} caracteres`);
 } else {
-  console.log('⚠️ DATABASE-ADAPTER: No se pudo extraer DATABASE_URL, usando credenciales por defecto');
+  console.log('⚠️ DATABASE-ADAPTER: No se pudo extraer DATABASE_URL, usando credenciales configuradas');
 }
 
 const postgresConfig: DatabaseConfig = extractedConfig || {
-  internal: 'postgres://postgres:admin123@rkgwkkss048ck00skskc08gs:5432/postgres',
-  external: 'postgres://postgres:admin123@localhost:5435/postgres',
+  internal: 'postgres://postgres:ghxdiIxvNX8kjwafpuvS03B6e7M0ECSoZdEqPtLJsEW3WxBxn1f6USpp4vb42HIc@aswcsw80wsoskcskkscwscoo:5432/postgres',
+  external: 'postgres://thor3:thor44@31.97.138.249:5437/postgres',
   username: 'postgres',
-  password: 'admin123'
+  password: 'ghxdiIxvNX8kjwafpuvS03B6e7M0ECSoZdEqPtLJsEW3WxBxn1f6USpp4vb42HIc'
 };
 
 // Función para verificar si una URL es accesible

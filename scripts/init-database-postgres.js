@@ -5,7 +5,7 @@ const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 
 // Configuración de conexión
-const connectionString = process.env.DATABASE_URL || 'postgres://postgres:admin123@rkgwkkss048ck00skskc08gs:5432/postgres';
+const connectionString = process.env.DATABASE_URL || 'postgres://postgres:ghxdiIxvNX8kjwafpuvS03B6e7M0ECSoZdEqPtLJsEW3WxBxn1f6USpp4vb42HIc@aswcsw80wsoskcskkscwscoo:5432/postgres';
 
 console.log('🐘 Conectando a PostgreSQL...');
 console.log('🔍 INIT-DATABASE-POSTGRES: Configuración de conexión:');

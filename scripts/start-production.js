@@ -28,11 +28,11 @@ function extractCredentialsFromEnv() {
 
 // Configuración de base de datos PostgreSQL para Coolify (con fallback automático)
 const DATABASE_CONFIG = extractCredentialsFromEnv() || {
-  internal: 'postgres://postgres:admin123@rkgwkkss048ck00skskc08gs:5432/postgres',
-  external: 'postgres://postgres:admin123@localhost:5435/postgres',
-  name: 'postgresql-database-rkgwkkss048ck00skskc08gs',
+  internal: 'postgres://postgres:ghxdiIxvNX8kjwafpuvS03B6e7M0ECSoZdEqPtLJsEW3WxBxn1f6USpp4vb42HIc@aswcsw80wsoskcskkscwscoo:5432/postgres',
+  external: 'postgres://thor3:thor44@31.97.138.249:5437/postgres',
+  name: 'thor',
   username: 'postgres',
-  password: 'admin123'
+  password: 'ghxdiIxvNX8kjwafpuvS03B6e7M0ECSoZdEqPtLJsEW3WxBxn1f6USpp4vb42HIc'
 };
 
 console.log('🚀 START-PRODUCTION: Iniciando aplicación Reputación Online...');
