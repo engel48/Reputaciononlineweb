@@ -19,6 +19,25 @@ const postgresConfig: DatabaseConfig = {
   password: 'admin123'
 };
 
+// Función para verificar si una URL es accesible
+async function isUrlAccessible(url: string): Promise<boolean> {
+  try {
+    const { Pool } = require('pg');
+    const testPool = new Pool({
+      connectionString: url,
+      ssl: false,
+      connectionTimeoutMillis: 3000,
+      max: 1
+    });
+    
+    await testPool.query('SELECT 1');
+    await testPool.end();
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
 // Detectar entorno automáticamente
 function detectEnvironment() {
   const nodeEnv = process.env.NODE_ENV;
@@ -42,66 +61,165 @@ function detectEnvironment() {
 }
 
 // Configurar DATABASE_URL automáticamente si no existe
-function ensureDatabaseUrl() {
+async function ensureDatabaseUrl() {
   if (!process.env.DATABASE_URL) {
     const env = detectEnvironment();
     
+    console.log('🔍 DATABASE ADAPTER: Detectando configuración de PostgreSQL...');
+    
     if (env.isCoolify || env.isProduction) {
-      console.log('🔍 DATABASE ADAPTER: Configurando PostgreSQL interno para Coolify');
-      process.env.DATABASE_URL = postgresConfig.internal;
+      console.log('🔍 DATABASE ADAPTER: Entorno de producción detectado, probando conexión interna...');
+      
+      if (await isUrlAccessible(postgresConfig.internal)) {
+        console.log('✅ DATABASE ADAPTER: Conexión interna exitosa');
+        process.env.DATABASE_URL = postgresConfig.internal;
+      } else {
+        console.log('❌ DATABASE ADAPTER: Conexión interna falló, probando externa...');
+        if (await isUrlAccessible(postgresConfig.external)) {
+          console.log('✅ DATABASE ADAPTER: Conexión externa exitosa');
+          process.env.DATABASE_URL = postgresConfig.external;
+        } else {
+          console.log('❌ DATABASE ADAPTER: Ambas conexiones fallaron');
+          throw new Error('No se pudo conectar a PostgreSQL en ninguna configuración');
+        }
+      }
     } else if (env.isLocal) {
-      console.log('🔍 DATABASE ADAPTER: Configurando PostgreSQL externo para desarrollo local');
-      process.env.DATABASE_URL = postgresConfig.external;
+      console.log('🔍 DATABASE ADAPTER: Entorno local detectado, probando conexión externa...');
+      
+      if (await isUrlAccessible(postgresConfig.external)) {
+        console.log('✅ DATABASE ADAPTER: Conexión externa exitosa');
+        process.env.DATABASE_URL = postgresConfig.external;
+      } else {
+        console.log('❌ DATABASE ADAPTER: Conexión externa falló, probando interna...');
+        if (await isUrlAccessible(postgresConfig.internal)) {
+          console.log('✅ DATABASE ADAPTER: Conexión interna exitosa');
+          process.env.DATABASE_URL = postgresConfig.internal;
+        } else {
+          console.log('❌ DATABASE ADAPTER: Ambas conexiones fallaron');
+          throw new Error('No se pudo conectar a PostgreSQL en ninguna configuración');
+        }
+      }
     } else {
-      console.log('🔍 DATABASE ADAPTER: Usando PostgreSQL interno como fallback');
-      process.env.DATABASE_URL = postgresConfig.internal;
+      console.log('🔍 DATABASE ADAPTER: Entorno desconocido, probando todas las configuraciones...');
+      
+      if (await isUrlAccessible(postgresConfig.internal)) {
+        console.log('✅ DATABASE ADAPTER: Conexión interna exitosa');
+        process.env.DATABASE_URL = postgresConfig.internal;
+      } else if (await isUrlAccessible(postgresConfig.external)) {
+        console.log('✅ DATABASE ADAPTER: Conexión externa exitosa');
+        process.env.DATABASE_URL = postgresConfig.external;
+      } else {
+        console.log('❌ DATABASE ADAPTER: Ambas conexiones fallaron');
+        throw new Error('No se pudo conectar a PostgreSQL en ninguna configuración');
+      }
     }
   }
 }
 
-// Verificar y configurar DATABASE_URL
-ensureDatabaseUrl();
+// Inicialización asíncrona del adaptador de base de datos
+async function initializeAdapter() {
+  // Verificar y configurar DATABASE_URL
+  await ensureDatabaseUrl();
 
-const env = detectEnvironment();
-console.log('🔍 DATABASE ADAPTER: Entorno detectado:', env.platform);
-console.log('🔍 DATABASE_URL:', process.env.DATABASE_URL ? 'Configurada' : 'NO CONFIGURADA');
+  const env = detectEnvironment();
+  console.log('🔍 DATABASE ADAPTER: Entorno detectado:', env.platform);
+  console.log('🔍 DATABASE_URL:', process.env.DATABASE_URL ? 'Configurada' : 'NO CONFIGURADA');
 
-// Intentar conectar a PostgreSQL primero
-let usePostgres = true;
-let dbAdapter;
+  // Intentar conectar a PostgreSQL primero
+  let usePostgres = true;
+  let dbAdapter;
 
-try {
-  if (process.env.DATABASE_URL?.startsWith('postgres')) {
-    console.log('🐘 DATABASE ADAPTER: Intentando conectar a PostgreSQL...');
-    dbAdapter = require('./database');
-    console.log('✅ DATABASE ADAPTER: PostgreSQL conectado exitosamente');
-  } else {
-    throw new Error('DATABASE_URL no es PostgreSQL');
+  try {
+    if (process.env.DATABASE_URL?.startsWith('postgres')) {
+      console.log('🐘 DATABASE ADAPTER: Intentando conectar a PostgreSQL...');
+      dbAdapter = require('./database');
+      console.log('✅ DATABASE ADAPTER: PostgreSQL conectado exitosamente');
+    } else {
+      throw new Error('DATABASE_URL no es PostgreSQL');
+    }
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('❌ DATABASE ADAPTER: Error conectando a PostgreSQL:', errorMessage);
+    
+    // Solo usar SQLite como fallback en desarrollo local
+    if (env.isLocal && !env.isProduction) {
+      console.log('🔄 DATABASE ADAPTER: Usando SQLite como fallback para desarrollo local');
+      usePostgres = false;
+      dbAdapter = require('./database-sqlite');
+    } else {
+      console.error('❌ DATABASE ADAPTER: PostgreSQL es requerido en producción');
+      throw new Error('PostgreSQL es requerido - no se permite SQLite en producción');
+    }
   }
-} catch (error) {
-  console.error('❌ DATABASE ADAPTER: Error conectando a PostgreSQL:', error.message);
-  
-  // Solo usar SQLite como fallback en desarrollo local
-  if (env.isLocal && !env.isProduction) {
-    console.log('🔄 DATABASE ADAPTER: Usando SQLite como fallback para desarrollo local');
-    usePostgres = false;
-    dbAdapter = require('./database-sqlite');
-  } else {
-    console.error('❌ DATABASE ADAPTER: PostgreSQL es requerido en producción');
-    throw new Error('PostgreSQL es requerido - no se permite SQLite en producción');
-  }
+
+  return {
+    usePostgres,
+    dbAdapter,
+    env
+  };
 }
 
-// Exportar servicios según el adaptador seleccionado
-export const { userService, socialMediaService, statsService, systemSettingsService } = dbAdapter;
+// Inicializar el adaptador
+const adapterPromise = initializeAdapter();
+let adapterResult: any = null;
+
+// Función para obtener el adaptador inicializado
+async function getAdapter() {
+  if (!adapterResult) {
+    adapterResult = await adapterPromise;
+  }
+  return adapterResult;
+}
+
+// Exportar servicios dinámicamente usando proxy
+export const userService = new Proxy({} as any, {
+  get: (target, prop) => {
+    return async (...args: any[]) => {
+      const adapter = await getAdapter();
+      return adapter.dbAdapter.userService[prop](...args);
+    };
+  }
+});
+
+export const socialMediaService = new Proxy({} as any, {
+  get: (target, prop) => {
+    return async (...args: any[]) => {
+      const adapter = await getAdapter();
+      return adapter.dbAdapter.socialMediaService[prop](...args);
+    };
+  }
+});
+
+export const statsService = new Proxy({} as any, {
+  get: (target, prop) => {
+    return async (...args: any[]) => {
+      const adapter = await getAdapter();
+      return adapter.dbAdapter.statsService[prop](...args);
+    };
+  }
+});
+
+export const systemSettingsService = new Proxy({} as any, {
+  get: (target, prop) => {
+    return async (...args: any[]) => {
+      const adapter = await getAdapter();
+      return adapter.dbAdapter.systemSettingsService[prop](...args);
+    };
+  }
+});
 
 // Exportar información del adaptador usado
-export const databaseInfo = {
-  type: usePostgres ? 'postgresql' : 'sqlite',
-  environment: env.platform,
-  url: process.env.DATABASE_URL?.replace(/:([^@]+)@/, ':***@') || 'No configurada'
+export const getDatabaseInfo = async () => {
+  const adapter = await getAdapter();
+  return {
+    type: adapter.usePostgres ? 'postgresql' : 'sqlite',
+    environment: adapter.env.platform,
+    url: process.env.DATABASE_URL?.replace(/:([^@]+)@/, ':***@') || 'No configurada'
+  };
 };
 
-console.log('📊 DATABASE ADAPTER: Usando', databaseInfo.type, 'en', databaseInfo.environment);
-
-export default dbAdapter.default;
+// Exportar función para obtener el adaptador
+export const getDatabase = async () => {
+  const adapter = await getAdapter();
+  return adapter.dbAdapter.default;
+};
