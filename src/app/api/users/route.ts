@@ -11,6 +11,7 @@ export async function PUT(request: NextRequest) {
     const { userId, ...updates } = body;
 
     console.log('🔍 USERS API PUT: Datos recibidos:', { userId, updates });
+    console.log('🔍 USERS API PUT: onboardingCompleted recibido:', updates.onboardingCompleted);
 
     if (!userId) {
       console.log('❌ USERS API PUT: Falta userId');
@@ -40,11 +41,19 @@ export async function PUT(request: NextRequest) {
       updatedAt: new Date().toISOString()
     });
 
+    console.log('🔍 USERS API PUT: Resultado de actualización:', success);
+
     if (success) {
       // Obtener el usuario actualizado
       const updatedUser = await userService.findById(userId);
       
-      console.log('✅ Usuario actualizado exitosamente:', updatedUser?.plan);
+      console.log('✅ Usuario actualizado exitosamente');
+      console.log('🔍 USERS API PUT: onboardingCompleted después de actualización:', updatedUser?.onboardingCompleted);
+      console.log('🔍 USERS API PUT: Datos completos del usuario:', {
+        id: updatedUser?.id,
+        name: updatedUser?.name,
+        onboardingCompleted: updatedUser?.onboardingCompleted
+      });
       
       return NextResponse.json({
         success: true,

@@ -240,6 +240,10 @@ export default function LoginPage() {
         }
         
         // Redirección basada en onboardingCompleted
+        console.log('🔍 LOGIN FRONTEND: Verificando onboardingCompleted...');
+        console.log('🔍 LOGIN FRONTEND: responseData.user.onboardingCompleted:', responseData.user.onboardingCompleted);
+        console.log('🔍 LOGIN FRONTEND: tipo de onboardingCompleted:', typeof responseData.user.onboardingCompleted);
+        
         if (responseData.user.onboardingCompleted) {
           console.log('🔄 LOGIN FRONTEND: Usuario con onboarding completo - redirigiendo a dashboard');
           window.location.href = '/dashboard';

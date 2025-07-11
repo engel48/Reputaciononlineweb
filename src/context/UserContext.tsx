@@ -147,6 +147,10 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (!user) return;
 
     try {
+      console.log('🔍 USER CONTEXT: Iniciando updateUser...');
+      console.log('🔍 USER CONTEXT: Updates recibidos:', updates);
+      console.log('🔍 USER CONTEXT: onboardingCompleted en updates:', updates.onboardingCompleted);
+      
       // Actualizar en la base de datos vía API
       const response = await fetch('/api/users', {
         method: 'PUT',
@@ -160,18 +164,24 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         })
       });
 
+      console.log('🔍 USER CONTEXT: Response status:', response.status);
+
       if (!response.ok) {
         throw new Error('Error updating user profile');
       }
 
       const result = await response.json();
+      console.log('🔍 USER CONTEXT: Response data:', result);
       
       // Si la respuesta es exitosa, actualizar el estado local
       if (result.success && result.user) {
+        console.log('🔍 USER CONTEXT: Usuario actualizado desde API:', result.user.onboardingCompleted);
+        
         setUser(prevUser => {
           if (!prevUser) return null;
           
           const updatedUser = { ...prevUser, ...result.user };
+          console.log('🔍 USER CONTEXT: Estado local actualizado:', updatedUser.onboardingCompleted);
           
           // Forzar actualización si el plan cambió
           if (updates.plan && updates.plan !== prevUser.plan) {

@@ -296,6 +296,10 @@ export default function OnboardingPage() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
       
+      console.log('🔍 ONBOARDING: Iniciando actualización del usuario...');
+      console.log('🔍 ONBOARDING: onboardingCompleted será:', true);
+      console.log('🔍 ONBOARDING: Usuario ID:', user.id);
+      
       await Promise.race([
         updateUser({
           name: basicData.name.trim(),
@@ -319,8 +323,12 @@ export default function OnboardingPage() {
       
       clearTimeout(timeoutId);
 
+      console.log('✅ ONBOARDING: Actualización completada exitosamente');
+      console.log('🔍 ONBOARDING: Estado del usuario después de actualización:', user.onboardingCompleted);
+
       // Mostrar mensaje de éxito brevemente antes de redirigir según el tipo de perfil
       setTimeout(() => {
+        console.log('🔄 ONBOARDING: Redirigiendo a dashboard...');
         if (finalProfileType === 'political') {
           router.push('/dashboard-politico');
         } else {
