@@ -29,9 +29,10 @@ node prisma/seed.js           # Seed database with initial data
 Critical environment variables in `.env.local`:
 
 ```bash
-# Database Architecture (dual system)
-DATABASE_URL=postgres://...      # PostgreSQL primary (production)
-# SQLite fallback automatic if PostgreSQL unavailable
+# Database Architecture (dual system with forced SQLite)
+FORCE_SQLITE=true              # Forces SQLite usage, ignores PostgreSQL
+DATABASE_URL=postgres://...      # PostgreSQL configuration (inactive when FORCE_SQLITE=true)
+DATABASE_URL_LOCAL=file:./data/app.db  # SQLite database location
 
 # Authentication (dual approach)
 JWT_SECRET=reputacion-online-secret-key-2025
@@ -39,8 +40,8 @@ NEXTAUTH_SECRET=your-secret-key
 NEXTAUTH_URL=http://localhost:3000
 
 # AI Services (Sofia AI assistant)
-OPENAI_API_KEY=sk-...           # Primary AI service
-DEEPSEEK_API_KEY=sk-...         # Fallback AI service
+OPENAI_API_KEY=sk-...           # Primary AI service (optional - can be empty)
+DEEPSEEK_API_KEY=sk-...         # Fallback AI service (primary when OpenAI unavailable)
 
 # Social Media OAuth (7 platforms)
 FACEBOOK_CLIENT_ID=...
@@ -55,11 +56,13 @@ THREADS_CLIENT_ID=...
 ## Architecture Overview
 
 ### Dual Database System
-The platform uses a sophisticated dual database approach with automatic failover:
-- **Primary**: PostgreSQL with custom service layer (`/src/lib/database.ts`)
-- **Fallback**: SQLite with Prisma ORM (`/src/lib/prisma.ts`)
+The platform uses a sophisticated dual database approach with intelligent switching:
+- **Current Active**: SQLite (`/data/app.db`) - forced via `FORCE_SQLITE=true`
+- **Fallback Available**: PostgreSQL with custom service layer (`/src/lib/database.ts`)
+- **Database Adapter**: `/src/lib/database-adapter.ts` intelligently routes to appropriate database
 - **Service Layer**: Unified interface through `userService`, `socialMediaService`, `statsService`
 - **Auto-initialization**: Scripts in `/scripts/` handle both database setups
+- **Switching**: Change `FORCE_SQLITE` in `.env.local` to switch between databases
 
 ### Authentication Architecture
 Two parallel authentication systems working together:
@@ -142,9 +145,11 @@ Dashboard endpoints generate AI-enhanced realistic data:
 
 ### Database Development
 - Use `npm run dev` to start with auto-initialization
-- PostgreSQL primary, SQLite fallback automatic
+- **Current Setup**: SQLite active (`FORCE_SQLITE=true`), PostgreSQL available as fallback
 - Run `/scripts/init-database.js` for fresh setup
-- Use Prisma Studio for database inspection
+- Use Prisma Studio for database inspection: `npx prisma studio`
+- **Switch databases**: Toggle `FORCE_SQLITE` in `.env.local` (true=SQLite, false=PostgreSQL)
+- **Database location**: SQLite at `/data/app.db`, PostgreSQL via `DATABASE_URL`
 
 ### AI Service Development
 - Test with both OpenAI and DeepSeek API keys
@@ -206,9 +211,10 @@ node scripts/verify-postgres-connection.js  # Verify PostgreSQL connectivity
 
 ### Environment Variable Handling
 The application uses automatic environment detection in `start.js`:
-- **Development**: Minimal `.env.local` with `JWT_SECRET` only
+- **Development**: `.env.local` with `JWT_SECRET` and `FORCE_SQLITE=true`
 - **Production**: Auto-detection of hosting platform (Vercel, Railway, Coolify)
-- **Database**: Automatic PostgreSQL primary with SQLite fallback
+- **Database**: `FORCE_SQLITE=true` overrides all PostgreSQL configuration
+- **Database Switching**: Toggle `FORCE_SQLITE` to switch between SQLite/PostgreSQL
 
 ### Database Connection Pattern
 Always use the service layer pattern for database operations:
@@ -235,7 +241,17 @@ node scripts/diagnose-postgres.js       # Comprehensive PostgreSQL diagnostics
 node scripts/verify-postgres-connection.js  # Test PostgreSQL connectivity
 node scripts/test-passwords.js          # Test password extraction and validation
 node scripts/migrate-sqlite-to-postgres.js  # Migrate data between databases
+node scripts/test-user-service.js       # Test database service layer functionality
+node scripts/init-database.js           # Initialize database (auto-detects SQLite/PostgreSQL)
 ```
+
+## Current Database Status
+
+**Active Configuration:**
+- **Database**: SQLite (`/data/app.db`)
+- **Configuration**: `FORCE_SQLITE=true` in `.env.local`
+- **Size**: ~488KB with 14 users and 11 tables
+- **Switch Method**: Change `FORCE_SQLITE` to `false` to use PostgreSQL
 
 ## Environment Detection and Deployment
 
