@@ -54,7 +54,7 @@ export const register = async (userData: RegisterData): Promise<LoginResponse> =
       phone: userData.phone,
       avatarUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.name)}&background=01257D&color=fff`,
       credits: userData.credits || 1000, // Créditos según el plan seleccionado
-      onboardingCompleted: userData.onboardingCompleted ? 1 : 0,
+      onboardingCompleted: Boolean(userData.onboardingCompleted),
       profileType: userData.profileType || 'personal',
       plan: userData.plan || 'basic',
       role: userData.role || 'user'
@@ -260,7 +260,7 @@ export const updateUserProfile = async (userId: string, updateData: Partial<User
     if (updateData.category !== undefined) dataToUpdate.category = updateData.category;
     if (updateData.brandName !== undefined) dataToUpdate.brandName = updateData.brandName;
     if (updateData.otherCategory !== undefined) dataToUpdate.otherCategory = updateData.otherCategory;
-    if (updateData.onboardingCompleted !== undefined) dataToUpdate.onboardingCompleted = updateData.onboardingCompleted ? 1 : 0;
+    if (updateData.onboardingCompleted !== undefined) dataToUpdate.onboardingCompleted = Boolean(updateData.onboardingCompleted);
     if (updateData.plan !== undefined) dataToUpdate.plan = updateData.plan;
     if (updateData.settings !== undefined) dataToUpdate.settings = JSON.stringify(updateData.settings);
     

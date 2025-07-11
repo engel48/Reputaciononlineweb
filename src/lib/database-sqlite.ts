@@ -129,13 +129,24 @@ export const userService = {
     if (user && user.password) {
       delete user.password; // No devolver la contraseña
     }
+    if (user) {
+      // Convertir enteros a booleanos para campos booleanos
+      user.onboardingCompleted = Boolean(user.onboardingCompleted);
+      user.isActive = Boolean(user.isActive);
+    }
     return user;
   },
 
   // Buscar por email con contraseña (para autenticación)
   findByEmailWithPassword: async (email: string) => {
     const stmt = db.prepare('SELECT * FROM users WHERE email = ?');
-    return stmt.get(email) as any;
+    const user = stmt.get(email) as any;
+    if (user) {
+      // Convertir enteros a booleanos para campos booleanos
+      user.onboardingCompleted = Boolean(user.onboardingCompleted);
+      user.isActive = Boolean(user.isActive);
+    }
+    return user;
   },
 
   // Buscar por ID
@@ -144,6 +155,11 @@ export const userService = {
     const user = stmt.get(id) as any;
     if (user && user.password) {
       delete user.password; // No devolver la contraseña
+    }
+    if (user) {
+      // Convertir enteros a booleanos para campos booleanos
+      user.onboardingCompleted = Boolean(user.onboardingCompleted);
+      user.isActive = Boolean(user.isActive);
     }
     return user;
   },
@@ -161,7 +177,13 @@ export const userService = {
     for (const [key, value] of Object.entries(userData)) {
       if (key !== 'id' && value !== undefined) {
         fields.push(`${key} = ?`);
-        values.push(value);
+        
+        // Convertir booleanos a enteros para SQLite
+        if (key === 'onboardingCompleted' || key === 'isActive' || key === 'connected') {
+          values.push(value ? 1 : 0);
+        } else {
+          values.push(value);
+        }
       }
     }
     
@@ -189,6 +211,9 @@ export const userService = {
     // Eliminar contraseñas antes de devolver
     return users.map(user => {
       const { password, ...userWithoutPassword } = user;
+      // Convertir enteros a booleanos para campos booleanos
+      userWithoutPassword.onboardingCompleted = Boolean(userWithoutPassword.onboardingCompleted);
+      userWithoutPassword.isActive = Boolean(userWithoutPassword.isActive);
       return userWithoutPassword;
     });
   },
