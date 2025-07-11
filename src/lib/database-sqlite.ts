@@ -95,6 +95,14 @@ try {
   // La columna ya existe, no hay problema
 }
 
+// Intentar agregar columna additionalSources si no existe
+try {
+  db.exec(`ALTER TABLE users ADD COLUMN additionalSources TEXT DEFAULT NULL`);
+  console.log('✅ Columna additionalSources agregada a la tabla users');
+} catch (error) {
+  // La columna ya existe, no hay problema
+}
+
 // Función para generar IDs
 const generateId = () => {
   return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);

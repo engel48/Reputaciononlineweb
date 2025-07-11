@@ -197,14 +197,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
     } catch (error) {
       console.error('❌ USER CONTEXT: Error updating user:', error);
-      // NO actualizar localmente si la API falla para evitar inconsistencias
-      // Especialmente importante para onboardingCompleted
-      if (updates.onboardingCompleted) {
-        console.error('❌ USER CONTEXT: ERROR CRÍTICO - onboardingCompleted no se guardó en BD');
-        throw error; // Re-lanzar error para que el onboarding lo maneje
-      }
-      
-      // Para otros campos, sí actualizar localmente
+      // Actualizar localmente incluso si la API falla para mantener UX
       setUser(prevUser => {
         if (!prevUser) return null;
         
