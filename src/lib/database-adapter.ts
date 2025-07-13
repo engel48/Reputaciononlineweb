@@ -165,13 +165,15 @@ async function initializeAdapter() {
   const env = detectEnvironment();
   console.log('🔍 DATABASE ADAPTER: Entorno detectado:', env.platform);
   
-  // Verificar si se debe forzar SQLite desde variable de entorno
-  const forceSQLite = process.env.FORCE_SQLITE === 'true';
+  // ⚠️ CONFIGURACIÓN TEMPORAL: FORZAR SQLite SIEMPRE
+  // Esta configuración sobrescribe cualquier configuración de PostgreSQL
+  const forceSQLite = true; // Cambiado de process.env.FORCE_SQLITE === 'true' a true permanente
   
   if (forceSQLite) {
-    console.log('🔄 DATABASE ADAPTER: FORZANDO SQLite local (temporal)');
+    console.log('🔄 DATABASE ADAPTER: FORZANDO SQLite PERMANENTEMENTE');
     console.log('💡 DATABASE ADAPTER: Sistema configurado para usar SQLite siempre');
     console.log('📋 DATABASE ADAPTER: Saltando configuración de PostgreSQL completamente');
+    console.log('⚠️ DATABASE ADAPTER: Esta es una configuración temporal para debug');
     
     // Limpiar DATABASE_URL para evitar confusiones
     if (process.env.DATABASE_URL) {
