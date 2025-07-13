@@ -7,19 +7,19 @@ import { MessageCircle, Send, Bot, User, Sparkles, RefreshCw, X, Minimize2, Maxi
 interface Message {
   id: string;
   content: string;
-  sender: 'user' | 'sofia';
+  sender: 'user' | 'julia';
   timestamp: Date;
   typing?: boolean;
 }
 
-export default function SofiaChat() {
+export default function JuliaChat() {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      content: '¡Hola! Soy Sofia, tu asistente de IA especializada en análisis de reputación online. ¿En qué puedo ayudarte hoy?',
-      sender: 'sofia',
+      content: '¡Hola! Soy Julia, tu asistente de IA especializada en análisis de reputación online. ¿En qué puedo ayudarte hoy?',
+      sender: 'julia',
       timestamp: new Date()
     }
   ]);
@@ -41,7 +41,7 @@ export default function SofiaChat() {
     const typingMessage: Message = {
       id: `typing-${Date.now()}`,
       content: '',
-      sender: 'sofia',
+      sender: 'julia',
       timestamp: new Date(),
       typing: true
     };
@@ -70,7 +70,7 @@ export default function SofiaChat() {
     const typingId = addTypingMessage();
 
     try {
-      const response = await fetch('/api/sofia', {
+      const response = await fetch('/api/julia', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -87,13 +87,13 @@ export default function SofiaChat() {
       removeTypingMessage(typingId);
 
       if (data.success) {
-        const sofiaMessage: Message = {
-          id: `sofia-${Date.now()}`,
+        const juliaMessage: Message = {
+          id: `julia-${Date.now()}`,
           content: data.response,
-          sender: 'sofia',
+          sender: 'julia',
           timestamp: new Date()
         };
-        setMessages(prev => [...prev, sofiaMessage]);
+        setMessages(prev => [...prev, juliaMessage]);
 
         // Opción de texto a voz
         if ('speechSynthesis' in window && isSpeaking) {
@@ -106,7 +106,7 @@ export default function SofiaChat() {
         const errorMessage: Message = {
           id: `error-${Date.now()}`,
           content: 'Lo siento, estoy experimentando dificultades técnicas. ¿Podrías intentarlo de nuevo?',
-          sender: 'sofia',
+          sender: 'julia',
           timestamp: new Date()
         };
         setMessages(prev => [...prev, errorMessage]);
@@ -118,7 +118,7 @@ export default function SofiaChat() {
       const errorMessage: Message = {
         id: `error-${Date.now()}`,
         content: 'No pude conectarme con el servidor. Por favor, verifica tu conexión e inténtalo de nuevo.',
-        sender: 'sofia',
+        sender: 'julia',
         timestamp: new Date()
       };
       setMessages(prev => [...prev, errorMessage]);
@@ -213,7 +213,7 @@ export default function SofiaChat() {
             <Bot className="w-6 h-6 text-[#01257D]" />
           </motion.div>
           <div>
-            <h3 className="font-semibold text-white">Sofia</h3>
+            <h3 className="font-semibold text-white">Julia</h3>
             <p className="text-xs text-blue-100">Asistente de IA</p>
           </div>
         </div>

@@ -31,7 +31,7 @@ npm run dev
 - ✅ **Onboarding completo** (4 pasos)
 - ✅ **Sistema de créditos**
 - ✅ **Interfaz responsive**
-- ✅ **Animaciones con IA (Sofia)**
+- ✅ **Animaciones con IA (Julia)**
 - ✅ **Gestión de perfiles**
 - ✅ **Notificaciones**
 
@@ -130,7 +130,7 @@ JWT_SECRET=tu-clave-jwt-aqui
 
 ### Opcionales (solo para funcionalidades avanzadas)
 ```bash
-# OpenAI (para ChatSofia con IA real)
+# OpenAI (para ChatJulia con IA real)
 OPENAI_API_KEY=tu-clave-openai
 
 # OAuth redes sociales (para conexiones reales)

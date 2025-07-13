@@ -2,13 +2,13 @@
 
 import React from 'react';
 
-interface SofiaLogoProps {
+interface JuliaLogoProps {
   className?: string;
   size?: number;
   color?: string;
 }
 
-const SofiaLogo: React.FC<SofiaLogoProps> = ({ 
+const JuliaLogo: React.FC<JuliaLogoProps> = ({ 
   className = "", 
   size = 24, 
   color = "currentColor" 
@@ -56,4 +56,4 @@ const SofiaLogo: React.FC<SofiaLogoProps> = ({
   );
 };
 
-export default SofiaLogo;
+export default JuliaLogo;

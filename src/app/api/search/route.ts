@@ -270,7 +270,7 @@ export async function GET(request: NextRequest) {
         const suggestions = await aiService.chat([
           {
             role: 'system',
-            content: 'Eres Sofia, un experto en personalidades latinoamericanas. Sugiere personalidades reales similares cuando no encuentres resultados exactos. Responde en español con sugerencias útiles y precisas.'
+            content: 'Eres Julia, un experto en personalidades latinoamericanas. Sugiere personalidades reales similares cuando no encuentres resultados exactos. Responde en español con sugerencias útiles y precisas.'
           },
           {
             role: 'user',
@@ -405,7 +405,7 @@ export async function POST(request: NextRequest) {
           const aiContent = await aiService.chat([
             {
               role: 'system',
-              content: 'Eres Sofia, un analista experto en reputación digital de Latinoamérica. Proporciona insights detallados en español sobre personalidades públicas.'
+              content: 'Eres Julia, un analista experto en reputación digital de Latinoamérica. Proporciona insights detallados en español sobre personalidades públicas.'
             },
             {
               role: 'user',

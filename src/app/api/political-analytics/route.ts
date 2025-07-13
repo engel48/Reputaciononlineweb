@@ -3,7 +3,7 @@ import { aiService } from '@/lib/ai-service';
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('🏛️ Sofia: Generando métricas políticas con IA...');
+    console.log('🏛️ Julia: Generando métricas políticas con IA...');
 
     // Preparar datos dummy para el análisis político
     const dummyPoliticalData = {
@@ -34,26 +34,26 @@ export async function GET(request: NextRequest) {
     };
 
     try {
-      // Usar el servicio de análisis político con Sofia
+      // Usar el servicio de análisis político con Julia
       const enhancedMetrics = await aiService.analyzePoliticalMetrics(dummyPoliticalData);
       
-      console.log('✅ Sofia: Métricas políticas generadas exitosamente');
+      console.log('✅ Julia: Métricas políticas generadas exitosamente');
       
       return NextResponse.json({
         success: true,
         metrics: enhancedMetrics,
         generated_at: new Date().toISOString(),
-        source: 'sofia_political_analysis'
+        source: 'julia_political_analysis'
       });
       
     } catch (aiError) {
-      console.error('🚨 Sofia: Error en análisis político:', aiError);
+      console.error('🚨 Julia: Error en análisis político:', aiError);
       
       // Fallback a datos base si el AI falla
       const response = await aiService.chat([
         {
           role: "system",
-          content: `Eres Sofia, un analista político especializado en Colombia. Genera métricas realistas para un líder político.
+          content: `Eres Julia, un analista político especializado en Colombia. Genera métricas realistas para un líder político.
           
           IMPORTANTE: Responde ÚNICAMENTE con un JSON válido, sin texto adicional ni formato markdown.
           
@@ -97,7 +97,7 @@ export async function GET(request: NextRequest) {
         }
         metrics = JSON.parse(cleanResponse);
       } catch (parseError) {
-        console.error('🚨 Sofia: Error parseando JSON:', parseError);
+        console.error('🚨 Julia: Error parseando JSON:', parseError);
         metrics = dummyPoliticalData; // usar datos dummy como fallback
       }
 
@@ -114,25 +114,25 @@ export async function GET(request: NextRequest) {
         metrics.keyIssues = dummyPoliticalData.keyIssues;
       }
 
-      console.log('✅ Sofia: Métricas políticas generadas exitosamente');
+      console.log('✅ Julia: Métricas políticas generadas exitosamente');
 
       return NextResponse.json({
         success: true,
         metrics: metrics,
         generated_at: new Date().toISOString(),
-        source: 'sofia_political_analysis_fallback'
+        source: 'julia_political_analysis_fallback'
       });
     }
 
   } catch (error) {
-    console.error('🚨 Sofia: Error generando métricas políticas:', error);
+    console.error('🚨 Julia: Error generando métricas políticas:', error);
     
     // Retornar datos de fallback realistas
     return NextResponse.json({
       success: true,
       metrics: generateFallbackPoliticalData(),
       generated_at: new Date().toISOString(),
-      source: 'sofia_fallback_data'
+      source: 'julia_fallback_data'
     });
   }
 }

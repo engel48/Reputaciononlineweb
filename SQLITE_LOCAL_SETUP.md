@@ -69,7 +69,7 @@ Con SQLite local puedes usar **TODAS** las funcionalidades del sistema:
 - ✅ Analíticas en tiempo real
 - ✅ Monitoreo de redes sociales
 - ✅ Búsqueda de personas
-- ✅ Chat con Sofia AI
+- ✅ Chat con Julia AI
 
 ### ✅ Redes Sociales
 - ✅ Conexión de plataformas

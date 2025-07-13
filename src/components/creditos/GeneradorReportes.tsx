@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { FileText, Download, Calendar, Filter, BarChart3, ChevronDown } from 'lucide-react';
+import { FileText, Download, Calendar, Filter, BarChart3, ChevronDown, RefreshCw, Target, TrendingUp, Activity } from 'lucide-react';
+import { ReportGenerator, ReportData } from '@/lib/reportGenerator';
+import { useUser } from '@/context/UserContext';
 
 type FormatoReporte = 'pdf' | 'excel' | 'csv';
 type PeriodoReporte = 'semana' | 'mes' | 'trimestre' | 'personalizado';
 type TipoReporte = 'consumo' | 'tendencia' | 'canales' | 'completo';
 
 export default function GeneradorReportes() {
+  const { user } = useUser();
+  
   // Estados para las opciones del reporte
   const [formatoSeleccionado, setFormatoSeleccionado] = useState<FormatoReporte>('pdf');
   const [periodoSeleccionado, setPeriodoSeleccionado] = useState<PeriodoReporte>('mes');
@@ -15,9 +19,17 @@ export default function GeneradorReportes() {
   const [fechaFin, setFechaFin] = useState<string>('');
   const [filtroCanal, setFiltroCanal] = useState<string>('todos');
   const [mostrarOpcionesAvanzadas, setMostrarOpcionesAvanzadas] = useState<boolean>(false);
+  const [isGenerating, setIsGenerating] = useState<boolean>(false);
   
-  // Estado para mostrar la previsualizaciu00f3n del reporte
+  // Estado para mostrar la previsualización del reporte
   const [mostrarPrevisualizacion, setMostrarPrevisualizacion] = useState<boolean>(false);
+  
+  // Variantes de animación
+  const cardVariants = {
+    hidden: { opacity: 0, scale: 0.95 },
+    visible: { opacity: 1, scale: 1, transition: { duration: 0.3 } },
+    hover: { scale: 1.02, transition: { duration: 0.2 } }
+  };
   
   // Opciones para los selectores
   const formatosReporte: Array<{valor: FormatoReporte, nombre: string, icono: JSX.Element}> = [
@@ -27,9 +39,9 @@ export default function GeneradorReportes() {
   ];
   
   const periodosReporte: Array<{valor: PeriodoReporte, nombre: string}> = [
-    { valor: 'semana', nombre: 'u00daltimos 7 du00edas' },
-    { valor: 'mes', nombre: 'u00daltimos 30 du00edas' },
-    { valor: 'trimestre', nombre: 'u00daltimos 90 du00edas' },
+    { valor: 'semana', nombre: 'Últimos 7 días' },
+    { valor: 'mes', nombre: 'Últimos 30 días' },
+    { valor: 'trimestre', nombre: 'Últimos 90 días' },
     { valor: 'personalizado', nombre: 'Rango personalizado' }
   ];
   
@@ -37,12 +49,12 @@ export default function GeneradorReportes() {
     { 
       valor: 'consumo', 
       nombre: 'Reporte de Consumo', 
-      descripcion: 'Detalle del consumo de cru00e9ditos por du00eda con totales y promedios.' 
+      descripcion: 'Detalle del consumo de créditos por día con totales y promedios.' 
     },
     { 
       valor: 'tendencia', 
-      nombre: 'Anu00e1lisis de Tendencia', 
-      descripcion: 'Gru00e1ficos y anu00e1lisis de patrones de consumo a lo largo del tiempo.' 
+      nombre: 'Análisis de Tendencia', 
+      descripcion: 'Gráficos y análisis de patrones de consumo a lo largo del tiempo.' 
     },
     { 
       valor: 'canales', 
@@ -87,11 +99,44 @@ export default function GeneradorReportes() {
     }
   };
   
-  // Generar el reporte
-  const generarReporte = () => {
-    // Aquu00ed se integraru00eda la lu00f3gica para generar y descargar el reporte
-    // Por ahora, solo mostraremos la previsualizaciu00f3n
-    setMostrarPrevisualizacion(true);
+  // Generar el reporte con lógica real
+  const generarReporte = async () => {
+    setIsGenerating(true);
+    
+    try {
+      // Simular tiempo de generación (opcional)
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Preparar datos del reporte
+      const reportData: ReportData = {
+        tipo: tipoReporteSeleccionado,
+        formato: formatoSeleccionado,
+        periodo: periodoSeleccionado,
+        fechaInicio: fechaInicio || undefined,
+        fechaFin: fechaFin || undefined,
+        canal: filtroCanal !== 'todos' ? filtroCanal : undefined,
+        usuario: user ? {
+          nombre: user.name,
+          email: user.email,
+          plan: user.plan,
+          creditos: user.credits
+        } : undefined
+      };
+      
+      console.log('Generando reporte con datos reales:', reportData);
+      
+      // Mostrar previsualización
+      setMostrarPrevisualizacion(true);
+      
+      // Generar y descargar el reporte usando el servicio real
+      await ReportGenerator.generateAndDownload(reportData);
+      
+    } catch (error) {
+      console.error('Error generando reporte:', error);
+      alert('Error al generar el reporte. Por favor, inténtalo de nuevo.');
+    } finally {
+      setIsGenerating(false);
+    }
   };
   
   // Obtener nombre del canal seleccionado
@@ -100,7 +145,7 @@ export default function GeneradorReportes() {
     return canalEncontrado ? canalEncontrado.nombre : 'Todos los canales';
   };
   
-  // Obtener la descripciu00f3n del periodo
+  // Obtener la descripción del periodo
   const getDescripcionPeriodo = () => {
     if (periodoSeleccionado === 'personalizado') {
       return `Del ${fechaInicio} al ${fechaFin}`;
@@ -117,13 +162,33 @@ export default function GeneradorReportes() {
   };
 
   return (
-    <div className="card p-6">
-      <div className="mb-6 flex items-center">
-        <FileText className="mr-3 h-6 w-6 text-primary-600 dark:text-primary-400" />
-        <h2 className="heading-secondary">Generador de Reportes</h2>
+    <motion.div 
+      className="bg-gradient-to-br from-white via-gray-50/50 to-indigo-50/30 dark:from-gray-900 dark:via-gray-800/50 dark:to-indigo-900/10 rounded-2xl border-0 shadow-2xl overflow-hidden"
+      variants={cardVariants}
+      initial="hidden"
+      animate="visible"
+      whileHover="hover"
+    >
+      <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-8">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-3xl font-bold flex items-center">
+            <BarChart3 className="mr-3 h-8 w-8" />
+            ⚙️ Generador de Reportes
+          </h2>
+          {isGenerating && (
+            <div className="relative">
+              <div className="animate-spin h-8 w-8 border-4 border-white/30 border-t-white rounded-full"></div>
+              <Activity className="absolute inset-0 m-auto h-4 w-4 text-white animate-pulse" />
+            </div>
+          )}
+        </div>
+        <p className="text-indigo-100 text-lg">
+          🎯 Configura y personaliza tus reportes según tus necesidades
+        </p>
       </div>
       
-      <div className="space-y-6">
+      <div className="p-8">
+        <div className="space-y-6">
         {/* Tipo de reporte */}
         <div>
           <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -248,7 +313,7 @@ export default function GeneradorReportes() {
                 </select>
               </div>
               
-              {/* Otras opciones avanzadas podru00edan au00f1adirse aquu00ed */}
+              {/* Otras opciones avanzadas podrían añadirse aquí */}
               <div className="flex items-center">
                 <input
                   type="checkbox"
@@ -257,7 +322,7 @@ export default function GeneradorReportes() {
                   defaultChecked
                 />
                 <label htmlFor="incluir-graficos" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                  Incluir gru00e1ficos en el reporte
+                  Incluir gráficos en el reporte
                 </label>
               </div>
               
@@ -269,27 +334,42 @@ export default function GeneradorReportes() {
                   defaultChecked
                 />
                 <label htmlFor="incluir-recomendaciones" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                  Incluir recomendaciones de optimizaciu00f3n
+                  Incluir recomendaciones de optimización
                 </label>
               </div>
             </motion.div>
           )}
         </div>
         
-        {/* Botu00f3n para generar */}
-        <div className="flex justify-end">
+        {/* Botón para generar mejorado */}
+        <div className="flex justify-center mt-8">
           <button
             type="button"
-            className="inline-flex items-center rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-primary-500 dark:hover:bg-primary-400"
+            disabled={isGenerating}
+            className={`inline-flex items-center rounded-xl px-8 py-4 text-lg font-bold text-white shadow-xl transition-all duration-300 ${
+              isGenerating 
+                ? 'bg-gray-400 cursor-not-allowed' 
+                : 'bg-gradient-to-r from-[#01257D] to-[#013AAA] hover:from-[#013AAA] hover:to-[#01257D] transform hover:scale-105 hover:shadow-2xl'
+            }`}
             onClick={generarReporte}
           >
-            <Download className="mr-2 h-4 w-4" />
-            Generar Reporte
+            {isGenerating ? (
+              <>
+                <RefreshCw className="mr-3 h-6 w-6 animate-spin" />
+                🔄 Generando Reporte...
+              </>
+            ) : (
+              <>
+                <Download className="mr-3 h-6 w-6" />
+                📄 Generar Reporte
+              </>
+            )}
           </button>
+        </div>
         </div>
       </div>
       
-      {/* Previsualizaciu00f3n del reporte */}
+      {/* Previsualización del reporte */}
       {mostrarPrevisualizacion && (
         <motion.div 
           className="mt-8 rounded-md border border-gray-200 p-6 dark:border-gray-700"
@@ -298,7 +378,7 @@ export default function GeneradorReportes() {
           transition={{ duration: 0.3 }}
         >
           <div className="mb-6 flex items-center justify-between">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Previsualizaciu00f3n del Reporte</h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Previsualización del Reporte</h3>
             <button
               type="button"
               className="text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
@@ -324,9 +404,9 @@ export default function GeneradorReportes() {
               </div>
             </div>
             
-            {/* Resumen de cru00e9ditos */}
+            {/* Resumen de créditos */}
             <div>
-              <h5 className="mb-2 text-base font-medium text-gray-900 dark:text-white">Resumen de Cru00e9ditos</h5>
+              <h5 className="mb-2 text-base font-medium text-gray-900 dark:text-white">Resumen de Créditos</h5>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <div className="rounded-md bg-gray-50 p-4 dark:bg-gray-800">
                   <p className="text-xs text-gray-500 dark:text-gray-400">Total Consumido</p>
@@ -337,13 +417,13 @@ export default function GeneradorReportes() {
                   <p className="text-lg font-bold text-gray-900 dark:text-white">354</p>
                 </div>
                 <div className="rounded-md bg-gray-50 p-4 dark:bg-gray-800">
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Du00eda de Mayor Consumo</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Día de Mayor Consumo</p>
                   <p className="text-lg font-bold text-gray-900 dark:text-white">15 Mayo (982)</p>
                 </div>
               </div>
             </div>
             
-            {/* Gru00e1fico simplificado */}
+            {/* Gráfico simplificado */}
             <div>
               <h5 className="mb-2 text-base font-medium text-gray-900 dark:text-white">Tendencia de Consumo</h5>
               <div className="flex h-40 items-end justify-between">
@@ -400,13 +480,13 @@ export default function GeneradorReportes() {
               </div>
             </div>
             
-            {/* Pie de pu00e1gina */}
+            {/* Pie de página */}
             <div className="border-t border-gray-200 pt-4 text-center text-xs text-gray-500 dark:border-gray-700 dark:text-gray-400">
-              <p>Este es un ejemplo de previsualizaciu00f3n. El reporte generado contendru00e1 informaciu00f3n mu00e1s detallada.</p>
-              <p className="mt-1">Generado por Reputaciu00f3n Online - {new Date().toLocaleDateString()}</p>
+              <p>Este es un ejemplo de previsualización. El reporte generado contendrá información más detallada.</p>
+              <p className="mt-1">Generado por Reputación Online - {new Date().toLocaleDateString()}</p>
             </div>
             
-            {/* Botu00f3n de descarga */}
+            {/* Botón de descarga */}
             <div className="flex justify-center">
               <button
                 type="button"
@@ -419,6 +499,6 @@ export default function GeneradorReportes() {
           </div>
         </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 }

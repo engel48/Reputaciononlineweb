@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, MessageSquare } from 'lucide-react';
-import SofiaLogo from '@/components/icons/SofiaLogo';
+import JuliaLogo from '@/components/icons/JuliaLogo';
 
 interface Particle {
   x: number;
@@ -23,7 +23,7 @@ interface SocialMention {
   processed: boolean;
 }
 
-interface SofiaThinkingAnimationProps {
+interface JuliaThinkingAnimationProps {
   className?: string;
   height?: number | string;
   width?: number | string;
@@ -35,14 +35,14 @@ interface SofiaThinkingAnimationProps {
   responsive?: boolean;
 }
 
-const SofiaThinkingAnimation: React.FC<SofiaThinkingAnimationProps> = ({
+const JuliaThinkingAnimation: React.FC<JuliaThinkingAnimationProps> = ({
   className = "",
   height = 300,
   width = 500,
   particleCount = 80,
   showMentions = true,
   theme = 'auto',
-  title = "Sofia está analizando tus redes sociales",
+  title = "Julia está analizando tus redes sociales",
   subtitle = "Procesando menciones y sentimientos en tiempo real",
   responsive = true
 }) => {
@@ -339,7 +339,7 @@ const SofiaThinkingAnimation: React.FC<SofiaThinkingAnimationProps> = ({
       
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center z-10 p-4">
         <div className="flex items-center mb-2">
-          <SofiaLogo className="mr-2 h-6 w-6 text-blue-500" />
+          <JuliaLogo className="mr-2 h-6 w-6 text-blue-500" />
           <h3 className="text-xl font-bold text-gray-800 dark:text-white">{title}</h3>
         </div>
         <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">{subtitle}</p>
@@ -393,4 +393,4 @@ const SofiaThinkingAnimation: React.FC<SofiaThinkingAnimationProps> = ({
   );
 };
 
-export default SofiaThinkingAnimation;
+export default JuliaThinkingAnimation;

@@ -43,11 +43,11 @@ interface DashboardAnalytics {
 
 async function generateRealTimeAnalytics(): Promise<DashboardAnalytics> {
   try {
-    // Usar Sofia AI para generar datos basados en información real actual
+    // Usar Julia AI para generar datos basados en información real actual
     const response = await aiService.chat([
       {
         role: "system",
-        content: `Eres Sofia, un analista de datos de reputación online especializado en Latinoamérica. Tu tarea es generar un reporte analítico basado en DATOS REALES y TENDENCIAS ACTUALES del mercado latinoamericano. 
+        content: `Eres Julia, un analista de datos de reputación online especializado en Latinoamérica. Tu tarea es generar un reporte analítico basado en DATOS REALES y TENDENCIAS ACTUALES del mercado latinoamericano. 
         
         IMPORTANTE: Usa información real y actual sobre:
         - Tendencias actuales en redes sociales en Colombia, México, Argentina, Brasil
@@ -99,7 +99,7 @@ async function generateRealTimeAnalytics(): Promise<DashboardAnalytics> {
         
         return aiData;
       } catch (e) {
-        console.error('🚨 Sofia: Error parsing AI analytics:', e);
+        console.error('🚨 Julia: Error parsing AI analytics:', e);
       }
     }
   } catch (error) {

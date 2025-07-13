@@ -8,7 +8,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Main Development
 npm run dev                    # Start Next.js development server
 npm run build                  # Build for production (includes post-build script)
-npm run start                  # Start production server via start.js
+npm run start                  # Start production server via start.js  
+npm run start:prod            # Alternative production start script
 npm run lint                   # Run Next.js linter
 npm run clean                  # Remove .next, out, and data/app.db
 npm run reset                  # Clean and restart development
@@ -22,6 +23,8 @@ cd backend && npm test         # Run Jest tests
 npx prisma db push            # Push schema changes to database
 npx prisma studio             # Open Prisma Studio database browser
 node prisma/seed.js           # Seed database with initial data
+npm run db:setup              # Setup production database
+npm run db:test               # Test PostgreSQL connectivity
 ```
 
 ## Environment Setup
@@ -39,7 +42,7 @@ JWT_SECRET=reputacion-online-secret-key-2025
 NEXTAUTH_SECRET=your-secret-key
 NEXTAUTH_URL=http://localhost:3000
 
-# AI Services (Sofia AI assistant)
+# AI Services (Julia AI assistant)
 OPENAI_API_KEY=sk-...           # Primary AI service (optional - can be empty)
 DEEPSEEK_API_KEY=sk-...         # Fallback AI service (primary when OpenAI unavailable)
 
@@ -71,13 +74,13 @@ Two parallel authentication systems working together:
 - **Database Integration**: OAuth tokens stored in `social_media` table with refresh capabilities
 - **Role-based Access**: Admin/user permissions with protected routes
 
-### AI Service Integration - "Sofia AI"
+### AI Service Integration - "Julia AI"
 Specialized AI assistant for reputation management:
 - **Service Layer**: `/src/lib/ai-service.ts` with automatic failover
 - **Primary**: OpenAI GPT-3.5-turbo optimized for reputation analysis
 - **Fallback**: DeepSeek R1 model with identical interface
 - **Capabilities**: Sentiment analysis, person search, political metrics, content generation
-- **Character Consistency**: Sofia maintains reputation expert personality across interactions
+- **Character Consistency**: Julia maintains reputation expert personality across interactions
 
 ### Social Media Integration
 Multi-platform OAuth system with comprehensive token management:
@@ -94,7 +97,7 @@ Modular API structure with specialized endpoints:
 ├── auth/[platform]/          # OAuth handlers for each social platform
 ├── dashboard-analytics/      # AI-enhanced analytics data
 ├── social-media/            # Platform connection management
-├── sofia/                   # AI assistant endpoint
+├── julia/                   # AI assistant endpoint
 ├── admin/                   # Admin panel operations
 └── system/status/           # Health checks and system monitoring
 ```
@@ -103,7 +106,7 @@ Modular API structure with specialized endpoints:
 Feature-based component organization with advanced animations:
 - **Components**: Organized by feature in `/src/components/`
 - **Global State**: User, Credits, Plan contexts with React Context
-- **Animations**: GSAP and Framer Motion for Sofia AI interactions
+- **Animations**: GSAP and Framer Motion for Julia AI interactions
 - **UI System**: Custom components based on Radix UI with Tailwind CSS
 
 ## Key Implementation Details
@@ -122,8 +125,8 @@ const platforms = await socialMediaService.getConnectedPlatforms(userId);
 ### AI Service Integration
 The AI service provides automatic fallback between OpenAI and DeepSeek:
 ```typescript
-// Sofia AI maintains consistent character across interactions
-const response = await aiService.generateResponse(prompt, 'sofia');
+// Julia AI maintains consistent character across interactions
+const response = await aiService.generateResponse(prompt, 'julia');
 // Automatically handles API failures and switches providers
 ```
 
@@ -153,7 +156,7 @@ Dashboard endpoints generate AI-enhanced realistic data:
 
 ### AI Service Development
 - Test with both OpenAI and DeepSeek API keys
-- Sofia AI responses should maintain character consistency
+- Julia AI responses should maintain character consistency
 - Fallback to keyword-based analysis if both AI services fail
 
 ### Social Media Integration Testing

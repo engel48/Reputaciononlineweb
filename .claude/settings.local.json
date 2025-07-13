@@ -14,7 +14,9 @@
       "Bash(rg:*)",
       "Bash(rm:*)",
       "Bash(ls:*)",
-      "Bash(sqlite3:*)"
+      "Bash(sqlite3:*)",
+      "Bash(mv:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": []
   }

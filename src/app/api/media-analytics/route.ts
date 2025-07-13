@@ -70,13 +70,13 @@ export async function GET(request: NextRequest) {
 
 async function generateRealMediaAnalytics(sourceName: string): Promise<MediaAnalytics> {
   try {
-    console.log(`📊 Sofia: Generando analytics reales para: ${sourceName}`);
+    console.log(`📊 Julia: Generando analytics reales para: ${sourceName}`);
 
     try {
       const response = await aiService.chat([
         {
           role: "system",
-          content: `Eres Sofia, un analista de medios que genera estadísticas REALES y actualizadas para medios de comunicación colombianos.
+          content: `Eres Julia, un analista de medios que genera estadísticas REALES y actualizadas para medios de comunicación colombianos.
 
           DATOS REALES REQUERIDOS:
           - Tráfico web actualizado basado en datos públicos conocidos
@@ -188,22 +188,22 @@ async function generateRealMediaAnalytics(sourceName: string): Promise<MediaAnal
           }
         };
 
-        console.log(`✅ Sofia: Analytics generados para ${sourceName}: ${validatedData.monthlyMentions} menciones`);
+        console.log(`✅ Julia: Analytics generados para ${sourceName}: ${validatedData.monthlyMentions} menciones`);
         return result;
 
       } catch (parseError) {
-        console.error(`🚨 Sofia: Error parsing analytics for ${sourceName}:`, parseError);
+        console.error(`🚨 Julia: Error parsing analytics for ${sourceName}:`, parseError);
         return generateFallbackAnalytics(sourceName);
       }
     }
     } catch (aiError) {
-      console.error(`🚨 Sofia: AI service error for ${sourceName}:`, aiError);
+      console.error(`🚨 Julia: AI service error for ${sourceName}:`, aiError);
       return generateFallbackAnalytics(sourceName);
     }
 
     return generateFallbackAnalytics(sourceName);
   } catch (error) {
-    console.error(`🚨 Sofia: Error generating analytics for ${sourceName}:`, error);
+    console.error(`🚨 Julia: Error generating analytics for ${sourceName}:`, error);
     return generateFallbackAnalytics(sourceName);
   }
 }
@@ -268,7 +268,7 @@ function generateBackupArticles(sourceName: string) {
 }
 
 function generateFallbackAnalytics(sourceName: string): MediaAnalytics {
-  console.log(`🔄 Sofia: Generando analytics de respaldo para ${sourceName}`);
+  console.log(`🔄 Julia: Generando analytics de respaldo para ${sourceName}`);
   
   return {
     sourceId: sourceName.toLowerCase().replace(/\s+/g, '-'),

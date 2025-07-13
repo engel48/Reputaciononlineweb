@@ -1,6 +1,6 @@
 // Servicio de IA centralizado con fallback OpenAI -> DeepSeek R1
 // Intenta primero OpenAI, si falla, usa DeepSeek R1 como respaldo
-// Mantiene el branding como "Sofia" para el usuario
+// Mantiene el branding como "Julia" para el usuario
 
 interface AIMessage {
   role: 'system' | 'user' | 'assistant';
@@ -51,12 +51,12 @@ class AIService {
     max_tokens?: number;
   }): Promise<string | null> {
     if (!this.openaiApiKey) {
-      console.log('🤖 Sofia: Método primario no disponible, usando método alternativo');
+      console.log('🤖 Julia: Método primario no disponible, usando método alternativo');
       return null;
     }
 
     try {
-      console.log('🤖 Sofia: Procesando con método primario...');
+      console.log('🤖 Julia: Procesando con método primario...');
       const response = await fetch(this.openaiUrl, {
         method: 'POST',
         headers: {
@@ -72,14 +72,14 @@ class AIService {
       });
 
       if (!response.ok) {
-        throw new Error(`Sofia primary method error: ${response.status}`);
+        throw new Error(`Julia primary method error: ${response.status}`);
       }
 
       const data: OpenAIResponse = await response.json();
-      console.log('✅ Sofia: Respuesta generada exitosamente');
+      console.log('✅ Julia: Respuesta generada exitosamente');
       return data.choices[0]?.message?.content || '';
     } catch (error) {
-      console.log('❌ Sofia: Método primario falló, usando método alternativo:', error);
+      console.log('❌ Julia: Método primario falló, usando método alternativo:', error);
       return null;
     }
   }
@@ -88,7 +88,7 @@ class AIService {
     temperature?: number;
     max_tokens?: number;
   }): Promise<string> {
-    console.log('🤖 Sofia: Procesando con método alternativo...');
+    console.log('🤖 Julia: Procesando con método alternativo...');
     const response = await fetch(this.deepseekUrl, {
       method: 'POST',
       headers: {
@@ -104,11 +104,11 @@ class AIService {
     });
 
     if (!response.ok) {
-      throw new Error(`Sofia alternative method error: ${response.status}`);
+      throw new Error(`Julia alternative method error: ${response.status}`);
     }
 
     const data: DeepSeekResponse = await response.json();
-    console.log('✅ Sofia: Respuesta generada con método alternativo');
+    console.log('✅ Julia: Respuesta generada con método alternativo');
     return data.choices[0]?.message?.content || '';
   }
 
@@ -127,17 +127,17 @@ class AIService {
       // Si OpenAI falla, usar DeepSeek R1 como respaldo
       return await this.tryDeepSeek(messages, options);
     } catch (error) {
-      console.error('🚨 Sofia: Error en servicio de IA:', error);
-      throw new Error('Sofia no puede procesar la solicitud en este momento');
+      console.error('🚨 Julia: Error en servicio de IA:', error);
+      throw new Error('Julia no puede procesar la solicitud en este momento');
     }
   }
 
-  // Método específico para Sofia
-  async sofiaChat(userMessage: string, context?: string): Promise<string> {
+  // Método específico para Julia
+  async juliaChat(userMessage: string, context?: string): Promise<string> {
     const messages: AIMessage[] = [
       {
         role: 'system',
-        content: `Eres Sofia, una asistente de IA especializada en análisis de reputación online y monitoreo de redes sociales. 
+        content: `Eres Julia, una asistente de IA especializada en análisis de reputación online y monitoreo de redes sociales. 
         Eres amigable, profesional y experta en:
         - Análisis de sentimientos
         - Monitoreo de redes sociales

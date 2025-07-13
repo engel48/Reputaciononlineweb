@@ -8,7 +8,7 @@ import OpenAI from 'openai';
 
 interface Message {
   id: string;
-  sender: 'user' | 'sofia';
+  sender: 'user' | 'julia';
   text: string;
   timestamp: Date;
 }
@@ -19,7 +19,7 @@ const openai = new OpenAI({
   dangerouslyAllowBrowser: true // Permitir uso en el navegador (normalmente esto se haría desde el servidor)
 });
 
-const ChatSofia = () => {
+const ChatJulia = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [message, setMessage] = useState('');
@@ -36,8 +36,8 @@ const ChatSofia = () => {
       const initialMessages: Message[] = [
         {
           id: '1',
-          sender: 'sofia',
-          text: `¡Hola ${user.name}! Soy Sofia, tu asistente virtual. ¿En qué puedo ayudarte hoy?`,
+          sender: 'julia',
+          text: `¡Hola ${user.name}! Soy Julia, tu asistente virtual. ¿En qué puedo ayudarte hoy?`,
           timestamp: new Date()
         }
       ];
@@ -121,7 +121,7 @@ const ChatSofia = () => {
         messages: [
           {
             role: "system", 
-            content: `Eres Sofia, una asistente especializada en análisis de reputación online y marketing digital para Latinoamérica. 
+            content: `Eres Julia, una asistente especializada en análisis de reputación online y marketing digital para Latinoamérica. 
             
             ${userContext}
             
@@ -179,22 +179,22 @@ const ChatSofia = () => {
       // Obtener respuesta de OpenAI
       const aiResponse = await getOpenAIResponse(currentMessage);
       
-      const sofiaMessage: Message = {
+      const juliaMessage: Message = {
         id: (Date.now() + 1).toString(),
-        sender: 'sofia',
+        sender: 'julia',
         text: aiResponse,
         timestamp: new Date()
       };
       
       setIsTyping(false);
-      setMessages((prev) => [...prev, sofiaMessage]);
+      setMessages((prev) => [...prev, juliaMessage]);
     } catch (error) {
       console.error('Error al procesar la consulta:', error);
       
       setIsTyping(false);
       setMessages((prev) => [...prev, {
         id: (Date.now() + 1).toString(),
-        sender: 'sofia',
+        sender: 'julia',
         text: 'Lo siento, ha ocurrido un error al procesar tu consulta. Por favor, intenta nuevamente en unos momentos.',
         timestamp: new Date()
       }]);
@@ -224,7 +224,7 @@ const ChatSofia = () => {
               <Brain className="h-4 w-4" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold">Sofia</h3>
+              <h3 className="text-sm font-semibold">Julia</h3>
               <p className="text-xs opacity-80">Asistente Virtual</p>
             </div>
           </div>
@@ -332,4 +332,4 @@ const ChatSofia = () => {
   );
 };
 
-export default ChatSofia;
+export default ChatJulia;

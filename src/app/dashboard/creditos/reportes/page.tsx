@@ -1,14 +1,17 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useUser } from '@/context/UserContext';
 import GeneradorReportes from '@/components/creditos/GeneradorReportes';
-import { FileText, ChevronRight, Download, BarChart2, User, Calendar, CreditCard } from 'lucide-react';
+import { FileText, ChevronRight, Download, BarChart2, User, Calendar, CreditCard, RefreshCw, TrendingUp, Activity } from 'lucide-react';
+import { ReportGenerator, ReportData } from '@/lib/reportGenerator';
 import Image from 'next/image';
 
 export default function ReportesCreditosPage() {
   const { user } = useUser();
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [selectedReport, setSelectedReport] = useState<string | null>(null);
 
   // Configuración de animaciones
   const containerVariants = {
@@ -30,165 +33,262 @@ export default function ReportesCreditosPage() {
     }
   };
 
-  // Reportes predefinidos
+  const cardVariants = {
+    hidden: { opacity: 0, scale: 0.95 },
+    visible: { opacity: 1, scale: 1, transition: { duration: 0.3 } },
+    hover: { scale: 1.02, transition: { duration: 0.2 } }
+  };
+
+  // Reportes predefinidos con diseño mejorado
   const reportesPredefinidos = [
     {
       id: 'mensual-general',
       titulo: 'Reporte Mensual',
       descripcion: 'Consumo detallado de créditos del último mes',
-      icono: <BarChart2 className="h-6 w-6 text-blue-500 dark:text-blue-400" />,
-      color: 'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20'
+      icono: <BarChart2 className="h-6 w-6" />,
+      color: '#01257D',
+      bgGradient: 'from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20',
+      borderColor: 'border-blue-200 dark:border-blue-700',
+      stats: '2,450 créditos',
+      emoji: '📊'
     },
     {
       id: 'canales-sociales',
       titulo: 'Consumo por Canales',
       descripcion: 'Desglose de créditos por cada red social',
-      icono: <BarChart2 className="h-6 w-6 text-green-500 dark:text-green-400" />,
-      color: 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20'
+      icono: <BarChart2 className="h-6 w-6" />,
+      color: '#059669',
+      bgGradient: 'from-emerald-50 to-green-100 dark:from-emerald-900/20 dark:to-green-900/20',
+      borderColor: 'border-emerald-200 dark:border-emerald-700',
+      stats: '7 canales activos',
+      emoji: '📱'
     },
     {
       id: 'tendencias-trimestre',
       titulo: 'Tendencias Trimestrales',
       descripcion: 'Análisis comparativo de los últimos 3 meses',
-      icono: <BarChart2 className="h-6 w-6 text-purple-500 dark:text-purple-400" />,
-      color: 'border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-900/20'
+      icono: <BarChart2 className="h-6 w-6" />,
+      color: '#8B5CF6',
+      bgGradient: 'from-purple-50 to-violet-100 dark:from-purple-900/20 dark:to-violet-900/20',
+      borderColor: 'border-purple-200 dark:border-purple-700',
+      stats: '+18% crecimiento',
+      emoji: '📈'
     },
     {
       id: 'reporte-personalizado',
       titulo: 'Reporte Personalizado',
       descripcion: 'Genera un reporte específico con tus datos únicos',
-      icono: <User className="h-6 w-6 text-orange-500 dark:text-orange-400" />,
-      color: 'border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-900/20'
+      icono: <User className="h-6 w-6" />,
+      color: '#F59E0B',
+      bgGradient: 'from-amber-50 to-orange-100 dark:from-amber-900/20 dark:to-orange-900/20',
+      borderColor: 'border-amber-200 dark:border-amber-700',
+      stats: 'Configuración flexible',
+      emoji: '⚙️'
     }
   ];
 
-  const generatePersonalizedReport = (reportType: string) => {
+  const generatePersonalizedReport = async (reportType: string) => {
     if (!user) return;
     
-    // Crear reporte con datos del usuario
-    const reportData = {
-      usuario: {
-        nombre: user.name,
-        email: user.email,
-        plan: user.plan,
-        creditos: user.credits,
-        fechaRegistro: user.createdAt
-      },
-      tipo: reportType,
-      fechaGeneracion: new Date().toISOString(),
-      logo: '/rol-logo.png'
-    };
+    setIsGenerating(true);
+    setSelectedReport(reportType);
+    
+    try {
+      // Mapear tipos de reporte
+      const tipoReporte = reportType === 'mensual-general' ? 'completo' :
+                         reportType === 'canales-sociales' ? 'canales' :
+                         reportType === 'tendencias-trimestre' ? 'tendencia' :
+                         'completo';
 
-    console.log('Generando reporte personalizado:', reportData);
-    // Aquí se podría implementar la descarga del PDF con estos datos
+      // Crear reporte con datos reales del usuario
+      const reportData: ReportData = {
+        tipo: tipoReporte as any,
+        formato: 'pdf',
+        periodo: reportType === 'tendencias-trimestre' ? 'trimestre' : 'mes',
+        usuario: {
+          nombre: user.name,
+          email: user.email,
+          plan: user.plan,
+          creditos: user.credits
+        }
+      };
+
+      console.log('Generando reporte personalizado:', reportData);
+      
+      // Generar y descargar usando el servicio real
+      await ReportGenerator.generateAndDownload(reportData);
+      
+    } catch (error) {
+      console.error('Error generando reporte:', error);
+      alert('Error al generar el reporte. Por favor, inténtalo de nuevo.');
+    } finally {
+      setIsGenerating(false);
+      setSelectedReport(null);
+    }
   };
 
   return (
     <motion.div
-      className="space-y-8"
+      className="container mx-auto px-4 py-6"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
-      {/* Header con logo de la plataforma y datos del usuario */}
-      <motion.div
+      {/* Header heroico mejorado */}
+      <motion.div 
+        className="bg-gradient-to-r from-[#01257D] via-purple-600 to-indigo-600 rounded-2xl p-8 mb-8"
         variants={itemVariants}
-        initial="hidden"
-        animate="visible"
-        className="mb-8"
       >
-        <div className="card p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-4">
-              {/* Logo de la plataforma */}
-              <div className="flex-shrink-0">
-                <Image
-                  src="/rol-logo.png"
-                  alt="Reputación Online"
-                  width={60}
-                  height={60}
-                  className="rounded-lg"
-                />
-              </div>
-              
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Reportes de Créditos
-                </h1>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Genera y descarga reportes personalizados de tu actividad
-                </p>
-              </div>
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex-1">
+            <h1 className="text-4xl font-bold text-white mb-3 flex items-center">
+              <FileText className="mr-4 h-10 w-10" />
+              📄 Reportes de Créditos
+            </h1>
+            <p className="text-blue-100 text-lg mb-6 lg:mb-0">
+              📊 Genera reportes personalizados con análisis detallado de consumo
+            </p>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-4">
+            <div className="text-center">
+              <BarChart2 className="h-8 w-8 mx-auto text-white mb-2" />
+              <div className="text-2xl font-bold text-white">156</div>
+              <div className="text-sm text-blue-200">Reportes</div>
             </div>
-
-            {/* Datos personalizados del usuario */}
-            {user && (
-              <div className="text-right">
-                <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 mb-1">
-                  <User className="h-4 w-4" />
-                  <span>{user.name}</span>
-                </div>
-                <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 mb-1">
-                  <CreditCard className="h-4 w-4" />
-                  <span>Plan {user.plan?.charAt(0).toUpperCase() + user.plan?.slice(1)}</span>
-                </div>
-                <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-                  <Calendar className="h-4 w-4" />
-                  <span>{user.credits} créditos disponibles</span>
-                </div>
-              </div>
-            )}
+            <div className="text-center">
+              <TrendingUp className="h-8 w-8 mx-auto text-white mb-2" />
+              <div className="text-2xl font-bold text-white">+23%</div>
+              <div className="text-sm text-blue-200">Eficiencia</div>
+            </div>
+            <div className="text-center">
+              <Activity className="h-8 w-8 mx-auto text-white mb-2" />
+              <div className="text-2xl font-bold text-white">{user?.credits || 0}</div>
+              <div className="text-sm text-blue-200">Créditos</div>
+            </div>
+            <div className="text-center">
+              <User className="h-8 w-8 mx-auto text-white mb-2" />
+              <div className="text-lg font-bold text-white">{user?.plan || 'Basic'}</div>
+              <div className="text-sm text-blue-200">Plan</div>
+            </div>
           </div>
         </div>
       </motion.div>
 
-      {/* Tu00edtulo de la pu00e1gina */}
-      <motion.div variants={itemVariants}>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Reportes de Créditos</h1>
-        <p className="mt-1 text-gray-500 dark:text-gray-400">
-          Genera informes detallados sobre el consumo de créditos para análisis y optimización.
-        </p>
+      {/* Migas de pan mejoradas */}
+      <motion.div variants={itemVariants} className="mb-8">
+        <nav className="flex items-center text-sm text-gray-500 dark:text-gray-400 bg-white/70 dark:bg-gray-800/70 rounded-xl p-4 backdrop-blur-sm border border-gray-200 dark:border-gray-700">
+          <a href="/dashboard" className="hover:text-[#01257D] dark:hover:text-blue-400 font-medium transition-colors duration-200">
+            🏠 Dashboard
+          </a>
+          <ChevronRight className="mx-2 h-4 w-4" />
+          <a href="/dashboard/creditos" className="hover:text-[#01257D] dark:hover:text-blue-400 font-medium transition-colors duration-200">
+            💳 Créditos
+          </a>
+          <ChevronRight className="mx-2 h-4 w-4" />
+          <span className="text-[#01257D] dark:text-white font-semibold">
+            📄 Reportes
+          </span>
+        </nav>
       </motion.div>
 
-      {/* Migas de pan */}
-      <motion.div variants={itemVariants} className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-        <a href="/dashboard" className="hover:text-primary-600 dark:hover:text-primary-400">Dashboard</a>
-        <ChevronRight className="mx-2 h-4 w-4" />
-        <a href="/dashboard/creditos" className="hover:text-primary-600 dark:hover:text-primary-400">Créditos</a>
-        <ChevronRight className="mx-2 h-4 w-4" />
-        <span className="text-gray-700 dark:text-gray-300">Reportes</span>
-      </motion.div>
-
-      {/* Reportes predefinidos */}
+      {/* Reportes predefinidos mejorados */}
       <motion.div variants={itemVariants}>
-        <div className="card p-6">
-          <div className="mb-6 flex items-center">
-            <FileText className="mr-3 h-6 w-6 text-primary-600 dark:text-primary-400" />
-            <h2 className="heading-secondary">Reportes Predefinidos</h2>
+        <motion.div 
+          className="bg-gradient-to-br from-white via-gray-50/50 to-blue-50/30 dark:from-gray-900 dark:via-gray-800/50 dark:to-blue-900/10 rounded-2xl border-0 shadow-2xl overflow-hidden"
+          variants={cardVariants}
+          initial="hidden"
+          animate="visible"
+          whileHover="hover"
+        >
+          <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white p-8">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-3xl font-bold flex items-center">
+                <FileText className="mr-3 h-8 w-8" />
+                📄 Reportes Predefinidos
+              </h2>
+              {isGenerating && (
+                <div className="relative">
+                  <div className="animate-spin h-8 w-8 border-4 border-white/30 border-t-white rounded-full"></div>
+                  <Activity className="absolute inset-0 m-auto h-4 w-4 text-white animate-pulse" />
+                </div>
+              )}
+            </div>
+            <p className="text-emerald-100 text-lg">
+              🎯 Selecciona el tipo de reporte que necesitas generar
+            </p>
           </div>
           
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {reportesPredefinidos.map((reporte) => (
-              <div 
-                key={reporte.id}
-                className={`flex flex-col rounded-lg border p-4 transition-transform hover:-translate-y-1 hover:shadow-md ${reporte.color}`}
-              >
-                <div className="mb-3 flex items-center">
-                  {reporte.icono}
-                  <h3 className="ml-2 text-base font-medium text-gray-900 dark:text-white">{reporte.titulo}</h3>
-                </div>
-                <p className="mb-4 flex-grow text-sm text-gray-700 dark:text-gray-300">{reporte.descripcion}</p>
-                <button 
+          <div className="p-8">
+            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+              {reportesPredefinidos.map((reporte, index) => (
+                <motion.div 
+                  key={reporte.id}
+                  className={`relative overflow-hidden bg-gradient-to-br ${reporte.bgGradient} rounded-2xl p-6 border-2 ${reporte.borderColor} hover:shadow-xl transition-all duration-300 cursor-pointer`}
+                  whileHover={{ scale: 1.05, rotate: 1 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
                   onClick={() => generatePersonalizedReport(reporte.id)}
-                  className="mt-auto inline-flex items-center justify-center rounded-md bg-[#01257D] hover:bg-[#013AAA] px-3 py-1.5 text-sm font-medium text-white shadow-sm transition-colors duration-200"
                 >
-                  <Download className="mr-1.5 h-4 w-4" />
-                  Descargar
-                </button>
-              </div>
-            ))}
+                  {/* Header del reporte */}
+                  <div className="flex items-center mb-4">
+                    <div 
+                      className="h-12 w-12 rounded-full flex items-center justify-center text-white shadow-lg"
+                      style={{ backgroundColor: reporte.color }}
+                    >
+                      <span className="text-xl">{reporte.emoji}</span>
+                    </div>
+                    <div className="ml-3 flex-1">
+                      <h3 className="font-bold text-[#01257D] dark:text-white text-lg">
+                        {reporte.titulo}
+                      </h3>
+                    </div>
+                  </div>
+
+                  {/* Descripción */}
+                  <p className="text-gray-700 dark:text-gray-300 text-sm mb-4 line-clamp-2">
+                    {reporte.descripcion}
+                  </p>
+
+                  {/* Estadísticas */}
+                  <div className="bg-white/70 dark:bg-gray-700/70 rounded-xl p-3 mb-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Estado</span>
+                      <span className="text-sm font-bold" style={{ color: reporte.color }}>
+                        {reporte.stats}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Botón de descarga */}
+                  <button 
+                    disabled={isGenerating}
+                    className={`w-full inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-bold text-white shadow-lg transition-all duration-300 ${
+                      isGenerating && selectedReport === reporte.id
+                        ? 'bg-gray-400 cursor-not-allowed'
+                        : 'hover:shadow-xl transform hover:scale-105'
+                    }`}
+                    style={{ 
+                      backgroundColor: isGenerating && selectedReport === reporte.id ? '#6B7280' : reporte.color 
+                    }}
+                  >
+                    {isGenerating && selectedReport === reporte.id ? (
+                      <>
+                        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                        Generando...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="mr-2 h-4 w-4" />
+                        Descargar
+                      </>
+                    )}
+                  </button>
+                </motion.div>
+              ))}
+            </div>
           </div>
-        </div>
+        </motion.div>
       </motion.div>
 
       {/* Historial de reportes */}

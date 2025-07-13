@@ -15,7 +15,7 @@ export default function SimpleChat() {
   const [mensajes, setMensajes] = useState<Mensaje[]>([
     {
       id: '1',
-      texto: '¡Hola! Soy Sofia, tu asistente de IA especializada en reputación online. ¿En qué puedo ayudarte?',
+      texto: '¡Hola! Soy Julia, tu asistente de IA especializada en reputación online. ¿En qué puedo ayudarte?',
       esUsuario: false,
       timestamp: new Date()
     }
@@ -47,7 +47,7 @@ export default function SimpleChat() {
     setEnviando(true);
 
     try {
-      const response = await fetch('/api/sofia', {
+      const response = await fetch('/api/julia', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -59,13 +59,13 @@ export default function SimpleChat() {
       const data = await response.json();
       
       if (data.success) {
-        const mensajeSofia: Mensaje = {
-          id: `sofia-${Date.now()}`,
+        const mensajeJulia: Mensaje = {
+          id: `julia-${Date.now()}`,
           texto: data.response,
           esUsuario: false,
           timestamp: new Date()
         };
-        setMensajes(prev => [...prev, mensajeSofia]);
+        setMensajes(prev => [...prev, mensajeJulia]);
       } else {
         throw new Error('Error en la respuesta');
       }
@@ -158,7 +158,7 @@ export default function SimpleChat() {
           value={inputMessage}
           onChange={(e) => setInputMessage(e.target.value)}
           onKeyPress={handleKeyPress}
-          placeholder="Escribe aquí tu pregunta para Sofia..."
+          placeholder="Escribe aquí tu pregunta para Julia..."
           disabled={enviando}
           className="flex-1 px-4 py-3 border-2 border-blue-300 rounded-xl focus:ring-2 focus:ring-[#01257D] focus:border-[#01257D] dark:bg-gray-700 dark:text-white text-lg disabled:opacity-50"
           style={{ fontSize: '16px', minHeight: '50px' }}

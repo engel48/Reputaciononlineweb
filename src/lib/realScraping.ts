@@ -139,7 +139,7 @@ function generateRealisticSocialContent(name: string, platform: string): string 
   return templates[Math.floor(Math.random() * templates.length)];
 }
 
-// Función para analizar sentimientos con Sofia IA
+// Función para analizar sentimientos con Julia IA
 async function analyzeSentimentWithGPT(contents: string[], personalityName: string): Promise<{
   overall_sentiment: { positive: number; negative: number; neutral: number };
   insights: string[];
@@ -152,7 +152,7 @@ async function analyzeSentimentWithGPT(contents: string[], personalityName: stri
     const aiAnalysis = await aiService.aiService.chat([
       {
         role: 'system',
-        content: 'Eres Sofia, un experto en análisis de sentimientos. Responde ÚNICAMENTE con un objeto JSON válido.'
+        content: 'Eres Julia, un experto en análisis de sentimientos. Responde ÚNICAMENTE con un objeto JSON válido.'
       },
       {
         role: 'user',
@@ -198,7 +198,7 @@ export async function searchAndAnalyzePersonality(name: string): Promise<Persona
     const allContents = [...newsResults, ...socialResults];
     const contentTexts = allContents.map(item => `${item.title} ${item.content}`);
     
-    // 4. Análisis de sentimientos con Sofia IA
+    // 4. Análisis de sentimientos con Julia IA
     const sentimentAnalysis = await analyzeSentimentWithGPT(contentTexts, name);
     
     // 5. Agrupar por fuentes

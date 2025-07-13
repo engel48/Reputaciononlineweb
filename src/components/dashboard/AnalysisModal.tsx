@@ -222,7 +222,7 @@ export default function AnalysisModal({ isOpen, onClose, personalityName, onAnal
                       </div>
                       <div className="flex items-center justify-center space-x-2">
                         <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{animationDelay: '0.4s'}}></div>
-                        <span>Procesando con Sofia IA...</span>
+                        <span>Procesando con Julia IA...</span>
                       </div>
                     </div>
                   </div>
@@ -388,7 +388,7 @@ export default function AnalysisModal({ isOpen, onClose, personalityName, onAnal
                           <Sparkles className="w-3 h-3 text-yellow-600 dark:text-yellow-400" />
                         </div>
                       </div>
-                      Insights Clave (Sofia IA)
+                      Insights Clave (Julia IA)
                     </h3>
                     <div className="space-y-3">
                       {analysis.analysis.key_insights.map((insight: string, index: number) => (
@@ -532,7 +532,7 @@ export default function AnalysisModal({ isOpen, onClose, personalityName, onAnal
                     <div className="flex items-center space-x-2 mb-4">
                       <Brain className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                       <h4 className="font-semibold text-purple-900 dark:text-purple-100">
-                        Análisis de IA con Sofia
+                        Análisis de IA con Julia
                       </h4>
                     </div>
                     <div className="space-y-2">

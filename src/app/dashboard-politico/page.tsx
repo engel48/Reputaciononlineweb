@@ -7,12 +7,12 @@ import { useRouter } from 'next/navigation';
 import PoliticalDashboard from '@/components/dashboard/PoliticalDashboard';
 import CreditosSummary from '@/components/creditos/CreditosSummary';
 import AdvancedSearch from '@/components/dashboard/AdvancedSearch';
-import SofiaChat from '@/components/dashboard/SofiaChat';
+import JuliaChat from '@/components/dashboard/JuliaChat';
 import SimpleBuscador from '@/components/dashboard/SimpleBuscador';
 import SimpleChat from '@/components/dashboard/SimpleChat';
 import XLogo from '@/components/icons/XLogo';
 import dynamic from 'next/dynamic';
-import SofiaThinkingAnimation from '@/components/dashboard/SofiaThinkingAnimation';
+import JuliaThinkingAnimation from '@/components/dashboard/JuliaThinkingAnimation';
 import LoadingAnimation from '@/components/ui/LoadingAnimation';
 
 import { 
@@ -494,7 +494,7 @@ export default function DashboardPolitico() {
           </div>
           <div>
             <p className="text-lg">¡FUNCIONES POLÍTICAS ESPECIALIZADAS + TODO LO NORMAL ACTIVAS!</p>
-            <p className="text-sm opacity-90">✅ Dashboard completo normal ✅ Análisis de aprobación ✅ Intención de voto ✅ Monitoreo político ✅ Sofia IA especializada</p>
+            <p className="text-sm opacity-90">✅ Dashboard completo normal ✅ Análisis de aprobación ✅ Intención de voto ✅ Monitoreo político ✅ Julia IA especializada</p>
           </div>
           <div className="animate-pulse">
             🗳️
@@ -1014,7 +1014,7 @@ export default function DashboardPolitico() {
         <DynamicMencionesMap />
       </div>
       
-      {/* Análisis de IA - Sofia */}
+      {/* Análisis de IA - Julia */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -1023,7 +1023,7 @@ export default function DashboardPolitico() {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
             <Sparkles className="mr-2 h-5 w-5 text-blue-500" />
-            Sofia IA - Análisis Político Cognitivo
+            Julia IA - Análisis Político Cognitivo
           </h2>
           <div className="flex items-center space-x-4">
             <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
@@ -1070,12 +1070,12 @@ export default function DashboardPolitico() {
           )}
           
           <div className="w-full" style={{ height: "350px" }}>
-            <SofiaThinkingAnimation 
+            <JuliaThinkingAnimation 
               particleCount={errorConexion ? 50 : 100}
               showMentions={!errorConexion}
               responsive={true}
               className="w-full h-full"
-              title={isAnalyzing ? `Sofia está analizando ${neuralNetworkMode === 'sentiment' ? 'sentimientos políticos' : neuralNetworkMode === 'platform' ? 'plataformas políticas' : 'engagement político'}` : 'Análisis político completado'}
+              title={isAnalyzing ? `Julia está analizando ${neuralNetworkMode === 'sentiment' ? 'sentimientos políticos' : neuralNetworkMode === 'platform' ? 'plataformas políticas' : 'engagement político'}` : 'Análisis político completado'}
               subtitle={isAnalyzing ? "Procesando menciones políticas y sentimientos en tiempo real" : `Última actualización: ${ultimaActualizacion.toLocaleTimeString()}`}
             />
           </div>
@@ -1403,7 +1403,7 @@ export default function DashboardPolitico() {
         </motion.div>
       </div>
 
-      {/* Sofia Chat político */}
+      {/* Julia Chat político */}
       <div className="mb-4 sm:mb-6">
         <motion.div
           custom={6}
@@ -1423,14 +1423,14 @@ export default function DashboardPolitico() {
             <div>
               <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white flex items-center">
                 <span className="bg-gradient-to-r from-[#01257D] to-purple-600 bg-clip-text text-transparent">
-                  Sofia IA Política
+                  Julia IA Política
                 </span>
                 <span className="ml-2 text-sm bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full dark:bg-yellow-900/30 dark:text-yellow-300">
                   Especializada
                 </span>
               </h2>
               <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                Asistente especializado en análisis político • Sofia IA + Modelos Políticos
+                Asistente especializado en análisis político • Julia IA + Modelos Políticos
               </p>
             </div>
           </div>
@@ -1599,7 +1599,7 @@ export default function DashboardPolitico() {
                 <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4 mb-6">
                   <div className="flex items-center space-x-2 mb-2">
                     <Sparkles className="w-5 h-5 text-yellow-600" />
-                    <span className="font-semibold text-yellow-800 dark:text-yellow-300">Análisis Político con Sofia IA</span>
+                    <span className="font-semibold text-yellow-800 dark:text-yellow-300">Análisis Político con Julia IA</span>
                   </div>
                   <p className="text-sm text-yellow-700 dark:text-yellow-300">
                     Impacto político: <strong>{noticiaSeleccionada.engagement}</strong>

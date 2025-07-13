@@ -828,7 +828,7 @@ export default function AdvancedSearch() {
                     <div className="flex items-center space-x-2 mb-4">
                       <Brain className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                       <h4 className="font-semibold text-purple-900 dark:text-purple-100">
-                        Análisis de IA con Sofia
+                        Análisis de IA con Julia
                       </h4>
                     </div>
                     <div className="space-y-2">

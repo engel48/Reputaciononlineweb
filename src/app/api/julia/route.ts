@@ -12,8 +12,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Usar el servicio unificado de Sofia con contexto especializado
-    const sofiaContext = `Usuario consultando sobre reputación online. Especialízate en:
+    // Usar el servicio unificado de Julia con contexto especializado
+    const juliaContext = `Usuario consultando sobre reputación online. Especialízate en:
 - Análisis de sentimientos en redes sociales
 - Monitoreo de reputación online  
 - Estrategias de marketing digital
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
 
 Contexto de la conversación: ${context || 'Consulta general sobre reputación online'}`;
 
-    const response = await aiService.sofiaChat(message, sofiaContext);
+    const response = await aiService.juliaChat(message, juliaContext);
 
     return NextResponse.json({
       success: true,
@@ -32,12 +32,12 @@ Contexto de la conversación: ${context || 'Consulta general sobre reputación o
     });
 
   } catch (error: any) {
-    console.error('🚨 Sofia API Error:', error);
+    console.error('🚨 Julia API Error:', error);
     
     return NextResponse.json({
       success: false,
       error: 'Error interno del servidor',
-      response: 'Lo siento, Sofia está experimentando dificultades técnicas. Por favor, inténtalo más tarde.'
+      response: 'Lo siento, Julia está experimentando dificultades técnicas. Por favor, inténtalo más tarde.'
     }, { status: 500 });
   }
 }
