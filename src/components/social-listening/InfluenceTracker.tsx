@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   TrendingUp, TrendingDown, Users, Heart, MessageCircle, Share2,
   DollarSign, Eye, Star, Award, Target, Zap, BarChart3, PieChart,
-  Instagram, Youtube, Facebook, Twitter, TikTok, Linkedin,
+  Instagram, Youtube, Facebook, Twitter, Linkedin,
   Calendar, Clock, AlertTriangle, CheckCircle, ArrowUp, ArrowDown,
   Filter, Download, RefreshCw, Search, Bell, Settings, Shield
 } from 'lucide-react';
@@ -188,7 +188,7 @@ export default function InfluenceTracker({ userProfile }: InfluenceTrackerProps)
   const getPlatformIcon = (platform: string) => {
     switch (platform.toLowerCase()) {
       case 'instagram': return Instagram;
-      case 'tiktok': return TikTok;
+      case 'tiktok': return Users; // TikTok icon not available in lucide-react
       case 'youtube': return Youtube;
       case 'twitter': return Twitter;
       case 'facebook': return Facebook;

@@ -146,25 +146,25 @@ export default function SocialListeningPage() {
       case 'political':
         return hasFeature('hasAdvancedAnalytics') ? 
           <PoliticalPulse userProfile={userProfile} /> : 
-          <FeatureGate feature="hasAdvancedAnalytics" />;
+          <FeatureGate feature="hasAdvancedAnalytics"><></></FeatureGate>;
       case 'influence':
         return hasFeature('hasAdvancedAnalytics') ? 
           <InfluenceTracker userProfile={userProfile} /> : 
-          <FeatureGate feature="hasAdvancedAnalytics" />;
+          <FeatureGate feature="hasAdvancedAnalytics"><></></FeatureGate>;
       case 'audience':
         return <AudienceIntelligence userProfile={userProfile} />;
       case 'crisis':
         return hasFeature('hasCrisisManagement') ? 
           <CrisisManagement userProfile={userProfile} /> : 
-          <FeatureGate feature="hasCrisisManagement" />;
+          <FeatureGate feature="hasCrisisManagement"><></></FeatureGate>;
       case 'media':
         return hasFeature('hasMediaCoverage') ? 
           <MediaMonitoring userProfile={userProfile} /> : 
-          <FeatureGate feature="hasMediaCoverage" />;
+          <FeatureGate feature="hasMediaCoverage"><></></FeatureGate>;
       case 'brand':
         return hasFeature('hasPredictiveAnalytics') ? 
           <AIBrandAdvisor userProfile={userProfile} /> : 
-          <FeatureGate feature="hasPredictiveAnalytics" />;
+          <FeatureGate feature="hasPredictiveAnalytics"><></></FeatureGate>;
       default:
         return <OverviewTab metrics={metrics} userProfile={userProfile} />;
     }
@@ -202,7 +202,7 @@ export default function SocialListeningPage() {
                   <h1 className="text-3xl lg:text-4xl font-bold mb-2 flex items-center">
                     <HeadphonesIcon className="mr-3 h-10 w-10" />
                     Social Listening
-                    <PlanBadge plan={currentPlan} className="ml-3" />
+                    <PlanBadge className="ml-3" />
                   </h1>
                   <p className="text-xl text-blue-100 mb-4">
                     Monitoreo inteligente para {userProfile.type}s como {user?.name}
