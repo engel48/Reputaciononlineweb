@@ -163,38 +163,38 @@ function PoliticalDashboardContent({ children }: { children: React.ReactNode }) 
               {(menuOpen || menuHovered || isMobile) && 'Dashboard Político'}
             </Link>
 
-            <Link href="/dashboard-politico/aprobacion" className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium ${pathname === '/dashboard-politico/aprobacion' ? 'bg-[#01257D]/10 text-[#01257D] dark:bg-[#01257D]/20 dark:text-[#01257D]' : 'text-gray-600 hover:bg-[#01257D]/10 hover:text-[#01257D] dark:text-gray-300 dark:hover:bg-[#01257D]/20 dark:hover:text-[#01257D]'}`}>
-              <TrendingUp className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 ${pathname === '/dashboard-politico/aprobacion' ? 'text-[#01257D] dark:text-white' : 'text-gray-400 group-hover:text-[#01257D] dark:text-gray-400 dark:group-hover:text-white'}`} />
-              {(menuOpen || menuHovered || isMobile) && 'Aprobación'}
+            <Link href="/dashboard/analytics" className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium ${pathname === '/dashboard/analytics' ? 'bg-[#01257D]/10 text-[#01257D] dark:bg-[#01257D]/20 dark:text-[#01257D]' : 'text-gray-600 hover:bg-[#01257D]/10 hover:text-[#01257D] dark:text-gray-300 dark:hover:bg-[#01257D]/20 dark:hover:text-[#01257D]'}`}>
+              <TrendingUp className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 ${pathname === '/dashboard/analytics' ? 'text-[#01257D] dark:text-white' : 'text-gray-400 group-hover:text-[#01257D] dark:text-gray-400 dark:group-hover:text-white'}`} />
+              {(menuOpen || menuHovered || isMobile) && 'Analytics & Aprobación'}
             </Link>
 
-            <Link href="/dashboard-politico/intencion-voto" className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium ${pathname === '/dashboard-politico/intencion-voto' ? 'bg-[#01257D]/10 text-[#01257D] dark:bg-[#01257D]/20 dark:text-[#01257D]' : 'text-gray-600 hover:bg-[#01257D]/10 hover:text-[#01257D] dark:text-gray-300 dark:hover:bg-[#01257D]/20 dark:hover:text-[#01257D]'}`}>
-              <Vote className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 ${pathname === '/dashboard-politico/intencion-voto' ? 'text-[#01257D] dark:text-white' : 'text-gray-400 group-hover:text-[#01257D] dark:text-gray-400 dark:group-hover:text-white'}`} />
-              {(menuOpen || menuHovered || isMobile) && 'Intención de Voto'}
+            <Link href="/dashboard/social-listening" className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium ${pathname === '/dashboard/social-listening' ? 'bg-[#01257D]/10 text-[#01257D] dark:bg-[#01257D]/20 dark:text-[#01257D]' : 'text-gray-600 hover:bg-[#01257D]/10 hover:text-[#01257D] dark:text-gray-300 dark:hover:bg-[#01257D]/20 dark:hover:text-[#01257D]'}`}>
+              <Vote className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 ${pathname === '/dashboard/social-listening' ? 'text-[#01257D] dark:text-white' : 'text-gray-400 group-hover:text-[#01257D] dark:text-gray-400 dark:group-hover:text-white'}`} />
+              {(menuOpen || menuHovered || isMobile) && 'Social Listening'}
             </Link>
 
-            <Link href="/dashboard-politico/analisis" className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium ${pathname === '/dashboard-politico/analisis' ? 'bg-[#01257D]/10 text-[#01257D] dark:bg-[#01257D]/20 dark:text-[#01257D]' : 'text-gray-600 hover:bg-[#01257D]/10 hover:text-[#01257D] dark:text-gray-300 dark:hover:bg-[#01257D]/20 dark:hover:text-[#01257D]'}`}>
-              <BarChart3 className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 ${pathname === '/dashboard-politico/analisis' ? 'text-[#01257D] dark:text-white' : 'text-gray-400 group-hover:text-[#01257D] dark:text-gray-400 dark:group-hover:text-white'}`} />
-              {(menuOpen || menuHovered || isMobile) && 'Análisis Político'}
+            <Link href="/dashboard/analisis" className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium ${pathname === '/dashboard/analisis' ? 'bg-[#01257D]/10 text-[#01257D] dark:bg-[#01257D]/20 dark:text-[#01257D]' : 'text-gray-600 hover:bg-[#01257D]/10 hover:text-[#01257D] dark:text-gray-300 dark:hover:bg-[#01257D]/20 dark:hover:text-[#01257D]'}`}>
+              <BarChart3 className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 ${pathname === '/dashboard/analisis' ? 'text-[#01257D] dark:text-white' : 'text-gray-400 group-hover:text-[#01257D] dark:text-gray-400 dark:group-hover:text-white'}`} />
+              {(menuOpen || menuHovered || isMobile) && 'Análisis Detallado'}
             </Link>
 
-            <Link href="/dashboard-politico/audiencia" className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium ${pathname === '/dashboard-politico/audiencia' ? 'bg-[#01257D]/10 text-[#01257D] dark:bg-[#01257D]/20 dark:text-[#01257D]' : 'text-gray-600 hover:bg-[#01257D]/10 hover:text-[#01257D] dark:text-gray-300 dark:hover:bg-[#01257D]/20 dark:hover:text-[#01257D]'}`}>
-              <Users className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 ${pathname === '/dashboard-politico/audiencia' ? 'text-[#01257D] dark:text-white' : 'text-gray-400 group-hover:text-[#01257D] dark:text-gray-400 dark:group-hover:text-white'}`} />
+            <Link href="/dashboard/audiencia" className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium ${pathname === '/dashboard/audiencia' ? 'bg-[#01257D]/10 text-[#01257D] dark:bg-[#01257D]/20 dark:text-[#01257D]' : 'text-gray-600 hover:bg-[#01257D]/10 hover:text-[#01257D] dark:text-gray-300 dark:hover:bg-[#01257D]/20 dark:hover:text-[#01257D]'}`}>
+              <Users className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 ${pathname === '/dashboard/audiencia' ? 'text-[#01257D] dark:text-white' : 'text-gray-400 group-hover:text-[#01257D] dark:text-gray-400 dark:group-hover:text-white'}`} />
               {(menuOpen || menuHovered || isMobile) && 'Análisis de Audiencia'}
             </Link>
 
-            <Link href="/dashboard-politico/hashtags" className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium ${pathname === '/dashboard-politico/hashtags' ? 'bg-[#01257D]/10 text-[#01257D] dark:bg-[#01257D]/20 dark:text-[#01257D]' : 'text-gray-600 hover:bg-[#01257D]/10 hover:text-[#01257D] dark:text-gray-300 dark:hover:bg-[#01257D]/20 dark:hover:text-[#01257D]'}`}>
-              <Hash className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 ${pathname === '/dashboard-politico/hashtags' ? 'text-[#01257D] dark:text-white' : 'text-gray-400 group-hover:text-[#01257D] dark:text-gray-400 dark:group-hover:text-white'}`} />
+            <Link href="/dashboard/hashtags" className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium ${pathname === '/dashboard/hashtags' ? 'bg-[#01257D]/10 text-[#01257D] dark:bg-[#01257D]/20 dark:text-[#01257D]' : 'text-gray-600 hover:bg-[#01257D]/10 hover:text-[#01257D] dark:text-gray-300 dark:hover:bg-[#01257D]/20 dark:hover:text-[#01257D]'}`}>
+              <Hash className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 ${pathname === '/dashboard/hashtags' ? 'text-[#01257D] dark:text-white' : 'text-gray-400 group-hover:text-[#01257D] dark:text-gray-400 dark:group-hover:text-white'}`} />
               {(menuOpen || menuHovered || isMobile) && 'Hashtags'}
             </Link>
 
-            <Link href="/dashboard-politico/propuestas" className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium ${pathname === '/dashboard-politico/propuestas' ? 'bg-[#01257D]/10 text-[#01257D] dark:bg-[#01257D]/20 dark:text-[#01257D]' : 'text-gray-600 hover:bg-[#01257D]/10 hover:text-[#01257D] dark:text-gray-300 dark:hover:bg-[#01257D]/20 dark:hover:text-[#01257D]'}`}>
-              <Target className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 ${pathname === '/dashboard-politico/propuestas' ? 'text-[#01257D] dark:text-white' : 'text-gray-400 group-hover:text-[#01257D] dark:text-gray-400 dark:group-hover:text-white'}`} />
-              {(menuOpen || menuHovered || isMobile) && 'Propuestas'}
+            <Link href="/dashboard/busqueda-personas" className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium ${pathname === '/dashboard/busqueda-personas' ? 'bg-[#01257D]/10 text-[#01257D] dark:bg-[#01257D]/20 dark:text-[#01257D]' : 'text-gray-600 hover:bg-[#01257D]/10 hover:text-[#01257D] dark:text-gray-300 dark:hover:bg-[#01257D]/20 dark:hover:text-[#01257D]'}`}>
+              <Target className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 ${pathname === '/dashboard/busqueda-personas' ? 'text-[#01257D] dark:text-white' : 'text-gray-400 group-hover:text-[#01257D] dark:text-gray-400 dark:group-hover:text-white'}`} />
+              {(menuOpen || menuHovered || isMobile) && 'Búsqueda de Personas'}
             </Link>
 
-            <Link href="/dashboard-politico/reportes" className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium ${pathname === '/dashboard-politico/reportes' ? 'bg-[#01257D]/10 text-[#01257D] dark:bg-[#01257D]/20 dark:text-[#01257D]' : 'text-gray-600 hover:bg-[#01257D]/10 hover:text-[#01257D] dark:text-gray-300 dark:hover:bg-[#01257D]/20 dark:hover:text-[#01257D]'}`}>
-              <FileText className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 ${pathname === '/dashboard-politico/reportes' ? 'text-[#01257D] dark:text-white' : 'text-gray-400 group-hover:text-[#01257D] dark:text-gray-400 dark:group-hover:text-white'}`} />
+            <Link href="/dashboard/creditos/reportes" className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium ${pathname === '/dashboard/creditos/reportes' ? 'bg-[#01257D]/10 text-[#01257D] dark:bg-[#01257D]/20 dark:text-[#01257D]' : 'text-gray-600 hover:bg-[#01257D]/10 hover:text-[#01257D] dark:text-gray-300 dark:hover:bg-[#01257D]/20 dark:hover:text-[#01257D]'}`}>
+              <FileText className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 ${pathname === '/dashboard/creditos/reportes' ? 'text-[#01257D] dark:text-white' : 'text-gray-400 group-hover:text-[#01257D] dark:text-gray-400 dark:group-hover:text-white'}`} />
               {(menuOpen || menuHovered || isMobile) && 'Reportes'}
             </Link>
           </nav>
