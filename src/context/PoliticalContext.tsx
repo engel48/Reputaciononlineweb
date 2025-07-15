@@ -99,18 +99,29 @@ export function PoliticalProvider({ children }: { children: React.ReactNode }) {
   
   // Cargar métricas políticas cuando sea usuario político
   useEffect(() => {
+    console.log('🔄 Political metrics loading check:', {
+      isPolitical,
+      hasUserId: !!user?.id,
+      isLoadingMetrics,
+      currentMetrics: politicalMetrics ? 'exists' : 'null'
+    });
+    
     if (isPolitical && user?.id && !isLoadingMetrics) {
+      console.log('🚀 Starting to load political metrics for user:', user.id);
       setIsLoadingMetrics(true);
       getPoliticalMetrics(user.id)
         .then((metrics) => {
+          console.log('✅ Political metrics loaded successfully:', metrics);
           setPoliticalMetrics(metrics);
         })
         .catch((error) => {
-          console.error('Error loading political metrics:', error);
+          console.error('❌ Error loading political metrics:', error);
+          console.log('🔄 Using default political metrics as fallback');
           setPoliticalMetrics(defaultPoliticalMetrics);
         })
         .finally(() => {
           setIsLoadingMetrics(false);
+          console.log('✅ Political metrics loading completed');
         });
     }
   }, [isPolitical, user?.id]);
@@ -172,6 +183,23 @@ export function PoliticalProvider({ children }: { children: React.ReactNode }) {
       enhancedAnalytics: isPolitical
     }
   };
+
+  // Debug logs para entender el problema
+  useEffect(() => {
+    console.log('🔍 PoliticalContext Debug:', {
+      user: user ? { id: user.id, name: user.name, profileType: user.profileType } : null,
+      isPolitical,
+      isFromPoliticalDashboard,
+      pathname,
+      sessionStorage: sessionStorage.getItem('fromPoliticalDashboard'),
+      politicalMetrics: politicalMetrics ? 'loaded' : 'null',
+      contextValue: {
+        isPolitical: contextValue.isPolitical,
+        isFromPoliticalDashboard: contextValue.isFromPoliticalDashboard,
+        hasMetrics: !!contextValue.metrics
+      }
+    });
+  }, [user, isPolitical, isFromPoliticalDashboard, pathname, politicalMetrics]);
   
   return (
     <PoliticalContext.Provider value={contextValue}>
@@ -217,8 +245,20 @@ export function PoliticalOnly({
 export function PoliticalMetricsCard() {
   const { metrics, isFromPoliticalDashboard, isPolitical } = usePolitical();
   
+  // Debug log
+  console.log('🎯 PoliticalMetricsCard Debug:', {
+    isPolitical,
+    isFromPoliticalDashboard,
+    hasMetrics: !!metrics,
+    shouldRender: !!(metrics && isPolitical)
+  });
+  
   // Mostrar si es usuario político, sin importar desde dónde navegó
   if (!metrics || !isPolitical) {
+    console.log('❌ PoliticalMetricsCard: Not rendering because:', {
+      hasMetrics: !!metrics,
+      isPolitical
+    });
     return null;
   }
   

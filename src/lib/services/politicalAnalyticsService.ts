@@ -23,8 +23,19 @@ interface PoliticalMetricsData {
 
 // Función para obtener métricas políticas reales
 export async function getPoliticalMetrics(userId: string): Promise<PoliticalMetricsData> {
+  // Por ahora usar datos simulados directamente
+  // TODO: Implementar llamada a API real cuando esté disponible
+  console.log('📊 Loading political metrics for user:', userId);
+  
   try {
-    // TODO: Implementar llamada a API real cuando esté disponible
+    // Simular un pequeño delay para emular API call
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    const metrics = getSimulatedPoliticalMetrics();
+    console.log('✅ Political metrics loaded:', metrics);
+    return metrics;
+    
+    /* TODO: Implementar esto cuando tengamos el endpoint
     const response = await fetch(`/api/political-analytics/${userId}`);
     
     if (!response.ok) {
@@ -37,6 +48,7 @@ export async function getPoliticalMetrics(userId: string): Promise<PoliticalMetr
       dataSource: 'real',
       lastUpdated: new Date()
     };
+    */
   } catch (error) {
     console.warn('Using simulated political metrics:', error);
     // Retornar datos simulados mientras no haya API real
