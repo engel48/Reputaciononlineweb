@@ -421,7 +421,7 @@ export default function AnalyticsPage() {
       </div>
       
       {/* Métricas políticas adicionales si aplica */}
-      <PoliticalOnly>
+      <PoliticalOnly requirePoliticalDashboard={false}>
         <div className="mb-8">
           <PoliticalMetricsCard />
         </div>

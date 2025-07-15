@@ -127,12 +127,18 @@ export function PoliticalProvider({ children }: { children: React.ReactNode }) {
         sessionStorage.setItem('fromPoliticalDashboard', 'true');
         setIsFromPoliticalDashboard(true);
       }
+      
+      // IMPORTANTE: Mantener el estado político mientras navegamos en dashboard normal
+      // si venimos del dashboard político
+      if (pathname?.includes('/dashboard/') && fromPolitical) {
+        setIsFromPoliticalDashboard(true);
+      }
     };
     
     checkReferrer();
   }, [pathname]);
   
-  // Limpiar la marca cuando salimos completamente del contexto político
+  // Limpiar la marca SOLO cuando salimos completamente del dashboard
   useEffect(() => {
     if (!pathname?.includes('dashboard') && !pathname?.includes('dashboard-politico')) {
       sessionStorage.removeItem('fromPoliticalDashboard');
@@ -189,10 +195,18 @@ export function usePoliticalFeature(feature: keyof PoliticalContextType['feature
 }
 
 // Componente helper para renderizado condicional
-export function PoliticalOnly({ children }: { children: React.ReactNode }) {
+export function PoliticalOnly({ 
+  children, 
+  requirePoliticalDashboard = false 
+}: { 
+  children: React.ReactNode;
+  requirePoliticalDashboard?: boolean;
+}) {
   const { isPolitical, isFromPoliticalDashboard } = usePolitical();
   
-  if (!isPolitical || !isFromPoliticalDashboard) {
+  // Si requirePoliticalDashboard es true, necesita ambas condiciones
+  // Si es false, solo necesita ser usuario político
+  if (!isPolitical || (requirePoliticalDashboard && !isFromPoliticalDashboard)) {
     return null;
   }
   
@@ -201,26 +215,123 @@ export function PoliticalOnly({ children }: { children: React.ReactNode }) {
 
 // Componente para mostrar métricas políticas adicionales
 export function PoliticalMetricsCard() {
-  const { metrics, isFromPoliticalDashboard } = usePolitical();
+  const { metrics, isFromPoliticalDashboard, isPolitical } = usePolitical();
   
-  if (!metrics || !isFromPoliticalDashboard) {
+  // Mostrar si es usuario político, sin importar desde dónde navegó
+  if (!metrics || !isPolitical) {
     return null;
   }
   
   return (
-    <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white p-4 rounded-lg shadow-lg">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-lg font-semibold">Métricas Políticas</h3>
-        <span className="text-sm bg-white/20 px-2 py-1 rounded">Exclusivo</span>
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <p className="text-sm opacity-90">Aprobación</p>
-          <p className="text-2xl font-bold">{metrics.approval}%</p>
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+      {/* Header con gradiente político */}
+      <div className="bg-gradient-to-r from-yellow-600 via-yellow-500 to-orange-500 text-white px-6 py-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold">Métricas Políticas Exclusivas</h3>
+          <span className="text-xs bg-white/20 px-2 py-1 rounded-full font-medium">
+            Perfil Político
+          </span>
         </div>
+      </div>
+      
+      {/* Content */}
+      <div className="p-6">
+        {/* Métricas principales */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Aprobación General</p>
+            <p className="text-2xl font-bold text-yellow-600">{metrics.approval}%</p>
+          </div>
+          <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Intención de Voto</p>
+            <p className="text-2xl font-bold text-orange-600">{metrics.votingIntention}%</p>
+          </div>
+          <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Alcance Político</p>
+            <p className="text-2xl font-bold text-blue-600">
+              {(metrics.politicalReach / 1000000).toFixed(1)}M
+            </p>
+          </div>
+          <div className="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Engagement Político</p>
+            <p className="text-2xl font-bold text-green-600">{metrics.politicalEngagement}%</p>
+          </div>
+        </div>
+        
+        {/* Aprobación demográfica */}
+        <div className="mb-6">
+          <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
+            Aprobación por Grupos Demográficos
+          </h4>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <span className="text-sm text-gray-600 dark:text-gray-400">18-35 años</span>
+              <span className="font-semibold text-gray-900 dark:text-white">
+                {metrics.demographicApproval.young}%
+              </span>
+            </div>
+            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <span className="text-sm text-gray-600 dark:text-gray-400">36-50 años</span>
+              <span className="font-semibold text-gray-900 dark:text-white">
+                {metrics.demographicApproval.middle}%
+              </span>
+            </div>
+            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <span className="text-sm text-gray-600 dark:text-gray-400">51+ años</span>
+              <span className="font-semibold text-gray-900 dark:text-white">
+                {metrics.demographicApproval.senior}%
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        {/* Temas políticos principales */}
         <div>
-          <p className="text-sm opacity-90">Intención de Voto</p>
-          <p className="text-2xl font-bold">{metrics.votingIntention}%</p>
+          <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
+            Principales Temas Políticos
+          </h4>
+          <div className="space-y-2">
+            {metrics.topPoliticalIssues.slice(0, 3).map((issue, index) => (
+              <div 
+                key={index}
+                className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
+              >
+                <div className="flex-1">
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">
+                    {issue.issue}
+                  </span>
+                  <div className="flex items-center mt-1">
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                      issue.sentiment === 'positive' 
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                        : issue.sentiment === 'negative'
+                        ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                        : 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200'
+                    }`}>
+                      {issue.sentiment === 'positive' ? 'Positivo' : 
+                       issue.sentiment === 'negative' ? 'Negativo' : 'Neutral'}
+                    </span>
+                    <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
+                      {issue.mentions} menciones
+                    </span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">
+                    +{issue.trend}%
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Footer con timestamp */}
+        <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-600">
+          <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+            Última actualización: {metrics.lastUpdated?.toLocaleString('es-ES') || 'Ahora'} • 
+            Datos: {metrics.dataSource === 'real' ? 'API Real' : 'Simulados'}
+          </p>
         </div>
       </div>
     </div>
