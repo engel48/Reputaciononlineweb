@@ -9,8 +9,12 @@ import {
   MessageSquare,
   Calendar,
   ChevronDown,
-  RefreshCw
+  RefreshCw,
+  Crown,
+  Vote,
+  Target
 } from 'lucide-react';
+import { usePolitical, PoliticalOnly, PoliticalMetricsCard } from '@/context/PoliticalContext';
 
 // Datos simulados para cuando el servicio no carga datos
 const simulationData = {
@@ -100,6 +104,7 @@ import {
 } from '@/lib/services/analyticsService';
 
 export default function AnalyticsPage() {
+  const { isFromPoliticalDashboard, terminology, features } = usePolitical();
   const [isLoading, setIsLoading] = useState(true);
   const [period, setPeriod] = useState<'week' | 'month' | 'quarter'>('month');
   const [metrics, setMetrics] = useState<any>(null);
@@ -263,10 +268,13 @@ export default function AnalyticsPage() {
       <div ref={headerRef} className="mb-8 flex justify-between items-start">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Panel de Análisis
+            {isFromPoliticalDashboard ? terminology.analytics : 'Panel de Análisis'}
           </h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Monitoriza tu reputación online y analiza el sentimiento de las menciones
+            {isFromPoliticalDashboard 
+              ? 'Monitoriza tu aprobación política y analiza el sentimiento ciudadano'
+              : 'Monitoriza tu reputación online y analiza el sentimiento de las menciones'
+            }
           </p>
         </div>
         
@@ -332,14 +340,14 @@ export default function AnalyticsPage() {
       {/* Métricas principales */}
       <div className="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard 
-          title="Puntuación de Reputación" 
+          title={isFromPoliticalDashboard ? 'Índice de Aprobación' : 'Puntuación de Reputación'} 
           value={metrics ? metrics.overallScore : simulationData.mentions.sentiment} 
-          icon={UserCheck}
+          icon={isFromPoliticalDashboard ? Vote : UserCheck}
           trend={metrics ? metrics.trends.overallScoreTrend : simulationData.mentions.trend}
-          colorScheme="primary"
+          colorScheme={isFromPoliticalDashboard ? 'yellow' : 'primary'}
         />
         <MetricCard 
-          title="Menciones" 
+          title={terminology.mentions} 
           value={metrics ? metrics.mentionsCount : simulationData.mentions.total} 
           icon={MessageSquare}
           trend={metrics ? metrics.trends.mentionsCountTrend : simulationData.mentions.trend}
@@ -373,7 +381,7 @@ export default function AnalyticsPage() {
               values: timelineData?.reputationScore?.values || simulationData.mentions.timeline.map(item => item.sentiment),
               previousPeriodValues: timelineData?.reputationScore?.previousPeriodValues
             }}
-            title="Evolución de Puntuación de Reputación" 
+            title={isFromPoliticalDashboard ? 'Evolución del Índice de Aprobación' : 'Evolución de Puntuación de Reputación'} 
             showComparison={true}
           />
         </div>
@@ -412,20 +420,31 @@ export default function AnalyticsPage() {
         />
       </div>
       
+      {/* Métricas políticas adicionales si aplica */}
+      <PoliticalOnly>
+        <div className="mb-8">
+          <PoliticalMetricsCard />
+        </div>
+      </PoliticalOnly>
+
       {/* Tabla de menciones */}
       <div className="mb-8">
         <MentionsTable 
           mentions={mentions?.length > 0 ? mentions : simulationData.mentions.latestMentions} 
-          title="Últimas Menciones" 
+          title={`Últimas ${terminology.mentions}`} 
         />
       </div>
 
       {/* Botón para generar informe */}
       <div className="flex justify-center">
         <button
-          className="inline-flex items-center rounded-md bg-primary px-6 py-3 text-base font-medium text-white shadow-sm transition-all hover:bg-primary-600 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:ring-offset-gray-900"
+          className={`inline-flex items-center rounded-md px-6 py-3 text-base font-medium text-white shadow-sm transition-all hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 dark:ring-offset-gray-900 ${
+            isFromPoliticalDashboard 
+              ? 'bg-gradient-to-r from-yellow-600 to-orange-500 hover:from-yellow-700 hover:to-orange-600 focus:ring-yellow-500' 
+              : 'bg-primary hover:bg-primary-600 focus:ring-primary-500'
+          }`}
         >
-          Generar Informe Completo
+          Generar {terminology.report} Completo
           <ChevronDown className="ml-2 h-5 w-5" />
         </button>
       </div>
