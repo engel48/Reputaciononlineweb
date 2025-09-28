@@ -62,7 +62,7 @@ const socialNetworks = [
     id: 'instagram',
     name: 'Instagram',
     icon: Instagram,
-    color: 'bg-[#C32AA3]',
+    color: 'bg-gradient-to-r from-[#FCAF45] via-[#E1306C] to-[#833AB4]',
     description: 'Conecta tu cuenta de Instagram Business para analizar posts y stories'
   },
   {
@@ -97,7 +97,7 @@ const socialNetworks = [
     id: 'tiktok',
     name: 'TikTok',
     icon: Music,
-    color: 'bg-[#EE1D52]',
+    color: 'bg-[#FE2C55]',
     description: 'Analiza videos, comentarios y tendencias en TikTok'
   }
 ];
