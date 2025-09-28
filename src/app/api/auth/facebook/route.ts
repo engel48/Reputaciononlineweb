@@ -1,41 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const action = searchParams.get('action');
+  const protocol = request.headers.get('x-forwarded-proto') || 'http';
+  const host = request.headers.get('host') || 'localhost:3000';
+  const baseUrl = `${protocol}://${host}`;
 
-  if (action === 'connect') {
-    // Iniciar flujo OAuth de Facebook
-    const clientId = process.env.FACEBOOK_CLIENT_ID;
-    const redirectUri = process.env.NEXTAUTH_URL + '/api/auth/facebook/callback';
-    
-    if (!clientId) {
-      return NextResponse.json(
-        { error: 'Facebook Client ID no configurado' },
-        { status: 500 }
-      );
-    }
-
-    const scopes = [
-      'public_profile',
-      'email',
-      'pages_read_engagement',
-      'pages_show_list',
-      'instagram_basic',
-      'instagram_manage_insights'
-    ].join(',');
-
-    const authUrl = new URL('https://www.facebook.com/v18.0/dialog/oauth');
-    authUrl.searchParams.set('client_id', clientId);
-    authUrl.searchParams.set('redirect_uri', redirectUri);
-    authUrl.searchParams.set('scope', scopes);
-    authUrl.searchParams.set('response_type', 'code');
-    authUrl.searchParams.set('state', 'facebook-oauth-state');
-
-    return NextResponse.json({ authUrl: authUrl.toString() });
-  }
-
-  return NextResponse.json({ error: 'Acción no válida' }, { status: 400 });
+  return NextResponse.redirect(`${baseUrl}/oauth-login?platform=facebook`);
 }
 
 export async function POST(request: NextRequest) {

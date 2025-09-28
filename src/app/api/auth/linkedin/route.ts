@@ -1,45 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const action = searchParams.get('action');
+  const protocol = request.headers.get('x-forwarded-proto') || 'http';
+  const host = request.headers.get('host') || 'localhost:3000';
+  const baseUrl = `${protocol}://${host}`;
 
-  if (action === 'connect') {
-    // Iniciar flujo OAuth de LinkedIn
-    const clientId = process.env.LINKEDIN_CLIENT_ID;
-    const redirectUri = process.env.NEXTAUTH_URL + '/api/auth/linkedin/callback';
-    
-    if (!clientId) {
-      return NextResponse.json(
-        { error: 'LinkedIn Client ID no configurado' },
-        { status: 500 }
-      );
-    }
-
-    const scopes = [
-      'r_liteprofile',
-      'r_emailaddress',
-      'w_member_social',
-      'rw_organization_admin'
-    ].join(' ');
-
-    // Generar state aleatorio para seguridad
-    const state = Math.random().toString(36).substring(2);
-
-    const authUrl = new URL('https://www.linkedin.com/oauth/v2/authorization');
-    authUrl.searchParams.set('response_type', 'code');
-    authUrl.searchParams.set('client_id', clientId);
-    authUrl.searchParams.set('redirect_uri', redirectUri);
-    authUrl.searchParams.set('scope', scopes);
-    authUrl.searchParams.set('state', state);
-
-    return NextResponse.json({ 
-      authUrl: authUrl.toString(),
-      state 
-    });
-  }
-
-  return NextResponse.json({ error: 'Acción no válida' }, { status: 400 });
+  return NextResponse.redirect(`${baseUrl}/oauth-login?platform=linkedin`);
 }
 
 export async function POST(request: NextRequest) {

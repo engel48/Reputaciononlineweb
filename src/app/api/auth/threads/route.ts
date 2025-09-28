@@ -1,40 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const action = searchParams.get('action');
+  const protocol = request.headers.get('x-forwarded-proto') || 'http';
+  const host = request.headers.get('host') || 'localhost:3000';
+  const baseUrl = `${protocol}://${host}`;
 
-  if (action === 'connect') {
-    // Threads usa el mismo OAuth que Instagram/Facebook
-    const clientId = process.env.FACEBOOK_CLIENT_ID;
-    const redirectUri = process.env.NEXTAUTH_URL + '/api/auth/threads/callback';
-    
-    if (!clientId) {
-      return NextResponse.json(
-        { error: 'Threads Client ID no configurado' },
-        { status: 500 }
-      );
-    }
-
-    const scopes = [
-      'threads_basic',
-      'threads_content_publish',
-      'threads_manage_insights',
-      'threads_manage_replies',
-      'threads_read_replies'
-    ].join(',');
-
-    const authUrl = new URL('https://www.facebook.com/v18.0/dialog/oauth');
-    authUrl.searchParams.set('client_id', clientId);
-    authUrl.searchParams.set('redirect_uri', redirectUri);
-    authUrl.searchParams.set('scope', scopes);
-    authUrl.searchParams.set('response_type', 'code');
-    authUrl.searchParams.set('state', 'threads-oauth-state');
-
-    return NextResponse.json({ authUrl: authUrl.toString() });
-  }
-
-  return NextResponse.json({ error: 'Acción no válida' }, { status: 400 });
+  return NextResponse.redirect(`${baseUrl}/oauth-login?platform=threads`);
 }
 
 export async function POST(request: NextRequest) {

@@ -1,50 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const action = searchParams.get('action');
+  const protocol = request.headers.get('x-forwarded-proto') || 'http';
+  const host = request.headers.get('host') || 'localhost:3000';
+  const baseUrl = `${protocol}://${host}`;
 
-  if (action === 'connect') {
-    // Iniciar flujo OAuth de Twitter/X
-    const clientId = process.env.TWITTER_CLIENT_ID;
-    const redirectUri = process.env.NEXTAUTH_URL + '/api/auth/twitter/callback';
-    
-    if (!clientId) {
-      return NextResponse.json(
-        { error: 'Twitter Client ID no configurado' },
-        { status: 500 }
-      );
-    }
-
-    const scopes = [
-      'tweet.read',
-      'users.read',
-      'follows.read',
-      'like.read',
-      'offline.access'
-    ].join(' ');
-
-    // Generar state aleatorio para seguridad
-    const state = Math.random().toString(36).substring(2);
-    const codeChallenge = Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2);
-
-    const authUrl = new URL('https://twitter.com/i/oauth2/authorize');
-    authUrl.searchParams.set('response_type', 'code');
-    authUrl.searchParams.set('client_id', clientId);
-    authUrl.searchParams.set('redirect_uri', redirectUri);
-    authUrl.searchParams.set('scope', scopes);
-    authUrl.searchParams.set('state', state);
-    authUrl.searchParams.set('code_challenge', codeChallenge);
-    authUrl.searchParams.set('code_challenge_method', 'plain');
-
-    return NextResponse.json({ 
-      authUrl: authUrl.toString(),
-      state,
-      codeChallenge 
-    });
-  }
-
-  return NextResponse.json({ error: 'Acción no válida' }, { status: 400 });
+  return NextResponse.redirect(`${baseUrl}/oauth-login?platform=twitter`);
 }
 
 export async function POST(request: NextRequest) {

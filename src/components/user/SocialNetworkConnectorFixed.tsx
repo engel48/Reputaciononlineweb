@@ -194,93 +194,34 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
   const handleConnect = async (networkId: string) => {
     try {
       setLoading(prev => ({ ...prev, [networkId]: true }));
-      
-      // Llamar al endpoint OAuth real
-      const response = await fetch(`/api/auth/${networkId}?action=connect`);
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Error al iniciar OAuth');
-      }
-      
-      // Abrir popup OAuth
+
+      // Abrir popup directamente al endpoint de OAuth
       const popup = window.open(
-        data.authUrl,
+        `/api/auth/${networkId}`,
         `${networkId}_oauth`,
         'width=600,height=700,scrollbars=yes,resizable=yes'
       );
-      
+
       if (!popup) {
-        throw new Error('No se pudo abrir la ventana de autorización. Verifica que no estén bloqueados los popups.');
+        showMessage('error', 'No se pudo abrir la ventana de autorización. Verifica que no estén bloqueados los popups.');
+        return;
       }
-      
-      // Escuchar el mensaje del callback
-      const handleMessage = async (event: MessageEvent) => {
-        if (event.origin !== window.location.origin) return;
-        
-        if (event.data.type === 'oauth_success' && event.data.platform === networkId) {
-          window.removeEventListener('message', handleMessage);
-          popup.close();
-          
-          // Procesar los datos recibidos
-          const profile = event.data.profile;
-          setConnections(prev => ({
-            ...prev,
-            [networkId]: {
-              ...prev[networkId as keyof SocialConnectionsState],
-              connected: true,
-              username: profile.username || profile.name,
-              displayName: profile.name,
-              followers: profile.followers || profile.subscribers || 0,
-              profileImage: profile.picture || '',
-              lastSync: new Date().toISOString()
-            }
-          }));
-          
-          // Llamar callback si está en onboarding
-          if (props.onComplete) {
-            const updatedConnections = { ...connections };
-            updatedConnections[networkId as keyof SocialConnectionsState] = {
-              ...updatedConnections[networkId as keyof SocialConnectionsState],
-              connected: true,
-              username: profile.username || profile.name,
-              displayName: profile.name,
-              followers: profile.followers || profile.subscribers || 0,
-              profileImage: profile.picture || '',
-              lastSync: new Date().toISOString()
-            };
-            props.onComplete(updatedConnections);
-          }
-          
-        } else if (event.data.type === 'oauth_error' && event.data.platform === networkId) {
-          window.removeEventListener('message', handleMessage);
-          popup.close();
-          throw new Error(event.data.error || 'Error en la autorización');
-        }
-      };
-      
-      window.addEventListener('message', handleMessage);
-      
+
       // Verificar si el popup se cerró manualmente
       const checkClosed = setInterval(() => {
         if (popup.closed) {
           clearInterval(checkClosed);
-          window.removeEventListener('message', handleMessage);
           setLoading(prev => ({ ...prev, [networkId]: false }));
         }
       }, 1000);
-      
+
     } catch (error) {
       console.error(`Error connecting to ${networkId}:`, error);
-      setConnections(prev => ({
-        ...prev,
-        [networkId]: {
-          ...prev[networkId as keyof SocialConnectionsState],
-          error: error instanceof Error ? error.message : 'Error de conexión'
-        }
-      }));
+      showMessage('error', error instanceof Error ? error.message : 'Error de conexión');
     } finally {
-      setLoading(prev => ({ ...prev, [networkId]: false }));
+      setTimeout(() => {
+        setLoading(prev => ({ ...prev, [networkId]: false }));
+      }, 1000);
     }
   };
 
