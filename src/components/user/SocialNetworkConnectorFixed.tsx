@@ -195,9 +195,9 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
     try {
       setLoading(prev => ({ ...prev, [networkId]: true }));
 
-      // Abrir popup directamente al endpoint de OAuth
+      // Abrir popup directamente a la página de OAuth login
       const popup = window.open(
-        `/api/auth/${networkId}`,
+        `/oauth-login?platform=${networkId}`,
         `${networkId}_oauth`,
         'width=600,height=700,scrollbars=yes,resizable=yes'
       );
