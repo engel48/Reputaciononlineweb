@@ -55,35 +55,35 @@ const socialNetworks = [
     id: 'facebook',
     name: 'Facebook',
     icon: Facebook,
-    color: 'bg-blue-600',
+    color: 'bg-[#1877F2]',
     description: 'Conecta tu página de Facebook para monitorear comentarios y menciones'
   },
   {
     id: 'instagram',
     name: 'Instagram',
     icon: Instagram,
-    color: 'bg-gradient-to-r from-purple-500 to-pink-500',
+    color: 'bg-[#C32AA3]',
     description: 'Conecta tu cuenta de Instagram Business para analizar posts y stories'
   },
   {
     id: 'x',
-    name: 'X (Twitter)',
+    name: 'X',
     icon: Twitter,
     color: 'bg-black',
-    description: 'Monitorea menciones, hashtags y respuestas en X (anteriormente Twitter)'
+    description: 'Monitorea menciones, hashtags y respuestas en X'
   },
   {
     id: 'linkedin',
     name: 'LinkedIn',
     icon: Linkedin,
-    color: 'bg-blue-700',
+    color: 'bg-[#0A66C2]',
     description: 'Analiza tu actividad profesional y engagement en LinkedIn'
   },
   {
     id: 'youtube',
     name: 'YouTube',
     icon: Youtube,
-    color: 'bg-red-600',
+    color: 'bg-[#FF0000]',
     description: 'Monitorea comentarios y métricas de tu canal de YouTube'
   },
   {
@@ -97,7 +97,7 @@ const socialNetworks = [
     id: 'tiktok',
     name: 'TikTok',
     icon: Music,
-    color: 'bg-black',
+    color: 'bg-[#EE1D52]',
     description: 'Analiza videos, comentarios y tendencias en TikTok'
   }
 ];

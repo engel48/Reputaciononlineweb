@@ -17,7 +17,8 @@
       "Bash(sqlite3:*)",
       "Bash(mv:*)",
       "Bash(npx tsc:*)",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "WebSearch"
     ],
     "deny": []
   }

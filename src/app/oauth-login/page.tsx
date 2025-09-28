@@ -6,42 +6,42 @@ import { useState } from 'react';
 const platformConfig = {
   facebook: {
     name: 'Facebook',
-    color: '#3b82f6',
+    color: '#1877F2',
     logo: '📘'
   },
   instagram: {
     name: 'Instagram',
-    color: '#8b5cf6',
+    color: '#C32AA3',
     logo: '📷'
   },
   x: {
-    name: 'X (Twitter)',
+    name: 'X',
     color: '#000000',
-    logo: '🐦'
+    logo: '𝕏'
   },
   twitter: {
-    name: 'X (Twitter)',
+    name: 'X',
     color: '#000000',
-    logo: '🐦'
+    logo: '𝕏'
   },
   linkedin: {
     name: 'LinkedIn',
-    color: '#1d4ed8',
+    color: '#0A66C2',
     logo: '💼'
   },
   youtube: {
     name: 'YouTube',
-    color: '#dc2626',
+    color: '#FF0000',
     logo: '📺'
   },
   threads: {
     name: 'Threads',
     color: '#000000',
-    logo: '💬'
+    logo: '@'
   },
   tiktok: {
     name: 'TikTok',
-    color: '#000000',
+    color: '#EE1D52',
     logo: '🎵'
   }
 };
