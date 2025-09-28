@@ -140,9 +140,9 @@ export default function OAuthLogin() {
           height: '40px',
           border: platform === 'instagram'
             ? '3px solid transparent'
-            : `3px solid ${config.color}`,
+            : `3px solid ${'color' in config ? config.color : '#000000'}`,
           borderImage: platform === 'instagram'
-            ? config.gradient + ' 1'
+            ? ('gradient' in config ? config.gradient + ' 1' : '')
             : 'none',
           borderTop: '3px solid transparent',
           borderRadius: '50%',
@@ -150,7 +150,7 @@ export default function OAuthLogin() {
           marginBottom: '20px'
         }}></div>
         <h2 style={{
-          color: platform === 'instagram' ? '#262626' : config.color,
+          color: platform === 'instagram' ? '#262626' : ('color' in config ? config.color : '#000000'),
           marginBottom: '10px'
         }}>
           Conectando con {config.name}
@@ -202,7 +202,7 @@ export default function OAuthLogin() {
         <button
           onClick={() => window.close()}
           style={{
-            backgroundColor: platform === 'instagram' ? '#0095F6' : config.color,
+            backgroundColor: platform === 'instagram' ? '#0095F6' : ('color' in config ? config.color : '#000000'),
             color: 'white',
             border: 'none',
             padding: '12px 24px',
@@ -236,8 +236,8 @@ export default function OAuthLogin() {
           height: '80px',
           margin: '0 auto 20px',
           background: platform === 'instagram'
-            ? config.gradient
-            : config.color,
+            ? ('gradient' in config ? config.gradient : '')
+            : ('color' in config ? config.color : '#000000'),
           borderRadius: platform === 'instagram' ? '20px' : platform === 'facebook' || platform === 'linkedin' ? '12px' : '50%',
           display: 'flex',
           alignItems: 'center',
@@ -285,7 +285,7 @@ export default function OAuthLogin() {
             boxSizing: 'border-box'
           }}
           onFocus={(e) => {
-            e.target.style.borderColor = platform === 'instagram' ? '#A8A8A8' : config.color;
+            e.target.style.borderColor = platform === 'instagram' ? '#A8A8A8' : ('color' in config ? config.color : '#000000');
             e.target.style.backgroundColor = '#FFFFFF';
           }}
           onBlur={(e) => {
@@ -321,7 +321,7 @@ export default function OAuthLogin() {
             boxSizing: 'border-box'
           }}
           onFocus={(e) => {
-            e.target.style.borderColor = platform === 'instagram' ? '#A8A8A8' : config.color;
+            e.target.style.borderColor = platform === 'instagram' ? '#A8A8A8' : ('color' in config ? config.color : '#000000');
             e.target.style.backgroundColor = '#FFFFFF';
           }}
           onBlur={(e) => {
@@ -353,7 +353,7 @@ export default function OAuthLogin() {
         onClick={handleLogin}
         style={{
           width: '100%',
-          backgroundColor: platform === 'instagram' ? '#0095F6' : config.color,
+          backgroundColor: platform === 'instagram' ? '#0095F6' : ('color' in config ? config.color : '#000000'),
           color: 'white',
           border: 'none',
           padding: '14px',
@@ -364,8 +364,8 @@ export default function OAuthLogin() {
           transition: 'opacity 0.2s',
           marginBottom: '15px'
         }}
-        onMouseOver={(e) => e.target.style.opacity = '0.9'}
-        onMouseOut={(e) => e.target.style.opacity = '1'}
+        onMouseOver={(e) => (e.target as HTMLButtonElement).style.opacity = '0.9'}
+        onMouseOut={(e) => (e.target as HTMLButtonElement).style.opacity = '1'}
       >
         Iniciar sesión
       </button>
@@ -374,7 +374,7 @@ export default function OAuthLogin() {
         <a
           href="#"
           style={{
-            color: platform === 'instagram' ? '#00376B' : config.color,
+            color: platform === 'instagram' ? '#00376B' : ('color' in config ? config.color : '#000000'),
             textDecoration: 'none',
             fontSize: '12px'
           }}
