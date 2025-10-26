@@ -45,7 +45,10 @@
       "mcp__supabase__deploy_edge_function",
       "Bash(cd /Volumes/StarkT7/Proyectos/CLIENETS/proyectos/Comyte/copia\\ 12\\ julio\\ /Reputaciononline:*)",
       "mcp__supabase__execute_sql",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(git fetch:*)",
+      "Bash(git ls-tree -r engel48/main --name-only)",
+      "WebFetch(domain:github.com)"
     ],
     "deny": []
   }
