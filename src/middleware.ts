@@ -1,10 +1,9 @@
 /**
- * Middleware de autenticación con Supabase
+ * Middleware de autenticación con JWT
  *
- * Protege rutas y refresca sesiones automáticamente
+ * Protege rutas verificando la existencia del token JWT en cookies
  */
 
-import { updateSession } from '@/lib/supabase/middleware'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
@@ -28,59 +27,41 @@ const publicPaths = [
   '/register',
   '/',
   '/pricing',
-  '/about'
+  '/about',
+  '/contacto',
+  '/planes',
+  '/demo'
 ]
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-
-  // Actualizar sesión de Supabase y obtener usuario
-  const { response, user } = await updateSession(request)
 
   // Verificar si la ruta requiere autenticación
   const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path))
   const isAdminPath = adminPaths.some(path => pathname.startsWith(path))
   const isPublicPath = publicPaths.some(path => pathname === path || pathname.startsWith(path))
 
+  // Obtener token JWT de la cookie (verificación básica de existencia)
+  const hasAuthToken = !!request.cookies.get('auth-token')?.value
+
   // Si es ruta pública y no protegida, permitir acceso
   if (isPublicPath && !isProtectedPath && !isAdminPath) {
-    return response
+    return NextResponse.next()
   }
 
-  // Si es ruta protegida y no hay usuario, redirigir a login
-  if (isProtectedPath && !user) {
+  // Si es ruta protegida y no hay token, redirigir a login
+  if ((isProtectedPath || isAdminPath) && !hasAuthToken) {
     const redirectUrl = new URL('/login', request.url)
     redirectUrl.searchParams.set('redirect', pathname)
     return NextResponse.redirect(redirectUrl)
   }
 
-  // Si es ruta de admin, verificar role
-  if (isAdminPath) {
-    if (!user) {
-      return NextResponse.redirect(new URL('/login', request.url))
-    }
-
-    // Obtener rol del usuario desde la tabla users
-    const { createClient } = await import('@/lib/supabase/server')
-    const supabase = await createClient()
-
-    const { data: userData } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if ((userData as any)?.role !== 'admin') {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
-    }
-  }
-
   // Si ya está autenticado y trata de ir a login/register, redirigir a dashboard
-  if ((pathname === '/login' || pathname === '/register') && user) {
+  if ((pathname === '/login' || pathname === '/register') && hasAuthToken) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
-  return response
+  return NextResponse.next()
 }
 
 export const config = {
