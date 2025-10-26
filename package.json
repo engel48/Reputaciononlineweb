@@ -46,6 +46,7 @@
     "@tamagui/config": "^1.65.0",
     "@tamagui/core": "^1.65.0",
     "@types/bcryptjs": "^2.4.6",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/geojson": "^7946.0.14",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/leaflet": "^1.9.8",
@@ -87,7 +88,6 @@
     "typescript": "^5.3.3"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.13",
     "ts-node": "^10.9.2"
   },
   "overrides": {

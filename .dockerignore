@@ -54,5 +54,8 @@ data/app.db-shm
 data/app.db-wal
 prisma/dev.db
 
-# Scripts no necesarios en producción
-scripts/
+# Scripts de desarrollo no necesarios en producción (mantener scripts de inicialización)
+scripts/test-*.js
+scripts/diagnose-*.js
+scripts/verify-*.js
+scripts/migrate-*.js
