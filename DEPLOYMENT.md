@@ -8,12 +8,29 @@ Configure these variables in Coolify before deployment:
 
 #### 1. Supabase (Primary Database) - MANDATORY
 
+**IMPORTANTE: Copiar exactamente estas credenciales en Coolify**
+
 ```bash
+# URL del proyecto Supabase
 NEXT_PUBLIC_SUPABASE_URL=https://shiqwhbodviimvpxpszd.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key_here
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
-DATABASE_URL=postgresql://postgres:password@db.shiqwhbodviimvpxpszd.supabase.co:5432/postgres
+
+# Anon Key (pública - segura para el navegador)
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaXF3aGJvZHZpaW12cHhwc3pkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0MzY3MTMsImV4cCI6MjA3NzAxMjcxM30.jNKv3yQeTOw25nhjeGaEMczYhosmV9Xh2zEJ2PZrbPg
+
+# Service Role Key (privada - NUNCA exponer en el cliente)
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaXF3aGJvZHZpaW12cHhwc3pkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MTQzNjcxMywiZXhwIjoyMDc3MDEyNzEzfQ.PP-KV6G8j5goSJCFGAYVyW2XKbUbFZtTFOD0nJPtNn4
+
+# DATABASE_URL - Obtener de Supabase > Settings > Database > Connection String (URI)
+# Formato: postgresql://postgres.[PROJECT_REF]:[PASSWORD]@aws-0-us-east-1.pooler.supabase.com:6543/postgres
+DATABASE_URL=postgresql://postgres.shiqwhbodviimvpxpszd:[YOUR_DATABASE_PASSWORD]@aws-0-us-east-1.pooler.supabase.com:6543/postgres
 ```
+
+**Cómo obtener el DATABASE_URL completo:**
+1. Ve a tu proyecto Supabase: https://supabase.com/dashboard/project/shiqwhbodviimvpxpszd
+2. Settings → Database → Connection String
+3. Selecciona "URI" mode
+4. Copia la cadena completa (incluye tu password de base de datos)
+5. Pégala como valor de DATABASE_URL en Coolify
 
 #### 2. Authentication - AUTO-GENERATED
 
@@ -208,6 +225,80 @@ Configure this in Coolify:
 - Interval: 30 seconds
 - Timeout: 10 seconds
 - Retries: 3
+
+---
+
+## Quick Start: Configuración en Coolify (Paso a Paso)
+
+### Paso 1: Configurar Variables de Entorno en Coolify
+
+1. **Ir a tu aplicación en Coolify**
+   - Proyecto → Tu aplicación → Settings → Environment Variables
+
+2. **Agregar variables OBLIGATORIAS (copiar y pegar):**
+
+   ```bash
+   # Supabase (COPIAR EXACTAMENTE)
+   NEXT_PUBLIC_SUPABASE_URL=https://shiqwhbodviimvpxpszd.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaXF3aGJvZHZpaW12cHhwc3pkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0MzY3MTMsImV4cCI6MjA3NzAxMjcxM30.jNKv3yQeTOw25nhjeGaEMczYhosmV9Xh2zEJ2PZrbPg
+   SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaXF3aGJvZHZpaW12cHhwc3pkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MTQzNjcxMywiZXhwIjoyMDc3MDEyNzEzfQ.PP-KV6G8j5goSJCFGAYVyW2XKbUbFZtTFOD0nJPtNn4
+
+   # DATABASE_URL - IR A SUPABASE Y OBTENER
+   # Supabase Dashboard → Settings → Database → Connection String (URI)
+   DATABASE_URL=postgresql://postgres.shiqwhbodviimvpxpszd:[TU_PASSWORD]@aws-0-us-east-1.pooler.supabase.com:6543/postgres
+
+   # Entorno
+   NODE_ENV=production
+   FORCE_SQLITE=false
+   ```
+
+3. **Agregar AL MENOS UNA API de IA (Julia requiere esto):**
+
+   ```bash
+   # Opción 1: Gemini (recomendado)
+   GEMINI_API_KEY=tu_gemini_api_key_aqui
+
+   # O Opción 2: OpenAI
+   OPENAI_API_KEY=sk-tu_openai_key_aqui
+
+   # O Opción 3: DeepSeek
+   DEEPSEEK_API_KEY=sk-tu_deepseek_key_aqui
+   ```
+
+4. **Guardar las variables**
+
+### Paso 2: Desplegar
+
+1. **Hacer Deploy:**
+   - Coolify → Tu aplicación → "Deploy"
+   - O esperar a que detecte el nuevo commit automáticamente
+
+2. **Monitorear el build:**
+   - Debería ver: "✓ Generating static pages (78/78)"
+   - Si falla, revisar los logs de build
+
+3. **Verificar deployment:**
+   - Esperar a que el deployment complete
+   - Visitar: `https://tu-dominio.com/api/system/status`
+   - Debería ver: `{"status":"healthy",...}`
+
+### Paso 3: Verificar que funciona
+
+1. **Abrir la aplicación:** `https://tu-dominio.com`
+2. **Intentar login/registro**
+3. **Verificar que Julia responde** en el dashboard
+4. **Revisar que los datos cargan** correctamente
+
+### Problemas Comunes
+
+**Error: "Missing Supabase credentials"**
+- Solución: Verificar que las 3 variables de Supabase estén configuradas exactamente como se muestra arriba
+
+**Error: "Julia no puede procesar la solicitud"**
+- Solución: Agregar al menos una de las API keys de IA (GEMINI_API_KEY, OPENAI_API_KEY, o DEEPSEEK_API_KEY)
+
+**Build exitoso pero app no funciona**
+- Solución: Verificar que DATABASE_URL tenga el password correcto de Supabase
 
 ---
 
