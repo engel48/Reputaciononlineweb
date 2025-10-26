@@ -44,10 +44,15 @@ JWT_SECRET=your_random_32_char_string
 
 #### 3. AI Services (Amelia/Julia) - MANDATORY
 
-At least ONE of these is required:
+**Gemini API Key (YA CONFIGURADA):**
 
 ```bash
-GEMINI_API_KEY=your_gemini_api_key_here
+GEMINI_API_KEY=AIzaSyAsqVEcKZF8ZdgTUdqaqAUTDcJQVRHv4E0
+```
+
+**Opcional - APIs de respaldo:**
+
+```bash
 OPENAI_API_KEY=your_openai_api_key_here
 DEEPSEEK_API_KEY=your_deepseek_api_key_here
 ```
@@ -252,16 +257,19 @@ Configure this in Coolify:
    FORCE_SQLITE=false
    ```
 
-3. **Agregar AL MENOS UNA API de IA (Julia requiere esto):**
+3. **Agregar API de IA para Julia (OBLIGATORIO):**
 
    ```bash
-   # Opción 1: Gemini (recomendado)
-   GEMINI_API_KEY=tu_gemini_api_key_aqui
+   # Gemini API Key (YA CONFIGURADA - copiar exactamente)
+   GEMINI_API_KEY=AIzaSyAsqVEcKZF8ZdgTUdqaqAUTDcJQVRHv4E0
+   ```
 
-   # O Opción 2: OpenAI
+   **Opcional:** También puedes agregar otras APIs de IA como respaldo:
+   ```bash
+   # OpenAI (opcional)
    OPENAI_API_KEY=sk-tu_openai_key_aqui
 
-   # O Opción 3: DeepSeek
+   # DeepSeek (opcional)
    DEEPSEEK_API_KEY=sk-tu_deepseek_key_aqui
    ```
 
