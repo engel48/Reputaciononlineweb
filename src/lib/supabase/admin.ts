@@ -20,7 +20,7 @@ import type { Database } from '@/types/supabase'
 
 // Verificar que las variables existan
 if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-  throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL')
+  console.warn('⚠️ NEXT_PUBLIC_SUPABASE_URL no está configurada (usando placeholder para build)')
 }
 
 if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
@@ -34,9 +34,13 @@ let adminClient: any = null
 
 export function getSupabaseAdmin() {
   if (!adminClient) {
+    // Fallback values for build-time (SSG)
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-service-role-key'
+
     adminClient = createClient<Database>(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, // Fallback a anon key si no hay service_role
+      supabaseUrl,
+      supabaseKey, // Fallback a anon key si no hay service_role
       {
         auth: {
           autoRefreshToken: false,

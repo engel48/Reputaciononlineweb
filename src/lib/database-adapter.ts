@@ -233,13 +233,17 @@ async function initializeAdapter() {
   };
 }
 
-// Inicializar el adaptador
-const adapterPromise = initializeAdapter();
+// Adaptador inicializado lazily
+let adapterPromise: Promise<any> | null = null;
 let adapterResult: any = null;
 
-// Función para obtener el adaptador inicializado
+// Función para obtener el adaptador inicializado (lazy initialization)
 async function getAdapter() {
   if (!adapterResult) {
+    if (!adapterPromise) {
+      // Solo inicializar cuando realmente se necesite (no durante build)
+      adapterPromise = initializeAdapter();
+    }
     adapterResult = await adapterPromise;
   }
   return adapterResult;
