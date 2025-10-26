@@ -1,4 +1,4 @@
-// Base de datos PostgreSQL para la aplicación (migrado desde SQLite)
+// Base de datos PostgreSQL para la aplicación - Compatible con Supabase
 import { Pool } from 'pg';
 import bcrypt from 'bcryptjs';
 
@@ -7,53 +7,38 @@ let pool: Pool | null = null;
 
 const initializePool = () => {
   if (!pool) {
-    // FORZAR credenciales correctas para Coolify usando configuración de objeto
-    const isCoolify = !!(process.env.COOLIFY_FQDN || process.env.COOLIFY_URL);
-    const isProduction = process.env.NODE_ENV === 'production';
-    
-    let poolConfig;
-    if (isCoolify || isProduction) {
-      console.log('🔧 DB: Coolify/Producción detectado - usando configuración de objeto directa');
-      poolConfig = {
-        host: 'aswcsw80wsoskcskkscwscoo',
-        port: 5432,
-        user: 'postgres',
-        password: 'ghxdiIxvNX8kjwafpuvS03B6e7M0ECSoZdEqPtLJsEW3WxBxn1f6USpp4vb42HIc',
-        database: 'postgres',
+    // PRIORIZAR DATABASE_URL de .env (Supabase)
+    const databaseUrl = process.env.DATABASE_URL;
+
+    if (databaseUrl && databaseUrl.includes('supabase.co')) {
+      console.log('🔧 DB: Usando Supabase desde DATABASE_URL');
+      pool = new Pool({
+        connectionString: databaseUrl,
+        ssl: { rejectUnauthorized: false }, // Supabase requiere SSL
+        max: 20,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 10000,
+      });
+      console.log('✅ PostgreSQL pool inicializado con Supabase');
+    } else if (databaseUrl) {
+      console.log('🔧 DB: Usando DATABASE_URL personalizada');
+      pool = new Pool({
+        connectionString: databaseUrl,
         ssl: false,
         max: 20,
         idleTimeoutMillis: 30000,
         connectionTimeoutMillis: 5000,
-      };
+      });
+      console.log('✅ PostgreSQL pool inicializado desde DATABASE_URL');
     } else {
-      // Para desarrollo, usar configuración externa
-      poolConfig = {
-        host: '31.97.138.249',
-        port: 5437,
-        user: 'thor3',
-        password: 'thor44',
-        database: 'thor',
-        ssl: false,
-        max: 20,
-        idleTimeoutMillis: 30000,
-        connectionTimeoutMillis: 5000,
-      };
+      throw new Error('❌ DATABASE_URL no configurada. Configure la variable de entorno DATABASE_URL en .env.local');
     }
-    
-    pool = new Pool(poolConfig);
-    
-    console.log('🐘 PostgreSQL pool inicializado con:', `${poolConfig.user}@${poolConfig.host}:${poolConfig.port}/${poolConfig.database}`);
   }
-  
+
   return pool;
 };
 
-// Función para generar IDs
-const generateId = () => {
-  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-};
-
-// Funciones de usuario adaptadas para PostgreSQL
+// Funciones de usuario adaptadas para Supabase (snake_case)
 export const userService = {
   // Crear usuario
   create: async (userData: {
@@ -63,24 +48,23 @@ export const userService = {
     company?: string;
   }) => {
     const client = initializePool();
-    const id = generateId();
     const hashedPassword = await bcrypt.hash(userData.password, 12);
-    
+
+    // Supabase usa snake_case y genera IDs automáticamente con gen_random_uuid()
     const query = `
-      INSERT INTO users (id, email, password, name, company, "createdAt", "updatedAt")
-      VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      INSERT INTO users (email, password, name, company, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
       RETURNING id, email, name, company
     `;
-    
+
     const result = await client.query(query, [
-      id, 
-      userData.email, 
-      hashedPassword, 
-      userData.name || null, 
+      userData.email,
+      hashedPassword,
+      userData.name || null,
       userData.company || null
     ]);
-    
-    console.log('🔍 DB: Usuario creado en PostgreSQL:', result.rows[0]);
+
+    console.log('✅ DB: Usuario creado en Supabase:', result.rows[0]);
     return result.rows[0];
   },
 
@@ -100,11 +84,11 @@ export const userService = {
   findByEmailWithPassword: async (email: string) => {
     const client = initializePool();
     const query = 'SELECT * FROM users WHERE email = $1';
-    console.log('🔍 DB: Ejecutando consulta findByEmailWithPassword para:', email);
+    console.log('🔍 DB: Buscando usuario por email:', email);
     const result = await client.query(query, [email]);
-    console.log('🔍 DB: Resultado consulta - filas encontradas:', result.rows.length);
+    console.log('🔍 DB: Usuarios encontrados:', result.rows.length);
     if (result.rows.length > 0) {
-      console.log('🔍 DB: Usuario encontrado con ID:', result.rows[0].id);
+      console.log('✅ DB: Usuario encontrado:', result.rows[0].id);
     }
     return result.rows[0];
   },
@@ -134,27 +118,42 @@ export const userService = {
     return await bcrypt.compare(plainPassword, hashedPassword);
   },
 
-  // Actualizar usuario
+  // Actualizar usuario - Mapea camelCase a snake_case de Supabase
   update: async (id: string, userData: any) => {
     const client = initializePool();
     const fields = [];
     const values = [];
     let paramCount = 1;
-    
+
+    // Mapeo de nombres camelCase (código) a snake_case (Supabase)
+    const fieldMapping: { [key: string]: string } = {
+      'avatarUrl': 'avatar_url',
+      'profileType': 'profile_type',
+      'brandName': 'brand_name',
+      'otherCategory': 'other_category',
+      'onboardingCompleted': 'onboarding_completed',
+      'lastLogin': 'last_login',
+      'nextBillingDate': 'next_billing_date',
+      'additionalSources': 'additional_sources'
+    };
+
     for (const [key, value] of Object.entries(userData)) {
       if (key !== 'id' && value !== undefined) {
-        fields.push(`"${key}" = $${paramCount}`);
+        // Usar el nombre mapeado si existe, si no usar el key original
+        const dbField = fieldMapping[key] || key;
+        fields.push(`${dbField} = $${paramCount}`);
         values.push(value);
         paramCount++;
       }
     }
-    
+
     if (fields.length === 0) return false;
-    
-    fields.push(`"updatedAt" = CURRENT_TIMESTAMP`);
+
+    fields.push(`updated_at = CURRENT_TIMESTAMP`);
     values.push(id);
-    
+
     const query = `UPDATE users SET ${fields.join(', ')} WHERE id = $${paramCount}`;
+    console.log('🔍 DB: Ejecutando UPDATE:', query);
     const result = await client.query(query, values);
     return (result.rowCount || 0) > 0;
   },
@@ -162,14 +161,14 @@ export const userService = {
   // Actualizar último login
   updateLastLogin: async (id: string) => {
     const client = initializePool();
-    const query = 'UPDATE users SET "lastLogin" = CURRENT_TIMESTAMP WHERE id = $1';
+    const query = 'UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1';
     await client.query(query, [id]);
   },
 
   // Obtener todos los usuarios
   findAll: async () => {
     const client = initializePool();
-    const query = 'SELECT * FROM users ORDER BY "createdAt" DESC';
+    const query = 'SELECT * FROM users ORDER BY created_at DESC';
     const result = await client.query(query);
     return result.rows.map(user => {
       delete user.password; // No devolver las contraseñas
@@ -186,12 +185,12 @@ export const userService = {
   }
 };
 
-// Funciones de redes sociales
+// Funciones de redes sociales - Compatible con Supabase (snake_case)
 export const socialMediaService = {
   // Obtener redes sociales del usuario
   getByUserId: async (userId: string) => {
     const client = initializePool();
-    const query = 'SELECT * FROM social_media WHERE "userId" = $1';
+    const query = 'SELECT * FROM social_media WHERE user_id = $1';
     const result = await client.query(query, [userId]);
     return result.rows;
   },
@@ -212,30 +211,28 @@ export const socialMediaService = {
     tokenExpiry?: Date;
   }) => {
     const client = initializePool();
-    const id = generateId();
-    
+
     const query = `
-      INSERT INTO social_media 
-      (id, "userId", platform, username, "profileUrl", followers, following, posts, engagement, connected, "lastSync", "accessToken", "refreshToken", "tokenExpiry")
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, CURRENT_TIMESTAMP, $11, $12, $13)
-      ON CONFLICT ("userId", platform) 
+      INSERT INTO social_media
+      (user_id, platform, username, profile_url, followers, following, posts, engagement, connected, last_sync, access_token, refresh_token, token_expiry)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, CURRENT_TIMESTAMP, $10, $11, $12)
+      ON CONFLICT (user_id, platform)
       DO UPDATE SET
         username = EXCLUDED.username,
-        "profileUrl" = EXCLUDED."profileUrl",
+        profile_url = EXCLUDED.profile_url,
         followers = EXCLUDED.followers,
         following = EXCLUDED.following,
         posts = EXCLUDED.posts,
         engagement = EXCLUDED.engagement,
         connected = EXCLUDED.connected,
-        "lastSync" = CURRENT_TIMESTAMP,
-        "accessToken" = EXCLUDED."accessToken",
-        "refreshToken" = EXCLUDED."refreshToken",
-        "tokenExpiry" = EXCLUDED."tokenExpiry"
+        last_sync = CURRENT_TIMESTAMP,
+        access_token = EXCLUDED.access_token,
+        refresh_token = EXCLUDED.refresh_token,
+        token_expiry = EXCLUDED.token_expiry
       RETURNING id
     `;
-    
+
     const result = await client.query(query, [
-      id,
       data.userId,
       data.platform,
       data.username || null,
@@ -249,17 +246,17 @@ export const socialMediaService = {
       data.refreshToken || null,
       data.tokenExpiry || null
     ]);
-    
-    return result.rows[0]?.id || id;
+
+    return result.rows[0]?.id;
   }
 };
 
-// Funciones de estadísticas
+// Funciones de estadísticas - Compatible con Supabase (snake_case)
 export const statsService = {
   // Obtener estadísticas del usuario
   getByUserId: async (userId: string) => {
     const client = initializePool();
-    const query = 'SELECT * FROM user_stats WHERE "userId" = $1';
+    const query = 'SELECT * FROM user_stats WHERE user_id = $1';
     const result = await client.query(query, [userId]);
     return result.rows[0];
   },
@@ -267,30 +264,28 @@ export const statsService = {
   // Crear o actualizar estadísticas
   upsert: async (userId: string, stats: any) => {
     const client = initializePool();
-    const id = generateId();
-    
+
     const query = `
-      INSERT INTO user_stats 
-      (id, "userId", "totalMentions", "positiveMentions", "negativeMentions", "neutralMentions", "sentimentScore", "reachEstimate", "engagementRate", "influenceScore", "trendingScore", "monthlyGrowth", "lastCalculated", "updatedAt")
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-      ON CONFLICT ("userId")
+      INSERT INTO user_stats
+      (user_id, total_mentions, positive_mentions, negative_mentions, neutral_mentions, sentiment_score, reach_estimate, engagement_rate, influence_score, trending_score, monthly_growth, last_calculated, updated_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      ON CONFLICT (user_id)
       DO UPDATE SET
-        "totalMentions" = EXCLUDED."totalMentions",
-        "positiveMentions" = EXCLUDED."positiveMentions",
-        "negativeMentions" = EXCLUDED."negativeMentions",
-        "neutralMentions" = EXCLUDED."neutralMentions",
-        "sentimentScore" = EXCLUDED."sentimentScore",
-        "reachEstimate" = EXCLUDED."reachEstimate",
-        "engagementRate" = EXCLUDED."engagementRate",
-        "influenceScore" = EXCLUDED."influenceScore",
-        "trendingScore" = EXCLUDED."trendingScore",
-        "monthlyGrowth" = EXCLUDED."monthlyGrowth",
-        "lastCalculated" = CURRENT_TIMESTAMP,
-        "updatedAt" = CURRENT_TIMESTAMP
+        total_mentions = EXCLUDED.total_mentions,
+        positive_mentions = EXCLUDED.positive_mentions,
+        negative_mentions = EXCLUDED.negative_mentions,
+        neutral_mentions = EXCLUDED.neutral_mentions,
+        sentiment_score = EXCLUDED.sentiment_score,
+        reach_estimate = EXCLUDED.reach_estimate,
+        engagement_rate = EXCLUDED.engagement_rate,
+        influence_score = EXCLUDED.influence_score,
+        trending_score = EXCLUDED.trending_score,
+        monthly_growth = EXCLUDED.monthly_growth,
+        last_calculated = CURRENT_TIMESTAMP,
+        updated_at = CURRENT_TIMESTAMP
     `;
-    
+
     await client.query(query, [
-      id,
       userId,
       stats.totalMentions || 0,
       stats.positiveMentions || 0,
@@ -306,7 +301,7 @@ export const statsService = {
   }
 };
 
-// Funciones de notificaciones
+// Funciones de notificaciones - Compatible con Supabase (snake_case)
 export const notificationService = {
   // Crear notificación
   create: async (data: {
@@ -318,16 +313,14 @@ export const notificationService = {
     metadata?: any;
   }) => {
     const client = initializePool();
-    const id = generateId();
-    
+
     const query = `
-      INSERT INTO notifications (id, "userId", title, message, type, priority, metadata, "createdAt")
-      VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP)
+      INSERT INTO notifications (user_id, title, message, type, priority, metadata, created_at)
+      VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP)
       RETURNING id
     `;
-    
+
     const result = await client.query(query, [
-      id,
       data.userId,
       data.title,
       data.message,
@@ -335,7 +328,7 @@ export const notificationService = {
       data.priority || 'normal',
       data.metadata ? JSON.stringify(data.metadata) : null
     ]);
-    
+
     return result.rows[0].id;
   },
 
@@ -343,9 +336,9 @@ export const notificationService = {
   getByUserId: async (userId: string, limit = 50) => {
     const client = initializePool();
     const query = `
-      SELECT * FROM notifications 
-      WHERE "userId" = $1 
-      ORDER BY "createdAt" DESC 
+      SELECT * FROM notifications
+      WHERE user_id = $1
+      ORDER BY created_at DESC
       LIMIT $2
     `;
     const result = await client.query(query, [userId, limit]);
@@ -355,13 +348,13 @@ export const notificationService = {
   // Marcar como leída
   markAsRead: async (id: string) => {
     const client = initializePool();
-    const query = 'UPDATE notifications SET "isRead" = true WHERE id = $1';
+    const query = 'UPDATE notifications SET is_read = true WHERE id = $1';
     const result = await client.query(query, [id]);
     return (result.rowCount || 0) > 0;
   }
 };
 
-// Funciones de configuraciones del sistema
+// Funciones de configuraciones del sistema - Compatible con Supabase (snake_case)
 export const systemSettingsService = {
   // Obtener una configuración por clave
   get: async (key: string) => {
@@ -382,20 +375,19 @@ export const systemSettingsService = {
   // Establecer o actualizar una configuración
   set: async (key: string, value: string, description?: string, updatedBy?: string) => {
     const client = initializePool();
-    const id = generateId();
-    
+
     const query = `
-      INSERT INTO system_settings (id, key, value, description, "updatedBy", "updatedAt")
-      VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)
+      INSERT INTO system_settings (key, value, description, updated_by, updated_at)
+      VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
       ON CONFLICT (key)
       DO UPDATE SET
         value = EXCLUDED.value,
         description = EXCLUDED.description,
-        "updatedBy" = EXCLUDED."updatedBy",
-        "updatedAt" = CURRENT_TIMESTAMP
+        updated_by = EXCLUDED.updated_by,
+        updated_at = CURRENT_TIMESTAMP
     `;
-    
-    await client.query(query, [id, key, value, description || null, updatedBy || null]);
+
+    await client.query(query, [key, value, description || null, updatedBy || null]);
     return true;
   },
 
@@ -414,13 +406,15 @@ export const getDatabase = () => {
 
 // Función para forzar la inicialización de la base de datos
 export const forceInitializeDatabase = async () => {
-  console.log('🐘 Forzando inicialización de base de datos PostgreSQL...');
+  console.log('🐘 Forzando inicialización de base de datos PostgreSQL/Supabase...');
   try {
-    initializePool();
-    console.log('✅ Base de datos PostgreSQL inicializada correctamente');
+    const pool = initializePool();
+    // Verificar conexión
+    await pool.query('SELECT 1');
+    console.log('✅ Base de datos PostgreSQL/Supabase inicializada correctamente');
     return true;
   } catch (error) {
-    console.error('❌ Error inicializando base de datos PostgreSQL:', error);
+    console.error('❌ Error inicializando base de datos PostgreSQL/Supabase:', error);
     return false;
   }
 };

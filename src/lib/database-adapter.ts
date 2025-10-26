@@ -108,12 +108,14 @@ function detectEnvironment() {
 async function ensureDatabaseUrl() {
   if (!process.env.DATABASE_URL) {
     const env = detectEnvironment();
-    
+
     console.log('🔍 DATABASE ADAPTER: Detectando configuración de PostgreSQL...');
-    
+    console.log('⚠️  DATABASE ADAPTER: DATABASE_URL no está configurada en el entorno');
+    console.log('💡 DATABASE ADAPTER: Por favor, configura DATABASE_URL en .env.local');
+
     if (env.isCoolify || env.isProduction) {
       console.log('🔍 DATABASE ADAPTER: Entorno de producción detectado, probando conexión interna...');
-      
+
       if (await isUrlAccessible(postgresConfig.internal)) {
         console.log('✅ DATABASE ADAPTER: Conexión interna exitosa');
         process.env.DATABASE_URL = postgresConfig.internal;
@@ -129,7 +131,7 @@ async function ensureDatabaseUrl() {
       }
     } else if (env.isLocal) {
       console.log('🔍 DATABASE ADAPTER: Entorno local detectado, probando conexión externa...');
-      
+
       if (await isUrlAccessible(postgresConfig.external)) {
         console.log('✅ DATABASE ADAPTER: Conexión externa exitosa');
         process.env.DATABASE_URL = postgresConfig.external;
@@ -145,7 +147,7 @@ async function ensureDatabaseUrl() {
       }
     } else {
       console.log('🔍 DATABASE ADAPTER: Entorno desconocido, probando todas las configuraciones...');
-      
+
       if (await isUrlAccessible(postgresConfig.internal)) {
         console.log('✅ DATABASE ADAPTER: Conexión interna exitosa');
         process.env.DATABASE_URL = postgresConfig.internal;
@@ -157,6 +159,8 @@ async function ensureDatabaseUrl() {
         throw new Error('No se pudo conectar a PostgreSQL en ninguna configuración');
       }
     }
+  } else {
+    console.log('✅ DATABASE ADAPTER: DATABASE_URL ya está configurada:', process.env.DATABASE_URL.substring(0, 50) + '...');
   }
 }
 
@@ -195,34 +199,40 @@ async function initializeAdapter() {
     };
   }
 
-  // Verificar y configurar DATABASE_URL para PostgreSQL
-  await ensureDatabaseUrl();
-  console.log('🔍 DATABASE_URL:', process.env.DATABASE_URL ? 'Configurada' : 'NO CONFIGURADA');
+  // Verificar si usar Supabase o PostgreSQL directo
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  // Intentar conectar a PostgreSQL primero
   let usePostgres = true;
   let dbAdapter;
 
   try {
-    if (process.env.DATABASE_URL?.startsWith('postgres')) {
-      console.log('🐘 DATABASE ADAPTER: Intentando conectar a PostgreSQL...');
+    // Priorizar Supabase si está configurado
+    if (supabaseUrl && supabaseKey && supabaseUrl.includes('supabase.co')) {
+      console.log('🟢 DATABASE ADAPTER: Usando Supabase SDK (configuración detectada)');
+      dbAdapter = require('./supabase-server');
+      console.log('✅ DATABASE ADAPTER: Supabase SDK inicializado exitosamente');
+    } else if (process.env.DATABASE_URL?.startsWith('postgres')) {
+      // Fallback a PostgreSQL directo si no hay Supabase
+      console.log('🐘 DATABASE ADAPTER: Usando PostgreSQL directo (DATABASE_URL)');
+      await ensureDatabaseUrl();
       dbAdapter = require('./database');
       console.log('✅ DATABASE ADAPTER: PostgreSQL conectado exitosamente');
     } else {
-      throw new Error('DATABASE_URL no es PostgreSQL');
+      throw new Error('No hay configuración de base de datos disponible');
     }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error('❌ DATABASE ADAPTER: Error conectando a PostgreSQL:', errorMessage);
-    
+    console.error('❌ DATABASE ADAPTER: Error conectando a base de datos:', errorMessage);
+
     // Solo usar SQLite como fallback en desarrollo local
     if (env.isLocal && !env.isProduction) {
       console.log('🔄 DATABASE ADAPTER: Usando SQLite como fallback para desarrollo local');
       usePostgres = false;
       dbAdapter = require('./database-sqlite');
     } else {
-      console.error('❌ DATABASE ADAPTER: PostgreSQL es requerido en producción');
-      throw new Error('PostgreSQL es requerido - no se permite SQLite en producción');
+      console.error('❌ DATABASE ADAPTER: Base de datos PostgreSQL/Supabase es requerida en producción');
+      throw new Error('Base de datos es requerida - no se permite SQLite en producción');
     }
   }
 
