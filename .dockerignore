@@ -43,9 +43,16 @@ coverage/
 # Documentation
 README.md
 docs/
+*.md
+
+# Supabase Edge Functions (deployed separately on Supabase)
+supabase/
 
 # Database files during development
 data/app.db
 data/app.db-shm
 data/app.db-wal
 prisma/dev.db
+
+# Scripts no necesarios en producción
+scripts/
