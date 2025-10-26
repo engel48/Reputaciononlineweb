@@ -17,7 +17,7 @@ import { FcGoogle } from 'react-icons/fc'
 import { FaFacebook, FaTwitter, FaLinkedin } from 'react-icons/fa'
 import Link from 'next/link'
 import gsap from 'gsap'
-import { createTimeline, aiDataAnalysis } from '@/lib/gsap-animations'
+import { createTimeline, staggerFadeIn } from '@/lib/gsap-animations'
 import AnimatedBackground from '@/components/ui/AnimatedBackground'
 
 export default function LoginPage() {
@@ -102,7 +102,7 @@ export default function LoginPage() {
     // Animar características con un efecto de análisis de datos de IA
     if (featuresRef.current && featuresRef.current.children.length > 0) {
       const features = Array.from(featuresRef.current.children)
-      aiDataAnalysis(features, {
+      staggerFadeIn(features, 0.1, {
         delay: 0.2
       })
     }
