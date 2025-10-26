@@ -58,9 +58,13 @@ export default function LoginPage() {
         return
       }
 
-      // Login exitoso, redirigir
-      router.push(redirectTo)
+      // Login exitoso, forzar recarga y redirigir
+      router.refresh()
+
+      // Usar window.location para redirección más confiable
+      window.location.href = redirectTo
     } catch (error) {
+      console.error('Error en login:', error)
       setError('Error de conexión. Por favor, intenta de nuevo.')
       setLoading(false)
     }
