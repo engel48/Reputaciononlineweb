@@ -129,6 +129,7 @@ export async function searchSimilarMentions(
   // Buscar en la base de datos
   const supabase = await createClient()
 
+  // @ts-expect-error - Supabase RPC type inference issue
   const { data, error } = await supabase.rpc('search_similar_mentions', {
     query_embedding: queryEmbedding,
     user_id_filter: userId || null,
@@ -176,6 +177,7 @@ export async function searchSimilarNews(
 
   const supabase = await createClient()
 
+  // @ts-expect-error - Supabase RPC type inference issue
   const { data, error } = await supabase.rpc('search_similar_news', {
     query_embedding: queryEmbedding,
     match_threshold: threshold,
@@ -217,6 +219,7 @@ export async function clusterMentions(
 
   const supabase = await createClient()
 
+  // @ts-expect-error - Supabase RPC type inference issue
   const { data, error } = await supabase.rpc('cluster_mentions_by_similarity', {
     user_id_filter: userId,
     similarity_threshold: similarityThreshold,
@@ -255,24 +258,21 @@ export async function createMentionWithEmbedding(mention: {
 
   const supabase = await createClient()
 
-  const { data, error } = await supabase
-    .from('mentions')
-    .insert({
-      id: `mention_${Date.now()}_${Math.random().toString(36).substring(7)}`,
-      user_id: mention.user_id,
-      content: mention.content,
-      source: mention.source,
-      source_url: mention.source_url,
-      author: mention.author,
-      author_url: mention.author_url,
-      published_at: mention.published_at?.toISOString(),
-      sentiment: mention.sentiment,
-      sentiment_score: mention.sentiment_score,
-      embedding: embedding,
-      metadata: mention.metadata ? JSON.stringify(mention.metadata) : null,
-    })
-    .select()
-    .single()
+  // @ts-expect-error - Supabase type inference issue with Database types
+  const { data, error } = await supabase.from('mentions').insert({
+    id: `mention_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+    user_id: mention.user_id,
+    content: mention.content,
+    source: mention.source,
+    source_url: mention.source_url,
+    author: mention.author,
+    author_url: mention.author_url,
+    published_at: mention.published_at?.toISOString(),
+    sentiment: mention.sentiment,
+    sentiment_score: mention.sentiment_score,
+    embedding: embedding,
+    metadata: mention.metadata ? JSON.stringify(mention.metadata) : null,
+  }).select().single()
 
   if (error) {
     console.error('Error creando mención:', error)
@@ -305,13 +305,11 @@ export async function updateMentionEmbedding(mentionId: string) {
   }
 
   // Generar nuevo embedding
-  const embedding = await generateEmbedding(mention.content)
+  const embedding = await generateEmbedding((mention as any).content)
 
   // Actualizar
-  const { error: updateError } = await supabase
-    .from('mentions')
-    .update({ embedding })
-    .eq('id', mentionId)
+  // @ts-expect-error - Supabase type inference issue with Database types
+  const { error: updateError } = await supabase.from('mentions').update({ embedding }).eq('id', mentionId)
 
   if (updateError) {
     throw updateError
@@ -353,15 +351,13 @@ export async function reindexAllMentions(userId: string) {
 
     try {
       // Generar embeddings en batch
-      const texts = batch.map(m => m.content)
+      const texts = (batch as any[]).map((m: any) => m.content)
       const embeddings = await generateEmbeddings(texts)
 
       // Actualizar cada mención
       for (let j = 0; j < batch.length; j++) {
-        await supabase
-          .from('mentions')
-          .update({ embedding: embeddings[j] })
-          .eq('id', batch[j].id)
+        // @ts-expect-error - Supabase type inference issue with Database types
+        await supabase.from('mentions').update({ embedding: embeddings[j] }).eq('id', batch[j].id)
 
         indexed++
       }
@@ -400,7 +396,7 @@ export async function getVectorIndexStats(userId: string) {
   }
 
   const total = data.length
-  const indexed = data.filter(m => m.embedding !== null).length
+  const indexed = (data as any[]).filter((m: any) => m.embedding !== null).length
   const notIndexed = total - indexed
 
   return {

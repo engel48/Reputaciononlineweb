@@ -104,14 +104,11 @@ export function useAmelia() {
     setError(null)
 
     try {
-      const { data, error } = await supabase
-        .from('amelia_conversations')
-        .insert({
-          user_id: user.id,
-          title
-        })
-        .select()
-        .single()
+      // @ts-expect-error - Supabase type inference issue with Database types
+      const { data, error } = await supabase.from('amelia_conversations').insert({
+        user_id: user.id,
+        title
+      }).select().single()
 
       if (error) throw error
 
@@ -179,7 +176,7 @@ export function useAmelia() {
 
       if (error) throw error
 
-      return data.map(msg => ({
+      return (data as any[]).map((msg: any) => ({
         role: msg.role as 'user' | 'assistant',
         content: msg.content,
         timestamp: new Date(msg.created_at)

@@ -48,7 +48,9 @@
       "Bash(cat:*)",
       "Bash(git fetch:*)",
       "Bash(git ls-tree -r engel48/main --name-only)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(timeout 120 npm run build)",
+      "Bash(timeout 180 npm run build)"
     ],
     "deny": []
   }

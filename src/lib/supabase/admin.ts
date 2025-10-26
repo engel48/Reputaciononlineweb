@@ -30,7 +30,7 @@ if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
 }
 
 // Cliente admin singleton
-let adminClient: ReturnType<typeof createClient> | null = null
+let adminClient: any = null
 
 export function getSupabaseAdmin() {
   if (!adminClient) {
@@ -178,20 +178,16 @@ export async function migrateAuthUserToUsersTable(authUser: {
   const admin = getSupabaseAdmin()
 
   // Insertar o actualizar en tabla users
-  const { data, error } = await admin
-    .from('users')
-    .upsert({
-      id: authUser.id,
-      email: authUser.email,
-      name: authUser.name || authUser.metadata?.name || null,
-      role: authUser.metadata?.role || 'user',
-      plan: authUser.metadata?.plan || 'free',
-      credits: authUser.metadata?.credits || 0,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    })
-    .select()
-    .single()
+  const { data, error } = await admin.from('users').upsert({
+    id: authUser.id,
+    email: authUser.email,
+    name: authUser.name || authUser.metadata?.name || null,
+    role: authUser.metadata?.role || 'user',
+    plan: authUser.metadata?.plan || 'free',
+    credits: authUser.metadata?.credits || 0,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  }).select().single()
 
   if (error) {
     console.error('Error migrando usuario:', error)

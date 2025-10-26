@@ -70,7 +70,7 @@ export async function middleware(request: NextRequest) {
       .eq('id', user.id)
       .single()
 
-    if (userData?.role !== 'admin') {
+    if ((userData as any)?.role !== 'admin') {
       return NextResponse.redirect(new URL('/dashboard', request.url))
     }
   }

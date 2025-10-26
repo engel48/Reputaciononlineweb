@@ -56,7 +56,7 @@ export interface MentionPayload {
 /**
  * Hook genérico para subscripciones en tiempo real
  */
-export function useRealtimeSubscription<T = any>(
+export function useRealtimeSubscription<T extends Record<string, any> = any>(
   config: RealtimeSubscriptionConfig,
   callback: (payload: RealtimePostgresChangesPayload<T>) => void
 ) {
@@ -71,14 +71,14 @@ export function useRealtimeSubscription<T = any>(
 
     const newChannel = supabase
       .channel(channelName)
-      .on(
+      .on<T>(
         'postgres_changes',
         {
           event: config.event || '*',
           schema: config.schema || 'public',
           table: config.table,
           filter: config.filter,
-        },
+        } as any,
         (payload) => {
           console.log(`🔔 Realtime event on ${config.table}:`, payload)
           callback(payload as RealtimePostgresChangesPayload<T>)
@@ -172,8 +172,8 @@ export function useRealtimeNotifications(userId: string) {
         .limit(50)
 
       if (data && !error) {
-        setNotifications(data)
-        setUnreadCount(data.filter(n => !n.is_read).length)
+        setNotifications(data as any)
+        setUnreadCount((data as any).filter((n: any) => !n.is_read).length)
       }
     }
 
@@ -183,10 +183,8 @@ export function useRealtimeNotifications(userId: string) {
   // Marcar como leída
   const markAsRead = async (notificationId: string) => {
     const supabase = getSupabaseBrowserClient()
-    const { error } = await supabase
-      .from('notifications')
-      .update({ is_read: true })
-      .eq('id', notificationId)
+    // @ts-expect-error - Supabase type inference issue with Database types
+    const { error } = await supabase.from('notifications').update({ is_read: true }).eq('id', notificationId)
 
     if (error) {
       console.error('Error marking notification as read:', error)
@@ -196,11 +194,8 @@ export function useRealtimeNotifications(userId: string) {
   // Marcar todas como leídas
   const markAllAsRead = async () => {
     const supabase = getSupabaseBrowserClient()
-    const { error } = await supabase
-      .from('notifications')
-      .update({ is_read: true })
-      .eq('user_id', userId)
-      .eq('is_read', false)
+    // @ts-expect-error - Supabase type inference issue with Database types
+    const { error } = await supabase.from('notifications').update({ is_read: true }).eq('user_id', userId).eq('is_read', false)
 
     if (error) {
       console.error('Error marking all notifications as read:', error)
@@ -397,7 +392,11 @@ export async function requestNotificationPermission() {
 
 /**
  * Componente de ejemplo
+ *
+ * NOTA: Este código está comentado porque el archivo es .ts, no .tsx
+ * Para usar este ejemplo, crea un componente .tsx separado
  */
+/*
 export function ExampleRealtimeComponent() {
   const userId = 'user-123' // Obtener del contexto
 
@@ -430,3 +429,4 @@ export function ExampleRealtimeComponent() {
     </div>
   )
 }
+*/

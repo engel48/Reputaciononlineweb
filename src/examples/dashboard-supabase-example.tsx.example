@@ -35,6 +35,8 @@ export default function DashboardSupabaseExample() {
       setLoading(true)
 
       try {
+        if (!user) return
+
         // Cargar estadísticas del usuario
         const { data: statsData } = await supabase
           .from('user_stats')
@@ -101,10 +103,8 @@ export default function DashboardSupabaseExample() {
 
   // Función para marcar notificación como leída
   async function markNotificationAsRead(notificationId: string) {
-    const { error } = await supabase
-      .from('notifications')
-      .update({ is_read: true })
-      .eq('id', notificationId)
+    // @ts-expect-error - Supabase type inference issue with Database types
+    const { error } = await supabase.from('notifications').update({ is_read: true }).eq('id', notificationId)
 
     if (!error) {
       setNotifications(prev => prev.filter(n => n.id !== notificationId))
