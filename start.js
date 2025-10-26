@@ -148,9 +148,18 @@ console.log('Variables de entorno que contienen "postgres":', Object.keys(proces
 console.log('Variables de entorno que contienen "database":', Object.keys(process.env).filter(k => k.toLowerCase().includes('database')));
 console.log('=' .repeat(60));
 
+// Detectar si se está usando Supabase
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const isUsingSupabase = supabaseUrl && supabaseKey && supabaseUrl.includes('supabase.co');
+
 if (forceSQLite) {
   console.log('🗄️ FORCE_SQLITE activado - saltando inicialización de PostgreSQL');
   console.log('🎯 Iniciando Next.js directamente con SQLite...');
+  startNextJs();
+} else if (isUsingSupabase) {
+  console.log('🟢 Supabase detectado - saltando inicialización de PostgreSQL');
+  console.log('✅ Las tablas ya existen en Supabase, iniciando Next.js...');
   startNextJs();
 } else {
   console.log('🐘 Inicializando base de datos PostgreSQL...');

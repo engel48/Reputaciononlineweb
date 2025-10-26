@@ -43,18 +43,26 @@ export default function LoginPage() {
     setLoading(true)
     setError('')
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    })
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      })
 
-    if (error) {
-      setError(error.message === 'Invalid login credentials'
-        ? 'Email o contraseña incorrectos'
-        : error.message)
-      setLoading(false)
-    } else {
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.message || 'Error al iniciar sesión')
+        setLoading(false)
+        return
+      }
+
+      // Login exitoso, redirigir
       router.push(redirectTo)
+    } catch (error) {
+      setError('Error de conexión. Por favor, intenta de nuevo.')
+      setLoading(false)
     }
   }
 
