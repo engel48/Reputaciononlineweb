@@ -20,17 +20,16 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzd
 # Service Role Key (privada - NUNCA exponer en el cliente)
 SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaXF3aGJvZHZpaW12cHhwc3pkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MTQzNjcxMywiZXhwIjoyMDc3MDEyNzEzfQ.PP-KV6G8j5goSJCFGAYVyW2XKbUbFZtTFOD0nJPtNn4
 
-# DATABASE_URL - Obtener de Supabase > Settings > Database > Connection String (URI)
-# Formato: postgresql://postgres.[PROJECT_REF]:[PASSWORD]@aws-0-us-east-1.pooler.supabase.com:6543/postgres
-DATABASE_URL=postgresql://postgres.shiqwhbodviimvpxpszd:[YOUR_DATABASE_PASSWORD]@aws-0-us-east-1.pooler.supabase.com:6543/postgres
+# DATABASE_URL - Conexión directa a PostgreSQL (YA CONFIGURADA)
+DATABASE_URL=postgresql://postgres:4nBShUbrGUSAr4@db.shiqwhbodviimvpxpszd.supabase.co:5432/postgres
 ```
 
-**Cómo obtener el DATABASE_URL completo:**
-1. Ve a tu proyecto Supabase: https://supabase.com/dashboard/project/shiqwhbodviimvpxpszd
-2. Settings → Database → Connection String
-3. Selecciona "URI" mode
-4. Copia la cadena completa (incluye tu password de base de datos)
-5. Pégala como valor de DATABASE_URL en Coolify
+**Nota sobre DATABASE_URL:**
+- La conexión está configurada con la contraseña correcta
+- Si necesitas cambiar la contraseña en el futuro:
+  1. Ve a: https://supabase.com/dashboard/project/shiqwhbodviimvpxpszd/settings/database
+  2. Settings → Database → Database Password
+  3. Actualiza la contraseña en el DATABASE_URL
 
 #### 2. Authentication - AUTO-GENERATED
 
@@ -248,9 +247,8 @@ Configure this in Coolify:
    NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaXF3aGJvZHZpaW12cHhwc3pkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0MzY3MTMsImV4cCI6MjA3NzAxMjcxM30.jNKv3yQeTOw25nhjeGaEMczYhosmV9Xh2zEJ2PZrbPg
    SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoaXF3aGJvZHZpaW12cHhwc3pkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MTQzNjcxMywiZXhwIjoyMDc3MDEyNzEzfQ.PP-KV6G8j5goSJCFGAYVyW2XKbUbFZtTFOD0nJPtNn4
 
-   # DATABASE_URL - IR A SUPABASE Y OBTENER
-   # Supabase Dashboard → Settings → Database → Connection String (URI)
-   DATABASE_URL=postgresql://postgres.shiqwhbodviimvpxpszd:[TU_PASSWORD]@aws-0-us-east-1.pooler.supabase.com:6543/postgres
+   # DATABASE_URL - Conexión directa a PostgreSQL
+   DATABASE_URL=postgresql://postgres:4nBShUbrGUSAr4@db.shiqwhbodviimvpxpszd.supabase.co:5432/postgres
 
    # Entorno
    NODE_ENV=production
