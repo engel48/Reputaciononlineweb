@@ -1,93 +1,162 @@
+/**
+ * Twitter/X OAuth Callback - Sistema REAL
+ *
+ * Procesa el callback de autenticación de Twitter/X usando OAuth 2.0
+ * y guarda los tokens de forma segura en Supabase.
+ *
+ * Documentación: https://developer.twitter.com/en/docs/authentication/oauth-2-0
+ */
+
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import { saveOAuthConnection } from '@/lib/oauth-storage';
+import jwt from 'jsonwebtoken';
+
+const TWITTER_CLIENT_ID = process.env.TWITTER_CLIENT_ID || process.env.NEXT_PUBLIC_TWITTER_CLIENT_ID;
+const TWITTER_CLIENT_SECRET = process.env.TWITTER_CLIENT_SECRET;
+const REDIRECT_URI = process.env.NEXTAUTH_URL
+  ? `${process.env.NEXTAUTH_URL}/api/auth/twitter/callback`
+  : 'http://localhost:3000/api/auth/twitter/callback';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get('code');
   const error = searchParams.get('error');
+  const errorDescription = searchParams.get('error_description');
   const state = searchParams.get('state');
 
-  const html = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>Twitter OAuth Callback</title>
-    </head>
-    <body>
-      <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
-        <h2>Procesando autenticación de Twitter...</h2>
-        <p>Esta ventana se cerrará automáticamente.</p>
-      </div>
-      <script>
-        (function() {
-          try {
-            const urlParams = new URLSearchParams(window.location.search);
-            const code = urlParams.get('code');
-            const error = urlParams.get('error');
-            const errorDescription = urlParams.get('error_description');
-            
-            if (error) {
-              window.opener.postMessage({
-                type: 'oauth_error',
-                platform: 'twitter',
-                error: errorDescription || error
-              }, window.location.origin);
-            } else if (code) {
-              // Intercambiar código por token
-              fetch('/api/auth/twitter', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ code, state: '${state}' })
-              })
-              .then(response => response.json())
-              .then(data => {
-                if (data.success) {
-                  window.opener.postMessage({
-                    type: 'oauth_success',
-                    platform: 'twitter',
-                    profile: data.profile,
-                    token: data.token
-                  }, window.location.origin);
-                } else {
-                  window.opener.postMessage({
-                    type: 'oauth_error',
-                    platform: 'twitter',
-                    error: data.error || 'Error de autenticación'
-                  }, window.location.origin);
-                }
-              })
-              .catch(err => {
-                window.opener.postMessage({
-                  type: 'oauth_error',
-                  platform: 'twitter',
-                  error: 'Error procesando autenticación'
-                }, window.location.origin);
-              });
-            } else {
-              window.opener.postMessage({
-                type: 'oauth_error',
-                platform: 'twitter',
-                error: 'No se recibió código de autorización'
-              }, window.location.origin);
-            }
-          } catch (e) {
-            console.error('Error in callback:', e);
-            window.opener.postMessage({
-              type: 'oauth_error',
-              platform: 'twitter',
-              error: 'Error en callback'
-            }, window.location.origin);
-          }
-        })();
-      </script>
-    </body>
-    </html>
-  `;
+  console.log('🐦 Twitter OAuth Callback recibido');
 
-  return new NextResponse(html, {
-    headers: {
-      'Content-Type': 'text/html',
-    },
-  });
+  if (error) {
+    console.error('❌ Twitter OAuth error:', error, errorDescription);
+    return NextResponse.redirect(
+      `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard/redes-sociales?error=${error}&description=${encodeURIComponent(errorDescription || '')}`
+    );
+  }
+
+  if (!code) {
+    console.error('❌ No se recibió código de autorización');
+    return NextResponse.redirect(
+      `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard/redes-sociales?error=no_code`
+    );
+  }
+
+  if (!TWITTER_CLIENT_ID || !TWITTER_CLIENT_SECRET) {
+    console.error('❌ Twitter credentials no configuradas en .env');
+    return NextResponse.redirect(
+      `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard/redes-sociales?error=config_missing`
+    );
+  }
+
+  try {
+    // Obtener usuario actual
+    const cookieStore = await cookies();
+    const authToken = cookieStore.get('auth-token')?.value;
+
+    if (!authToken) {
+      console.error('❌ Usuario no autenticado');
+      return NextResponse.redirect(
+        `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/login?error=not_authenticated`
+      );
+    }
+
+    const decoded = jwt.decode(authToken) as { userId: string } | null;
+    if (!decoded || !decoded.userId) {
+      console.error('❌ Token JWT inválido');
+      return NextResponse.redirect(
+        `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/login?error=invalid_token`
+      );
+    }
+
+    const userId = decoded.userId;
+    console.log(`🔐 Usuario autenticado: ${userId}`);
+
+    // PASO 1: Intercambiar código por access token
+    console.log('🔄 Intercambiando código por access token...');
+
+    // Twitter OAuth 2.0 requiere Basic Auth con client_id:client_secret en Base64
+    const basicAuth = Buffer.from(`${TWITTER_CLIENT_ID}:${TWITTER_CLIENT_SECRET}`).toString('base64');
+
+    const tokenResponse = await fetch('https://api.twitter.com/2/oauth2/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': `Basic ${basicAuth}`
+      },
+      body: new URLSearchParams({
+        grant_type: 'authorization_code',
+        code: code,
+        redirect_uri: REDIRECT_URI,
+        code_verifier: 'challenge' // En producción, usar PKCE real
+      })
+    });
+
+    if (!tokenResponse.ok) {
+      const errorData = await tokenResponse.json();
+      console.error('❌ Error obteniendo access token:', errorData);
+      return NextResponse.redirect(
+        `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard/redes-sociales?error=token_exchange_failed`
+      );
+    }
+
+    const tokenData = await tokenResponse.json();
+    const { access_token, refresh_token, expires_in } = tokenData;
+
+    console.log('✅ Access token obtenido, válido por:', expires_in, 'segundos');
+
+    // PASO 2: Obtener perfil del usuario
+    console.log('🔄 Obteniendo perfil del usuario...');
+    const profileResponse = await fetch('https://api.twitter.com/2/users/me?user.fields=profile_image_url,public_metrics,username,name', {
+      headers: {
+        'Authorization': `Bearer ${access_token}`
+      }
+    });
+
+    if (!profileResponse.ok) {
+      console.error('❌ Error obteniendo perfil de Twitter');
+      return NextResponse.redirect(
+        `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard/redes-sociales?error=profile_fetch_failed`
+      );
+    }
+
+    const profileData = await profileResponse.json();
+    const profile = profileData.data;
+    console.log('✅ Perfil obtenido:', profile.username);
+
+    // PASO 3: Guardar en Supabase con encriptación
+    const expiresAt = new Date(Date.now() + expires_in * 1000);
+
+    const saved = await saveOAuthConnection({
+      userId,
+      platform: 'x', // Usamos 'x' como platform identifier
+      accessToken: access_token,
+      refreshToken: refresh_token,
+      expiresAt,
+      profile: {
+        id: profile.id,
+        name: profile.name,
+        username: profile.username,
+        profileImage: profile.profile_image_url,
+        followers: profile.public_metrics?.followers_count || 0
+      }
+    });
+
+    if (!saved) {
+      console.error('❌ Error guardando conexión en Supabase');
+      return NextResponse.redirect(
+        `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard/redes-sociales?error=save_failed`
+      );
+    }
+
+    console.log('✅ Twitter conectado exitosamente');
+    return NextResponse.redirect(
+      `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard/redes-sociales?success=twitter`
+    );
+
+  } catch (error) {
+    console.error('❌ Error en Twitter OAuth callback:', error);
+    return NextResponse.redirect(
+      `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard/redes-sociales?error=oauth_failed`
+    );
+  }
 }

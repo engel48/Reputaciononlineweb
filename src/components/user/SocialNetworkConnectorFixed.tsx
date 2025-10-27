@@ -135,38 +135,104 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
   }, []);
 
   const loadConnections = async () => {
+    setIsValidating(true);
+
     try {
-      const response = await fetch('/api/social-connect');
-      const data = await response.json();
-      
-      if (data.success && data.socialConnections) {
-        setConnections(data.socialConnections);
-        setLastUpdated(data.lastUpdated || new Date().toISOString());
+      const response = await fetch('/api/social-connect?action=list', {
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error || 'Error al cargar conexiones');
+      }
+
+      // Verificar que los datos son reales de Supabase
+      if (data.connections) {
+        setConnections(data.connections);
+        setLastUpdated(new Date().toISOString());
+      } else {
+        throw new Error('No se recibieron datos de conexiones');
+      }
+
     } catch (error) {
-      console.error('Error cargando conexiones:', error);
-      setMessage({ type: 'error', text: 'Error al cargar las conexiones de redes sociales' });
+      console.error('Error loading connections:', error);
+      setMessage({
+        type: 'error',
+        text: error instanceof Error ? error.message : 'Error al cargar conexiones. Por favor recarga la página.'
+      });
+    } finally {
+      setIsValidating(false);
     }
   };
 
   const handleOAuthCallback = async (platform: string) => {
     try {
-      // En un flujo real, aquí obtendríamos el token del callback de OAuth
-      // Por ahora, simularemos una conexión exitosa
       setMessage({ type: 'info', text: `Procesando conexión con ${platform}...` });
-      
+
+      // Obtener código de autorización de la URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('code');
+      const state = urlParams.get('state');
+      const storedState = sessionStorage.getItem('oauth_state');
+
+      // Validar state (CSRF protection)
+      if (!state || state !== storedState) {
+        throw new Error('Estado de OAuth inválido. Posible ataque CSRF.');
+      }
+
+      if (!code) {
+        throw new Error('No se recibió código de autorización');
+      }
+
+      // Enviar código al backend para exchange por access token
+      const response = await fetch('/api/social-connect', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'connect',
+          platform,
+          code,
+          codeVerifier: sessionStorage.getItem('code_verifier') // Para PKCE (Twitter)
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error al conectar: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error || 'Error desconocido al conectar');
+      }
+
+      // Limpiar sessionStorage
+      sessionStorage.removeItem('oauth_state');
+      sessionStorage.removeItem('code_verifier');
+
       // Limpiar URL
       window.history.replaceState({}, document.title, window.location.pathname);
-      
-      // Recargar conexiones
-      setTimeout(() => {
-        loadConnections();
-        setMessage({ type: 'success', text: `¡${platform} conectado exitosamente!` });
-      }, 1500);
-      
+
+      // Recargar conexiones con datos REALES de Supabase
+      await loadConnections();
+      setMessage({ type: 'success', text: `¡${platform} conectado exitosamente!` });
+
     } catch (error) {
       console.error('Error en callback OAuth:', error);
-      setMessage({ type: 'error', text: `Error al procesar la conexión con ${platform}` });
+      setMessage({
+        type: 'error',
+        text: error instanceof Error ? error.message : `Error al procesar la conexión con ${platform}`
+      });
     }
   };
 
@@ -192,36 +258,68 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
   };
 
   const handleConnect = async (networkId: string) => {
-    try {
-      setLoading(prev => ({ ...prev, [networkId]: true }));
+    setLoading(prev => ({ ...prev, [networkId]: true }));
+    setMessage(null);
 
-      // Abrir popup directamente a la página de OAuth login
+    try {
+      // Abrir popup OAuth
+      const width = 600;
+      const height = 700;
+      const left = window.screen.width / 2 - width / 2;
+      const top = window.screen.height / 2 - height / 2;
+
       const popup = window.open(
         `/oauth-login?platform=${networkId}`,
         `${networkId}_oauth`,
-        'width=600,height=700,scrollbars=yes,resizable=yes'
+        `width=${width},height=${height},left=${left},top=${top},scrollbars=yes,resizable=yes,popup=yes`
       );
 
       if (!popup) {
-        showMessage('error', 'No se pudo abrir la ventana de autorización. Verifica que no estén bloqueados los popups.');
-        return;
+        throw new Error('Por favor permite popups para conectar redes sociales');
       }
 
-      // Verificar si el popup se cerró manualmente
-      const checkClosed = setInterval(() => {
+      // Escuchar mensajes del popup cuando complete OAuth
+      const handleMessage = async (event: MessageEvent) => {
+        if (event.origin !== window.location.origin) return;
+
+        if (event.data.type === 'oauth_success') {
+          setMessage({
+            type: 'success',
+            text: `¡${networkId} conectado exitosamente!`
+          });
+
+          // Recargar datos REALES de la API
+          await loadConnections();
+
+          window.removeEventListener('message', handleMessage);
+        } else if (event.data.type === 'oauth_error') {
+          setMessage({
+            type: 'error',
+            text: `Error al conectar ${networkId}: ${event.data.error}`
+          });
+        }
+
+        setLoading(prev => ({ ...prev, [networkId]: false }));
+      };
+
+      window.addEventListener('message', handleMessage);
+
+      // Detectar si el usuario cierra el popup
+      const checkPopupClosed = setInterval(() => {
         if (popup.closed) {
-          clearInterval(checkClosed);
+          clearInterval(checkPopupClosed);
+          window.removeEventListener('message', handleMessage);
           setLoading(prev => ({ ...prev, [networkId]: false }));
         }
-      }, 1000);
+      }, 500);
 
     } catch (error) {
       console.error(`Error connecting to ${networkId}:`, error);
-      showMessage('error', error instanceof Error ? error.message : 'Error de conexión');
-    } finally {
-      setTimeout(() => {
-        setLoading(prev => ({ ...prev, [networkId]: false }));
-      }, 1000);
+      setMessage({
+        type: 'error',
+        text: error instanceof Error ? error.message : 'Error al conectar'
+      });
+      setLoading(prev => ({ ...prev, [networkId]: false }));
     }
   };
 

@@ -76,53 +76,109 @@ export function SocialListeningCard() {
   const [syncData, setSyncData] = useState<any>(null)
   const [analysisData, setAnalysisData] = useState<any>(null)
   const [isSyncing, setIsSyncing] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [selectedDays, setSelectedDays] = useState(7)
 
   // Cargar datos iniciales
   useEffect(() => {
     loadSyncData()
     loadAnalysisData()
-  }, [])
+  }, [selectedDays])
 
   const loadSyncData = async () => {
     try {
       const response = await fetch('/api/social-listening/sync')
-      if (response.ok) {
-        const data = await response.json()
-        setSyncData(data.data)
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }
+
+      const data = await response.json()
+
+      if (!data.success) {
+        throw new Error(data.error || 'Error al cargar datos de sincronización')
+      }
+
+      setSyncData(data.data)
     } catch (error) {
       console.error('Error loading sync data:', error)
+      setError(error instanceof Error ? error.message : 'Error al cargar datos de sincronización')
     }
   }
 
   const loadAnalysisData = async () => {
+    setIsLoading(true)
+    setError(null)
+
     try {
-      setIsLoading(true)
-      const response = await fetch('/api/social-listening/analysis')
-      if (response.ok) {
-        const data = await response.json()
-        setAnalysisData(data.data)
+      const response = await fetch(`/api/social-listening/analysis?days=${selectedDays}`)
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }
+
+      const data = await response.json()
+
+      if (!data.success) {
+        throw new Error(data.error || 'Error en análisis')
+      }
+
+      // Validar que los datos son reales
+      if (!data.data || !data.data.platformAnalysis || data.data.platformAnalysis.length === 0) {
+        setError('No hay plataformas conectadas. Conecta al menos una red social.')
+        setAnalysisData(null)
+        return
+      }
+
+      // Verificar que tiene datos reales de APIs
+      const hasRealData = data.data.platformAnalysis.some((p: PlatformAnalysis) =>
+        p.recentPosts && p.recentPosts.length > 0
+      )
+
+      if (!hasRealData) {
+        setError('No hay posts recientes. Asegúrate de tener contenido en tus redes sociales.')
+      }
+
+      setAnalysisData(data.data)
+
     } catch (error) {
-      console.error('Error loading analysis data:', error)
+      console.error('Analysis error:', error)
+      setError(error instanceof Error ? error.message : 'Error al cargar análisis')
+      setAnalysisData(null)
     } finally {
       setIsLoading(false)
     }
   }
 
   const handleSync = async () => {
+    setIsSyncing(true)
+    setError(null)
+
     try {
-      setIsSyncing(true)
       const response = await fetch('/api/social-listening/sync', {
-        method: 'POST'
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
       })
-      
-      if (response.ok) {
-        await loadSyncData()
-        await loadAnalysisData()
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }
+
+      const data = await response.json()
+
+      if (!data.success) {
+        throw new Error(data.error || 'Error al sincronizar')
+      }
+
+      // Recargar datos REALES después de sincronización exitosa
+      await loadSyncData()
+      await loadAnalysisData()
+
     } catch (error) {
       console.error('Error syncing data:', error)
+      setError(error instanceof Error ? error.message : 'Error al sincronizar datos')
     } finally {
       setIsSyncing(false)
     }
@@ -178,7 +234,7 @@ export function SocialListeningCard() {
     )
   }
 
-  if (!analysisData || !analysisData.platformAnalysis || analysisData.platformAnalysis.length === 0) {
+  if (error || !analysisData || !analysisData.platformAnalysis || analysisData.platformAnalysis.length === 0) {
     return (
       <Card className="w-full">
         <CardHeader>
@@ -191,16 +247,37 @@ export function SocialListeningCard() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+              <div className="flex items-start gap-2">
+                <div className="text-red-600 font-semibold">Error:</div>
+                <div className="text-red-700 flex-1">{error}</div>
+              </div>
+            </div>
+          )}
           <div className="text-center py-8">
             <p className="text-gray-500 mb-4">
-              No hay redes sociales conectadas para analizar
+              {error || 'No hay redes sociales conectadas para analizar'}
             </p>
-            <Button 
-              onClick={() => window.location.href = '/dashboard/perfil'}
-              className="bg-[#01257D] hover:bg-[#013AAA] text-white"
-            >
-              Conectar Redes Sociales
-            </Button>
+            <div className="flex gap-2 justify-center">
+              <Button
+                onClick={() => window.location.href = '/dashboard/perfil'}
+                className="bg-[#01257D] hover:bg-[#013AAA] text-white"
+              >
+                Conectar Redes Sociales
+              </Button>
+              <Button
+                onClick={() => {
+                  setError(null)
+                  loadAnalysisData()
+                }}
+                variant="outline"
+                className="border-[#01257D] text-[#01257D] hover:bg-[#01257D] hover:text-white"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Reintentar
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>

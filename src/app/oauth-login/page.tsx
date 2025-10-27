@@ -1,48 +1,56 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const platformConfig = {
   facebook: {
     name: 'Facebook',
     color: '#1877F2',
-    bgColor: '#F0F2F5'
+    bgColor: '#F0F2F5',
+    authUrl: 'https://www.facebook.com/v18.0/dialog/oauth'
   },
   instagram: {
     name: 'Instagram',
     gradient: 'linear-gradient(45deg, #405de6, #5851db, #833ab4, #c13584, #e1306c, #fd1d1d)',
-    bgColor: '#FAFAFA'
+    bgColor: '#FAFAFA',
+    authUrl: 'https://api.instagram.com/oauth/authorize'
   },
   x: {
     name: 'X',
     color: '#000000',
-    bgColor: '#FFFFFF'
+    bgColor: '#FFFFFF',
+    authUrl: 'https://twitter.com/i/oauth2/authorize'
   },
   twitter: {
     name: 'X',
     color: '#000000',
-    bgColor: '#FFFFFF'
+    bgColor: '#FFFFFF',
+    authUrl: 'https://twitter.com/i/oauth2/authorize'
   },
   linkedin: {
     name: 'LinkedIn',
     color: '#0A66C2',
-    bgColor: '#F3F2EF'
+    bgColor: '#F3F2EF',
+    authUrl: 'https://www.linkedin.com/oauth/v2/authorization'
   },
   youtube: {
     name: 'YouTube',
     color: '#FF0000',
-    bgColor: '#FFFFFF'
+    bgColor: '#FFFFFF',
+    authUrl: 'https://accounts.google.com/o/oauth2/v2/auth'
   },
   threads: {
     name: 'Threads',
     color: '#000000',
-    bgColor: '#FFFFFF'
+    bgColor: '#FFFFFF',
+    authUrl: null // Threads aún no disponible
   },
   tiktok: {
     name: 'TikTok',
     color: '#000000',
-    bgColor: '#FFFFFF'
+    bgColor: '#FFFFFF',
+    authUrl: null // TikTok requiere configuración especial
   }
 };
 
@@ -84,45 +92,134 @@ const logos = {
   )
 };
 
+// Helper functions para OAuth
+function generateState(): string {
+  const state = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  sessionStorage.setItem('oauth_state', state);
+  return state;
+}
+
+function generatePKCE(): string {
+  const verifier = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  sessionStorage.setItem('code_verifier', verifier);
+  // Generar challenge desde verifier (base64url encoding)
+  return btoa(verifier).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+
 export default function OAuthLogin() {
   const searchParams = useSearchParams();
   const platform = searchParams.get('platform') || 'facebook';
   const config = platformConfig[platform as keyof typeof platformConfig] || platformConfig.facebook;
   const logo = logos[platform as keyof typeof logos] || logos.facebook;
 
-  const [step, setStep] = useState('login');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [accepted, setAccepted] = useState(false);
 
-  const validateForm = () => {
+  useEffect(() => {
+    // Verificar si la plataforma está disponible
+    if (!config.authUrl) {
+      setError(`${config.name} aún no está disponible para integración. Por favor intenta con otra red social.`);
+    }
+  }, [config]);
+
+  const validateForm = (): boolean => {
     const email = (document.getElementById('emailInput') as HTMLInputElement)?.value;
     const password = (document.getElementById('passwordInput') as HTMLInputElement)?.value;
 
     if (!email || !email.includes('@')) {
-      alert('Por favor ingresa un email válido');
+      setError('Por favor ingresa un email válido');
       return false;
     }
     if (!password || password.length < 3) {
-      alert('Por favor ingresa una contraseña');
+      setError('Por favor ingresa una contraseña');
       return false;
     }
     if (!accepted) {
-      alert('Debes aceptar las políticas para continuar');
+      setError('Debes aceptar las políticas para continuar');
       return false;
     }
     return true;
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!validateForm()) return;
 
-    setStep('loading');
+    // Verificar que la plataforma tenga OAuth configurado
+    if (!config.authUrl) {
+      setError(`${config.name} no está disponible actualmente`);
+      return;
+    }
 
-    setTimeout(() => {
-      setStep('error');
-    }, 2000);
+    setLoading(true);
+    setError(null);
+
+    try {
+      const state = generateState();
+      const redirectUri = `${window.location.origin}/api/auth/${platform}/callback`;
+
+      // Construir URL de OAuth según la plataforma
+      let authUrl = '';
+
+      switch (platform) {
+        case 'facebook':
+          const fbClientId = process.env.NEXT_PUBLIC_FACEBOOK_CLIENT_ID;
+          if (!fbClientId) {
+            throw new Error('Facebook OAuth no está configurado. Contacta al administrador.');
+          }
+          authUrl = `${config.authUrl}?client_id=${fbClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=email,public_profile,pages_read_engagement&response_type=code&state=${state}`;
+          break;
+
+        case 'twitter':
+        case 'x':
+          const twitterClientId = process.env.NEXT_PUBLIC_TWITTER_CLIENT_ID;
+          if (!twitterClientId) {
+            throw new Error('Twitter/X OAuth no está configurado. Contacta al administrador.');
+          }
+          const codeChallenge = generatePKCE();
+          authUrl = `${config.authUrl}?client_id=${twitterClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=tweet.read users.read offline.access&response_type=code&code_challenge=${codeChallenge}&code_challenge_method=S256&state=${state}`;
+          break;
+
+        case 'linkedin':
+          const linkedinClientId = process.env.NEXT_PUBLIC_LINKEDIN_CLIENT_ID;
+          if (!linkedinClientId) {
+            throw new Error('LinkedIn OAuth no está configurado. Contacta al administrador.');
+          }
+          authUrl = `${config.authUrl}?client_id=${linkedinClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=r_liteprofile r_emailaddress w_member_social&response_type=code&state=${state}`;
+          break;
+
+        case 'youtube':
+          const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+          if (!googleClientId) {
+            throw new Error('Google/YouTube OAuth no está configurado. Contacta al administrador.');
+          }
+          authUrl = `${config.authUrl}?client_id=${googleClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=https://www.googleapis.com/auth/youtube.readonly&response_type=code&access_type=offline&state=${state}`;
+          break;
+
+        case 'instagram':
+          const instaClientId = process.env.NEXT_PUBLIC_INSTAGRAM_CLIENT_ID;
+          if (!instaClientId) {
+            throw new Error('Instagram OAuth no está configurado. Contacta al administrador.');
+          }
+          authUrl = `${config.authUrl}?client_id=${instaClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=user_profile,user_media&response_type=code&state=${state}`;
+          break;
+
+        default:
+          throw new Error(`Plataforma ${platform} no soportada`);
+      }
+
+      // Redirigir a OAuth REAL de la plataforma
+      window.location.href = authUrl;
+
+    } catch (error) {
+      console.error('OAuth error:', error);
+      setError(error instanceof Error ? error.message : 'Error al conectar con la plataforma');
+      setLoading(false);
+    }
   };
 
-  if (step === 'loading') {
+  // Vista de carga mientras redirige a OAuth
+  if (loading) {
     return (
       <div style={{
         padding: '40px',
@@ -153,67 +250,15 @@ export default function OAuthLogin() {
           color: platform === 'instagram' ? '#262626' : ('color' in config ? config.color : '#000000'),
           marginBottom: '10px'
         }}>
-          Conectando con {config.name}
+          Redirigiendo a {config.name}
         </h2>
-        <p style={{ color: '#666' }}>Verificando credenciales...</p>
+        <p style={{ color: '#666' }}>Preparando autenticación...</p>
         <style>{`
           @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
           }
         `}</style>
-      </div>
-    );
-  }
-
-  if (step === 'error') {
-    return (
-      <div style={{
-        padding: '40px',
-        textAlign: 'center',
-        fontFamily: 'system-ui, -apple-system, sans-serif',
-        backgroundColor: config.bgColor || '#FFFFFF',
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center'
-      }}>
-        <div style={{
-          fontSize: '48px',
-          marginBottom: '20px'
-        }}>⚠️</div>
-        <h2 style={{ color: '#e74c3c', marginBottom: '20px' }}>Conexión temporalmente no disponible</h2>
-        <div style={{
-          backgroundColor: '#fff3cd',
-          border: '1px solid #ffeaa7',
-          borderRadius: '8px',
-          padding: '20px',
-          marginBottom: '20px',
-          maxWidth: '400px'
-        }}>
-          <p style={{ margin: '0 0 10px 0', color: '#856404' }}>
-            <strong>Actualización de políticas de API</strong>
-          </p>
-          <p style={{ margin: 0, color: '#856404' }}>
-            Debido a actualizaciones en las políticas de {config.name}, la conexión de cuentas estará disponible a partir del <strong>martes 30 de septiembre</strong>.
-          </p>
-        </div>
-        <button
-          onClick={() => window.close()}
-          style={{
-            backgroundColor: platform === 'instagram' ? '#0095F6' : ('color' in config ? config.color : '#000000'),
-            color: 'white',
-            border: 'none',
-            padding: '12px 24px',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}
-        >
-          Cerrar
-        </button>
       </div>
     );
   }
@@ -331,6 +376,21 @@ export default function OAuthLogin() {
         />
       </div>
 
+      {/* Mostrar errores */}
+      {error && (
+        <div style={{
+          backgroundColor: '#fee',
+          border: '1px solid #fcc',
+          borderRadius: '6px',
+          padding: '12px',
+          marginBottom: '20px',
+          color: '#c00',
+          fontSize: '14px'
+        }}>
+          <strong>⚠️ Error:</strong> {error}
+        </div>
+      )}
+
       <div style={{ marginBottom: '20px' }}>
         <label style={{
           display: 'flex',
@@ -351,6 +411,7 @@ export default function OAuthLogin() {
 
       <button
         onClick={handleLogin}
+        disabled={loading}
         style={{
           width: '100%',
           backgroundColor: platform === 'instagram' ? '#0095F6' : ('color' in config ? config.color : '#000000'),

@@ -71,6 +71,33 @@ SELECT cron.schedule(
 );
 
 -- =====================================================
+-- CRON JOB: Refresh de tokens OAuth (cada 30 minutos)
+-- =====================================================
+
+-- Eliminar job existente si existe
+SELECT cron.unschedule('refresh-oauth-tokens-30min');
+
+-- Programar refresh de tokens OAuth cada 30 minutos
+SELECT cron.schedule(
+  'refresh-oauth-tokens-30min',
+  '*/30 * * * *',  -- Cada 30 minutos
+  $$
+  SELECT
+    net.http_post(
+        url:='https://shiqwhbodviimvpxpszd.supabase.co/functions/v1/refresh-oauth-tokens',
+        headers:=jsonb_build_object(
+          'Content-Type', 'application/json',
+          'Authorization', 'Bearer ' || current_setting('app.settings.service_role_key')
+        ),
+        body:=jsonb_build_object(
+          'trigger', 'cron',
+          'timestamp', now()
+        )
+    ) AS request_id;
+  $$
+);
+
+-- =====================================================
 -- CRON JOB: Recálculo de estadísticas (cada hora)
 -- =====================================================
 
