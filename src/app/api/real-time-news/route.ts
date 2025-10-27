@@ -77,10 +77,6 @@ const REAL_NEWS_SOURCES = [
   }
 ];
 
-// Cache simple en memoria para evitar llamadas excesivas
-const newsCache = new Map<string, { data: RealTimeNews[], timestamp: number }>();
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
-
 async function fetchRealTimeNewsWithAI(): Promise<RealTimeNews[]> {
   try {
     console.log('🔍 Buscando noticias en tiempo real con IA...');
@@ -294,30 +290,12 @@ function generateFallbackNews(): RealTimeNews[] {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const forceRefresh = searchParams.get('refresh') === 'true';
     const category = searchParams.get('category');
     const limit = parseInt(searchParams.get('limit') || '15');
 
-    console.log('📺 API: Obteniendo noticias en tiempo real...');
+    console.log('📺 API: Obteniendo noticias en tiempo real (sin cache)...');
 
-    // Verificar cache
-    const cacheKey = `news_${category || 'all'}_${limit}`;
-    const cached = newsCache.get(cacheKey);
-    
-    if (!forceRefresh && cached && (Date.now() - cached.timestamp) < CACHE_DURATION) {
-      console.log('📦 Usando noticias desde cache');
-      return NextResponse.json({
-        success: true,
-        news: cached.data,
-        totalCount: cached.data.length,
-        lastUpdated: new Date(cached.timestamp).toISOString(),
-        sources: REAL_NEWS_SOURCES.map(s => s.name),
-        isRealTime: true,
-        cached: true
-      } as NewsResponse);
-    }
-
-    // Obtener noticias frescas
+    // Obtener noticias frescas en tiempo real
     let allNews = await fetchRealTimeNewsWithAI();
 
     // Filtrar por categoría si se especifica
@@ -335,13 +313,7 @@ export async function GET(request: NextRequest) {
       return scoreB - scoreA;
     });
 
-    // Guardar en cache
-    newsCache.set(cacheKey, {
-      data: limitedNews,
-      timestamp: Date.now()
-    });
-
-    console.log(`✅ ${limitedNews.length} noticias en tiempo real obtenidas`);
+    console.log(`✅ ${limitedNews.length} noticias en tiempo real obtenidas (sin cache)`);
 
     return NextResponse.json({
       success: true,
@@ -349,16 +321,15 @@ export async function GET(request: NextRequest) {
       totalCount: limitedNews.length,
       lastUpdated: new Date().toISOString(),
       sources: REAL_NEWS_SOURCES.map(s => s.name),
-      isRealTime: true,
-      cached: false
+      isRealTime: true
     } as NewsResponse);
 
   } catch (error: any) {
     console.error('Error en API de noticias en tiempo real:', error);
-    
+
     // En caso de error, devolver noticias de respaldo
     const fallbackNews = generateFallbackNews();
-    
+
     return NextResponse.json({
       success: true,
       news: fallbackNews,
@@ -368,24 +339,5 @@ export async function GET(request: NextRequest) {
       isRealTime: false,
       error: 'Usando datos de respaldo'
     } as NewsResponse);
-  }
-}
-
-// Endpoint POST para forzar actualización
-export async function POST(request: NextRequest) {
-  try {
-    // Limpiar cache
-    newsCache.clear();
-    console.log('🗑️ Cache de noticias limpiado, forzando actualización');
-    
-    return NextResponse.json({
-      success: true,
-      message: 'Cache limpiado, próxima consulta obtendrá noticias frescas'
-    });
-  } catch (error) {
-    return NextResponse.json({
-      success: false,
-      error: 'Error limpiando cache'
-    }, { status: 500 });
   }
 }
