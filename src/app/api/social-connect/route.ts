@@ -1,23 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { socialOAuthManager, SocialPlatform } from '@/lib/oauth/manager';
+import jwt from 'jsonwebtoken';
+import { cookies } from 'next/headers';
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    // Verificar autenticación con JWT custom
+    const cookieStore = await cookies();
+    const authToken = cookieStore.get('auth-token')?.value;
 
-    if (!session || !session.user) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    if (!authToken) {
+      console.error('❌ SOCIAL-CONNECT POST: No auth token found');
+      return NextResponse.json({ error: 'No autorizado - No hay token' }, { status: 401 });
     }
+
+    // Decodificar JWT para obtener userId
+    const decoded = jwt.decode(authToken) as { userId: string } | null;
+    if (!decoded || !decoded.userId) {
+      console.error('❌ SOCIAL-CONNECT POST: Invalid token');
+      return NextResponse.json({ error: 'No autorizado - Token inválido' }, { status: 401 });
+    }
+
+    const userId = decoded.userId;
+    console.log(`✅ SOCIAL-CONNECT POST: Usuario autenticado: ${userId}`);
 
     const { platform, action, accessToken, refreshToken, expiresAt } = await request.json();
 
     if (!platform || !['facebook', 'instagram', 'x', 'linkedin', 'youtube', 'threads', 'tiktok'].includes(platform)) {
       return NextResponse.json({ error: 'Plataforma no válida' }, { status: 400 });
     }
-
-    const userId = session.user.email || session.user.id || 'default-user';
 
     if (action === 'connect') {
       if (accessToken) {
@@ -104,13 +115,25 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    // Verificar autenticación con JWT custom
+    const cookieStore = await cookies();
+    const authToken = cookieStore.get('auth-token')?.value;
 
-    if (!session || !session.user) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    if (!authToken) {
+      console.error('❌ SOCIAL-CONNECT GET: No auth token found');
+      return NextResponse.json({ error: 'No autorizado - No hay token' }, { status: 401 });
     }
 
-    const userId = session.user.email || session.user.id || 'default-user';
+    // Decodificar JWT para obtener userId
+    const decoded = jwt.decode(authToken) as { userId: string } | null;
+    if (!decoded || !decoded.userId) {
+      console.error('❌ SOCIAL-CONNECT GET: Invalid token');
+      return NextResponse.json({ error: 'No autorizado - Token inválido' }, { status: 401 });
+    }
+
+    const userId = decoded.userId;
+    console.log(`✅ SOCIAL-CONNECT GET: Usuario autenticado: ${userId}`);
+
     const url = new URL(request.url);
     const action = url.searchParams.get('action');
 
