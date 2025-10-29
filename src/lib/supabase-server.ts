@@ -64,10 +64,19 @@ export const userService = {
       return null;
     }
 
-    // No devolver la contraseña
+    // No devolver la contraseña y convertir snake_case a camelCase
     if (data && data.password) {
       const { password, ...userWithoutPassword } = data;
-      return userWithoutPassword;
+
+      // Convertir campos snake_case a camelCase
+      const convertedUser: any = {};
+      for (const [key, value] of Object.entries(userWithoutPassword)) {
+        // Mapeo inverso: snake_case → camelCase
+        const camelCaseKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+        convertedUser[camelCaseKey] = value;
+      }
+
+      return convertedUser;
     }
 
     return data;
@@ -105,10 +114,20 @@ export const userService = {
       return null;
     }
 
-    // No devolver la contraseña
+    // No devolver la contraseña y convertir snake_case a camelCase
     if (data && data.password) {
       const { password, ...userWithoutPassword } = data;
-      return userWithoutPassword;
+
+      // Convertir campos snake_case a camelCase
+      const convertedUser: any = {};
+      for (const [key, value] of Object.entries(userWithoutPassword)) {
+        // Mapeo inverso: snake_case → camelCase
+        const camelCaseKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+        convertedUser[camelCaseKey] = value;
+      }
+
+      console.log('✅ SUPABASE: Usuario convertido a camelCase:', convertedUser.id);
+      return convertedUser;
     }
 
     return data;
@@ -212,10 +231,19 @@ export const userService = {
       return [];
     }
 
-    // No devolver contraseñas
+    // No devolver contraseñas y convertir snake_case a camelCase
     return data.map(user => {
       const { password, ...userWithoutPassword } = user;
-      return userWithoutPassword;
+
+      // Convertir campos snake_case a camelCase
+      const convertedUser: any = {};
+      for (const [key, value] of Object.entries(userWithoutPassword)) {
+        // Mapeo inverso: snake_case → camelCase
+        const camelCaseKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+        convertedUser[camelCaseKey] = value;
+      }
+
+      return convertedUser;
     });
   },
 
