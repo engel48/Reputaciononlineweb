@@ -10,8 +10,8 @@ import { cookies } from 'next/headers';
 import { saveOAuthConnection } from '@/lib/oauth-storage';
 import jwt from 'jsonwebtoken';
 
-const FACEBOOK_APP_ID = process.env.FACEBOOK_CLIENT_ID || process.env.NEXT_PUBLIC_FACEBOOK_CLIENT_ID;
-const FACEBOOK_APP_SECRET = process.env.FACEBOOK_CLIENT_SECRET;
+const FACEBOOK_APP_ID = process.env.NEXT_PUBLIC_FACEBOOK_APP_ID;
+const FACEBOOK_APP_SECRET = process.env.FACEBOOK_APP_SECRET;
 const REDIRECT_URI = process.env.NEXTAUTH_URL
   ? `${process.env.NEXTAUTH_URL}/api/auth/facebook/callback`
   : 'http://localhost:3000/api/auth/facebook/callback';
