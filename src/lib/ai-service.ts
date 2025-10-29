@@ -9,9 +9,9 @@ interface AIMessage {
 }
 
 class AIService {
-  private genAI: GoogleGenerativeAI;
+  private genAI?: GoogleGenerativeAI;
   private geminiApiKey: string;
-  private model: any;
+  private model?: any;
 
   constructor() {
     this.geminiApiKey = process.env.GEMINI_API_KEY || '';
