@@ -146,7 +146,8 @@ export const userService = {
       'onboardingCompleted': 'onboarding_completed',
       'lastLogin': 'last_login',
       'nextBillingDate': 'next_billing_date',
-      'additionalSources': 'additional_sources'
+      'additionalSources': 'additional_sources',
+      'updatedAt': 'updated_at'  // ⚠️ AGREGADO: Mapeo de updatedAt
     };
 
     const updateData: any = {};
@@ -157,9 +158,14 @@ export const userService = {
       }
     }
 
-    updateData.updated_at = new Date().toISOString();
+    // Solo agregar updated_at si no viene en los datos
+    if (!updateData.updated_at) {
+      updateData.updated_at = new Date().toISOString();
+    }
 
-    console.log('🔍 SUPABASE: Actualizando usuario', id, 'con datos:', Object.keys(updateData));
+    console.log('🔍 SUPABASE: Actualizando usuario', id);
+    console.log('🔍 SUPABASE: Campos a actualizar:', Object.keys(updateData));
+    console.log('🔍 SUPABASE: Valores:', updateData);
 
     const { data, error } = await supabase
       .from('users')
@@ -169,11 +175,16 @@ export const userService = {
       .single();
 
     if (error) {
-      console.error('❌ SUPABASE: Error actualizando usuario:', error);
-      return false;
+      console.error('❌ SUPABASE: Error actualizando usuario');
+      console.error('❌ SUPABASE: Error code:', error.code);
+      console.error('❌ SUPABASE: Error message:', error.message);
+      console.error('❌ SUPABASE: Error details:', error.details);
+      console.error('❌ SUPABASE: Error hint:', error.hint);
+      throw new Error(`Error updating user: ${error.message} (code: ${error.code})`);
     }
 
     console.log('✅ SUPABASE: Usuario actualizado exitosamente');
+    console.log('✅ SUPABASE: Datos actualizados:', data);
     return true;
   },
 

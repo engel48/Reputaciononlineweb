@@ -36,41 +36,36 @@ export async function PUT(request: NextRequest) {
     console.log('📝 USERS API PUT: Datos a actualizar:', updates);
 
     // Actualizar usuario en la base de datos
-    const success = await userService.update(userId, {
+    await userService.update(userId, {
       ...updates,
       updatedAt: new Date().toISOString()
     });
 
-    console.log('🔍 USERS API PUT: Resultado de actualización:', success);
+    // Si llegamos aquí, el update fue exitoso
+    // Obtener el usuario actualizado
+    const updatedUser = await userService.findById(userId);
 
-    if (success) {
-      // Obtener el usuario actualizado
-      const updatedUser = await userService.findById(userId);
-      
-      console.log('✅ Usuario actualizado exitosamente');
-      console.log('🔍 USERS API PUT: onboardingCompleted después de actualización:', updatedUser?.onboardingCompleted);
-      console.log('🔍 USERS API PUT: Datos completos del usuario:', {
-        id: updatedUser?.id,
-        name: updatedUser?.name,
-        onboardingCompleted: updatedUser?.onboardingCompleted
-      });
-      
-      return NextResponse.json({
-        success: true,
-        message: 'Usuario actualizado exitosamente',
-        user: updatedUser
-      });
-    } else {
-      return NextResponse.json(
-        { success: false, message: 'Error al actualizar usuario' },
-        { status: 500 }
-      );
-    }
+    console.log('✅ Usuario actualizado exitosamente');
+    console.log('🔍 USERS API PUT: onboardingCompleted después de actualización:', updatedUser?.onboardingCompleted);
+    console.log('🔍 USERS API PUT: Datos completos del usuario:', {
+      id: updatedUser?.id,
+      name: updatedUser?.name,
+      onboardingCompleted: updatedUser?.onboardingCompleted
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: 'Usuario actualizado exitosamente',
+      user: updatedUser
+    });
 
   } catch (error) {
     console.error('❌ Error en API users:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Error interno del servidor';
+    console.error('❌ Error message:', errorMessage);
+
     return NextResponse.json(
-      { success: false, message: 'Error interno del servidor' },
+      { success: false, message: errorMessage },
       { status: 500 }
     );
   }
