@@ -139,17 +139,17 @@ export async function GET(request: NextRequest) {
 
     if (action === 'summary') {
       // Obtener resumen de conexiones
-      const summary = socialOAuthManager.getConnectionSummary(userId);
-      return NextResponse.json({ 
-        success: true, 
+      const summary = await socialOAuthManager.getConnectionSummary(userId);
+      return NextResponse.json({
+        success: true,
         summary,
-        message: 'Resumen de conexiones obtenido exitosamente' 
+        message: 'Resumen de conexiones obtenido exitosamente'
       });
     }
 
-    // Obtener estado de conexiones de redes sociales del usuario
-    const connections = socialOAuthManager.getUserConnections(userId);
-    
+    // Obtener estado de conexiones de redes sociales del usuario (AHORA DE SUPABASE)
+    const connections = await socialOAuthManager.getUserConnections(userId);
+
     // Transformar para compatibilidad con el frontend
     const socialConnections = Object.fromEntries(
       Object.entries(connections).map(([platform, connection]) => [

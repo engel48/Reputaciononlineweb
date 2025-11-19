@@ -213,12 +213,25 @@ export class SocialOAuthManager {
 
   /**
    * Obtiene todas las conexiones de un usuario
+   * AHORA LEE DIRECTAMENTE DE SUPABASE en lugar de memoria
    */
-  getUserConnections(userId: string): Record<SocialPlatform, SocialConnection> {
-    const userData = this.connections.get(userId);
-    if (!userData) {
-      // Retornar conexiones por defecto
-      const defaultConnections: Record<SocialPlatform, SocialConnection> = {
+  async getUserConnections(userId: string): Promise<Record<SocialPlatform, SocialConnection>> {
+    try {
+      // Importar Supabase dinámicamente para evitar dependencias circulares
+      const { supabase } = await import('@/lib/supabase-server');
+
+      // Obtener todas las conexiones del usuario desde Supabase
+      const { data: socialMediaRecords, error } = await supabase
+        .from('social_media')
+        .select('*')
+        .eq('user_id', userId);
+
+      if (error) {
+        console.error('Error cargando conexiones de Supabase:', error);
+      }
+
+      // Crear objeto con todas las plataformas
+      const connections: Record<SocialPlatform, SocialConnection> = {
         facebook: { platform: 'facebook', connected: false },
         instagram: { platform: 'instagram', connected: false },
         x: { platform: 'x', connected: false },
@@ -227,10 +240,44 @@ export class SocialOAuthManager {
         threads: { platform: 'threads', connected: false },
         tiktok: { platform: 'tiktok', connected: false }
       };
-      return defaultConnections;
-    }
 
-    return userData.connections;
+      // Poblar con datos reales de Supabase
+      if (socialMediaRecords && socialMediaRecords.length > 0) {
+        for (const record of socialMediaRecords) {
+          const platform = record.platform as SocialPlatform;
+          if (connections[platform]) {
+            connections[platform] = {
+              platform,
+              connected: record.connected || false,
+              username: record.username || '',
+              displayName: record.username || '', // Supabase no tiene displayName separado
+              profileImage: '', // No almacenado en Supabase actualmente
+              followers: record.followers || 0,
+              lastSync: record.last_sync || null,
+              metrics: {
+                posts: record.posts || 0,
+                engagement: record.engagement || 0,
+                reach: 0 // No almacenado actualmente
+              }
+            };
+          }
+        }
+      }
+
+      return connections;
+    } catch (error) {
+      console.error('Error en getUserConnections:', error);
+      // Retornar conexiones por defecto en caso de error
+      return {
+        facebook: { platform: 'facebook', connected: false },
+        instagram: { platform: 'instagram', connected: false },
+        x: { platform: 'x', connected: false },
+        linkedin: { platform: 'linkedin', connected: false },
+        youtube: { platform: 'youtube', connected: false },
+        threads: { platform: 'threads', connected: false },
+        tiktok: { platform: 'tiktok', connected: false }
+      };
+    }
   }
 
   /**
@@ -369,14 +416,14 @@ export class SocialOAuthManager {
   /**
    * Obtiene un resumen de todas las conexiones
    */
-  getConnectionSummary(userId: string): {
+  async getConnectionSummary(userId: string): Promise<{
     total: number;
     connected: number;
     platforms: string[];
-  } {
-    const connections = this.getUserConnections(userId);
+  }> {
+    const connections = await this.getUserConnections(userId);
     const connectedPlatforms = Object.values(connections).filter(conn => conn.connected);
-    
+
     return {
       total: Object.keys(connections).length,
       connected: connectedPlatforms.length,
