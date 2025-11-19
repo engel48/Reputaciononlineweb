@@ -131,6 +131,10 @@ export default function Dashboard() {
   const [errorConexion, setErrorConexion] = useState(false);
   const [actualizandoDatos, setActualizandoDatos] = useState(false);
   const [intervaloActivo, setIntervaloActivo] = useState(true);
+
+  // Estado para métricas consolidadas REALES de redes sociales
+  const [consolidatedMetrics, setConsolidatedMetrics] = useState<any>(null);
+  const [loadingConsolidated, setLoadingConsolidated] = useState(true);
   
   // Estados para menciones en tiempo real
   const [mencionesRecientes, setMencionesRecientes] = useState<Mention[]>([
@@ -284,7 +288,7 @@ export default function Dashboard() {
     try {
       const response = await fetch('/api/dashboard-analytics');
       const result = await response.json();
-      
+
       if (result.success) {
         setDatosEnTiempoReal(result.data);
         setUltimaActualizacion(new Date());
@@ -298,6 +302,28 @@ export default function Dashboard() {
       setErrorConexion(true);
     } finally {
       setCargandoDatos(false);
+    }
+  }, []);
+
+  // Función para cargar métricas consolidadas REALES de redes sociales
+  const cargarMetricasConsolidadas = useCallback(async () => {
+    try {
+      setLoadingConsolidated(true);
+      const response = await fetch('/api/social-media/consolidated');
+      const result = await response.json();
+
+      if (result.success) {
+        setConsolidatedMetrics(result.data);
+        console.log('✅ Métricas consolidadas REALES cargadas');
+      } else {
+        console.warn('No hay métricas consolidadas disponibles');
+        setConsolidatedMetrics(null);
+      }
+    } catch (error) {
+      console.error('Error cargando métricas consolidadas:', error);
+      setConsolidatedMetrics(null);
+    } finally {
+      setLoadingConsolidated(false);
     }
   }, []);
   
@@ -314,7 +340,12 @@ export default function Dashboard() {
   useEffect(() => {
     cargarDatosReales();
   }, [cargarDatosReales]);
-  
+
+  // Cargar métricas consolidadas REALES al montar el componente
+  useEffect(() => {
+    cargarMetricasConsolidadas();
+  }, [cargarMetricasConsolidadas]);
+
   // Efecto para simular análisis completado
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -735,16 +766,20 @@ export default function Dashboard() {
                 <div className="p-2 bg-blue-500 rounded-lg">
                   <TrendingUp className="w-4 h-4 text-white" />
                 </div>
-                <span className="text-green-500 text-xs font-semibold">+24%</span>
+                {loadingConsolidated ? (
+                  <span className="text-gray-400 text-xs">...</span>
+                ) : (
+                  <span className="text-green-500 text-xs font-semibold">REAL</span>
+                )}
               </div>
               <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                {(datosEnTiempoReal.mentions.total * 4.2).toLocaleString()}
+                {loadingConsolidated ? '...' : (consolidatedMetrics?.overview?.totalEngagement?.toLocaleString() || '0')}
               </div>
               <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                 Interacciones Totales
               </div>
               <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                ↑ +1.2K hoy
+                {loadingConsolidated ? '...' : `${consolidatedMetrics?.overview?.totalMentions || 0} menciones`}
               </div>
             </motion.div>
 
@@ -761,16 +796,20 @@ export default function Dashboard() {
                 <div className="p-2 bg-purple-500 rounded-lg">
                   <Target className="w-4 h-4 text-white" />
                 </div>
-                <span className="text-green-500 text-xs font-semibold">+8%</span>
+                {loadingConsolidated ? (
+                  <span className="text-gray-400 text-xs">...</span>
+                ) : (
+                  <span className="text-green-500 text-xs font-semibold">REAL</span>
+                )}
               </div>
               <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                7.3%
+                {loadingConsolidated ? '...' : `${(consolidatedMetrics?.overview?.engagementRate || 0).toFixed(1)}%`}
               </div>
               <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                 Tasa de Engagement
               </div>
               <div className="text-xs text-purple-600 dark:text-purple-400 mt-1">
-                Por encima del promedio
+                {loadingConsolidated ? '...' : `${consolidatedMetrics?.overview?.totalPlatforms || 0} plataformas`}
               </div>
             </motion.div>
 
@@ -787,16 +826,20 @@ export default function Dashboard() {
                 <div className="p-2 bg-green-500 rounded-lg">
                   <Globe className="w-4 h-4 text-white" />
                 </div>
-                <span className="text-green-500 text-xs font-semibold">+15%</span>
+                {loadingConsolidated ? (
+                  <span className="text-gray-400 text-xs">...</span>
+                ) : (
+                  <span className="text-green-500 text-xs font-semibold">REAL</span>
+                )}
               </div>
               <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                2.8M
+                {loadingConsolidated ? '...' : (consolidatedMetrics?.overview?.weeklyReach?.toLocaleString() || '0')}
               </div>
               <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                 Alcance Semanal
               </div>
               <div className="text-xs text-green-600 dark:text-green-400 mt-1">
-                ↑ +420K esta semana
+                {loadingConsolidated ? '...' : 'Seguidores totales'}
               </div>
             </motion.div>
 
@@ -813,16 +856,20 @@ export default function Dashboard() {
                 <div className="p-2 bg-orange-500 rounded-lg">
                   <Zap className="w-4 h-4 text-white" />
                 </div>
-                <span className="text-green-500 text-xs font-semibold">🔥</span>
+                {loadingConsolidated ? (
+                  <span className="text-gray-400 text-xs">...</span>
+                ) : (
+                  <span className="text-orange-500 text-xs font-semibold">🔥</span>
+                )}
               </div>
               <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                94.2
+                {loadingConsolidated ? '...' : (consolidatedMetrics?.overview?.viralityIndex || '0.0')}
               </div>
               <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                 Índice de Viralidad
               </div>
               <div className="text-xs text-orange-600 dark:text-orange-400 mt-1">
-                Muy alto
+                {loadingConsolidated ? '...' : 'Shares/Menciones'}
               </div>
             </motion.div>
           </div>
@@ -832,113 +879,89 @@ export default function Dashboard() {
             {/* Engagement por plataforma */}
             <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
               <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">
-                Engagement por Plataforma
+                Engagement por Plataforma {!loadingConsolidated && <span className="text-green-500 text-xs ml-2">DATOS REALES</span>}
               </h3>
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                    <span className="text-sm text-gray-700 dark:text-gray-300">X (Twitter)</span>
+                {loadingConsolidated ? (
+                  <div className="text-center text-gray-500 dark:text-gray-400 py-4">
+                    Cargando datos reales...
                   </div>
-                  <div className="flex items-center space-x-3">
-                    <div className="w-20 bg-gray-200 dark:bg-gray-600 rounded-full h-1.5">
-                      <div className="bg-blue-500 h-1.5 rounded-full" style={{width: '87%'}}></div>
-                    </div>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">87%</span>
-                  </div>
-                </div>
+                ) : consolidatedMetrics?.platformEngagement && Object.keys(consolidatedMetrics.platformEngagement).length > 0 ? (
+                  Object.entries(consolidatedMetrics.platformEngagement).map(([platformKey, data]: [string, any]) => {
+                    const platformColors: Record<string, string> = {
+                      youtube: 'bg-red-600',
+                      facebook: 'bg-blue-600',
+                      instagram: 'bg-pink-500',
+                      linkedin: 'bg-blue-700',
+                      x: 'bg-black',
+                      twitter: 'bg-blue-400',
+                      threads: 'bg-gray-900',
+                      tiktok: 'bg-black'
+                    };
+                    const color = platformColors[platformKey] || 'bg-gray-500';
+                    const engagementRate = Math.min(data.engagementRate || 0, 100);
 
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 bg-pink-500 rounded-full"></div>
-                    <span className="text-sm text-gray-700 dark:text-gray-300">Instagram</span>
+                    return (
+                      <div key={platformKey} className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <div className={`w-3 h-3 ${color} rounded-full`}></div>
+                          <span className="text-sm text-gray-700 dark:text-gray-300">{data.name || platformKey}</span>
+                        </div>
+                        <div className="flex items-center space-x-3">
+                          <div className="w-20 bg-gray-200 dark:bg-gray-600 rounded-full h-1.5">
+                            <div className={`${color} h-1.5 rounded-full`} style={{width: `${engagementRate}%`}}></div>
+                          </div>
+                          <span className="text-sm font-medium text-gray-900 dark:text-white">{engagementRate.toFixed(1)}%</span>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="text-center text-gray-500 dark:text-gray-400 py-4">
+                    No hay plataformas conectadas
                   </div>
-                  <div className="flex items-center space-x-3">
-                    <div className="w-20 bg-gray-200 dark:bg-gray-600 rounded-full h-1.5">
-                      <div className="bg-pink-500 h-1.5 rounded-full" style={{width: '92%'}}></div>
-                    </div>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">92%</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 bg-blue-600 rounded-full"></div>
-                    <span className="text-sm text-gray-700 dark:text-gray-300">Facebook</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <div className="w-20 bg-gray-200 dark:bg-gray-600 rounded-full h-1.5">
-                      <div className="bg-blue-600 h-1.5 rounded-full" style={{width: '78%'}}></div>
-                    </div>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">78%</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                    <span className="text-sm text-gray-700 dark:text-gray-300">TikTok</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <div className="w-20 bg-gray-200 dark:bg-gray-600 rounded-full h-1.5">
-                      <div className="bg-red-500 h-1.5 rounded-full" style={{width: '95%'}}></div>
-                    </div>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">95%</span>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
 
             {/* Top contenido */}
             <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
               <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">
-                Contenido con Mayor Engagement
+                Contenido con Mayor Engagement {!loadingConsolidated && <span className="text-green-500 text-xs ml-2">DATOS REALES</span>}
               </h3>
               <div className="space-y-3">
-                <div className="flex items-start space-x-3 p-2 bg-white dark:bg-gray-600 rounded-lg">
-                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-white text-xs font-bold">1</span>
+                {loadingConsolidated ? (
+                  <div className="text-center text-gray-500 dark:text-gray-400 py-4">
+                    Cargando contenido real...
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-gray-700 dark:text-gray-300 truncate">
-                      "Excelente servicio de @MarcaEjemplo! Resolvieron..."
-                    </p>
-                    <div className="flex items-center space-x-2 mt-1">
-                      <span className="text-xs text-green-500 font-semibold">+45 likes</span>
-                      <span className="text-xs text-blue-500">12 shares</span>
-                    </div>
-                  </div>
-                </div>
+                ) : consolidatedMetrics?.topContent && consolidatedMetrics.topContent.length > 0 ? (
+                  consolidatedMetrics.topContent.map((content: any, index: number) => {
+                    const badgeColors = ['bg-green-500', 'bg-blue-500', 'bg-purple-500'];
+                    const badgeColor = badgeColors[index] || 'bg-gray-500';
 
-                <div className="flex items-start space-x-3 p-2 bg-white dark:bg-gray-600 rounded-lg">
-                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-white text-xs font-bold">2</span>
+                    return (
+                      <div key={index} className="flex items-start space-x-3 p-2 bg-white dark:bg-gray-600 rounded-lg">
+                        <div className={`w-8 h-8 ${badgeColor} rounded-full flex items-center justify-center flex-shrink-0`}>
+                          <span className="text-white text-xs font-bold">{index + 1}</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-gray-700 dark:text-gray-300 truncate" title={content.content}>
+                            "{content.content?.substring(0, 60) || 'Sin contenido'}..."
+                          </p>
+                          <div className="flex items-center space-x-2 mt-1">
+                            <span className="text-xs text-gray-500">{content.platform}</span>
+                            <span className="text-xs text-green-500 font-semibold">+{content.likes || 0} likes</span>
+                            <span className="text-xs text-blue-500">{content.shares || 0} shares</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="text-center text-gray-500 dark:text-gray-400 py-4">
+                    No hay contenido disponible
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-gray-700 dark:text-gray-300 truncate">
-                      "Análisis de IA impresionante. Julia es genial..."
-                    </p>
-                    <div className="flex items-center space-x-2 mt-1">
-                      <span className="text-xs text-green-500 font-semibold">+234 likes</span>
-                      <span className="text-xs text-blue-500">45 shares</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-3 p-2 bg-white dark:bg-gray-600 rounded-lg">
-                  <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-white text-xs font-bold">3</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-gray-700 dark:text-gray-300 truncate">
-                      "Interface muy intuitiva, reportes valiosos..."
-                    </p>
-                    <div className="flex items-center space-x-2 mt-1">
-                      <span className="text-xs text-green-500 font-semibold">+156 likes</span>
-                      <span className="text-xs text-blue-500">28 shares</span>
-                    </div>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
