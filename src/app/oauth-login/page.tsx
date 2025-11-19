@@ -190,10 +190,17 @@ export default function OAuthLogin() {
 
         case 'youtube':
           const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+          console.log('🔍 DEBUG YouTube OAuth:');
+          console.log('  Client ID:', googleClientId);
+          console.log('  Client ID length:', googleClientId?.length);
+          console.log('  Has spaces?', googleClientId?.includes(' '));
+          console.log('  Redirect URI:', redirectUri);
+
           if (!googleClientId) {
             throw new Error('Google/YouTube OAuth no está configurado. Contacta al administrador.');
           }
           authUrl = `${config.authUrl}?client_id=${googleClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=https://www.googleapis.com/auth/youtube.readonly&response_type=code&access_type=offline&state=${state}`;
+          console.log('  Full OAuth URL:', authUrl);
           break;
 
         case 'instagram':
