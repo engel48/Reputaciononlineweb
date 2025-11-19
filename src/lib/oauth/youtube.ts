@@ -260,67 +260,129 @@ export class YouTubeOAuthService {
   }
 
   /**
-   * Analiza el sentimiento de comentarios
+   * Analiza el sentimiento de comentarios usando IA (Gemini)
+   * Método mejorado con análisis contextual y detección de sarcasmo
    */
-  async analyzeCommentSentiment(comments: YouTubeComment[]): Promise<any> {
+  async analyzeCommentSentiment(comments: YouTubeComment[], useAI: boolean = true): Promise<any> {
     try {
-      const sentimentAnalysis = comments.map(comment => {
-        const text = comment.snippet.textDisplay.toLowerCase();
-        let sentiment = 'neutral';
-        let score = 0;
+      let sentimentAnalysis: any[] = [];
 
-        // Palabras positivas para YouTube
-        const positiveWords = [
-          'excelente', 'increíble', 'genial', 'me gusta', 'love', 'awesome', 'amazing',
-          'great', 'fantastic', 'wonderful', 'perfect', 'good', 'nice', 'cool',
-          'thanks', 'gracias', 'helpful', 'útil'
-        ];
-        
-        const negativeWords = [
-          'malo', 'terrible', 'horrible', 'odio', 'disgusto', 'bad', 'hate', 'awful',
-          'stupid', 'boring', 'waste', 'dislike', 'worst', 'garbage', 'trash'
-        ];
+      if (useAI) {
+        // Usar Gemini AI para análisis de sentimiento avanzado
+        const { aiService } = await import('@/lib/ai-service');
 
-        positiveWords.forEach(word => {
-          if (text.includes(word)) score += 1;
-        });
+        console.log(`🤖 Analizando ${comments.length} comentarios con Gemini AI...`);
 
-        negativeWords.forEach(word => {
-          if (text.includes(word)) score -= 1;
-        });
+        sentimentAnalysis = await Promise.all(
+          comments.map(async (comment) => {
+            try {
+              const analysis = await aiService.analyzeSentiment(comment.snippet.textDisplay);
 
-        if (score > 0) sentiment = 'positive';
-        else if (score < 0) sentiment = 'negative';
-
-        return {
-          comment_id: comment.id,
-          text: comment.snippet.textDisplay,
-          author: comment.snippet.authorDisplayName,
-          sentiment,
-          score,
-          likes: comment.snippet.likeCount,
-          published_at: comment.snippet.publishedAt
-        };
-      });
+              return {
+                comment_id: comment.id,
+                text: comment.snippet.textDisplay,
+                author: comment.snippet.authorDisplayName,
+                sentiment: analysis.sentiment,
+                score: analysis.score * 100, // Normalizar a escala -100 a +100
+                confidence: analysis.score >= 0.7 ? 'high' : analysis.score >= 0.4 ? 'medium' : 'low',
+                explanation: analysis.explanation,
+                likes: comment.snippet.likeCount,
+                published_at: comment.snippet.publishedAt,
+                ai_powered: true
+              };
+            } catch (aiError) {
+              // Fallback a método básico si falla IA
+              console.warn(`⚠️ Error en IA para comentario ${comment.id}, usando fallback`);
+              return this.analyzeCommentBasic(comment);
+            }
+          })
+        );
+      } else {
+        // Método básico con keywords (fallback)
+        sentimentAnalysis = comments.map(comment => this.analyzeCommentBasic(comment));
+      }
 
       const totalComments = sentimentAnalysis.length;
       const positive = sentimentAnalysis.filter(c => c.sentiment === 'positive').length;
       const negative = sentimentAnalysis.filter(c => c.sentiment === 'negative').length;
       const neutral = sentimentAnalysis.filter(c => c.sentiment === 'neutral').length;
 
+      const avgScore = totalComments > 0
+        ? sentimentAnalysis.reduce((sum, c) => sum + (c.score || 0), 0) / totalComments
+        : 0;
+
       return {
         summary: {
           total_comments: totalComments,
+          positive_count: positive,
+          negative_count: negative,
+          neutral_count: neutral,
           positive_percentage: totalComments > 0 ? (positive / totalComments) * 100 : 0,
           negative_percentage: totalComments > 0 ? (negative / totalComments) * 100 : 0,
           neutral_percentage: totalComments > 0 ? (neutral / totalComments) * 100 : 0,
+          average_score: avgScore,
+          ai_powered: useAI
         },
-        detailed_analysis: sentimentAnalysis
+        detailed_analysis: sentimentAnalysis,
+        top_positive: sentimentAnalysis
+          .filter(c => c.sentiment === 'positive')
+          .sort((a, b) => (b.likes || 0) - (a.likes || 0))
+          .slice(0, 5),
+        top_negative: sentimentAnalysis
+          .filter(c => c.sentiment === 'negative')
+          .sort((a, b) => (b.likes || 0) - (a.likes || 0))
+          .slice(0, 5)
       };
     } catch (error) {
       console.error('Error analizando sentimiento de comentarios:', error);
       return null;
     }
+  }
+
+  /**
+   * Análisis básico de sentimiento con keywords (fallback)
+   */
+  private analyzeCommentBasic(comment: YouTubeComment): any {
+    const text = comment.snippet.textDisplay.toLowerCase();
+    let sentiment = 'neutral';
+    let score = 0;
+
+    // Palabras positivas para YouTube
+    const positiveWords = [
+      'excelente', 'increíble', 'genial', 'me gusta', 'love', 'awesome', 'amazing',
+      'great', 'fantastic', 'wonderful', 'perfect', 'good', 'nice', 'cool',
+      'thanks', 'gracias', 'helpful', 'útil', 'brillante', 'espectacular'
+    ];
+
+    const negativeWords = [
+      'malo', 'terrible', 'horrible', 'odio', 'disgusto', 'bad', 'hate', 'awful',
+      'stupid', 'boring', 'waste', 'dislike', 'worst', 'garbage', 'trash',
+      'pésimo', 'basura', 'aburrido'
+    ];
+
+    positiveWords.forEach(word => {
+      if (text.includes(word)) score += 1;
+    });
+
+    negativeWords.forEach(word => {
+      if (text.includes(word)) score -= 1;
+    });
+
+    if (score > 0) sentiment = 'positive';
+    else if (score < 0) sentiment = 'negative';
+
+    return {
+      comment_id: comment.id,
+      text: comment.snippet.textDisplay,
+      author: comment.snippet.authorDisplayName,
+      sentiment,
+      score: score * 50, // Normalizar aproximado
+      confidence: 'low',
+      explanation: 'Análisis basado en keywords',
+      likes: comment.snippet.likeCount,
+      published_at: comment.snippet.publishedAt,
+      ai_powered: false
+    };
   }
 
   /**

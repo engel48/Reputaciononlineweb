@@ -20,7 +20,8 @@ class AIService {
       console.warn('⚠️ GEMINI_API_KEY no está configurada');
     } else {
       this.genAI = new GoogleGenerativeAI(this.geminiApiKey);
-      this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      // Usando gemini-2.0-flash (rápido, eficiente y económico para análisis)
+      this.model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
     }
   }
 
