@@ -195,7 +195,8 @@ export async function GET(request: NextRequest) {
         // Información del canal
         channel: {
           id: socialMedia.username || 'unknown',
-          name: socialMedia.profile_url || 'Canal de YouTube',
+          name: socialMedia.display_name || 'Canal de YouTube',
+          url: socialMedia.profile_url || '',
           followers: socialMedia.followers || 0,
           total_posts: socialMedia.posts || 0,
           engagement_rate: socialMedia.engagement || 0,

@@ -165,6 +165,7 @@ export async function POST(request: NextRequest) {
       user_id: userId,
       platform: 'youtube',
       username: channelProfile.id,
+      display_name: channelProfile.snippet.title,
       profile_url: `https://www.youtube.com/channel/${channelProfile.id}`,
       followers: parseInt(channelProfile.statistics.subscriberCount) || 0,
       posts: parseInt(channelProfile.statistics.videoCount) || 0,

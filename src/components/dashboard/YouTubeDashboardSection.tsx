@@ -25,6 +25,7 @@ interface YouTubeData {
   channel: {
     id: string;
     name: string;
+    url: string;
     followers: number;
     total_posts: number;
     engagement_rate: number;
@@ -190,8 +191,10 @@ export default function YouTubeDashboardSection() {
                 <CardTitle className="text-2xl font-bold text-white">
                   YouTube Analytics
                 </CardTitle>
-                <CardDescription className="text-red-100">
-                  {data.channel.followers.toLocaleString()} suscriptores · {data.channel.total_posts} videos
+                <CardDescription className="text-red-100 space-y-1">
+                  <div className="font-semibold">{data.channel.name}</div>
+                  <div className="text-sm">ID: {data.channel.id}</div>
+                  <div>{data.channel.followers.toLocaleString()} suscriptores · {data.channel.total_posts} videos</div>
                 </CardDescription>
               </div>
             </div>
