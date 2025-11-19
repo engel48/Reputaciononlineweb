@@ -152,13 +152,13 @@ export async function POST(request: NextRequest) {
     const neutralMentions = allMentions.filter(m => m.metadata?.sentiment === 'neutral').length;
 
     const avgSentimentScore = totalMentions > 0
-      ? allMentions.reduce((sum: number, m) => sum + (m.metadata?.sentiment_score || 0), 0) / totalMentions
+      ? allMentions.reduce((sum: number, m: any) => sum + (m.metadata?.sentiment_score || 0), 0) / totalMentions
       : 0;
 
     const totalLikes = parseInt(channelProfile.statistics.subscriberCount) || 0;
-    const totalViews = videos.reduce((sum: number, v) => sum + parseInt(v.statistics.viewCount || '0'), 0);
-    const totalVideoLikes = videos.reduce((sum: number, v) => sum + parseInt(v.statistics.likeCount || '0'), 0);
-    const totalComments = videos.reduce((sum: number, v) => sum + parseInt(v.statistics.commentCount || '0'), 0);
+    const totalViews = videos.reduce((sum: number, v: any) => sum + parseInt(v.statistics.viewCount || '0'), 0);
+    const totalVideoLikes = videos.reduce((sum: number, v: any) => sum + parseInt(v.statistics.likeCount || '0'), 0);
+    const totalComments = videos.reduce((sum: number, v: any) => sum + parseInt(v.statistics.commentCount || '0'), 0);
 
     const engagementRate = totalViews > 0
       ? ((totalVideoLikes + totalComments) / totalViews) * 100
