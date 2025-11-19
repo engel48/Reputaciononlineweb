@@ -155,8 +155,8 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
       }
 
       // Verificar que los datos son reales de Supabase
-      if (data.connections) {
-        setConnections(data.connections);
+      if (data.socialConnections) {
+        setConnections(data.socialConnections);
         setLastUpdated(new Date().toISOString());
       } else {
         throw new Error('No se recibieron datos de conexiones');

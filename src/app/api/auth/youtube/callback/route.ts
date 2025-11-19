@@ -22,9 +22,10 @@ export async function GET(request: NextRequest) {
           try {
             const urlParams = new URLSearchParams(window.location.search);
             const code = urlParams.get('code');
+            const state = urlParams.get('state');
             const error = urlParams.get('error');
             const errorDescription = urlParams.get('error_description');
-            
+
             if (error) {
               window.opener.postMessage({
                 type: 'oauth_error',
@@ -38,7 +39,7 @@ export async function GET(request: NextRequest) {
                 headers: {
                   'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ code, state: '${state}' })
+                body: JSON.stringify({ code, state })
               })
               .then(response => response.json())
               .then(data => {
@@ -46,8 +47,7 @@ export async function GET(request: NextRequest) {
                   window.opener.postMessage({
                     type: 'oauth_success',
                     platform: 'youtube',
-                    profile: data.profile,
-                    token: data.token
+                    profile: data.profile
                   }, window.location.origin);
                 } else {
                   window.opener.postMessage({

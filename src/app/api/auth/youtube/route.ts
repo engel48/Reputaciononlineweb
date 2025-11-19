@@ -65,6 +65,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validar state parameter (CSRF protection)
+    if (!state) {
+      return NextResponse.json(
+        { success: false, error: 'State parameter es requerido (CSRF protection)' },
+        { status: 400 }
+      );
+    }
+
+    try {
+      const stateData = JSON.parse(Buffer.from(state, 'base64').toString());
+      const timestamp = stateData.timestamp;
+
+      // Validar que el state no sea mayor a 10 minutos
+      if (!timestamp || Date.now() - timestamp > 10 * 60 * 1000) {
+        return NextResponse.json(
+          { success: false, error: 'State parameter expirado (CSRF protection)' },
+          { status: 400 }
+        );
+      }
+    } catch (stateError) {
+      console.error('❌ Error validando state parameter:', stateError);
+      return NextResponse.json(
+        { success: false, error: 'State parameter inválido (CSRF protection)' },
+        { status: 400 }
+      );
+    }
+
     // Autenticar usuario
     const cookieStore = cookies();
     const authToken = cookieStore.get('auth-token')?.value;
@@ -176,7 +203,7 @@ export async function POST(request: NextRequest) {
       console.log('✅ Nueva conexión de YouTube creada');
     }
 
-    // Retornar perfil
+    // Retornar perfil (sin exponer access_token por seguridad)
     return NextResponse.json({
       success: true,
       profile: {
@@ -186,8 +213,7 @@ export async function POST(request: NextRequest) {
         followers: parseInt(channelProfile.statistics.subscriberCount),
         avatar: channelProfile.snippet.thumbnails.high.url,
         platform: 'youtube'
-      },
-      token: access_token
+      }
     });
 
   } catch (error: any) {
