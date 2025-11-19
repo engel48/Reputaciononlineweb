@@ -38,3 +38,4 @@ next-env.d.ts
 /backend/node_modules
 database.sqlite
 database.sqlite-journal
+.claude/settings.local.json

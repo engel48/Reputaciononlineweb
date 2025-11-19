@@ -9,6 +9,11 @@ import SimpleBuscador from '@/components/dashboard/SimpleBuscador';
 import SimpleChat from '@/components/dashboard/SimpleChat';
 import PoliticalDashboard from '@/components/dashboard/PoliticalDashboard';
 import YouTubeDashboardSection from '@/components/dashboard/YouTubeDashboardSection';
+import FacebookDashboardSection from '@/components/dashboard/FacebookDashboardSection';
+import InstagramDashboardSection from '@/components/dashboard/InstagramDashboardSection';
+import LinkedInDashboardSection from '@/components/dashboard/LinkedInDashboardSection';
+import XDashboardSection from '@/components/dashboard/XDashboardSection';
+import ThreadsDashboardSection from '@/components/dashboard/ThreadsDashboardSection';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowUpRight, RefreshCw, TrendingUp, TrendingDown, Facebook, Instagram, CreditCard, Brain, Sparkles, Wifi, WifiOff, AlertTriangle, Search, Zap, BarChart3, Users, MessageSquare, Activity, Target, Award, Globe, Clock, Newspaper, Bot, X } from 'lucide-react';
 import XLogo from '@/components/icons/XLogo';
@@ -1464,6 +1469,31 @@ export default function Dashboard() {
       {/* YouTube Analytics Section */}
       <div className="mb-4 sm:mb-6">
         <YouTubeDashboardSection />
+      </div>
+
+      {/* Facebook Analytics Section */}
+      <div className="mb-4 sm:mb-6">
+        <FacebookDashboardSection />
+      </div>
+
+      {/* Instagram Analytics Section */}
+      <div className="mb-4 sm:mb-6">
+        <InstagramDashboardSection />
+      </div>
+
+      {/* LinkedIn Analytics Section */}
+      <div className="mb-4 sm:mb-6">
+        <LinkedInDashboardSection />
+      </div>
+
+      {/* X/Twitter Analytics Section */}
+      <div className="mb-4 sm:mb-6">
+        <XDashboardSection />
+      </div>
+
+      {/* Threads Analytics Section */}
+      <div className="mb-4 sm:mb-6">
+        <ThreadsDashboardSection />
       </div>
 
       {/* Julia Chat - VERSIÓN RESPONSIVE CON ANIMACIONES MEJORADAS */}
