@@ -20,20 +20,26 @@ export async function GET(request: NextRequest) {
       <script>
         (function() {
           try {
+            console.log('🎬 YouTube Callback: Procesando...');
             const urlParams = new URLSearchParams(window.location.search);
             const code = urlParams.get('code');
             const state = urlParams.get('state');
             const error = urlParams.get('error');
             const errorDescription = urlParams.get('error_description');
 
+            console.log('📋 Params:', { code: !!code, state: !!state, error });
+
             if (error) {
+              console.error('❌ OAuth error:', error);
               window.opener.postMessage({
                 type: 'oauth_error',
                 platform: 'youtube',
                 error: errorDescription || error
               }, window.location.origin);
+              setTimeout(() => window.close(), 1000);
             } else if (code) {
               // Intercambiar código por token
+              console.log('🔄 Intercambiando código...');
               fetch('/api/auth/youtube', {
                 method: 'POST',
                 headers: {
@@ -41,43 +47,56 @@ export async function GET(request: NextRequest) {
                 },
                 body: JSON.stringify({ code, state })
               })
-              .then(response => response.json())
+              .then(response => {
+                console.log('📥 Response status:', response.status);
+                return response.json();
+              })
               .then(data => {
+                console.log('📦 Response data:', data);
                 if (data.success) {
+                  console.log('✅ OAuth exitoso!');
                   window.opener.postMessage({
                     type: 'oauth_success',
                     platform: 'youtube',
                     profile: data.profile
                   }, window.location.origin);
+                  setTimeout(() => window.close(), 1000);
                 } else {
+                  console.error('❌ Error en respuesta:', data.error);
                   window.opener.postMessage({
                     type: 'oauth_error',
                     platform: 'youtube',
                     error: data.error || 'Error de autenticación'
                   }, window.location.origin);
+                  setTimeout(() => window.close(), 2000);
                 }
               })
               .catch(err => {
+                console.error('❌ Fetch error:', err);
                 window.opener.postMessage({
                   type: 'oauth_error',
                   platform: 'youtube',
                   error: 'Error procesando autenticación'
                 }, window.location.origin);
+                setTimeout(() => window.close(), 2000);
               });
             } else {
+              console.error('❌ No code received');
               window.opener.postMessage({
                 type: 'oauth_error',
                 platform: 'youtube',
                 error: 'No se recibió código de autorización'
               }, window.location.origin);
+              setTimeout(() => window.close(), 1000);
             }
           } catch (e) {
-            console.error('Error in callback:', e);
+            console.error('❌ Callback error:', e);
             window.opener.postMessage({
               type: 'oauth_error',
               platform: 'youtube',
               error: 'Error en callback'
             }, window.location.origin);
+            setTimeout(() => window.close(), 1000);
           }
         })();
       </script>
