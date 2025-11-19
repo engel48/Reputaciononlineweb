@@ -202,7 +202,7 @@ export async function POST(request: NextRequest) {
         followers: page.fan_count || socialMedia.followers,
         posts: posts.length,
         engagement: posts.length > 0 ?
-          posts.reduce((sum, p) => sum + (p.likes?.summary?.total_count || 0), 0) / posts.length : 0,
+          posts.reduce((sum: number, p) => sum + (p.likes?.summary?.total_count || 0), 0) / posts.length : 0,
         last_sync: new Date().toISOString()
       })
       .eq('user_id', userId)
