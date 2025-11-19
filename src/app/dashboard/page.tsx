@@ -652,6 +652,44 @@ export default function Dashboard() {
         </motion.div>
       </div>
 
+      {/* ========================================== */}
+      {/* REDES SOCIALES - SECCIÓN PRINCIPAL */}
+      {/* ========================================== */}
+
+      {/* YouTube Analytics Section */}
+      <div className="mb-4 sm:mb-6">
+        <YouTubeDashboardSection />
+      </div>
+
+      {/* Facebook Analytics Section */}
+      <div className="mb-4 sm:mb-6">
+        <FacebookDashboardSection />
+      </div>
+
+      {/* Instagram Analytics Section */}
+      <div className="mb-4 sm:mb-6">
+        <InstagramDashboardSection />
+      </div>
+
+      {/* LinkedIn Analytics Section */}
+      <div className="mb-4 sm:mb-6">
+        <LinkedInDashboardSection />
+      </div>
+
+      {/* X/Twitter Analytics Section */}
+      <div className="mb-4 sm:mb-6">
+        <XDashboardSection />
+      </div>
+
+      {/* Threads Analytics Section */}
+      <div className="mb-4 sm:mb-6">
+        <ThreadsDashboardSection />
+      </div>
+
+      {/* ========================================== */}
+      {/* SECCIÓN SECUNDARIA - MÉTRICAS Y ANÁLISIS */}
+      {/* ========================================== */}
+
       {/* Sección de Engagement y Métricas de Interacción */}
       <FeatureGate feature="hasAdvancedAnalytics">
         <motion.div
@@ -1464,36 +1502,6 @@ export default function Dashboard() {
             </button>
           </div>
         </motion.div>
-      </div>
-
-      {/* YouTube Analytics Section */}
-      <div className="mb-4 sm:mb-6">
-        <YouTubeDashboardSection />
-      </div>
-
-      {/* Facebook Analytics Section */}
-      <div className="mb-4 sm:mb-6">
-        <FacebookDashboardSection />
-      </div>
-
-      {/* Instagram Analytics Section */}
-      <div className="mb-4 sm:mb-6">
-        <InstagramDashboardSection />
-      </div>
-
-      {/* LinkedIn Analytics Section */}
-      <div className="mb-4 sm:mb-6">
-        <LinkedInDashboardSection />
-      </div>
-
-      {/* X/Twitter Analytics Section */}
-      <div className="mb-4 sm:mb-6">
-        <XDashboardSection />
-      </div>
-
-      {/* Threads Analytics Section */}
-      <div className="mb-4 sm:mb-6">
-        <ThreadsDashboardSection />
       </div>
 
       {/* Julia Chat - VERSIÓN RESPONSIVE CON ANIMACIONES MEJORADAS */}
