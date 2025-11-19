@@ -100,7 +100,20 @@ class AIService {
     const messages: AIMessage[] = [
       {
         role: 'system',
-        content: 'Eres un experto en análisis de sentimientos. Debes analizar el texto y devolver SOLO un JSON válido con el formato: {"sentiment": "positive|negative|neutral", "score": 0.0-1.0, "explanation": "breve explicación"}'
+        content: `Eres un experto en análisis de sentimientos para contenido en español, especializado en contexto colombiano.
+
+IMPORTANTE: Debes analizar el texto y devolver SOLO un JSON válido con este formato exacto:
+{
+  "sentiment": "positive" | "negative" | "neutral",
+  "score": número entre -1.0 (muy negativo) y +1.0 (muy positivo),
+  "explanation": "breve explicación en español de 1-2 frases"
+}
+
+REGLAS:
+- score: -1.0 a -0.3 = negativo, -0.3 a +0.3 = neutral, +0.3 a +1.0 = positivo
+- Detecta sarcasmo, ironía y modismos colombianos
+- Considera emojis y hashtags en el análisis
+- NO incluyas código markdown, SOLO el JSON puro`
       },
       {
         role: 'user',
@@ -110,16 +123,42 @@ class AIService {
 
     try {
       const response = await this.chat(messages, { temperature: 0.3 });
+
       // Limpiar respuesta de markdown si existe
-      const jsonText = response.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-      return JSON.parse(jsonText);
-    } catch (error) {
-      console.error('Error analizando sentimiento:', error);
+      let jsonText = response.trim();
+
+      // Eliminar bloques de código markdown
+      jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+
+      // Buscar el JSON dentro del texto (puede haber texto antes/después)
+      const jsonMatch = jsonText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        jsonText = jsonMatch[0];
+      }
+
+      const parsed = JSON.parse(jsonText);
+
+      // Validar estructura de respuesta
+      if (!parsed.sentiment || !['positive', 'negative', 'neutral'].includes(parsed.sentiment)) {
+        throw new Error('Formato de respuesta inválido: sentiment no válido');
+      }
+
+      // Normalizar score a rango -1 a +1
+      let normalizedScore = parsed.score;
+      if (typeof normalizedScore !== 'number') {
+        normalizedScore = 0;
+      }
+      if (normalizedScore > 1) normalizedScore = normalizedScore / 100;
+      normalizedScore = Math.max(-1, Math.min(1, normalizedScore));
+
       return {
-        sentiment: 'neutral',
-        score: 0.5,
-        explanation: 'No se pudo analizar el sentimiento'
+        sentiment: parsed.sentiment,
+        score: normalizedScore,
+        explanation: parsed.explanation || 'Análisis completado'
       };
+    } catch (error) {
+      console.error('❌ Error analizando sentimiento con Gemini:', error);
+      throw error; // Lanzar error para que el endpoint use fallback
     }
   }
 

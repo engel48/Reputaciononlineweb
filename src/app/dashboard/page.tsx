@@ -136,43 +136,10 @@ export default function Dashboard() {
   const [consolidatedMetrics, setConsolidatedMetrics] = useState<any>(null);
   const [loadingConsolidated, setLoadingConsolidated] = useState(true);
   
-  // Estados para menciones en tiempo real
-  const [mencionesRecientes, setMencionesRecientes] = useState<Mention[]>([
-    {
-      id: '1',
-      author: '@usuario123',
-      platform: 'x',
-      content: '¡Excelente servicio de @MarcaEjemplo! Resolvieron mi problema rápidamente. Muy recomendado 👍',
-      sentiment: 'positive' as const,
-      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-      engagement: { likes: 45, comments: 8, retweets: 12, shares: 5 },
-      location: 'Bogotá, Colombia',
-      verified: true
-    },
-    {
-      id: '2',
-      author: 'María García',
-      platform: 'facebook',
-      content: 'Llevo 3 días esperando respuesta de @MarcaEjemplo. Pésima atención al cliente.',
-      sentiment: 'negative' as const,
-      timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000),
-      engagement: { likes: 23, comments: 15, shares: 7, retweets: 3 },
-      location: 'Medellín, Colombia',
-      verified: false
-    },
-    {
-      id: '3',
-      author: '@influencer_oficial',
-      platform: 'instagram',
-      content: 'Probando los nuevos productos de @MarcaEjemplo. ¿Alguien más los ha usado? Cuéntenme su experiencia.',
-      sentiment: 'neutral' as const,
-      timestamp: new Date(Date.now() - 8 * 60 * 60 * 1000),
-      engagement: { likes: 234, comments: 45, shares: 12, retweets: 8 },
-      location: 'Lima, Perú',
-      verified: true
-    }
-  ]);
+  // Estados para menciones en tiempo real - AHORA CON DATOS REALES
+  const [mencionesRecientes, setMencionesRecientes] = useState<Mention[]>([]);
   const [nuevasMenciones, setNuevasMenciones] = useState(0);
+  const [cargandoMenciones, setCargandoMenciones] = useState(true);
   
   // Usar hook de noticias en tiempo real
   const {
@@ -326,6 +293,42 @@ export default function Dashboard() {
       setLoadingConsolidated(false);
     }
   }, []);
+
+  // Función para cargar menciones REALES en tiempo real desde Supabase
+  const cargarMencionesReales = useCallback(async () => {
+    try {
+      setCargandoMenciones(true);
+      const response = await fetch('/api/mentions/recent?limit=10&hours=24');
+      const result = await response.json();
+
+      if (result.success && result.data.mentions) {
+        const prevCount = mencionesRecientes.length;
+        const newMentions = result.data.mentions.map((m: any) => ({
+          ...m,
+          timestamp: new Date(m.timestamp)
+        }));
+
+        setMencionesRecientes(newMentions);
+
+        // Detectar nuevas menciones
+        if (prevCount > 0 && newMentions.length > prevCount) {
+          const diff = newMentions.length - prevCount;
+          setNuevasMenciones(diff);
+          setTimeout(() => setNuevasMenciones(0), 10000);
+        }
+
+        console.log(`✅ ${result.data.total} menciones REALES cargadas desde Supabase`);
+      } else {
+        console.warn('No hay menciones disponibles');
+        setMencionesRecientes([]);
+      }
+    } catch (error) {
+      console.error('Error cargando menciones reales:', error);
+      setErrorConexion(true);
+    } finally {
+      setCargandoMenciones(false);
+    }
+  }, [mencionesRecientes.length]);
   
   // Función mejorada para actualizar datos
   const actualizarDatos = useCallback(async (manual = false) => {
@@ -345,6 +348,11 @@ export default function Dashboard() {
   useEffect(() => {
     cargarMetricasConsolidadas();
   }, [cargarMetricasConsolidadas]);
+
+  // Cargar menciones REALES al montar el componente
+  useEffect(() => {
+    cargarMencionesReales();
+  }, [cargarMencionesReales]);
 
   // Efecto para simular análisis completado
   useEffect(() => {
@@ -366,24 +374,18 @@ export default function Dashboard() {
     return () => clearInterval(interval);
   }, [cargarDatosReales, intervaloActivo, cargandoDatos]);
   
-  // Efecto para actualización de menciones cada 5 minutos
+  // Efecto para actualización automática de menciones REALES cada 5 minutos
   useEffect(() => {
     if (!intervaloActivo) return;
-    
+
     const mencionesInterval = setInterval(() => {
-      actualizarMenciones();
+      cargarMencionesReales(); // AHORA USA DATOS REALES desde Supabase
     }, 300000); // 5 minutos = 300000ms
-    
-    // También actualizar al montar el componente después de 30 segundos
-    const initialTimeout = setTimeout(() => {
-      actualizarMenciones();
-    }, 30000);
-    
+
     return () => {
       clearInterval(mencionesInterval);
-      clearTimeout(initialTimeout);
     };
-  }, [actualizarMenciones, intervaloActivo]);
+  }, [cargarMencionesReales, intervaloActivo]);
   
   // Detectar cuando la página está visible para pausar/reanudar actualizaciones
   useEffect(() => {
@@ -1088,7 +1090,12 @@ export default function Dashboard() {
                 <h2 className="heading-secondary flex items-center">
                   <Brain className="w-4 h-4 mr-2 text-blue-600" />
                   Menciones IA en Tiempo Real
-                  {!errorConexion && (
+                  {!cargandoMenciones && (
+                    <span className="ml-2 text-xs text-green-600 dark:text-green-400 font-semibold">
+                      DATOS REALES
+                    </span>
+                  )}
+                  {!errorConexion && !cargandoMenciones && (
                     <div className="ml-2 h-2 w-2 rounded-full bg-green-400 animate-pulse"></div>
                   )}
                 </h2>
@@ -1105,9 +1112,15 @@ export default function Dashboard() {
                       </motion.span>
                     )}
                   </AnimatePresence>
-                  <span className="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300">
-                    Actualización: 5min
-                  </span>
+                  {cargandoMenciones ? (
+                    <span className="rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600 dark:bg-gray-900/30 dark:text-gray-400">
+                      Cargando...
+                    </span>
+                  ) : (
+                    <span className="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                      Actualización: 5min
+                    </span>
+                  )}
                   {errorConexion && (
                     <span className="rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-800 dark:bg-red-900/30 dark:text-red-300">
                       Modo offline
@@ -1117,9 +1130,21 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="p-4 max-h-96 overflow-y-auto">
-              <div className="space-y-4">
-                <AnimatePresence>
-                  {mencionesRecientes.map((mencion, index) => {
+              {cargandoMenciones ? (
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <Brain className="w-8 h-8 mx-auto mb-2 animate-pulse text-blue-500" />
+                  <p className="text-sm">Cargando menciones reales desde Supabase...</p>
+                </div>
+              ) : mencionesRecientes.length === 0 ? (
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <MessageSquare className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                  <p className="text-sm">No hay menciones disponibles</p>
+                  <p className="text-xs mt-1">Conecta tus redes sociales para ver menciones en tiempo real</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <AnimatePresence>
+                    {mencionesRecientes.map((mencion, index) => {
                     const getPlatformIcon = (platform: string) => {
                       switch (platform) {
                         case 'x': return <XLogo className="h-5 w-5" />;
@@ -1222,14 +1247,15 @@ export default function Dashboard() {
                     );
                   })}
                 </AnimatePresence>
+
+                <div className="mt-4 text-center">
+                  <button className="text-sm font-medium text-[#01257D] hover:text-[#01257D]/90 dark:text-[#01257D] dark:hover:text-[#01257D]/90 flex items-center mx-auto">
+                    Ver análisis completo con IA
+                    <ArrowUpRight className="ml-1 h-4 w-4" />
+                  </button>
+                </div>
               </div>
-              
-              <div className="mt-4 text-center">
-                <button className="text-sm font-medium text-[#01257D] hover:text-[#01257D]/90 dark:text-[#01257D] dark:hover:text-[#01257D]/90 flex items-center mx-auto">
-                  Ver análisis completo con IA 
-                  <ArrowUpRight className="ml-1 h-4 w-4" />
-                </button>
-              </div>
+              )}
             </div>
           </motion.div>
         </div>
