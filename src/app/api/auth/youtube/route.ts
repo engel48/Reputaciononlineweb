@@ -172,15 +172,8 @@ export async function POST(request: NextRequest) {
       connected: true,
       access_token,
       refresh_token: refresh_token || existingConnection?.refresh_token || null,
-      token_expires_at: new Date(Date.now() + expires_in * 1000).toISOString(),
-      last_sync: new Date().toISOString(),
-      metadata: {
-        channel_name: channelProfile.snippet.title,
-        channel_description: channelProfile.snippet.description,
-        thumbnail: channelProfile.snippet.thumbnails.high.url,
-        total_views: channelProfile.statistics.viewCount,
-        country: channelProfile.snippet.country || null
-      }
+      token_expiry: new Date(Date.now() + expires_in * 1000).toISOString(),
+      last_sync: new Date().toISOString()
     };
 
     if (existingConnection) {
