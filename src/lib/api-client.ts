@@ -53,9 +53,9 @@ async function apiFetch<T = any>(
   const { skipAuth = false, headers = {}, ...restOptions } = options;
 
   // Construir headers
-  const requestHeaders: HeadersInit = {
+  const requestHeaders: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...headers,
+    ...(headers as Record<string, string>),
   };
 
   // Añadir Authorization header si no es endpoint público
