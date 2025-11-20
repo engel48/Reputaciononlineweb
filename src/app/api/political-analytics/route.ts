@@ -5,12 +5,9 @@ export async function GET(request: NextRequest) {
   try {
     console.log('🏛️ Julia: Generando métricas políticas con IA...');
 
-    // ❌ DATOS DUMMY ELIMINADOS - Solo usar datos generados por IA con información real
-    const dummyPoliticalData = null; // No usar datos falsos
-
     try {
       // Usar el servicio de análisis político con Julia
-      const enhancedMetrics = await aiService.analyzePoliticalMetrics(dummyPoliticalData);
+      const enhancedMetrics = await aiService.analyzePoliticalMetrics(null);
       
       console.log('✅ Julia: Métricas políticas generadas exitosamente');
       
@@ -73,20 +70,20 @@ export async function GET(request: NextRequest) {
         metrics = JSON.parse(cleanResponse);
       } catch (parseError) {
         console.error('🚨 Julia: Error parseando JSON:', parseError);
-        metrics = dummyPoliticalData; // usar datos dummy como fallback
+        // Si no se puede parsear, usar fallback básico
+        return NextResponse.json({
+          success: false,
+          error: 'No se pudieron generar métricas políticas',
+          message: 'Servicio de análisis político temporalmente no disponible'
+        }, { status: 503 });
       }
 
-      // Validar y ajustar datos si es necesario
-      if (!metrics.voterSentiment || typeof metrics.voterSentiment.positive !== 'number') {
-        metrics.voterSentiment = dummyPoliticalData.voterSentiment;
-      }
-
-      if (!metrics.demographicData || typeof metrics.demographicData.youngVoters !== 'number') {
-        metrics.demographicData = dummyPoliticalData.demographicData;
-      }
-
-      if (!metrics.keyIssues || !Array.isArray(metrics.keyIssues)) {
-        metrics.keyIssues = dummyPoliticalData.keyIssues;
+      // Validar estructura básica
+      if (!metrics || typeof metrics !== 'object') {
+        return NextResponse.json({
+          success: false,
+          error: 'Formato de métricas inválido'
+        }, { status: 500 });
       }
 
       console.log('✅ Julia: Métricas políticas generadas exitosamente');
