@@ -134,13 +134,15 @@ export function generateToken(
   user: { id: string; email: string; role?: string; [key: string]: any },
   expiresIn: string = '7d'
 ): string {
-  return jwt.sign(
-    {
-      userId: user.id,
-      email: user.email,
-      role: user.role || 'user',
-    },
-    JWT_SECRET,
-    { expiresIn: expiresIn }
-  );
+  const payload = {
+    userId: user.id,
+    email: user.email,
+    role: user.role || 'user',
+  };
+
+  const options: jwt.SignOptions = {
+    expiresIn: expiresIn as string | number
+  };
+
+  return jwt.sign(payload, JWT_SECRET, options);
 }
