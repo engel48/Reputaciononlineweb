@@ -141,6 +141,6 @@ export function generateToken(
       role: user.role || 'user',
     },
     JWT_SECRET,
-    { expiresIn }
+    { expiresIn: expiresIn }
   );
 }
