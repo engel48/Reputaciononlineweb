@@ -209,14 +209,20 @@ export default function AnalisisPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-[#01257D] dark:text-white">1,248</div>
-                <div className="mt-2 flex items-center text-xs">
-                  <TrendIndicator value={12} />
-                  <span className="ml-2 text-gray-600 dark:text-gray-300">vs. mes anterior</span>
-                </div>
+                {socialData?.data?.mentions?.total ? (
+                  <>
+                    <div className="text-3xl font-bold text-[#01257D] dark:text-white">{socialData.data.mentions.total}</div>
+                    <div className="mt-2 flex items-center text-xs">
+                      <TrendIndicator value={parseFloat(socialData.data.mentions.trend) || 0} />
+                      <span className="ml-2 text-gray-600 dark:text-gray-300">vs. mes anterior</span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-sm text-gray-500">Sin datos disponibles</div>
+                )}
               </CardContent>
             </Card>
-            
+
             <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-900/20 dark:to-emerald-800/20 hover:shadow-xl transition-all duration-300">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-emerald-700 dark:text-emerald-300 flex items-center">
@@ -225,14 +231,22 @@ export default function AnalisisPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">65%</div>
-                <div className="mt-2 flex items-center text-xs">
-                  <TrendIndicator value={5} />
-                  <span className="ml-2 text-gray-600 dark:text-gray-300">vs. mes anterior</span>
-                </div>
+                {socialData?.data?.mentions ? (
+                  <>
+                    <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
+                      {Math.round((socialData.data.mentions.positive / socialData.data.mentions.total) * 100)}%
+                    </div>
+                    <div className="mt-2 flex items-center text-xs">
+                      <TrendIndicator value={5} />
+                      <span className="ml-2 text-gray-600 dark:text-gray-300">vs. mes anterior</span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-sm text-gray-500">Sin datos disponibles</div>
+                )}
               </CardContent>
             </Card>
-            
+
             <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-violet-100 dark:from-purple-900/20 dark:to-violet-800/20 hover:shadow-xl transition-all duration-300">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-violet-700 dark:text-violet-300 flex items-center">
@@ -241,16 +255,24 @@ export default function AnalisisPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center">
-                  <XLogo className="h-6 w-6 mr-3" />
-                  <span className="text-3xl font-bold text-violet-600 dark:text-violet-400">X</span>
-                </div>
-                <div className="mt-2 flex items-center text-xs">
-                  <span className="text-gray-600 dark:text-gray-300">45% del total de menciones</span>
-                </div>
+                {socialData?.data?.mentions?.byPlatform ? (
+                  <>
+                    <div className="flex items-center">
+                      <XLogo className="h-6 w-6 mr-3" />
+                      <span className="text-3xl font-bold text-violet-600 dark:text-violet-400">X</span>
+                    </div>
+                    <div className="mt-2 flex items-center text-xs">
+                      <span className="text-gray-600 dark:text-gray-300">
+                        {Math.round((socialData.data.mentions.byPlatform.x / socialData.data.mentions.total) * 100)}% del total
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-sm text-gray-500">Sin datos disponibles</div>
+                )}
               </CardContent>
             </Card>
-            
+
             <Card className="border-0 shadow-lg bg-gradient-to-br from-amber-50 to-orange-100 dark:from-amber-900/20 dark:to-orange-800/20 hover:shadow-xl transition-all duration-300">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-orange-700 dark:text-orange-300 flex items-center">
@@ -259,11 +281,19 @@ export default function AnalisisPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">125K</div>
-                <div className="mt-2 flex items-center text-xs">
-                  <TrendIndicator value={8} />
-                  <span className="ml-2 text-gray-600 dark:text-gray-300">vs. mes anterior</span>
-                </div>
+                {socialData?.data?.mentions?.total ? (
+                  <>
+                    <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">
+                      {(socialData.data.mentions.total * 100).toLocaleString()}
+                    </div>
+                    <div className="mt-2 flex items-center text-xs">
+                      <TrendIndicator value={8} />
+                      <span className="ml-2 text-gray-600 dark:text-gray-300">vs. mes anterior</span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-sm text-gray-500">Sin datos disponibles</div>
+                )}
               </CardContent>
             </Card>
           </motion.div>

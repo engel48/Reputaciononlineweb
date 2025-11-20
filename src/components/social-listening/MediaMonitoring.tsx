@@ -87,211 +87,138 @@ export default function MediaMonitoring({ userProfile }: MediaMonitoringProps) {
   const [isMonitoring, setIsMonitoring] = useState(true);
   const [lastUpdate, setLastUpdate] = useState(new Date());
 
-  const [mediaMentions, setMediaMentions] = useState<MediaMention[]>([
-    {
-      id: '1',
-      title: 'Propuesta económica genera debate en el Congreso',
-      outlet: 'El Tiempo',
-      type: 'newspaper',
-      date: '2024-01-15T10:30:00Z',
-      sentiment: 65,
-      reach: 2500000,
-      engagement: 45600,
-      tone: 'neutral',
-      prominence: 'headline',
-      journalist: 'María García',
-      summary: 'Análisis detallado de la nueva propuesta económica presentada, con reacciones de diversos sectores.',
-      url: 'https://eltiempo.com/propuesta-economica',
-      keyQuotes: [
-        '"Esta propuesta puede cambiar la estructura económica del país"',
-        '"Necesitamos más detalles sobre la implementación"'
-      ],
-      topics: ['Economía', 'Política', 'Congreso'],
-      region: 'Nacional',
-      language: 'es',
-      credibility: 85,
-      virality: 72
-    },
-    {
-      id: '2',
-      title: 'Entrevista sobre políticas de educación',
-      outlet: 'Caracol TV',
-      type: 'tv',
-      date: '2024-01-15T08:00:00Z',
-      sentiment: 78,
-      reach: 1800000,
-      engagement: 89000,
-      tone: 'positive',
-      prominence: 'featured',
-      journalist: 'Carlos Rodríguez',
-      summary: 'Entrevista de 15 minutos sobre las nuevas políticas educativas propuestas.',
-      transcript: 'Transcripción completa de la entrevista...',
-      keyQuotes: [
-        '"La educación es la base del desarrollo"',
-        '"Vamos a invertir el 6% del PIB en educación"'
-      ],
-      topics: ['Educación', 'Política Pública', 'Inversión'],
-      region: 'Nacional',
-      language: 'es',
-      credibility: 92,
-      virality: 56
-    },
-    {
-      id: '3',
-      title: 'Críticas por manejo de recursos públicos',
-      outlet: 'Semana',
-      type: 'digital',
-      date: '2024-01-14T16:45:00Z',
-      sentiment: 32,
-      reach: 950000,
-      engagement: 23400,
-      tone: 'negative',
-      prominence: 'mention',
-      journalist: 'Ana López',
-      summary: 'Artículo crítico sobre el manejo de recursos en algunos proyectos públicos.',
-      url: 'https://semana.com/recursos-publicos',
-      keyQuotes: [
-        '"Faltan controles más estrictos"',
-        '"La transparencia debe ser una prioridad"'
-      ],
-      topics: ['Transparencia', 'Recursos Públicos', 'Fiscalización'],
-      region: 'Bogotá',
-      language: 'es',
-      credibility: 78,
-      virality: 83
-    }
-  ]);
+  const [mediaMentions, setMediaMentions] = useState<MediaMention[]>([]);
+  const [mediaOutlets, setMediaOutlets] = useState<MediaOutlet[]>([]);
+  const [journalists, setJournalists] = useState<Journalist[]>([]);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string>('');
 
-  const [mediaOutlets, setMediaOutlets] = useState<MediaOutlet[]>([
-    {
-      id: '1',
-      name: 'El Tiempo',
-      type: 'newspaper',
-      reach: 2500000,
-      credibility: 85,
-      political_bias: 'center',
-      region: 'Nacional',
-      frequency: 12,
-      sentiment_avg: 68,
-      contact: {
-        email: 'redaccion@eltiempo.com',
-        phone: '+57 1 294 0100',
-        address: 'Bogotá, Colombia'
-      }
-    },
-    {
-      id: '2',
-      name: 'Caracol TV',
-      type: 'tv',
-      reach: 1800000,
-      credibility: 92,
-      political_bias: 'center',
-      region: 'Nacional',
-      frequency: 8,
-      sentiment_avg: 72,
-      contact: {
-        email: 'noticias@caracoltv.com',
-        phone: '+57 1 643 2020'
-      }
-    },
-    {
-      id: '3',
-      name: 'Semana',
-      type: 'digital',
-      reach: 950000,
-      credibility: 78,
-      political_bias: 'center',
-      region: 'Nacional',
-      frequency: 15,
-      sentiment_avg: 55,
-      contact: {
-        email: 'contacto@semana.com',
-        phone: '+57 1 346 0080'
-      }
-    }
-  ]);
-
-  const [journalists, setJournalists] = useState<Journalist[]>([
-    {
-      id: '1',
-      name: 'María García',
-      outlet: 'El Tiempo',
-      beat: 'Política Económica',
-      followers: 45600,
-      influence_score: 87,
-      relationship_status: 'friendly',
-      last_contact: '2024-01-10',
-      articles_count: 24,
-      avg_sentiment: 68,
-      contact: {
-        email: 'm.garcia@eltiempo.com',
-        twitter: '@MariaGarciaET'
-      }
-    },
-    {
-      id: '2',
-      name: 'Carlos Rodríguez',
-      outlet: 'Caracol TV',
-      beat: 'Política General',
-      followers: 78900,
-      influence_score: 92,
-      relationship_status: 'neutral',
-      last_contact: '2024-01-15',
-      articles_count: 18,
-      avg_sentiment: 72,
-      contact: {
-        email: 'c.rodriguez@caracoltv.com',
-        phone: '+57 300 123 4567'
-      }
-    },
-    {
-      id: '3',
-      name: 'Ana López',
-      outlet: 'Semana',
-      beat: 'Investigación',
-      followers: 34200,
-      influence_score: 78,
-      relationship_status: 'hostile',
-      last_contact: '2024-01-05',
-      articles_count: 32,
-      avg_sentiment: 45,
-      contact: {
-        email: 'a.lopez@semana.com',
-        twitter: '@AnaLopezSemana'
-      }
-    }
-  ]);
-
-  // Simular actualización en tiempo real
+  // Fetch REAL media mentions using realNewsAPI scraping
   useEffect(() => {
+    const fetchRealMediaData = async () => {
+      try {
+        // Get user session
+        const sessionResponse = await fetch('/api/auth/session');
+        const session = await sessionResponse.json();
+
+        if (!session?.user?.id) {
+          setMediaMentions([]);
+          return;
+        }
+
+        setUserId(session.user.id);
+        setUserName(session.user.name || '');
+
+        // Use realNewsAPI to scrape REAL Colombian media
+        const searchResponse = await fetch('/api/search-news', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: session.user.name,
+            sources: 'colombian-media'
+          })
+        });
+
+        const newsData = await searchResponse.json();
+
+        // Transform to MediaMention format
+        const mentions: MediaMention[] = (newsData.articles || []).map((article: any) => ({
+          id: article.url,
+          title: article.title,
+          outlet: article.source,
+          type: article.type || 'digital',
+          date: article.publishedAt,
+          sentiment: article.sentimentScore || 50,
+          reach: article.estimatedReach || 0,
+          engagement: article.engagement || 0,
+          tone: article.sentiment || 'neutral',
+          prominence: article.prominence || 'mention',
+          journalist: article.author || 'Desconocido',
+          summary: article.description || '',
+          url: article.url,
+          keyQuotes: article.quotes || [],
+          topics: article.topics || [],
+          region: article.region || 'Nacional',
+          language: 'es',
+          credibility: article.credibilityScore || 70,
+          virality: article.viralityScore || 0
+        }));
+
+        setMediaMentions(mentions);
+
+        // Group by outlet for outlet stats
+        const outletMap = new Map<string, MediaOutlet>();
+        mentions.forEach((mention) => {
+          if (!outletMap.has(mention.outlet)) {
+            // Filter out 'podcast' and 'social' types, default to 'digital'
+            const validType: 'tv' | 'radio' | 'newspaper' | 'digital' =
+              mention.type === 'tv' || mention.type === 'radio' || mention.type === 'newspaper' || mention.type === 'digital'
+                ? mention.type
+                : 'digital';
+
+            outletMap.set(mention.outlet, {
+              id: mention.outlet,
+              name: mention.outlet,
+              type: validType,
+              reach: mention.reach,
+              credibility: mention.credibility,
+              political_bias: 'neutral',
+              region: mention.region,
+              frequency: 1,
+              sentiment_avg: mention.sentiment,
+              contact: {}
+            });
+          } else {
+            const outlet = outletMap.get(mention.outlet)!;
+            outlet.frequency += 1;
+            outlet.reach += mention.reach;
+            outlet.sentiment_avg = (outlet.sentiment_avg + mention.sentiment) / 2;
+          }
+        });
+
+        setMediaOutlets(Array.from(outletMap.values()));
+
+        // Extract journalists
+        const journalistMap = new Map<string, Journalist>();
+        mentions.forEach((mention) => {
+          if (mention.journalist && mention.journalist !== 'Desconocido') {
+            if (!journalistMap.has(mention.journalist)) {
+              journalistMap.set(mention.journalist, {
+                id: mention.journalist,
+                name: mention.journalist,
+                outlet: mention.outlet,
+                beat: mention.topics[0] || 'General',
+                followers: 0,
+                influence_score: mention.credibility,
+                relationship_status: 'unknown',
+                last_contact: mention.date,
+                articles_count: 1,
+                avg_sentiment: mention.sentiment,
+                contact: {}
+              });
+            } else {
+              const journalist = journalistMap.get(mention.journalist)!;
+              journalist.articles_count += 1;
+              journalist.avg_sentiment = (journalist.avg_sentiment + mention.sentiment) / 2;
+            }
+          }
+        });
+
+        setJournalists(Array.from(journalistMap.values()));
+      } catch (error) {
+        console.error('Error fetching media data:', error);
+        setMediaMentions([]);
+      }
+    };
+
+    fetchRealMediaData();
+
+    // Real-time monitoring every 5 minutes
     if (isMonitoring) {
       const interval = setInterval(() => {
         setLastUpdate(new Date());
-        // Simular nuevas menciones
-        if (Math.random() > 0.8) {
-          const newMention: MediaMention = {
-            id: Date.now().toString(),
-            title: 'Nueva mención detectada en medios',
-            outlet: 'RCN Noticias',
-            type: 'tv',
-            date: new Date().toISOString(),
-            sentiment: Math.floor(Math.random() * 100),
-            reach: Math.floor(Math.random() * 1000000),
-            engagement: Math.floor(Math.random() * 50000),
-            tone: Math.random() > 0.5 ? 'positive' : 'negative',
-            prominence: 'mention',
-            journalist: 'Periodista Digital',
-            summary: 'Nueva mención detectada por el sistema de monitoreo automático.',
-            keyQuotes: [],
-            topics: ['Actualidad'],
-            region: 'Nacional',
-            language: 'es',
-            credibility: 80,
-            virality: Math.floor(Math.random() * 100)
-          };
-          setMediaMentions(prev => [newMention, ...prev.slice(0, 19)]);
-        }
-      }, 30000);
+        fetchRealMediaData();
+      }, 300000); // 5 minutes
 
       return () => clearInterval(interval);
     }
@@ -801,6 +728,36 @@ export default function MediaMonitoring({ userProfile }: MediaMonitoringProps) {
       </div>
     </div>
   );
+
+  // Empty state
+  if (!mediaMentions || mediaMentions.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 flex items-center">
+            <Tv className="w-8 h-8 text-[#01257D] mr-3" />
+            Media Monitoring
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400">
+            Seguimiento completo de menciones en medios tradicionales y digitales
+          </p>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-12 text-center">
+          <Newspaper className="mx-auto h-16 w-16 text-gray-400 mb-4" />
+          <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">
+            Sin menciones en medios
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-2">
+            No se encontraron menciones recientes en medios colombianos
+          </p>
+          <p className="text-sm text-gray-500">
+            El sistema realiza búsquedas automáticas cada 5 minutos
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

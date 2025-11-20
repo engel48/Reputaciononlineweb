@@ -71,66 +71,92 @@ export default function PoliticalPulse({ userProfile }: PoliticalPulseProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(new Date());
 
-  const [metrics, setMetrics] = useState<CampaignMetrics>({
-    totalMentions: 45230,
-    sentiment: {
-      positive: 62,
-      negative: 25,
-      neutral: 13
-    },
-    byRegion: [
-      { region: 'Bogotá', mentions: 12450, sentiment: 65, population: 8000000 },
-      { region: 'Medellín', mentions: 8920, sentiment: 58, population: 2500000 },
-      { region: 'Cali', mentions: 6780, sentiment: 70, population: 2200000 },
-      { region: 'Barranquilla', mentions: 4560, sentiment: 55, population: 1200000 },
-      { region: 'Cartagena', mentions: 3890, sentiment: 72, population: 1000000 }
-    ],
-    byProposal: [
-      { proposal: 'Reforma Tributaria', mentions: 15670, sentiment: 45, engagement: 78 },
-      { proposal: 'Educación Gratuita', mentions: 13220, sentiment: 82, engagement: 85 },
-      { proposal: 'Seguridad Ciudadana', mentions: 11890, sentiment: 68, engagement: 72 },
-      { proposal: 'Salud Pública', mentions: 9450, sentiment: 75, engagement: 80 }
-    ],
-    debatePerformance: [
-      { date: '2024-01-15', event: 'Debate Presidencial CNN', sentimentBefore: 58, sentimentAfter: 72, change: 14 },
-      { date: '2024-01-08', event: 'Foro Económico', sentimentBefore: 62, sentimentAfter: 59, change: -3 },
-      { date: '2024-01-02', event: 'Entrevista Semana', sentimentBefore: 55, sentimentAfter: 68, change: 13 }
-    ],
-    competitorComparison: [
-      { candidate: 'Candidato A', mentions: 38920, sentiment: 58, shareOfVoice: 35 },
-      { candidate: 'Tú', mentions: 45230, sentiment: 62, shareOfVoice: 41 },
-      { candidate: 'Candidato B', mentions: 31450, sentiment: 52, shareOfVoice: 28 },
-      { candidate: 'Candidato C', mentions: 18670, sentiment: 48, shareOfVoice: 17 }
-    ]
-  });
+  const [metrics, setMetrics] = useState<CampaignMetrics | null>(null);
+  const [crisisAlerts, setCrisisAlerts] = useState<CrisisAlert[]>([]);
+  const [userId, setUserId] = useState<string | null>(null);
 
-  const [crisisAlerts, setCrisisAlerts] = useState<CrisisAlert[]>([
-    {
-      id: '1',
-      type: 'controversy',
-      title: 'Debate sobre propuesta tributaria genera controversia',
-      description: 'Incremento del 35% en menciones negativas tras declaraciones sobre impuestos',
-      severity: 'medium',
-      timestamp: '2024-01-15T14:30:00Z',
-      affectedRegions: ['Bogotá', 'Medellín'],
-      sentimentDrop: 12,
-      recommendations: [
-        'Aclarar posición mediante comunicado oficial',
-        'Programar entrevista explicativa',
-        'Activar campaña en redes sociales'
-      ]
-    }
-  ]);
-
-  // Simular actualización de datos
+  // Fetch REAL political metrics from Supabase
   useEffect(() => {
+    const fetchPoliticalData = async () => {
+      setIsLoading(true);
+      try {
+        // Get user session
+        const sessionResponse = await fetch('/api/auth/session');
+        const session = await sessionResponse.json();
+
+        if (!session?.user?.id) {
+          setMetrics(null);
+          setIsLoading(false);
+          return;
+        }
+
+        setUserId(session.user.id);
+
+        // Check if user type is political
+        if (userProfile.type !== 'politician' && userProfile.type !== 'political') {
+          setMetrics(null);
+          setIsLoading(false);
+          return;
+        }
+
+        // Fetch real political metrics from Supabase
+        const metricsResponse = await fetch(`/api/political-metrics?userId=${session.user.id}`);
+        const politicalData = await metricsResponse.json();
+
+        if (!politicalData.metrics) {
+          setMetrics(null);
+          setIsLoading(false);
+          return;
+        }
+
+        // Fetch mentions grouped by region
+        const mentionsByRegionResponse = await fetch(`/api/mentions/by-region?userId=${session.user.id}`);
+        const regionData = await mentionsByRegionResponse.json();
+
+        // Use Gemini AI to analyze political proposals
+        const proposalAnalysisResponse = await fetch('/api/julia', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: 'Analiza menciones políticas y extrae propuestas principales con sentiment y engagement',
+            context: 'political-analysis',
+            userId: session.user.id
+          })
+        });
+        const proposalData = await proposalAnalysisResponse.json();
+
+        setMetrics({
+          totalMentions: politicalData.metrics.total_mentions || 0,
+          sentiment: politicalData.metrics.sentiment_distribution || { positive: 0, negative: 0, neutral: 0 },
+          byRegion: regionData.regions || [],
+          byProposal: proposalData.proposals || [],
+          debatePerformance: politicalData.metrics.debate_performance || [],
+          competitorComparison: [] // Requires manual competitor configuration
+        });
+
+        // Fetch crisis alerts
+        const crisisResponse = await fetch(`/api/crisis-alerts?userId=${session.user.id}`);
+        const crisisData = await crisisResponse.json();
+        setCrisisAlerts(crisisData.alerts || []);
+
+        setLastUpdate(new Date());
+      } catch (error) {
+        console.error('Error fetching political data:', error);
+        setMetrics(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPoliticalData();
+
+    // Refresh every minute
     const interval = setInterval(() => {
-      setLastUpdate(new Date());
-      // Aquí iría la lógica real de actualización de datos
+      fetchPoliticalData();
     }, 60000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [userProfile]);
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
@@ -196,14 +222,14 @@ export default function PoliticalPulse({ userProfile }: PoliticalPulseProps) {
         <MetricCard
           icon={MessageSquare}
           title="Menciones Totales"
-          value={metrics.totalMentions.toLocaleString()}
+          value={(metrics?.totalMentions || 0).toLocaleString()}
           change="+15%"
           positive={true}
         />
         <MetricCard
           icon={TrendingUp}
           title="Sentiment Positivo"
-          value={`${metrics.sentiment.positive}%`}
+          value={`${metrics?.sentiment.positive || 0}%`}
           change="+8%"
           positive={true}
         />
@@ -237,7 +263,7 @@ export default function PoliticalPulse({ userProfile }: PoliticalPulseProps) {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
           <h3 className="text-lg font-semibold mb-4">Share of Voice vs Competidores</h3>
           <div className="space-y-3">
-            {metrics.competitorComparison.map((comp, index) => (
+            {(metrics?.competitorComparison || []).map((comp, index) => (
               <div key={index} className="flex items-center justify-between">
                 <span className={`font-medium ${comp.candidate === 'Tú' ? 'text-[#01257D]' : 'text-gray-700'}`}>
                   {comp.candidate}
@@ -265,7 +291,7 @@ export default function PoliticalPulse({ userProfile }: PoliticalPulseProps) {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
           <h3 className="text-lg font-semibold mb-6">Análisis por Regiones</h3>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Mapa interactivo de Colombia */}
+            {/* Mapa de Colombia con datos reales */}
             <div className="h-80 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-lg p-4 relative overflow-hidden">
               <div className="absolute inset-0 p-4">
                 <div className="h-full w-full relative">
@@ -357,7 +383,7 @@ export default function PoliticalPulse({ userProfile }: PoliticalPulseProps) {
 
             {/* Lista de regiones */}
             <div className="space-y-4">
-              {metrics.byRegion.map((region, index) => (
+              {(metrics?.byRegion || []).map((region, index) => (
                 <div key={index} className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="font-semibold">{region.region}</h4>
@@ -400,7 +426,7 @@ export default function PoliticalPulse({ userProfile }: PoliticalPulseProps) {
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
         <h3 className="text-lg font-semibold mb-6">Análisis por Propuestas</h3>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {metrics.byProposal.map((proposal, index) => (
+          {(metrics?.byProposal || []).map((proposal, index) => (
             <div key={index} className="p-6 border border-gray-200 dark:border-gray-600 rounded-lg">
               <h4 className="font-semibold text-lg mb-4">{proposal.proposal}</h4>
               
@@ -468,7 +494,7 @@ export default function PoliticalPulse({ userProfile }: PoliticalPulseProps) {
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
         <h3 className="text-lg font-semibold mb-6">Performance en Debates</h3>
         <div className="space-y-4">
-          {metrics.debatePerformance.map((debate, index) => (
+          {(metrics?.debatePerformance || []).map((debate, index) => (
             <div key={index} className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
               <div className="flex items-center justify-between mb-3">
                 <div>
@@ -504,6 +530,61 @@ export default function PoliticalPulse({ userProfile }: PoliticalPulseProps) {
       </div>
     </div>
   );
+
+  // Empty state for non-political users
+  if (userProfile.type !== 'politician' && userProfile.type !== 'political') {
+    return (
+      <div className="space-y-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            Political Pulse Dashboard
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400">
+            Monitoreo especializado para campañas políticas
+          </p>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-12 text-center">
+          <Vote className="mx-auto h-16 w-16 text-gray-400 mb-4" />
+          <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">
+            Funcionalidad disponible solo para perfiles políticos
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400">
+            Esta herramienta está diseñada específicamente para campañas políticas y candidatos
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Empty state for political users without data
+  if (!metrics || metrics.totalMentions === 0) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            Political Pulse Dashboard
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400">
+            Monitoreo especializado para campañas políticas
+          </p>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-12 text-center">
+          <BarChart3 className="mx-auto h-16 w-16 text-gray-400 mb-4" />
+          <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">
+            Sin métricas políticas disponibles
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-2">
+            No se encontraron menciones o datos para análisis político
+          </p>
+          <p className="text-sm text-gray-500">
+            El sistema recopila datos automáticamente cada minuto
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

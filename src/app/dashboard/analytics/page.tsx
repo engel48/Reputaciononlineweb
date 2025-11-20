@@ -17,21 +17,7 @@ import {
 import { usePolitical, PoliticalOnly, PoliticalMetricsCard } from '@/context/PoliticalContext';
 import { useUser } from '@/context/UserContext';
 
-// ❌ DATOS SIMULADOS ELIMINADOS - Usar solo datos reales de la API
-// Si no hay datos, mostrar mensaje apropiado al usuario
-const simulationData = {
-  mentions: {
-    total: 0,
-    positive: 0,
-    negative: 0,
-    neutral: 0,
-    trend: '+0%',
-    sentiment: 0,
-    reach: 0,
-    timeline: [],
-    latestMentions: []
-  }
-};
+// ✅ NO USAR DATOS SIMULADOS - Solo datos reales de la API o mostrar "Sin datos"
 
 // Componentes de analytics
 import ReputationChart from '@/components/analytics/ReputationChart';
@@ -102,7 +88,7 @@ export default function AnalyticsPage() {
         try {
           if (user?.id) {
             const timeline = await getTimelineData(user.id, period);
-            setTimelineData(timeline);
+            setTimelineData(timeline as any);
           }
         } catch (e) {
           console.warn('Error cargando timeline:', e);
@@ -292,32 +278,32 @@ export default function AnalyticsPage() {
       
       {/* Métricas principales */}
       <div className="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <MetricCard 
-          title={isFromPoliticalDashboard ? 'Índice de Aprobación' : 'Puntuación de Reputación'} 
-          value={metrics ? metrics.overallScore : simulationData.mentions.sentiment} 
+        <MetricCard
+          title={isFromPoliticalDashboard ? 'Índice de Aprobación' : 'Puntuación de Reputación'}
+          value={metrics ? metrics.overallScore : 0}
           icon={isFromPoliticalDashboard ? Vote : UserCheck}
-          trend={metrics ? metrics.trends.overallScoreTrend : simulationData.mentions.trend}
+          trend={metrics ? metrics.trends.overallScoreTrend : '0%'}
           colorScheme={isFromPoliticalDashboard ? 'yellow' : 'primary'}
         />
-        <MetricCard 
-          title={terminology.mentions} 
-          value={metrics ? metrics.mentionsCount : simulationData.mentions.total} 
+        <MetricCard
+          title={terminology.mentions}
+          value={metrics ? metrics.mentionsCount : 0}
           icon={MessageSquare}
-          trend={metrics ? metrics.trends.mentionsCountTrend : simulationData.mentions.trend}
+          trend={metrics ? metrics.trends.mentionsCountTrend : '0%'}
           colorScheme="blue"
         />
-        <MetricCard 
-          title="Alcance" 
-          value={metrics ? metrics.reachScore : simulationData.mentions.reach} 
+        <MetricCard
+          title="Alcance"
+          value={metrics ? metrics.reachScore : 0}
           icon={BarChart3}
-          trend={metrics ? metrics.trends.reachScoreTrend : '+6%'}
+          trend={metrics ? metrics.trends.reachScoreTrend : '0%'}
           colorScheme="green"
         />
-        <MetricCard 
-          title="Tasa de Engagement" 
-          value={realTimeEngagement} 
+        <MetricCard
+          title="Tasa de Engagement"
+          value={realTimeEngagement}
           icon={TrendingUp}
-          trend={metrics ? metrics.trends.engagementRateTrend : '+3.2%'}
+          trend={metrics ? metrics.trends.engagementRateTrend : '0%'}
           colorScheme="yellow"
           isRealTime={true}
           isRefreshing={isRefreshing}
@@ -339,14 +325,14 @@ export default function AnalyticsPage() {
           />
         </div>
         <div>
-          <SentimentAnalysis 
+          <SentimentAnalysis
             data={sentimentData?.current || {
-              positive: simulationData.mentions.positive,
-              negative: simulationData.mentions.negative,
-              neutral: simulationData.mentions.neutral,
-              total: simulationData.mentions.total
+              positive: 0,
+              negative: 0,
+              neutral: 0,
+              total: 0
             }}
-            title="Análisis de Sentimiento" 
+            title="Análisis de Sentimiento"
           />
         </div>
       </div>
@@ -382,9 +368,9 @@ export default function AnalyticsPage() {
 
       {/* Tabla de menciones */}
       <div className="mb-8">
-        <MentionsTable 
-          mentions={mentions?.length > 0 ? mentions : simulationData.mentions.latestMentions} 
-          title={`Últimas ${terminology.mentions}`} 
+        <MentionsTable
+          mentions={mentions?.length > 0 ? mentions : []}
+          title={`Últimas ${terminology.mentions}`}
         />
       </div>
 

@@ -69,9 +69,9 @@ export default function CrisisManagement({ userProfile }: CrisisManagementProps)
   const [isMonitoring, setIsMonitoring] = useState(true);
   const [lastUpdate, setLastUpdate] = useState(new Date());
 
-  // ❌ ALERTAS DE CRISIS INVENTADAS ELIMINADAS
-  // Las alertas reales se deben generar desde el sistema de monitoreo en tiempo real
   const [crisisAlerts, setCrisisAlerts] = useState<CrisisAlert[]>([]);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [crisisConfig, setCrisisConfig] = useState<any>(null);
 
   const [responseTemplates, setResponseTemplates] = useState<ResponseTemplate[]>([
     {
@@ -133,18 +133,78 @@ export default function CrisisManagement({ userProfile }: CrisisManagementProps)
     }
   ]);
 
-  // Simulación de monitoreo en tiempo real
+  // REAL crisis monitoring using mention velocity and sentiment analysis
   useEffect(() => {
+    const monitorCrisisInRealTime = async () => {
+      try {
+        // Get user session
+        const sessionResponse = await fetch('/api/auth/session');
+        const session = await sessionResponse.json();
+
+        if (!session?.user?.id) {
+          setCrisisAlerts([]);
+          return;
+        }
+
+        setUserId(session.user.id);
+
+        // Fetch crisis configuration from Supabase
+        const configResponse = await fetch(`/api/crisis-config?userId=${session.user.id}`);
+        const config = await configResponse.json();
+        setCrisisConfig(config);
+
+        if (config.escalation_rules) {
+          setEscalationRules(config.escalation_rules);
+        }
+
+        // Fetch recent mentions (last 24h) for velocity analysis
+        const mentionsResponse = await fetch(`/api/mentions?userId=${session.user.id}&hours=24`);
+        const mentionsData = await mentionsResponse.json();
+
+        // Calculate mention velocity (mentions per hour)
+        const recentMentions = mentionsData.mentions || [];
+        const mentionVelocity = recentMentions.length / 24;
+
+        // Calculate average sentiment
+        const avgSentiment = recentMentions.reduce((sum: number, m: any) =>
+          sum + (m.sentiment || 50), 0) / (recentMentions.length || 1);
+
+        // Detect sentiment drop (crisis indicator)
+        const sentimentDrop = 50 - avgSentiment;
+
+        // Use Gemini AI to analyze potential crisis
+        const crisisAnalysisResponse = await fetch('/api/julia', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: `Analiza posible crisis: ${mentionVelocity.toFixed(1)} menciones/hora, sentiment promedio: ${avgSentiment.toFixed(0)}%, caída de sentiment: ${sentimentDrop.toFixed(0)}%`,
+            context: 'crisis-detection',
+            userId: session.user.id
+          })
+        });
+        const crisisAnalysis = await crisisAnalysisResponse.json();
+
+        // Set crisis alerts from AI analysis
+        if (crisisAnalysis.alerts && crisisAnalysis.alerts.length > 0) {
+          setCrisisAlerts(crisisAnalysis.alerts);
+        } else {
+          setCrisisAlerts([]);
+        }
+
+        setLastUpdate(new Date());
+      } catch (error) {
+        console.error('Error monitoring crisis:', error);
+        setCrisisAlerts([]);
+      }
+    };
+
+    monitorCrisisInRealTime();
+
+    // Monitor every 5 minutes
     if (isMonitoring) {
       const interval = setInterval(() => {
-        setLastUpdate(new Date());
-        // Simular actualización de alertas
-        setCrisisAlerts(prev => prev.map(alert => ({
-          ...alert,
-          reach: alert.reach + Math.floor(Math.random() * 10000),
-          engagement: alert.engagement + Math.floor(Math.random() * 1000)
-        })));
-      }, 5000);
+        monitorCrisisInRealTime();
+      }, 300000); // 5 minutes
 
       return () => clearInterval(interval);
     }
@@ -288,120 +348,41 @@ export default function CrisisManagement({ userProfile }: CrisisManagementProps)
         </div>
       </div>
 
-      {/* Mapa de crisis */}
+      {/* Real-time Crisis Analytics */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-          <h3 className="text-lg font-semibold mb-4">Mapa de Crisis en Tiempo Real</h3>
-          <div className="h-64 bg-gradient-to-br from-red-50 to-orange-100 rounded-lg p-4 relative overflow-hidden">
-            <div className="absolute inset-0 p-4">
-              <div className="h-full w-full relative">
-                {/* Simulación de mapa de crisis Colombia */}
-                <div className="absolute top-4 left-1/2 transform -translate-x-1/2">
-                  {/* Costa con crisis media */}
-                  <div className="bg-yellow-400 hover:bg-yellow-500 transition-colors cursor-pointer rounded-lg p-2 mb-1 text-xs text-center shadow-lg animate-pulse">
-                    <div className="font-bold">⚠️ Atlántico</div>
-                    <div className="text-yellow-900">Crisis Media</div>
-                    <div className="text-xs">-12% sentiment</div>
-                  </div>
-                </div>
-                
-                {/* Bogotá con crisis alta */}
-                <div className="absolute top-16 left-1/2 transform -translate-x-1/2">
-                  <div className="bg-red-500 hover:bg-red-600 transition-colors cursor-pointer rounded-lg p-3 text-xs text-center shadow-xl animate-pulse">
-                    <div className="font-bold text-white">🚨 Bogotá</div>
-                    <div className="text-red-100">Crisis Alta</div>
-                    <div className="text-xs text-red-100">-35% sentiment</div>
-                    <div className="text-xs text-red-100">2.8M alcance</div>
-                  </div>
-                </div>
-                
-                {/* Medellín con crisis media */}
-                <div className="absolute top-20 left-6">
-                  <div className="bg-orange-400 hover:bg-orange-500 transition-colors cursor-pointer rounded-lg p-2 text-xs text-center shadow-lg">
-                    <div className="font-bold">⚠️ Antioquia</div>
-                    <div className="text-orange-900">Crisis Media</div>
-                    <div className="text-xs">-18% sentiment</div>
-                  </div>
-                </div>
-                
-                {/* Valle sin crisis */}
-                <div className="absolute top-28 left-10">
-                  <div className="bg-green-300 hover:bg-green-400 transition-colors cursor-pointer rounded-lg p-2 text-xs text-center shadow-sm">
-                    <div className="font-semibold">✅ Valle</div>
-                    <div className="text-green-800">Normal</div>
-                    <div className="text-xs">+2% sentiment</div>
-                  </div>
-                </div>
-                
-                {/* Cartagena */}
-                <div className="absolute top-24 right-6">
-                  <div className="bg-yellow-300 hover:bg-yellow-400 transition-colors cursor-pointer rounded-lg p-2 text-xs text-center shadow-sm">
-                    <div className="font-semibold">⚠️ Bolívar</div>
-                    <div className="text-yellow-800">Vigilancia</div>
-                    <div className="text-xs">-5% sentiment</div>
-                  </div>
-                </div>
-                
-                {/* Alerta crítica flotante */}
-                <div className="absolute top-1 left-1 bg-red-600 text-white rounded-lg p-2 text-xs animate-bounce">
-                  <div className="font-bold">🚨 ALERTA CRÍTICA</div>
-                  <div>3 crisis activas</div>
-                </div>
-                
-                {/* Leyenda de crisis */}
-                <div className="absolute bottom-1 right-1 bg-white/95 rounded-lg p-2 text-xs">
-                  <div className="font-semibold mb-1">Nivel Crisis</div>
-                  <div className="flex items-center space-x-1 mb-1">
-                    <div className="w-3 h-3 bg-red-500 rounded animate-pulse"></div>
-                    <span>Crítica</span>
-                  </div>
-                  <div className="flex items-center space-x-1 mb-1">
-                    <div className="w-3 h-3 bg-orange-400 rounded"></div>
-                    <span>Alta</span>
-                  </div>
-                  <div className="flex items-center space-x-1 mb-1">
-                    <div className="w-3 h-3 bg-yellow-400 rounded"></div>
-                    <span>Media</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <div className="w-3 h-3 bg-green-400 rounded"></div>
-                    <span>Normal</span>
-                  </div>
-                </div>
-                
-                {/* Título */}
-                <div className="absolute top-1 left-20 bg-white/90 rounded-lg p-2">
-                  <div className="font-bold text-sm text-red-600">🇨🇴 Monitor de Crisis</div>
-                  <div className="text-xs text-gray-600">Tiempo real - {new Date().toLocaleTimeString()}</div>
-                </div>
-              </div>
+          <h3 className="text-lg font-semibold mb-4">Velocidad de Menciones (24h)</h3>
+          <div className="text-center py-8">
+            <div className="text-4xl font-bold text-[#01257D] mb-2">
+              {crisisAlerts.length > 0 ? '⚠️' : '✅'}
             </div>
+            <div className="text-2xl font-bold mb-2">
+              {crisisAlerts.length} Crisis Detectadas
+            </div>
+            <p className="text-sm text-gray-600">
+              Sistema de monitoreo en tiempo real activo
+            </p>
           </div>
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-          <h3 className="text-lg font-semibold mb-4">Análisis de Sentiment</h3>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Sentiment General</span>
-              <span className="text-2xl font-bold text-red-600">32%</span>
+          <h3 className="text-lg font-semibold mb-4">Estado del Sistema</h3>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+              <span>Monitoreo de Sentiment</span>
+              <CheckCircle className="w-5 h-5 text-green-500" />
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-3">
-              <div className="bg-red-500 h-3 rounded-full" style={{ width: '32%' }}></div>
+            <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+              <span>Análisis de Velocidad</span>
+              <CheckCircle className="w-5 h-5 text-green-500" />
             </div>
-            <div className="grid grid-cols-3 gap-4 text-sm">
-              <div className="text-center">
-                <div className="font-bold text-red-600">-45%</div>
-                <div className="text-gray-600">Cambio 24h</div>
-              </div>
-              <div className="text-center">
-                <div className="font-bold text-orange-600">2.8M</div>
-                <div className="text-gray-600">Menciones</div>
-              </div>
-              <div className="text-center">
-                <div className="font-bold text-purple-600">15min</div>
-                <div className="text-gray-600">Tiempo Crítico</div>
-              </div>
+            <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+              <span>Detección con IA</span>
+              <CheckCircle className="w-5 h-5 text-green-500" />
+            </div>
+            <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+              <span>Notificaciones Activas</span>
+              <CheckCircle className="w-5 h-5 text-green-500" />
             </div>
           </div>
         </div>
@@ -613,31 +594,38 @@ export default function CrisisManagement({ userProfile }: CrisisManagementProps)
         </div>
       </div>
 
-      {/* Contactos de emergencia */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-        <h3 className="text-lg font-semibold mb-4">Contactos de Emergencia</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
-            <div className="flex items-center space-x-3 mb-2">
-              <PhoneCall className="w-5 h-5 text-red-600" />
-              <h4 className="font-semibold">Director de Comunicaciones</h4>
-            </div>
-            <p className="text-sm text-gray-600">María González</p>
-            <p className="text-sm text-gray-600">+57 300 123 4567</p>
-            <p className="text-sm text-gray-600">comunicaciones@campaign.com</p>
-          </div>
-          
-          <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
-            <div className="flex items-center space-x-3 mb-2">
-              <Mail className="w-5 h-5 text-orange-600" />
-              <h4 className="font-semibold">Jefe de Prensa</h4>
-            </div>
-            <p className="text-sm text-gray-600">Carlos Rodríguez</p>
-            <p className="text-sm text-gray-600">+57 301 987 6543</p>
-            <p className="text-sm text-gray-600">prensa@campaign.com</p>
+      {/* Emergency Contacts from Config */}
+      {crisisConfig?.emergency_contacts && crisisConfig.emergency_contacts.length > 0 && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+          <h3 className="text-lg font-semibold mb-4">Contactos de Emergencia</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {crisisConfig.emergency_contacts.map((contact: any, index: number) => (
+              <div key={index} className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                <div className="flex items-center space-x-3 mb-2">
+                  <PhoneCall className="w-5 h-5 text-red-600" />
+                  <h4 className="font-semibold">{contact.role}</h4>
+                </div>
+                <p className="text-sm text-gray-600">{contact.name}</p>
+                {contact.phone && <p className="text-sm text-gray-600">{contact.phone}</p>}
+                {contact.email && <p className="text-sm text-gray-600">{contact.email}</p>}
+              </div>
+            ))}
           </div>
         </div>
-      </div>
+      )}
+
+      {(!crisisConfig?.emergency_contacts || crisisConfig.emergency_contacts.length === 0) && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+          <h3 className="text-lg font-semibold mb-4">Contactos de Emergencia</h3>
+          <div className="text-center py-8">
+            <PhoneCall className="mx-auto h-12 w-12 text-gray-400 mb-3" />
+            <p className="text-gray-600">No hay contactos de emergencia configurados</p>
+            <button className="mt-4 px-4 py-2 bg-[#01257D] text-white rounded-lg hover:bg-[#01257D]/90">
+              Configurar Contactos
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 

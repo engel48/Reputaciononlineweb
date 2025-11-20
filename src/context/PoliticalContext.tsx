@@ -112,7 +112,7 @@ export function PoliticalProvider({ children }: { children: React.ReactNode }) {
       getPoliticalMetrics(user.id)
         .then((metrics) => {
           console.log('✅ Political metrics loaded successfully:', metrics);
-          setPoliticalMetrics(metrics);
+          setPoliticalMetrics(metrics as any);
         })
         .catch((error) => {
           console.error('❌ Error loading political metrics:', error);

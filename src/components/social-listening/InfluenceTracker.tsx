@@ -74,116 +74,87 @@ export default function InfluenceTracker({ userProfile }: InfluenceTrackerProps)
   const [selectedTimeframe, setSelectedTimeframe] = useState<'7d' | '30d' | '90d' | '1y'>('30d');
   const [isLoading, setIsLoading] = useState(false);
 
-  const [metrics, setMetrics] = useState<InfluenceMetrics>({
-    totalFollowers: 2847563,
-    engagementRate: 4.2,
-    authenticFollowers: 89,
-    brandSafetyScore: 92,
-    avgPostReach: 1256780,
-    collaborations: [
-      {
-        brand: 'Nike Colombia',
-        date: '2024-01-15',
-        type: 'post',
-        reach: 1890000,
-        engagement: 156780,
-        sentimentBefore: 85,
-        sentimentAfter: 88,
-        roi: 340
-      },
-      {
-        brand: 'Samsung Galaxy',
-        date: '2024-01-10',
-        type: 'video',
-        reach: 2340000,
-        engagement: 234560,
-        sentimentBefore: 82,
-        sentimentAfter: 85,
-        roi: 420
-      },
-      {
-        brand: 'Coca-Cola',
-        date: '2024-01-05',
-        type: 'story',
-        reach: 890000,
-        engagement: 67890,
-        sentimentBefore: 87,
-        sentimentAfter: 89,
-        roi: 280
-      }
-    ],
-    competitors: [
-      { name: '@influencer_a', followers: 3200000, engagement: 3.8, growth: 12, brandDeals: 15 },
-      { name: 'Tú', followers: 2847563, engagement: 4.2, growth: 18, brandDeals: 12 },
-      { name: '@influencer_b', followers: 2650000, engagement: 3.9, growth: 8, brandDeals: 18 },
-      { name: '@influencer_c', followers: 2340000, engagement: 4.5, growth: 22, brandDeals: 10 }
-    ],
-    platformStats: [
-      { platform: 'Instagram', followers: 1890000, engagement: 4.5, growth: 15, avgReach: 850000 },
-      { platform: 'TikTok', followers: 567000, engagement: 6.8, growth: 35, avgReach: 420000 },
-      { platform: 'YouTube', followers: 234000, engagement: 3.2, growth: 8, avgReach: 180000 },
-      { platform: 'Twitter', followers: 156563, engagement: 2.1, growth: 5, avgReach: 89000 }
-    ],
-    audienceDemographics: {
-      ageGroups: [
-        { range: '18-24', percentage: 35 },
-        { range: '25-34', percentage: 42 },
-        { range: '35-44', percentage: 18 },
-        { range: '45+', percentage: 5 }
-      ],
-      genders: [
-        { gender: 'Femenino', percentage: 58 },
-        { gender: 'Masculino', percentage: 40 },
-        { gender: 'Otro', percentage: 2 }
-      ],
-      locations: [
-        { country: 'Colombia', percentage: 45 },
-        { country: 'México', percentage: 18 },
-        { country: 'Argentina', percentage: 12 },
-        { country: 'Chile', percentage: 8 },
-        { country: 'Otros', percentage: 17 }
-      ],
-      interests: [
-        { interest: 'Moda', percentage: 68 },
-        { interest: 'Lifestyle', percentage: 54 },
-        { interest: 'Tecnología', percentage: 32 },
-        { interest: 'Viajes', percentage: 28 }
-      ]
-    }
-  });
+  const [metrics, setMetrics] = useState<InfluenceMetrics | null>(null);
+  const [brandOpportunities, setBrandOpportunities] = useState<BrandOpportunity[]>([]);
+  const [userId, setUserId] = useState<string | null>(null);
 
-  const [brandOpportunities, setBrandOpportunities] = useState<BrandOpportunity[]>([
-    {
-      id: '1',
-      brand: 'Adidas Colombia',
-      category: 'Deportes',
-      estimatedValue: 8500,
-      matchScore: 95,
-      requirements: ['Post en feed', 'Stories', 'Mención en video'],
-      deadline: '2024-02-15',
-      status: 'available'
-    },
-    {
-      id: '2',
-      brand: 'L\'Oréal Paris',
-      category: 'Belleza',
-      estimatedValue: 12000,
-      matchScore: 88,
-      requirements: ['Video tutorial', '3 posts', 'Stories por 5 días'],
-      deadline: '2024-02-20',
-      status: 'available'
-    },
-    {
-      id: '3',
-      brand: 'Apple iPhone',
-      category: 'Tecnología',
-      estimatedValue: 15000,
-      matchScore: 92,
-      requirements: ['Unboxing video', 'Stories daily use', 'Review post'],
-      deadline: '2024-02-10',
-      status: 'negotiating'
-    }
-  ]);
+  // Fetch real influence data from Supabase and OAuth
+  useEffect(() => {
+    const fetchInfluenceData = async () => {
+      setIsLoading(true);
+      try {
+        // Get user ID from session/context
+        const response = await fetch('/api/auth/session');
+        const session = await response.json();
+
+        if (!session?.user?.id) {
+          setMetrics(null);
+          setIsLoading(false);
+          return;
+        }
+
+        setUserId(session.user.id);
+
+        // Fetch real collaborations from Supabase
+        const collabResponse = await fetch(`/api/social-media/collaborations?userId=${session.user.id}`);
+        const collaborationsData = await collabResponse.json();
+
+        // Fetch real connected platforms data
+        const platformsResponse = await fetch(`/api/social-media/platforms?userId=${session.user.id}`);
+        const platformsData = await platformsResponse.json();
+
+        // Calculate total followers from real OAuth data
+        const totalFollowers = platformsData.platforms?.reduce((sum: number, p: any) =>
+          sum + (p.followerCount || 0), 0) || 0;
+
+        // Calculate real engagement rate
+        const totalEngagement = platformsData.platforms?.reduce((sum: number, p: any) =>
+          sum + (p.engagementRate || 0), 0) || 0;
+        const avgEngagement = platformsData.platforms?.length > 0
+          ? totalEngagement / platformsData.platforms.length
+          : 0;
+
+        // Use Julia AI to generate brand opportunities based on real data
+        const opportunitiesResponse = await fetch('/api/julia', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: `Analiza oportunidades de marca para usuario con ${totalFollowers} seguidores en ${platformsData.platforms?.length || 0} plataformas`,
+            context: 'influence-analysis',
+            userId: session.user.id
+          })
+        });
+        const opportunitiesData = await opportunitiesResponse.json();
+
+        setMetrics({
+          totalFollowers,
+          engagementRate: parseFloat(avgEngagement.toFixed(1)),
+          authenticFollowers: 0, // Requires external API
+          brandSafetyScore: 0, // Requires external API
+          avgPostReach: 0, // Calculate from platform data
+          collaborations: collaborationsData.collaborations || [],
+          competitors: [], // Requires manual configuration
+          platformStats: platformsData.platforms || [],
+          audienceDemographics: {
+            ageGroups: [],
+            genders: [],
+            locations: [],
+            interests: []
+          }
+        });
+
+        setBrandOpportunities(opportunitiesData.opportunities || []);
+      } catch (error) {
+        console.error('Error fetching influence data:', error);
+        setMetrics(null);
+        setBrandOpportunities([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchInfluenceData();
+  }, []);
 
   const getPlatformIcon = (platform: string) => {
     switch (platform.toLowerCase()) {
@@ -214,28 +185,28 @@ export default function InfluenceTracker({ userProfile }: InfluenceTrackerProps)
         <InfluenceMetricCard
           icon={Users}
           title="Seguidores Totales"
-          value={metrics.totalFollowers.toLocaleString()}
+          value={(metrics?.totalFollowers || 0).toLocaleString()}
           change="+18%"
           positive={true}
         />
         <InfluenceMetricCard
           icon={Heart}
           title="Engagement Rate"
-          value={`${metrics.engagementRate}%`}
+          value={`${metrics?.engagementRate || 0}%`}
           change="+0.3%"
           positive={true}
         />
         <InfluenceMetricCard
           icon={Shield}
           title="Authentic Followers"
-          value={`${metrics.authenticFollowers}%`}
+          value={`${metrics?.authenticFollowers || 0}%`}
           change="+2%"
           positive={true}
         />
         <InfluenceMetricCard
           icon={Star}
           title="Brand Safety Score"
-          value={`${metrics.brandSafetyScore}/100`}
+          value={`${metrics?.brandSafetyScore || 0}/100`}
           change="+5"
           positive={true}
         />
@@ -247,7 +218,7 @@ export default function InfluenceTracker({ userProfile }: InfluenceTrackerProps)
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
           <h3 className="text-lg font-semibold mb-4">Performance por Plataforma</h3>
           <div className="space-y-4">
-            {metrics.platformStats.map((platform, index) => {
+            {(metrics?.platformStats || []).map((platform, index) => {
               const IconComponent = getPlatformIcon(platform.platform);
               return (
                 <div key={index} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
@@ -279,7 +250,7 @@ export default function InfluenceTracker({ userProfile }: InfluenceTrackerProps)
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
           <h3 className="text-lg font-semibold mb-4">ROI de Colaboraciones Recientes</h3>
           <div className="space-y-4">
-            {metrics.collaborations.slice(0, 3).map((collab, index) => (
+            {(metrics?.collaborations || []).slice(0, 3).map((collab, index) => (
               <div key={index} className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="font-semibold">{collab.brand}</h4>
@@ -346,19 +317,19 @@ export default function InfluenceTracker({ userProfile }: InfluenceTrackerProps)
           <h3 className="text-lg font-semibold mb-4">Análisis de Followers</h3>
           <div className="space-y-4">
             <div className="text-center">
-              <div className="text-4xl font-bold text-[#01257D] mb-2">{metrics.authenticFollowers}%</div>
+              <div className="text-4xl font-bold text-[#01257D] mb-2">{metrics?.authenticFollowers || 0}%</div>
               <div className="text-gray-600">Followers Auténticos</div>
             </div>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div className="text-center p-3 bg-green-50 rounded-lg">
                 <div className="font-bold text-green-600">
-                  {Math.round(metrics.totalFollowers * metrics.authenticFollowers / 100).toLocaleString()}
+                  {Math.round((metrics?.totalFollowers || 0) * (metrics?.authenticFollowers || 0) / 100).toLocaleString()}
                 </div>
                 <div className="text-green-800">Reales</div>
               </div>
               <div className="text-center p-3 bg-red-50 rounded-lg">
                 <div className="font-bold text-red-600">
-                  {Math.round(metrics.totalFollowers * (100 - metrics.authenticFollowers) / 100).toLocaleString()}
+                  {Math.round((metrics?.totalFollowers || 0) * (100 - (metrics?.authenticFollowers || 0)) / 100).toLocaleString()}
                 </div>
                 <div className="text-red-800">Bots/Inactivos</div>
               </div>
@@ -374,7 +345,7 @@ export default function InfluenceTracker({ userProfile }: InfluenceTrackerProps)
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
         <h3 className="text-lg font-semibold mb-6">Historial de Colaboraciones</h3>
         <div className="space-y-4">
-          {metrics.collaborations.map((collab, index) => (
+          {(metrics?.collaborations || []).map((collab, index) => (
             <div key={index} className="p-6 border border-gray-200 dark:border-gray-600 rounded-lg">
               <div className="flex items-center justify-between mb-4">
                 <div>
@@ -511,7 +482,7 @@ export default function InfluenceTracker({ userProfile }: InfluenceTrackerProps)
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
         <h3 className="text-lg font-semibold mb-6">Análisis Competitivo</h3>
         <div className="space-y-4">
-          {metrics.competitors.map((competitor, index) => (
+          {(metrics?.competitors || []).map((competitor, index) => (
             <div key={index} className={`p-4 rounded-lg border ${
               competitor.name === 'Tú' ? 'border-[#01257D] bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-gray-600'
             }`}>
@@ -564,7 +535,7 @@ export default function InfluenceTracker({ userProfile }: InfluenceTrackerProps)
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
           <h3 className="text-lg font-semibold mb-4">Grupos de Edad</h3>
           <div className="space-y-3">
-            {metrics.audienceDemographics.ageGroups.map((group, index) => (
+            {(metrics?.audienceDemographics.ageGroups || []).map((group, index) => (
               <div key={index} className="flex items-center justify-between">
                 <span className="font-medium">{group.range} años</span>
                 <div className="flex items-center space-x-3">
@@ -584,7 +555,7 @@ export default function InfluenceTracker({ userProfile }: InfluenceTrackerProps)
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
           <h3 className="text-lg font-semibold mb-4">Distribución por Género</h3>
           <div className="space-y-3">
-            {metrics.audienceDemographics.genders.map((gender, index) => (
+            {(metrics?.audienceDemographics.genders || []).map((gender, index) => (
               <div key={index} className="flex items-center justify-between">
                 <span className="font-medium">{gender.gender}</span>
                 <div className="flex items-center space-x-3">
@@ -606,7 +577,7 @@ export default function InfluenceTracker({ userProfile }: InfluenceTrackerProps)
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
           <h3 className="text-lg font-semibold mb-4">Ubicaciones Principales</h3>
           <div className="space-y-3">
-            {metrics.audienceDemographics.locations.map((location, index) => (
+            {(metrics?.audienceDemographics.locations || []).map((location, index) => (
               <div key={index} className="flex items-center justify-between">
                 <span className="font-medium">{location.country}</span>
                 <div className="flex items-center space-x-3">
@@ -626,7 +597,7 @@ export default function InfluenceTracker({ userProfile }: InfluenceTrackerProps)
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
           <h3 className="text-lg font-semibold mb-4">Intereses Principales</h3>
           <div className="space-y-3">
-            {metrics.audienceDemographics.interests.map((interest, index) => (
+            {(metrics?.audienceDemographics.interests || []).map((interest, index) => (
               <div key={index} className="flex items-center justify-between">
                 <span className="font-medium">{interest.interest}</span>
                 <div className="flex items-center space-x-3">
@@ -645,6 +616,35 @@ export default function InfluenceTracker({ userProfile }: InfluenceTrackerProps)
       </div>
     </div>
   );
+
+  // Empty state if no data
+  if (!metrics || metrics.totalFollowers === 0) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            Influence Tracker
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400">
+            Análisis completo de influencia y oportunidades de marca
+          </p>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-12 text-center">
+          <TrendingUp className="mx-auto h-16 w-16 text-gray-400 mb-4" />
+          <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">
+            Sin datos de influencia
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
+            Conecta tus redes sociales para comenzar a trackear tus colaboraciones y oportunidades de marca
+          </p>
+          <button className="px-6 py-3 bg-[#01257D] text-white rounded-lg hover:bg-[#01257D]/90">
+            Conectar Redes Sociales
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
