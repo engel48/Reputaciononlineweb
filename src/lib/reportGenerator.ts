@@ -16,9 +16,32 @@ export interface ReportData {
   };
 }
 
+interface ConsumoCredito {
+  fecha: string;
+  consumo: number;
+  canal: string;
+}
+
+interface ResumenCanal {
+  canal: string;
+  consumo: number;
+  porcentaje: number;
+}
+
+interface SampleData {
+  consumoCreditos: ConsumoCredito[];
+  resumenCanales: ResumenCanal[];
+  estadisticas: {
+    totalConsumo: number;
+    promedioDiario: number;
+    diaMayorConsumo: { fecha: string; consumo: number };
+    crecimiento: string;
+  };
+}
+
 // ❌ DATOS DE EJEMPLO ELIMINADOS - Los reportes ahora usan datos REALES del usuario
 // Si no hay datos, se debe mostrar un mensaje al usuario indicando que no hay información disponible
-const getSampleData = () => {
+const getSampleData = (): SampleData => {
   // Retornar estructura vacía - El sistema debe obtener datos reales de la base de datos
   console.warn('⚠️ getSampleData() llamado - Los reportes deben usar datos reales del usuario');
   return {

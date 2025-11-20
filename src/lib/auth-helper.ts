@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
+import type { StringValue } from 'ms';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'reputacion-online-secret-key-2025';
 
@@ -132,7 +133,7 @@ export async function requireRole(
  */
 export function generateToken(
   user: { id: string; email: string; role?: string; [key: string]: any },
-  expiresIn: string = '7d'
+  expiresIn: StringValue | number = '7d'
 ): string {
   const payload = {
     userId: user.id,
@@ -140,9 +141,5 @@ export function generateToken(
     role: user.role || 'user',
   };
 
-  const options: jwt.SignOptions = {
-    expiresIn: expiresIn as string | number
-  };
-
-  return jwt.sign(payload, JWT_SECRET, options);
+  return jwt.sign(payload, JWT_SECRET, { expiresIn });
 }
