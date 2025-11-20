@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Upload, Users, AlertTriangle, Check, Loader2 } from 'lucide-react';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
 export default function AsignacionMasiva() {
   // Estados para manejar el proceso
@@ -10,15 +11,7 @@ export default function AsignacionMasiva() {
   const [cargando, setCargando] = useState<boolean>(false);
   const [errorMensaje, setErrorMensaje] = useState<string>('');
   const [exito, setExito] = useState<boolean>(false);
-
-  // Simulación de usuarios para ejemplo
-  const usuariosSimulados = [
-    { id: 'u1', nombre: 'Carlos Rodríguez', email: 'carlos@ejemplo.com', creditos: 5000 },
-    { id: 'u2', nombre: 'María López', email: 'maria@ejemplo.com', creditos: 10000 },
-    { id: 'u3', nombre: 'Juan Martínez', email: 'juan@ejemplo.com', creditos: 7500 },
-    { id: 'u4', nombre: 'Ana Gómez', email: 'ana@ejemplo.com', creditos: 3000 },
-    { id: 'u5', nombre: 'Pedro Sánchez', email: 'pedro@ejemplo.com', creditos: 15000 },
-  ];
+  const supabase = createClientComponentClient();
 
   // Manejar selección de archivo
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -30,7 +23,7 @@ export default function AsignacionMasiva() {
   };
 
   // Procesar archivo
-  const procesarArchivo = () => {
+  const procesarArchivo = async () => {
     if (!archivo) {
       setErrorMensaje('Por favor selecciona un archivo CSV o Excel');
       return;
@@ -39,25 +32,117 @@ export default function AsignacionMasiva() {
     setCargando(true);
     setErrorMensaje('');
 
-    // Simulamos procesamiento del archivo
-    setTimeout(() => {
-      setCargando(false);
-      // Usar datos simulados para ejemplo
-      setUsuarios(usuariosSimulados);
+    try {
+      // Leer y parsear el archivo CSV/Excel
+      const fileContent = await archivo.text();
+      const lines = fileContent.split('\n');
+      const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+
+      // Buscar índices de columnas requeridas
+      const emailIndex = headers.indexOf('email');
+      const creditosIndex = headers.indexOf('creditos');
+
+      if (emailIndex === -1 || creditosIndex === -1) {
+        setErrorMensaje('El archivo debe contener las columnas: email, creditos');
+        setCargando(false);
+        return;
+      }
+
+      // Procesar datos del archivo
+      const usuariosArchivo = lines.slice(1)
+        .filter(line => line.trim())
+        .map((line, index) => {
+          const columns = line.split(',').map(c => c.trim());
+          return {
+            id: `import-${index}`,
+            email: columns[emailIndex],
+            creditos: parseInt(columns[creditosIndex]) || 0
+          };
+        })
+        .filter(u => u.email && u.creditos > 0);
+
+      if (usuariosArchivo.length === 0) {
+        setErrorMensaje('No se encontraron usuarios válidos en el archivo');
+        setCargando(false);
+        return;
+      }
+
+      // Validar usuarios contra la base de datos
+      const { data: usuariosDB, error } = await supabase
+        .from('users')
+        .select('id, name, email')
+        .in('email', usuariosArchivo.map(u => u.email));
+
+      if (error) {
+        setErrorMensaje('Error al validar usuarios: ' + error.message);
+        setCargando(false);
+        return;
+      }
+
+      // Combinar datos del archivo con datos de la DB
+      const usuariosValidados = usuariosArchivo
+        .map(uArchivo => {
+          const uDB = usuariosDB?.find(u => u.email === uArchivo.email);
+          if (!uDB) return null;
+
+          return {
+            id: uDB.id,
+            nombre: uDB.name || uDB.email,
+            email: uDB.email,
+            creditos: uArchivo.creditos
+          };
+        })
+        .filter(u => u !== null);
+
+      if (usuariosValidados.length === 0) {
+        setErrorMensaje('Ningún email del archivo coincide con usuarios registrados');
+        setCargando(false);
+        return;
+      }
+
+      setUsuarios(usuariosValidados);
       setPaso(2);
-    }, 1500);
+    } catch (error) {
+      setErrorMensaje('Error al procesar el archivo: ' + (error as Error).message);
+    } finally {
+      setCargando(false);
+    }
   };
 
   // Confirmar asignación
-  const confirmarAsignacion = () => {
+  const confirmarAsignacion = async () => {
     setCargando(true);
+    setErrorMensaje('');
 
-    // Simulamos el proceso de asignación
-    setTimeout(() => {
-      setCargando(false);
+    try {
+      // Realizar asignación de créditos mediante API
+      const response = await fetch('/api/admin/credits/bulk-assign', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          usuarios: usuarios.map(u => ({
+            userId: u.id,
+            cantidad: u.creditos,
+            canal: 'general',
+            descripcion: 'Asignación masiva de créditos'
+          }))
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Error al asignar créditos');
+      }
+
       setExito(true);
       setPaso(3);
-    }, 2000);
+    } catch (error) {
+      setErrorMensaje('Error al asignar créditos: ' + (error as Error).message);
+    } finally {
+      setCargando(false);
+    }
   };
 
   // Reiniciar el proceso

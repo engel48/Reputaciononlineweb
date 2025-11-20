@@ -1,5 +1,9 @@
-import React from 'react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { Loader2 } from 'lucide-react';
 
 interface DatosUsuario {
   id: string;
@@ -11,63 +15,73 @@ interface DatosUsuario {
 }
 
 export default function CreditosPorUsuarioChart() {
-  // Datos de ejemplo para los usuarios
-  const datosUsuarios: DatosUsuario[] = [
-    {
-      id: 'u1',
-      nombre: 'Carlos Rodríguez',
-      disponibles: 18250,
-      gastados: 25840,
-      total: 44090,
-      porcentajeUso: 58.6
-    },
-    {
-      id: 'u2',
-      nombre: 'María López',
-      disponibles: 12740,
-      gastados: 18650,
-      total: 31390,
-      porcentajeUso: 59.4
-    },
-    {
-      id: 'u3',
-      nombre: 'Juan Martínez',
-      disponibles: 28450,
-      gastados: 12470,
-      total: 40920,
-      porcentajeUso: 30.5
-    },
-    {
-      id: 'u4',
-      nombre: 'Ana Gómez',
-      disponibles: 5320,
-      gastados: 9830,
-      total: 15150,
-      porcentajeUso: 64.9
-    },
-    {
-      id: 'u5',
-      nombre: 'Pedro Sánchez',
-      disponibles: 31450,
-      gastados: 7620,
-      total: 39070,
-      porcentajeUso: 19.5
-    },
-    {
-      id: 'u6',
-      nombre: 'Laura Torres',
-      disponibles: 24680,
-      gastados: 15370,
-      total: 40050,
-      porcentajeUso: 38.4
-    },
-  ];
+  const supabase = createClientComponentClient();
+  const [datosUsuarios, setDatosUsuarios] = useState<DatosUsuario[]>([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState<string>('');
 
-  // Ordenar por total de créditos (mayor a menor)
-  const usuariosOrdenados = [...datosUsuarios].sort((a, b) => b.total - a.total);
+  useEffect(() => {
+    cargarDatosUsuarios();
+  }, []);
 
-  // Encontrar el máximo de créditos para escalar el gráfico
-  const maxCreditos = Math.max(...usuariosOrdenados.map(u => u.total));
+  const cargarDatosUsuarios = async () => {
+    try {
+      setCargando(true);
+      setError('');
+
+      // Obtener datos de créditos de usuarios
+      const { data: usuarios, error: errorUsuarios } = await supabase
+        .from('users')
+        .select('id, name, email, credits_available');
+
+      if (errorUsuarios) throw errorUsuarios;
+
+      // Obtener transacciones de créditos para calcular gastados
+      const { data: transacciones, error: errorTx } = await supabase
+        .from('credit_transactions')
+        .select('user_id, amount, type');
+
+      if (errorTx) throw errorTx;
+
+      // Calcular créditos gastados por usuario
+      const gastadosPorUsuario: Record<string, number> = {};
+      transacciones?.forEach((tx) => {
+        if (tx.type === 'usage' || tx.type === 'debit') {
+          if (!gastadosPorUsuario[tx.user_id]) {
+            gastadosPorUsuario[tx.user_id] = 0;
+          }
+          gastadosPorUsuario[tx.user_id] += Math.abs(tx.amount);
+        }
+      });
+
+      // Construir datos para la tabla
+      const datos = usuarios?.map((usuario) => {
+        const disponibles = usuario.credits_available || 0;
+        const gastados = gastadosPorUsuario[usuario.id] || 0;
+        const total = disponibles + gastados;
+        const porcentajeUso = total > 0 ? ((gastados / total) * 100) : 0;
+
+        return {
+          id: usuario.id,
+          nombre: usuario.name || usuario.email,
+          disponibles,
+          gastados,
+          total,
+          porcentajeUso: parseFloat(porcentajeUso.toFixed(1))
+        };
+      }).filter(u => u.total > 0) || [];
+
+      // Ordenar por total de créditos (mayor a menor)
+      datos.sort((a, b) => b.total - a.total);
+
+      setDatosUsuarios(datos);
+    } catch (error) {
+      console.error('Error cargando datos de usuarios:', error);
+      setError('Error al cargar datos de usuarios');
+    } finally {
+      setCargando(false);
+    }
+  };
 
   // Obtener color basado en el porcentaje de uso
   const getColorPorcentaje = (porcentaje: number) => {
@@ -75,6 +89,40 @@ export default function CreditosPorUsuarioChart() {
     if (porcentaje > 50) return 'text-amber-600 dark:text-amber-400';
     return 'text-green-600 dark:text-green-400';
   };
+
+  if (cargando) {
+    return (
+      <div className="card p-6">
+        <h2 className="heading-secondary mb-4">Créditos por Usuario</h2>
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+          <span className="ml-3 text-gray-600 dark:text-gray-400">Cargando datos...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="card p-6">
+        <h2 className="heading-secondary mb-4">Créditos por Usuario</h2>
+        <div className="text-center py-12 text-red-600 dark:text-red-400">
+          {error}
+        </div>
+      </div>
+    );
+  }
+
+  if (datosUsuarios.length === 0) {
+    return (
+      <div className="card p-6">
+        <h2 className="heading-secondary mb-4">Créditos por Usuario</h2>
+        <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+          No hay datos de créditos disponibles
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="card p-6">
@@ -92,8 +140,8 @@ export default function CreditosPorUsuarioChart() {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900">
-            {usuariosOrdenados.map((usuario, index) => (
-              <motion.tr 
+            {datosUsuarios.map((usuario, index) => (
+              <motion.tr
                 key={usuario.id}
                 className="hover:bg-gray-50 dark:hover:bg-gray-800"
                 initial={{ opacity: 0, y: 10 }}
@@ -140,7 +188,7 @@ export default function CreditosPorUsuarioChart() {
           </tbody>
         </table>
       </div>
-      
+
       {/* Leyenda */}
       <div className="mt-4 flex justify-end space-x-6">
         <div className="flex items-center">

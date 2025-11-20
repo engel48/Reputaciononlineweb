@@ -50,10 +50,24 @@ interface HashtagMonitoringProps {
   isLoading?: boolean;
 }
 
-const HashtagMonitoring: React.FC<HashtagMonitoringProps> = ({ 
-  hashtags = demoHashtags, 
-  isLoading = false 
+const HashtagMonitoring: React.FC<HashtagMonitoringProps> = ({
+  hashtags,
+  isLoading = false
 }) => {
+  // Si no hay hashtags, mostrar mensaje
+  if (!hashtags || hashtags.length === 0) {
+    return (
+      <div className="border-0 shadow-2xl bg-gradient-to-br from-white via-blue-50/30 to-indigo-50/30 dark:from-gray-900 dark:via-blue-900/10 dark:to-indigo-900/10 rounded-2xl p-12 text-center">
+        <Hash className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+        <h3 className="text-xl font-bold text-gray-700 dark:text-gray-300 mb-2">
+          Sin hashtags monitoreados
+        </h3>
+        <p className="text-gray-500 dark:text-gray-400">
+          No hay hashtags configurados para monitoreo
+        </p>
+      </div>
+    );
+  }
   const [selectedHashtag, setSelectedHashtag] = useState<HashtagData | null>(
     hashtags && hashtags.length > 0 ? hashtags[0] : null
   );
@@ -342,101 +356,5 @@ const HashtagMonitoring: React.FC<HashtagMonitoringProps> = ({
     </div>
   );
 };
-
-// Datos de ejemplo para desarrollo
-const demoHashtags: HashtagData[] = [
-  {
-    id: 'ht1',
-    name: 'ElmerZapata',
-    count: 4582,
-    trend: 'up',
-    percentChange: 14.5,
-    history: [
-      { date: '2025-05-29T00:00:00', count: 320 },
-      { date: '2025-05-30T00:00:00', count: 425 },
-      { date: '2025-05-31T00:00:00', count: 380 },
-      { date: '2025-06-01T00:00:00', count: 510 },
-      { date: '2025-06-02T00:00:00', count: 590 },
-      { date: '2025-06-03T00:00:00', count: 680 },
-      { date: '2025-06-04T00:00:00', count: 788 },
-      { date: '2025-06-05T00:00:00', count: 889 }
-    ],
-    platforms: [
-      { name: 'X', count: 2846, percentage: 62 },
-      { name: 'Instagram', count: 921, percentage: 20 },
-      { name: 'Facebook', count: 598, percentage: 13 },
-      { name: 'TikTok', count: 217, percentage: 5 }
-    ]
-  },
-  {
-    id: 'ht2',
-    name: 'ReformaEducativa',
-    count: 2187,
-    trend: 'up',
-    percentChange: 7.2,
-    history: [
-      { date: '2025-05-29T00:00:00', count: 160 },
-      { date: '2025-05-30T00:00:00', count: 210 },
-      { date: '2025-05-31T00:00:00', count: 180 },
-      { date: '2025-06-01T00:00:00', count: 245 },
-      { date: '2025-06-02T00:00:00', count: 310 },
-      { date: '2025-06-03T00:00:00', count: 385 },
-      { date: '2025-06-04T00:00:00', count: 420 },
-      { date: '2025-06-05T00:00:00', count: 450 }
-    ],
-    platforms: [
-      { name: 'X', count: 987, percentage: 45 },
-      { name: 'Facebook', count: 743, percentage: 34 },
-      { name: 'Instagram', count: 324, percentage: 15 },
-      { name: 'TikTok', count: 133, percentage: 6 }
-    ]
-  },
-  {
-    id: 'ht3',
-    name: 'NuevaLeyFiscal',
-    count: 1586,
-    trend: 'down',
-    percentChange: 12.8,
-    history: [
-      { date: '2025-05-29T00:00:00', count: 280 },
-      { date: '2025-05-30T00:00:00', count: 325 },
-      { date: '2025-05-31T00:00:00', count: 290 },
-      { date: '2025-06-01T00:00:00', count: 210 },
-      { date: '2025-06-02T00:00:00', count: 185 },
-      { date: '2025-06-03T00:00:00', count: 135 },
-      { date: '2025-06-04T00:00:00', count: 120 },
-      { date: '2025-06-05T00:00:00', count: 105 }
-    ],
-    platforms: [
-      { name: 'X', count: 896, percentage: 57 },
-      { name: 'Facebook', count: 382, percentage: 24 },
-      { name: 'Instagram', count: 157, percentage: 10 },
-      { name: 'Blogs', count: 151, percentage: 9 }
-    ]
-  },
-  {
-    id: 'ht4',
-    name: 'CambioClimatico',
-    count: 3214,
-    trend: 'up',
-    percentChange: 23.4,
-    history: [
-      { date: '2025-05-29T00:00:00', count: 245 },
-      { date: '2025-05-30T00:00:00', count: 310 },
-      { date: '2025-05-31T00:00:00', count: 375 },
-      { date: '2025-06-01T00:00:00', count: 420 },
-      { date: '2025-06-02T00:00:00', count: 510 },
-      { date: '2025-06-03T00:00:00', count: 580 },
-      { date: '2025-06-04T00:00:00', count: 630 },
-      { date: '2025-06-05T00:00:00', count: 685 }
-    ],
-    platforms: [
-      { name: 'X', count: 1385, percentage: 43 },
-      { name: 'Instagram', count: 982, percentage: 31 },
-      { name: 'Facebook', count: 546, percentage: 17 },
-      { name: 'TikTok', count: 301, percentage: 9 }
-    ]
-  }
-];
 
 export default HashtagMonitoring;

@@ -15,6 +15,7 @@ import {
   Target
 } from 'lucide-react';
 import { usePolitical, PoliticalOnly, PoliticalMetricsCard } from '@/context/PoliticalContext';
+import { useUser } from '@/context/UserContext';
 
 // ❌ DATOS SIMULADOS ELIMINADOS - Usar solo datos reales de la API
 // Si no hay datos, mostrar mensaje apropiado al usuario
@@ -47,6 +48,7 @@ import {
 } from '@/lib/services/analyticsService';
 
 export default function AnalyticsPage() {
+  const { user } = useUser();
   const { isFromPoliticalDashboard, terminology, features } = usePolitical();
   const [isLoading, setIsLoading] = useState(true);
   const [period, setPeriod] = useState<'week' | 'month' | 'quarter'>('month');
@@ -89,29 +91,37 @@ export default function AnalyticsPage() {
         
         // Cargar datos en paralelo
         try {
-          const metricsData = await getReputationMetrics();
-          setMetrics(metricsData);
+          if (user?.id) {
+            const metricsData = await getReputationMetrics(user.id);
+            setMetrics(metricsData);
+          }
         } catch (e) {
           console.warn('Error cargando métricas:', e);
         }
         
         try {
-          const timeline = await getTimelineData(period);
-          setTimelineData(timeline);
+          if (user?.id) {
+            const timeline = await getTimelineData(user.id, period);
+            setTimelineData(timeline);
+          }
         } catch (e) {
           console.warn('Error cargando timeline:', e);
         }
         
         try {
-          const sentiment = await getSentimentData();
-          setSentimentData(sentiment);
+          if (user?.id) {
+            const sentiment = await getSentimentData(user.id);
+            setSentimentData(sentiment);
+          }
         } catch (e) {
           console.warn('Error cargando sentimientos:', e);
         }
         
         try {
-          const latestMentions = await getLatestMentions(5);
-          setMentions(latestMentions);
+          if (user?.id) {
+            const latestMentions = await getLatestMentions(user.id, 5);
+            setMentions(latestMentions);
+          }
         } catch (e) {
           console.warn('Error cargando menciones:', e);
         }

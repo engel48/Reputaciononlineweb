@@ -34,11 +34,25 @@ interface HashtagGeoMapProps {
   isLoading?: boolean;
 }
 
-const HashtagGeoMap: React.FC<HashtagGeoMapProps> = ({ 
+const HashtagGeoMap: React.FC<HashtagGeoMapProps> = ({
   hashtagName = "ElmerZapata",
-  geoData = demoGeoData,
-  isLoading = false 
+  geoData,
+  isLoading = false
 }) => {
+  // Si no hay datos, mostrar mensaje
+  if (!geoData || geoData.length === 0) {
+    return (
+      <div className="border-0 shadow-2xl bg-gradient-to-br from-white via-green-50/30 to-emerald-50/30 dark:from-gray-900 dark:via-green-900/10 dark:to-emerald-900/10 rounded-2xl p-12 text-center">
+        <MapPin className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+        <h3 className="text-xl font-bold text-gray-700 dark:text-gray-300 mb-2">
+          Sin datos geográficos disponibles
+        </h3>
+        <p className="text-gray-500 dark:text-gray-400">
+          No hay datos de ubicación para el hashtag #{hashtagName}
+        </p>
+      </div>
+    );
+  }
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -142,23 +156,5 @@ const HashtagGeoMap: React.FC<HashtagGeoMapProps> = ({
     </motion.div>
   );
 };
-
-// Datos de ejemplo para desarrollo
-const demoGeoData: GeoPoint[] = [
-  { id: 'geo1', lat: 4.6097, lng: -74.0817, city: 'Bogotá', country: 'Colombia', count: 1245 },
-  { id: 'geo2', lat: 10.9639, lng: -74.7964, city: 'Barranquilla', country: 'Colombia', count: 865 },
-  { id: 'geo3', lat: 3.4516, lng: -76.5320, city: 'Cali', country: 'Colombia', count: 732 },
-  { id: 'geo4', lat: 6.2476, lng: -75.5658, city: 'Medellín', country: 'Colombia', count: 978 },
-  { id: 'geo5', lat: 7.8890, lng: -72.4967, city: 'Cúcuta', country: 'Colombia', count: 387 },
-  { id: 'geo6', lat: 10.3997, lng: -75.5144, city: 'Cartagena', country: 'Colombia', count: 642 },
-  { id: 'geo7', lat: 9.0247, lng: -73.2525, city: 'Valledupar', country: 'Colombia', count: 215 },
-  { id: 'geo8', lat: 4.5709, lng: -75.7050, city: 'Ibagué', country: 'Colombia', count: 189 },
-  { id: 'geo9', lat: 11.2404, lng: -74.2115, city: 'Santa Marta', country: 'Colombia', count: 321 },
-  { id: 'geo10', lat: 7.6285, lng: -74.6710, city: 'Bucaramanga', country: 'Colombia', count: 456 },
-  { id: 'geo11', lat: 19.4326, lng: -99.1332, city: 'Ciudad de México', country: 'México', count: 467 },
-  { id: 'geo12', lat: -12.0464, lng: -77.0428, city: 'Lima', country: 'Perú', count: 352 },
-  { id: 'geo13', lat: -33.4489, lng: -70.6693, city: 'Santiago', country: 'Chile', count: 256 },
-  { id: 'geo14', lat: -34.6037, lng: -58.3816, city: 'Buenos Aires', country: 'Argentina', count: 312 }
-];
 
 export default HashtagGeoMap;

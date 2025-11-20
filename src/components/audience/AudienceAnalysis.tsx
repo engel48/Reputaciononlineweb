@@ -46,8 +46,8 @@ interface AudienceAnalysisProps {
 }
 
 const AudienceAnalysis: React.FC<AudienceAnalysisProps> = ({
-  demographicData = demoDemographicData,
-  influencers = demoInfluencers,
+  demographicData,
+  influencers,
   isLoading = false
 }) => {
   const [activeTab, setActiveTab] = useState<'demographics' | 'influencers' | 'engagement' | 'trends'>('demographics');
@@ -88,12 +88,29 @@ const AudienceAnalysis: React.FC<AudienceAnalysisProps> = ({
     ]
   };
 
+  // Si no hay datos, mostrar mensaje
+  if (!demographicData || !influencers) {
+    return (
+      <div className="space-y-8">
+        <div className="border-0 shadow-2xl bg-gradient-to-br from-white via-purple-50/30 to-indigo-50/30 dark:from-gray-900 dark:via-purple-900/10 dark:to-indigo-900/10 rounded-2xl p-12 text-center">
+          <Users className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+          <h3 className="text-xl font-bold text-gray-700 dark:text-gray-300 mb-2">
+            Sin datos de audiencia disponibles
+          </h3>
+          <p className="text-gray-500 dark:text-gray-400">
+            Conecta tus redes sociales para ver análisis demográfico de tu audiencia
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   // Configurar datos para gráficos mejorados - Paleta de la plataforma
   const ageChartData = {
-    labels: demographicData.ageGroups.map(group => group.label),
+    labels: demographicData.ageGroups?.map(group => group.label) || [],
     datasets: [
       {
-        data: demographicData.ageGroups.map(group => group.value),
+        data: demographicData.ageGroups?.map(group => group.value) || [],
         backgroundColor: ['#01257D', '#013AAA', '#059669', '#8B5CF6', '#F59E0B'],
         borderWidth: 3,
         borderColor: '#ffffff',
@@ -103,10 +120,10 @@ const AudienceAnalysis: React.FC<AudienceAnalysisProps> = ({
   };
 
   const genderChartData = {
-    labels: demographicData.genderDistribution.map(item => item.label),
+    labels: demographicData.genderDistribution?.map(item => item.label) || [],
     datasets: [
       {
-        data: demographicData.genderDistribution.map(item => item.value),
+        data: demographicData.genderDistribution?.map(item => item.value) || [],
         backgroundColor: ['#01257D', '#EC4899', '#6B7280'],
         borderWidth: 3,
         borderColor: '#ffffff',
@@ -721,82 +738,5 @@ const AudienceAnalysis: React.FC<AudienceAnalysisProps> = ({
     </div>
   );
 };
-
-// Datos de ejemplo para desarrollo
-const demoDemographicData: DemographicData = {
-  ageGroups: [
-    { label: '18-24', value: 15, color: '#10b981' },
-    { label: '25-34', value: 30, color: '#3b82f6' },
-    { label: '35-44', value: 25, color: '#6366f1' },
-    { label: '45-54', value: 18, color: '#8b5cf6' },
-    { label: '55+', value: 12, color: '#ec4899' }
-  ],
-  genderDistribution: [
-    { label: 'Masculino', value: 52, color: '#3b82f6' },
-    { label: 'Femenino', value: 46, color: '#ec4899' },
-    { label: 'No especificado', value: 2, color: '#6b7280' }
-  ],
-  locationTop: [
-    { city: 'Bogotá', country: 'Colombia', percentage: 32 },
-    { city: 'Medellín', country: 'Colombia', percentage: 18 },
-    { city: 'Cali', country: 'Colombia', percentage: 12 },
-    { city: 'Barranquilla', country: 'Colombia', percentage: 8 },
-    { city: 'Ciudad de México', country: 'México', percentage: 6 },
-    { city: 'Lima', country: 'Perú', percentage: 5 }
-  ]
-};
-
-const demoInfluencers: Influencer[] = [
-  {
-    id: 'inf1',
-    name: 'Carlos Rodríguez',
-    username: 'carlosrodriguez',
-    platform: 'X',
-    followers: 125000,
-    engagement: 3.8,
-    sentiment: 'positive',
-    recentMention: 'El nuevo proyecto de @ElmerZapata es exactamente lo que necesitábamos. #ReformaEducativa'
-  },
-  {
-    id: 'inf2',
-    name: 'María Gómez',
-    username: 'mariagomez',
-    platform: 'Instagram',
-    followers: 89000,
-    engagement: 5.2,
-    sentiment: 'positive',
-    recentMention: 'Apoyando la #ReformaEducativa de @ElmerZapata. ¡Es tiempo de cambios!'
-  },
-  {
-    id: 'inf3',
-    name: 'Juan Pérez',
-    username: 'juanperez',
-    platform: 'X',
-    followers: 67000,
-    engagement: 2.9,
-    sentiment: 'neutral',
-    recentMention: 'Analizando las propuestas de la #ReformaEducativa. Hay puntos interesantes y otros cuestionables.'
-  },
-  {
-    id: 'inf4',
-    name: 'Laura Martínez',
-    username: 'lauramartinez',
-    platform: 'Facebook',
-    followers: 45000,
-    engagement: 4.1,
-    sentiment: 'negative',
-    recentMention: 'La #ReformaEducativa no aborda los problemas fundamentales del sistema educativo.'
-  },
-  {
-    id: 'inf5',
-    name: 'Andrés López',
-    username: 'andreslopez',
-    platform: 'X',
-    followers: 112000,
-    engagement: 3.5,
-    sentiment: 'positive',
-    recentMention: 'Felicitaciones a @ElmerZapata por su visión en la #ReformaEducativa. Necesitamos más líderes así.'
-  }
-];
 
 export default AudienceAnalysis;

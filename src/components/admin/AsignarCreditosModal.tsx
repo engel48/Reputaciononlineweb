@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CreditCard, Users, Check } from 'lucide-react';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
 interface AsignarCreditosModalProps {
   isOpen: boolean;
@@ -16,22 +17,16 @@ interface DatosAsignacion {
 }
 
 export default function AsignarCreditosModal({ isOpen, onClose, onConfirm }: AsignarCreditosModalProps) {
+  const supabase = createClientComponentClient();
+
   // Estado para los campos del formulario
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState<string>('');
   const [cantidad, setCantidad] = useState<number>(1000);
   const [canal, setCanal] = useState<string>('general');
   const [descripcion, setDescripcion] = useState<string>('');
   const [exito, setExito] = useState<boolean>(false);
-
-  // Lista de usuarios de ejemplo
-  const usuarios = [
-    { id: 'u1', nombre: 'Carlos Rodru00edguez', email: 'carlos@ejemplo.com' },
-    { id: 'u2', nombre: 'Maru00eda Lu00f3pez', email: 'maria@ejemplo.com' },
-    { id: 'u3', nombre: 'Juan Martu00ednez', email: 'juan@ejemplo.com' },
-    { id: 'u4', nombre: 'Ana Gu00f3mez', email: 'ana@ejemplo.com' },
-    { id: 'u5', nombre: 'Pedro Su00e1nchez', email: 'pedro@ejemplo.com' },
-    { id: 'u6', nombre: 'Laura Torres', email: 'laura@ejemplo.com' },
-  ];
+  const [usuarios, setUsuarios] = useState<any[]>([]);
+  const [cargando, setCargando] = useState<boolean>(false);
 
   // Lista de canales disponibles
   const canales = [
@@ -45,11 +40,37 @@ export default function AsignarCreditosModal({ isOpen, onClose, onConfirm }: Asi
 
   // Opciones de planes predefinidos
   const planesPredefinidos = [
-    { id: 'basico', nombre: 'Plan Bu00e1sico', creditos: 5000, precio: 149900 },
+    { id: 'basico', nombre: 'Plan Básico', creditos: 5000, precio: 149900 },
     { id: 'profesional', nombre: 'Plan Profesional', creditos: 15000, precio: 399900 },
     { id: 'empresarial', nombre: 'Plan Empresarial', creditos: 50000, precio: 999900 },
     { id: 'personalizado', nombre: 'Plan Personalizado', creditos: 0, precio: 0 }
   ];
+
+  // Cargar usuarios reales desde Supabase
+  useEffect(() => {
+    if (isOpen) {
+      cargarUsuarios();
+    }
+  }, [isOpen]);
+
+  const cargarUsuarios = async () => {
+    setCargando(true);
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('id, name, email')
+        .order('name');
+
+      if (error) throw error;
+
+      setUsuarios(data || []);
+    } catch (error) {
+      console.error('Error cargando usuarios:', error);
+      setUsuarios([]);
+    } finally {
+      setCargando(false);
+    }
+  };
 
   // Manejar envu00edo del formulario
   const handleSubmit = (e: React.FormEvent) => {
@@ -171,11 +192,12 @@ export default function AsignarCreditosModal({ isOpen, onClose, onConfirm }: Asi
                       value={usuarioSeleccionado}
                       onChange={(e) => setUsuarioSeleccionado(e.target.value)}
                       required
+                      disabled={cargando}
                     >
-                      <option value="">Seleccionar usuario</option>
+                      <option value="">{cargando ? 'Cargando usuarios...' : 'Seleccionar usuario'}</option>
                       {usuarios.map(usuario => (
                         <option key={usuario.id} value={usuario.id}>
-                          {usuario.nombre} ({usuario.email})
+                          {usuario.name || usuario.email} ({usuario.email})
                         </option>
                       ))}
                     </select>

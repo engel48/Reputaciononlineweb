@@ -19,39 +19,6 @@ import XLogo from '@/components/icons/XLogo';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 
-// Datos de ejemplo para los gráficos - Paleta de la plataforma
-const datosSentimiento = [
-  { name: 'Positivo', value: 65, color: '#059669' },
-  { name: 'Neutro', value: 25, color: '#01257D' },
-  { name: 'Negativo', value: 10, color: '#DC2626' },
-];
-
-const datosPlataformas = [
-  { name: 'X', value: 45, color: '#1F2937' },
-  { name: 'Facebook', value: 25, color: '#1877F2' },
-  { name: 'Instagram', value: 18, color: '#E4405F' },
-  { name: 'LinkedIn', value: 12, color: '#0A66C2' },
-];
-
-const datosMenciones = [
-  { fecha: 'Ene', X: 65, Facebook: 40, Instagram: 25, LinkedIn: 18 },
-  { fecha: 'Feb', X: 59, Facebook: 45, Instagram: 28, LinkedIn: 20 },
-  { fecha: 'Mar', X: 80, Facebook: 50, Instagram: 35, LinkedIn: 25 },
-  { fecha: 'Abr', X: 81, Facebook: 55, Instagram: 40, LinkedIn: 30 },
-  { fecha: 'May', X: 56, Facebook: 48, Instagram: 38, LinkedIn: 28 },
-  { fecha: 'Jun', X: 55, Facebook: 42, Instagram: 30, LinkedIn: 25 },
-  { fecha: 'Jul', X: 70, Facebook: 47, Instagram: 32, LinkedIn: 26 },
-];
-
-const datosEvolucionSentimiento = [
-  { mes: 'Ene', positivo: 45, neutro: 40, negativo: 15 },
-  { mes: 'Feb', positivo: 50, neutro: 35, negativo: 15 },
-  { mes: 'Mar', positivo: 55, neutro: 30, negativo: 15 },
-  { mes: 'Abr', positivo: 60, neutro: 30, negativo: 10 },
-  { mes: 'May', positivo: 65, neutro: 25, negativo: 10 },
-  { mes: 'Jun', positivo: 60, neutro: 30, negativo: 10 },
-];
-
 const COLORS = ['#01257D', '#013AAA', '#059669', '#DC2626', '#F59E0B', '#8B5CF6'];
 
 interface PlatformIconProps {
@@ -110,24 +77,18 @@ export default function AnalisisPage() {
   const [analysisData, setAnalysisData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Cargar datos de social listening
+  // Cargar datos de análisis desde la API
   useEffect(() => {
-    const fetchSocialData = async () => {
+    const fetchAnalysisData = async () => {
       try {
         setIsLoading(true);
-        
-        // Cargar datos de redes sociales conectadas
-        const socialResponse = await fetch('/api/social-listening/analysis');
-        if (socialResponse.ok) {
-          const data = await socialResponse.json();
-          setSocialData(data);
-        }
 
-        // Cargar análisis de sentimiento
-        const analysisResponse = await fetch('/api/social-listening/analysis');
-        if (analysisResponse.ok) {
-          const analysis = await analysisResponse.json();
-          setAnalysisData(analysis);
+        // Cargar análisis completo desde dashboard-analytics
+        const response = await fetch('/api/dashboard-analytics');
+        if (response.ok) {
+          const data = await response.json();
+          setSocialData(data);
+          setAnalysisData(data.sentiment || {});
         }
       } catch (error) {
         console.error('Error cargando datos de análisis:', error);
@@ -136,8 +97,28 @@ export default function AnalisisPage() {
       }
     };
 
-    fetchSocialData();
+    fetchAnalysisData();
   }, []);
+
+  // Generar datos de sentimiento desde analysisData o mostrar vacío
+  const datosSentimiento = analysisData?.distribution ? [
+    { name: 'Positivo', value: analysisData.distribution.positive || 0, color: '#059669' },
+    { name: 'Neutro', value: analysisData.distribution.neutral || 0, color: '#01257D' },
+    { name: 'Negativo', value: analysisData.distribution.negative || 0, color: '#DC2626' },
+  ] : [];
+
+  // Generar datos de plataformas desde socialData o mostrar vacío
+  const datosPlataformas = socialData?.platforms ? socialData.platforms.map((p: any) => ({
+    name: p.name,
+    value: p.mentions || 0,
+    color: p.color || '#6B7280'
+  })) : [];
+
+  // Generar datos de menciones por fecha
+  const datosMenciones = socialData?.timeline || [];
+
+  // Generar datos de evolución de sentimiento
+  const datosEvolucionSentimiento = socialData?.sentimentTimeline || [];
 
   // Animaciones
   const containerVariants = {
@@ -316,7 +297,7 @@ export default function AnalisisPage() {
                           stroke="#ffffff"
                           strokeWidth={3}
                         >
-                          {datosSentimiento.map((entry, index) => (
+                          {datosSentimiento.map((entry: any, index: number) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
                           ))}
                         </Pie>
@@ -370,7 +351,7 @@ export default function AnalisisPage() {
                           stroke="#ffffff"
                           strokeWidth={3}
                         >
-                          {datosPlataformas.map((entry, index) => (
+                          {datosPlataformas.map((entry: any, index: number) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
                           ))}
                         </Pie>
@@ -679,7 +660,7 @@ export default function AnalisisPage() {
                           dataKey="value"
                           label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                         >
-                          {datosPlataformas.map((entry, index) => (
+                          {datosPlataformas.map((entry: any, index: number) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
                           ))}
                         </Pie>
@@ -689,7 +670,7 @@ export default function AnalisisPage() {
                   </div>
                   
                   <div className="space-y-4">
-                    {datosPlataformas.map((platform) => (
+                    {datosPlataformas.map((platform: any) => (
                       <div key={platform.name} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                         <div className="flex items-center">
                           <div className="p-2 rounded-full" style={{ backgroundColor: `${platform.color}20` }}>
