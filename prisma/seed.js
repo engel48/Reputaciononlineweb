@@ -149,66 +149,10 @@ async function main() {
 
   console.log('✅ Medios de comunicación creados exitosamente')
 
-  // Crear usuarios de prueba
-  console.log('Creando usuarios de prueba...')
-  
-  // Hashear contraseñas antes de crear usuarios
-  const hashedPassword = await bcrypt.hash('password123', 12);
-  
-  const users = [
-    {
-      email: 'elmer.zapata@example.com',
-      password: hashedPassword,
-      name: 'Elmer Zapata',
-      company: 'Política Colombiana',
-      phone: '+57 300 123 4567',
-      bio: 'Líder político comprometido con el desarrollo social y económico del país.',
-      role: 'user',
-      plan: 'pro',
-      credits: 2500,
-      profileType: 'political',
-      category: 'Sector político y gubernamental',
-      onboardingCompleted: true,
-    },
-    {
-      email: 'lucia.morales@example.com',
-      password: hashedPassword,
-      name: 'Lucía Morales',
-      company: 'StartUp Tech',
-      phone: '+57 301 987 6543',
-      bio: 'Emprendedora en el sector tecnológico, enfocada en innovación y desarrollo digital.',
-      role: 'user',
-      plan: 'basic',
-      credits: 500,
-      profileType: 'business',
-      category: 'Marca / empresa',
-      brandName: 'StartUp Tech Solutions',
-      onboardingCompleted: false,
-    }
-  ]
-  
-  for (const userData of users) {
-    await prisma.user.upsert({
-      where: { email: userData.email },
-      update: {
-        password: userData.password, // Actualizar contraseña hasheada
-        name: userData.name,
-        company: userData.company,
-        phone: userData.phone,
-        bio: userData.bio,
-        role: userData.role,
-        plan: userData.plan,
-        credits: userData.credits,
-        profileType: userData.profileType,
-        category: userData.category,
-        brandName: userData.brandName,
-        onboardingCompleted: userData.onboardingCompleted,
-      },
-      create: userData,
-    })
-  }
-
-  console.log('✅ Usuarios de prueba creados exitosamente')
+  // ❌ USUARIOS FICTICIOS ELIMINADOS
+  // Ya no se crean usuarios de prueba con datos inventados
+  // Los usuarios reales se crean mediante el proceso de registro normal
+  console.log('ℹ️  Usuarios de prueba eliminados - usar registro normal')
 }
 
 main()

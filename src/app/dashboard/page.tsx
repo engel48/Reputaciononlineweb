@@ -55,64 +55,34 @@ const DynamicMencionesMap = dynamic(() => import('@/components/dashboard/Mencion
   ),
 });
 
-// Datos en tiempo real obtenidos de la API - con información inmediata
+// Estado inicial - SIN DATOS HARDCODEADOS
+// Los datos reales se cargan desde la API /api/dashboard-analytics y /api/mentions/recent
 const defaultData = {
   mentions: {
-    total: 1847,
-    positive: 912,
-    negative: 267,
-    neutral: 668,
-    trend: '+12%',
+    total: 0,
+    positive: 0,
+    negative: 0,
+    neutral: 0,
+    trend: '+0%',
     byPlatform: {
-      x: 734,
-      facebook: 523,
-      instagram: 345,
-      news: 156,
-      blogs: 89
+      x: 0,
+      facebook: 0,
+      instagram: 0,
+      news: 0,
+      blogs: 0
     },
-    recent: [
-      {
-        id: 'm1',
-        author: 'María González',
-        content: 'Excelente servicio al cliente, muy profesional y eficiente',
-        sentiment: 'positive' as const,
-        date: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-        platform: 'X'
-      },
-      {
-        id: 'm2',
-        author: 'Carlos Rodríguez',
-        content: 'Buenos productos pero el tiempo de entrega podría mejorar',
-        sentiment: 'neutral' as const,
-        date: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-        platform: 'Facebook'
-      },
-      {
-        id: 'm3',
-        author: 'Ana Martínez',
-        content: 'Totalmente recomendado, superó mis expectativas',
-        sentiment: 'positive' as const,
-        date: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
-        platform: 'Instagram'
-      }
-    ],
-    timeSeries: Array.from({ length: 7 }, (_, i) => {
-      const date = new Date(Date.now() - (6 - i) * 24 * 60 * 60 * 1000);
-      return {
-        date: date.toISOString().split('T')[0],
-        value: Math.floor(Math.random() * 300 + 150)
-      };
-    })
+    recent: [],
+    timeSeries: []
   },
   reputation: {
-    score: 78,
-    previousScore: 72,
+    score: 0,
+    previousScore: 0,
     trend: 'up' as const
   },
   ranking: {
-    position: 3,
-    previousPosition: 5,
-    totalCompetitors: 28,
+    position: 0,
+    previousPosition: 0,
+    totalCompetitors: 0,
     trend: 'up' as const
   }
 };
@@ -186,42 +156,13 @@ export default function Dashboard() {
     return 'neutral';
   }, []);
   
-  // Función para generar menciones en tiempo real con IA
+  // ❌ ELIMINADO: Función que generaba menciones FALSAS/INVENTADAS
+  // Las menciones reales ahora se cargan desde /api/mentions/recent
+  /*
   const generarMencionIA = useCallback((): Mention => {
-    const usuarios = ['@tech_lover', '@market_analyst', '@customer_voice', '@social_guru', '@brand_watcher'];
-    const plataformas = ['x', 'facebook', 'instagram', 'linkedin', 'tiktok'];
-    const ubicaciones = ['Bogotá, Colombia', 'Medellín, Colombia', 'Cali, Colombia', 'Lima, Perú', 'Ciudad de México'];
-    
-    const contenidos = [
-      'Nueva funcionalidad en la plataforma de reputación online. Muy útil para empresas 💼',
-      'El análisis de sentimientos de esta herramienta es impresionante. Julia IA es genial 🤖',
-      'Comparé varias plataformas y esta definitivamente destaca por su precisión ⭐',
-      'Los reportes en tiempo real me están ayudando mucho con mi estrategia digital 📊',
-      'Interface muy intuitiva, pero los precios podrían ser más competitivos 💰',
-      'Excelente trabajo del equipo de desarrollo. Sigan así! 👏',
-      'Los insights de IA son muy valiosos para la toma de decisiones 🧠'
-    ];
-    
-    const contenido = contenidos[Math.floor(Math.random() * contenidos.length)];
-    const sentiment = analizarSentimientoConIA(contenido);
-    
-    return {
-      id: `ai_${Date.now()}`,
-      author: usuarios[Math.floor(Math.random() * usuarios.length)],
-      platform: plataformas[Math.floor(Math.random() * plataformas.length)],
-      content: contenido,
-      sentiment: sentiment as 'positive' | 'negative' | 'neutral',
-      timestamp: new Date(),
-      engagement: {
-        likes: Math.floor(Math.random() * 100) + 10,
-        comments: Math.floor(Math.random() * 15) + 1,
-        retweets: Math.floor(Math.random() * 25) + 1,
-        shares: Math.floor(Math.random() * 10) + 1
-      },
-      location: ubicaciones[Math.floor(Math.random() * ubicaciones.length)],
-      verified: Math.random() > 0.7
-    };
+    // ... código que generaba datos falsos eliminado
   }, [analizarSentimientoConIA]);
+  */
   
   // Función para abrir noticia en modal
   const abrirNoticia = useCallback((noticia: any) => {
@@ -235,20 +176,13 @@ export default function Dashboard() {
     setNoticiaSeleccionada(null);
   }, []);
   
-  // Función para actualizar menciones cada 5 minutos
+  // ❌ ELIMINADO: Función que generaba menciones FALSAS cada 5 minutos
+  // Las menciones reales se cargan desde la API automáticamente
+  /*
   const actualizarMenciones = useCallback(() => {
-    if (Math.random() > 0.3) { // 70% probabilidad de nueva mención
-      const nuevaMencion = generarMencionIA();
-      setMencionesRecientes(prev => {
-        const updated = [nuevaMencion, ...prev].slice(0, 10); // Mantener solo 10 menciones
-        return updated;
-      });
-      setNuevasMenciones(prev => prev + 1);
-      
-      // Resetear contador después de 10 segundos
-      setTimeout(() => setNuevasMenciones(0), 10000);
-    }
-  }, [generarMencionIA]);
+    // ... código que generaba menciones falsas eliminado
+  }, []);
+  */
   
   // Función para cargar datos reales desde la API
   const cargarDatosReales = useCallback(async () => {

@@ -1,7 +1,12 @@
 /**
- * Middleware de autenticación con JWT
+ * Middleware de autenticación con JWT Bearer Tokens
  *
- * Protege rutas verificando la existencia del token JWT en cookies
+ * ✅ ARQUITECTURA UNIFICADA WEB + MÓVIL
+ * - Web: Token en localStorage enviado via Authorization header
+ * - Móvil (Flutter): Token en Secure Storage enviado via Authorization header
+ *
+ * El token se verifica en cada API endpoint, no en middleware
+ * El middleware solo protege páginas SSR del acceso directo por URL
  */
 
 import { NextResponse } from 'next/server'
@@ -41,8 +46,11 @@ export async function middleware(request: NextRequest) {
   const isAdminPath = adminPaths.some(path => pathname.startsWith(path))
   const isPublicPath = publicPaths.some(path => pathname === path || pathname.startsWith(path))
 
-  // Obtener token JWT de la cookie (verificación básica de existencia)
-  const hasAuthToken = !!request.cookies.get('auth-token')?.value
+  // NOTA: Para páginas SSR, verificamos cookie temporal (backward compatibility)
+  // Para API routes, cada endpoint verifica Authorization header
+  const cookieToken = request.cookies.get('auth-token')?.value;
+  const authHeader = request.headers.get('authorization');
+  const hasAuthToken = !!(cookieToken || authHeader?.startsWith('Bearer '));
 
   // Si es ruta pública y no protegida, permitir acceso
   if (isPublicPath && !isProtectedPath && !isAdminPath) {

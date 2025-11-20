@@ -69,85 +69,9 @@ export default function CrisisManagement({ userProfile }: CrisisManagementProps)
   const [isMonitoring, setIsMonitoring] = useState(true);
   const [lastUpdate, setLastUpdate] = useState(new Date());
 
-  const [crisisAlerts, setCrisisAlerts] = useState<CrisisAlert[]>([
-    {
-      id: '1',
-      type: 'controversy',
-      title: 'Críticas masivas por declaraciones en entrevista',
-      description: 'Incremento del 340% en menciones negativas tras entrevista matutina. Hashtag #ControversiaPolítica trending.',
-      severity: 'high',
-      status: 'active',
-      timestamp: '2024-01-15T09:15:00Z',
-      source: 'Twitter',
-      platform: 'Social Media',
-      reach: 2840000,
-      engagement: 156780,
-      sentiment: 25,
-      keyMentions: ['#ControversiaPolítica', '@usuario_critico', 'declaraciones polémicas'],
-      affectedRegions: ['Bogotá', 'Medellín', 'Cali'],
-      trending: true,
-      escalationLevel: 2,
-      responseTime: 45,
-      autoActions: ['Notificación enviada', 'Monitoreo intensivo activado'],
-      recommendations: [
-        'Emitir comunicado oficial inmediatamente',
-        'Coordinar con equipo de comunicaciones',
-        'Preparar respuesta en video para redes sociales',
-        'Contactar periodistas clave para aclaración'
-      ]
-    },
-    {
-      id: '2',
-      type: 'misinformation',
-      title: 'Desinformación sobre propuestas económicas',
-      description: 'Información falsa sobre política económica se está viralizando en WhatsApp y Facebook.',
-      severity: 'medium',
-      status: 'monitoring',
-      timestamp: '2024-01-15T11:30:00Z',
-      source: 'WhatsApp Groups',
-      platform: 'Messaging',
-      reach: 890000,
-      engagement: 45600,
-      sentiment: 35,
-      keyMentions: ['fake news', 'propuesta económica', 'desinformación'],
-      affectedRegions: ['Antioquia', 'Valle del Cauca'],
-      trending: false,
-      escalationLevel: 1,
-      responseTime: 120,
-      autoActions: ['Fact-checking iniciado', 'Contenido reportado'],
-      recommendations: [
-        'Crear contenido educativo con datos reales',
-        'Activar red de verificadores',
-        'Impulsar hashtag con información correcta'
-      ]
-    },
-    {
-      id: '3',
-      type: 'viral_negative',
-      title: 'Video negativo se vuelve viral',
-      description: 'Clip editado fuera de contexto alcanza 1M de vistas en TikTok con sentiment negativo.',
-      severity: 'critical',
-      status: 'escalated',
-      timestamp: '2024-01-15T08:45:00Z',
-      source: 'TikTok',
-      platform: 'Video',
-      reach: 1200000,
-      engagement: 89000,
-      sentiment: 15,
-      keyMentions: ['#VideoViral', 'contexto manipulado', 'edit malicioso'],
-      affectedRegions: ['Nacional'],
-      trending: true,
-      escalationLevel: 3,
-      responseTime: 30,
-      autoActions: ['CEO notificado', 'Equipo legal contactado', 'Respuesta preparada'],
-      recommendations: [
-        'Publicar video completo sin editar',
-        'Respuesta inmediata del equipo legal',
-        'Activar influencers aliados para contexto',
-        'Solicitar revisión de contenido a plataforma'
-      ]
-    }
-  ]);
+  // ❌ ALERTAS DE CRISIS INVENTADAS ELIMINADAS
+  // Las alertas reales se deben generar desde el sistema de monitoreo en tiempo real
+  const [crisisAlerts, setCrisisAlerts] = useState<CrisisAlert[]>([]);
 
   const [responseTemplates, setResponseTemplates] = useState<ResponseTemplate[]>([
     {

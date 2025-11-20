@@ -5,33 +5,8 @@ export async function GET(request: NextRequest) {
   try {
     console.log('🏛️ Julia: Generando métricas políticas con IA...');
 
-    // Preparar datos dummy para el análisis político
-    const dummyPoliticalData = {
-      approvalRating: 47,
-      previousApproval: 44,
-      voterSentiment: {
-        positive: 40,
-        negative: 33,
-        neutral: 27
-      },
-      demographicData: {
-        youngVoters: 35,
-        adultVoters: 42,
-        seniorVoters: 23
-      },
-      keyIssues: [
-        { issue: "Economía y Empleo", sentiment: "negative", mentions: 1350 },
-        { issue: "Seguridad Ciudadana", sentiment: "negative", mentions: 1120 },
-        { issue: "Reforma de Salud", sentiment: "neutral", mentions: 890 },
-        { issue: "Educación Pública", sentiment: "positive", mentions: 720 },
-        { issue: "Infraestructura", sentiment: "neutral", mentions: 560 }
-      ],
-      campaignMetrics: {
-        donations: 1450000,
-        volunteers: 3800,
-        events: 32
-      }
-    };
+    // ❌ DATOS DUMMY ELIMINADOS - Solo usar datos generados por IA con información real
+    const dummyPoliticalData = null; // No usar datos falsos
 
     try {
       // Usar el servicio de análisis político con Julia
@@ -137,31 +112,18 @@ export async function GET(request: NextRequest) {
   }
 }
 
+// ❌ FALLBACK CON DATOS FALSOS ELIMINADO
+// Si el servicio falla, retornar error en lugar de datos inventados
 function generateFallbackPoliticalData() {
+  console.error('❌ No hay datos políticos disponibles - servicio de IA no disponible');
   return {
-    approvalRating: 47,
-    previousApproval: 44,
-    voterSentiment: {
-      positive: 40,
-      negative: 33,
-      neutral: 27
-    },
-    demographicData: {
-      youngVoters: 35,
-      adultVoters: 42,
-      seniorVoters: 23
-    },
-    keyIssues: [
-      { issue: "Economía y Empleo", sentiment: "negative", mentions: 1350 },
-      { issue: "Seguridad Ciudadana", sentiment: "negative", mentions: 1120 },
-      { issue: "Reforma de Salud", sentiment: "neutral", mentions: 890 },
-      { issue: "Educación Pública", sentiment: "positive", mentions: 720 },
-      { issue: "Infraestructura", sentiment: "neutral", mentions: 560 }
-    ],
-    campaignMetrics: {
-      donations: 1450000,
-      volunteers: 3800,
-      events: 32
-    }
+    error: true,
+    message: 'No hay datos políticos disponibles en este momento',
+    approvalRating: 0,
+    previousApproval: 0,
+    voterSentiment: { positive: 0, negative: 0, neutral: 0 },
+    demographicData: { youngVoters: 0, adultVoters: 0, seniorVoters: 0 },
+    keyIssues: [],
+    campaignMetrics: { donations: 0, volunteers: 0, events: 0 }
   };
 }

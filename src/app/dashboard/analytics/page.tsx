@@ -16,76 +16,19 @@ import {
 } from 'lucide-react';
 import { usePolitical, PoliticalOnly, PoliticalMetricsCard } from '@/context/PoliticalContext';
 
-// Datos simulados para cuando el servicio no carga datos
+// ❌ DATOS SIMULADOS ELIMINADOS - Usar solo datos reales de la API
+// Si no hay datos, mostrar mensaje apropiado al usuario
 const simulationData = {
   mentions: {
-    total: 1245,
-    positive: 845,
-    negative: 124,
-    neutral: 276,
-    trend: '+12%',
-    sentiment: 87,
-    reach: 28950,
-    timeline: [
-      { date: '2025-01-01', sentiment: 74, mentions: 85, engagement: 22 },
-      { date: '2025-02-01', sentiment: 78, mentions: 110, engagement: 28 },
-      { date: '2025-03-01', sentiment: 82, mentions: 125, engagement: 32 },
-      { date: '2025-04-01', sentiment: 85, mentions: 150, engagement: 38 },
-      { date: '2025-05-01', sentiment: 86, mentions: 180, engagement: 45 },
-      { date: '2025-06-01', sentiment: 87, mentions: 210, engagement: 52 }
-    ],
-    latestMentions: [
-      {
-        id: 'm001',
-        source: 'x',
-        author: 'María López',
-        content: 'Excelente servicio de atención al cliente. Muy satisfecha con la rapidez de respuesta.',
-        date: '2025-06-04T14:23:00',
-        sentiment: 'positive',
-        engagement: 158,
-        url: 'https://x.com/example/status/123456789'
-      },
-      {
-        id: 'm002',
-        source: 'facebook',
-        author: 'Carlos Rodríguez',
-        content: 'Me encantó el producto, aunque creo que podrían mejorar el envoltorio para hacerlo más ecológico.',
-        date: '2025-06-03T10:15:00',
-        sentiment: 'neutral',
-        engagement: 42,
-        url: 'https://facebook.com/example/posts/987654321'
-      },
-      {
-        id: 'm003',
-        source: 'instagram',
-        author: 'Laura Martínez',
-        content: 'Totalmente recomendable. No cambiaría por otra marca.',
-        date: '2025-06-03T08:45:00',
-        sentiment: 'positive',
-        engagement: 215,
-        url: 'https://instagram.com/p/example123'
-      },
-      {
-        id: 'm004',
-        source: 'news',
-        author: 'El Informador',
-        content: 'La empresa continúa expandiéndose en el mercado nacional con resultados positivos.',
-        date: '2025-06-02T18:30:00',
-        sentiment: 'positive',
-        engagement: 89,
-        url: 'https://elinformador.com/economia/example-article'
-      },
-      {
-        id: 'm005',
-        source: 'blogs',
-        author: 'TechReviewer',
-        content: 'Probamos el servicio y encontramos algunos puntos que necesitan mejora urgente.',
-        date: '2025-06-01T12:05:00',
-        sentiment: 'negative',
-        engagement: 124,
-        url: 'https://techreviewer.com/reviews/example-review'
-      }
-    ]
+    total: 0,
+    positive: 0,
+    negative: 0,
+    neutral: 0,
+    trend: '+0%',
+    sentiment: 0,
+    reach: 0,
+    timeline: [],
+    latestMentions: []
   }
 };
 

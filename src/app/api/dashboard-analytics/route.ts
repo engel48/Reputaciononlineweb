@@ -1,5 +1,16 @@
+/**
+ * Dashboard Analytics - Bearer Token Authentication
+ *
+ * ✅ ARQUITECTURA UNIFICADA WEB + MÓVIL
+ * GET /api/dashboard-analytics
+ *
+ * Headers: Authorization: Bearer {token}
+ * Response: { success: true, data: {...}, generated_at: string }
+ */
+
 import { NextRequest, NextResponse } from 'next/server';
 import { aiService } from '@/lib/ai-service';
+import { requireAuth } from '@/lib/auth-helper';
 
 interface DashboardAnalytics {
   mentions: {
@@ -193,10 +204,16 @@ async function generateRealTimeAnalytics(): Promise<DashboardAnalytics> {
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('🔄 Generando analytics en tiempo real...');
-    
+    // ✅ Verificar autenticación
+    const authResult = await requireAuth(request);
+    if (authResult instanceof NextResponse) {
+      return authResult; // Error 401
+    }
+
+    console.log('🔄 Generando analytics en tiempo real para usuario:', authResult.userId);
+
     const analytics = await generateRealTimeAnalytics();
-    
+
     console.log(`✅ Analytics generados: ${analytics.mentions.total} menciones totales`);
 
     return NextResponse.json({

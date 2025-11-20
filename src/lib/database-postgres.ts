@@ -354,9 +354,18 @@ export const createAdminUser = async () => {
     const adminExists = await userService.findByEmail('admin@admin.com');
     if (!adminExists) {
       console.log('👤 Creando usuario administrador...');
+      // ❌ CONTRASEÑA HARDCODEADA ELIMINADA
+      // Usar variable de entorno o no crear usuario admin automáticamente
+      const adminPassword = process.env.ADMIN_DEFAULT_PASSWORD;
+      if (!adminPassword) {
+        console.warn('⚠️  ADMIN_DEFAULT_PASSWORD no configurado - no se crea usuario admin automáticamente');
+        console.warn('⚠️  Crear usuario admin manualmente en la base de datos');
+        return;
+      }
+
       await userService.create({
-        email: 'admin@admin.com',
-        password: 'admin',
+        email: process.env.ADMIN_EMAIL || 'admin@reputaciononline.com',
+        password: adminPassword,
         name: 'Administrador',
         company: 'Sistema'
       });

@@ -1,36 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import jwt from 'jsonwebtoken';
+import { requireAuth } from '@/lib/auth-helper';
 
 /**
  * Consolidated Social Media Analytics - Datos REALES de todas las plataformas
  *
+ * ✅ ARQUITECTURA UNIFICADA WEB + MÓVIL
  * GET /api/social-media/consolidated
  *
- * Retorna métricas consolidadas de TODAS las plataformas conectadas:
- * - Engagement total real
- * - Tasa de engagement promedio
- * - Alcance semanal real
- * - Engagement por plataforma
+ * Headers: Authorization: Bearer {token}
+ * Response: Métricas consolidadas de TODAS las plataformas conectadas
  */
 
 export async function GET(request: NextRequest) {
   try {
     console.log('📊 Consolidated Analytics: Generando métricas reales...');
 
-    // Autenticar usuario
-    const cookieStore = cookies();
-    const authToken = cookieStore.get('auth-token')?.value;
-
-    if (!authToken) {
-      return NextResponse.json(
-        { success: false, error: 'No autenticado' },
-        { status: 401 }
-      );
+    // ✅ Autenticar usando Bearer token
+    const authResult = await requireAuth(request);
+    if (authResult instanceof NextResponse) {
+      return authResult; // Error 401
     }
 
-    const decoded = jwt.verify(authToken, process.env.JWT_SECRET!) as any;
-    const userId = decoded.userId;
+    const { userId } = authResult;
 
     const { supabase } = await import('@/lib/supabase-server');
 

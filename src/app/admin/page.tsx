@@ -97,14 +97,10 @@ export default function AdminDashboard() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
-    // Método 1: Credenciales hardcodeadas
-    if (username === 'admin' && password === 'admin') {
-      setIsAuthenticated(true);
-      loadUsers();
-      loadSystemSettings();
-      return;
-    }
+
+    // ❌ CREDENCIALES HARDCODEADAS ELIMINADAS
+    // Solo usar autenticación de base de datos
+    // Para acceso admin temporal, crear usuario admin mediante seed o SQL directo
     
     // Método 2: Verificar contra la base de datos
     try {

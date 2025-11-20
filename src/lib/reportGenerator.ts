@@ -16,33 +16,19 @@ export interface ReportData {
   };
 }
 
-// Datos simulados para reportes
+// ❌ DATOS DE EJEMPLO ELIMINADOS - Los reportes ahora usan datos REALES del usuario
+// Si no hay datos, se debe mostrar un mensaje al usuario indicando que no hay información disponible
 const getSampleData = () => {
+  // Retornar estructura vacía - El sistema debe obtener datos reales de la base de datos
+  console.warn('⚠️ getSampleData() llamado - Los reportes deben usar datos reales del usuario');
   return {
-    consumoCreditos: [
-      { fecha: '2025-01-01', consumo: 45, canal: 'Facebook' },
-      { fecha: '2025-01-02', consumo: 32, canal: 'Instagram' },
-      { fecha: '2025-01-03', consumo: 67, canal: 'X' },
-      { fecha: '2025-01-04', consumo: 23, canal: 'LinkedIn' },
-      { fecha: '2025-01-05', consumo: 89, canal: 'TikTok' },
-      { fecha: '2025-01-06', consumo: 12, canal: 'Facebook' },
-      { fecha: '2025-01-07', consumo: 56, canal: 'Instagram' },
-      { fecha: '2025-01-08', consumo: 78, canal: 'X' },
-      { fecha: '2025-01-09', consumo: 34, canal: 'LinkedIn' },
-      { fecha: '2025-01-10', consumo: 45, canal: 'TikTok' }
-    ],
-    resumenCanales: [
-      { canal: 'Facebook', consumo: 1245, porcentaje: 28.5 },
-      { canal: 'Instagram', consumo: 987, porcentaje: 22.6 },
-      { canal: 'X', consumo: 1156, porcentaje: 26.4 },
-      { canal: 'LinkedIn', consumo: 567, porcentaje: 13.0 },
-      { canal: 'TikTok', consumo: 412, porcentaje: 9.5 }
-    ],
+    consumoCreditos: [],
+    resumenCanales: [],
     estadisticas: {
-      totalConsumo: 4367,
-      promedioDiario: 145,
-      diaMayorConsumo: { fecha: '2025-01-15', consumo: 234 },
-      crecimiento: '+18.5%'
+      totalConsumo: 0,
+      promedioDiario: 0,
+      diaMayorConsumo: { fecha: 'N/A', consumo: 0 },
+      crecimiento: '0%'
     }
   };
 };
