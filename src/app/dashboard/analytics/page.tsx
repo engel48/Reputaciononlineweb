@@ -318,13 +318,13 @@ export default function AnalyticsPage() {
       {/* Gráficos y análisis */}
       <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="col-span-2">
-          <ReputationChart 
+          <ReputationChart
             data={{
-              labels: timelineData?.reputationScore?.labels || simulationData.mentions.timeline.map(item => item.date),
-              values: timelineData?.reputationScore?.values || simulationData.mentions.timeline.map(item => item.sentiment),
+              labels: timelineData?.reputationScore?.labels || [],
+              values: timelineData?.reputationScore?.values || [],
               previousPeriodValues: timelineData?.reputationScore?.previousPeriodValues
             }}
-            title={isFromPoliticalDashboard ? 'Evolución del Índice de Aprobación' : 'Evolución de Puntuación de Reputación'} 
+            title={isFromPoliticalDashboard ? 'Evolución del Índice de Aprobación' : 'Evolución de Puntuación de Reputación'}
             showComparison={true}
           />
         </div>
@@ -343,22 +343,22 @@ export default function AnalyticsPage() {
       
       {/* Gráficos secundarios */}
       <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
-        <ReputationChart 
+        <ReputationChart
           data={{
-            labels: timelineData?.mentions?.labels || simulationData.mentions.timeline.map(item => item.date),
-            values: timelineData?.mentions?.values || simulationData.mentions.timeline.map(item => item.mentions),
+            labels: timelineData?.mentions?.labels || [],
+            values: timelineData?.mentions?.values || [],
             previousPeriodValues: timelineData?.mentions?.previousPeriodValues
           }}
-          title="Evolución de Menciones" 
+          title="Evolución de Menciones"
           type="bar"
         />
-        <ReputationChart 
+        <ReputationChart
           data={{
-            labels: timelineData?.engagement?.labels || simulationData.mentions.timeline.map(item => item.date),
-            values: timelineData?.engagement?.values || simulationData.mentions.timeline.map(item => item.engagement),
+            labels: timelineData?.engagement?.labels || [],
+            values: timelineData?.engagement?.values || [],
             previousPeriodValues: timelineData?.engagement?.previousPeriodValues
           }}
-          title="Tasa de Engagement" 
+          title="Tasa de Engagement"
           showComparison={true}
         />
       </div>
