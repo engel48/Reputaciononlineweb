@@ -207,10 +207,10 @@ function generateOAuthUrl(platform: string): string {
     case 'threads':
       // Threads aún no está disponible en APIs públicas
       return `${baseUrl}/dashboard/redes-sociales?error=threads_not_available`;
-      
+
     case 'tiktok':
-      // TikTok requiere configuración especial
-      return `${baseUrl}/dashboard/redes-sociales?error=tiktok_not_available`;
+      // TikTok usa rutas personalizadas (no NextAuth)
+      return `/oauth-login?platform=tiktok`;
     
     default:
       return `${baseUrl}/dashboard/redes-sociales?error=platform_not_supported`;
