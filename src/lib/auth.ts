@@ -94,7 +94,8 @@ export const authOptions: NextAuthOptions = {
       token: {
         url: "https://open.tiktokapis.com/v2/oauth/token/",
         async request({ params, provider }) {
-          const response = await fetch(provider.token?.url as string, {
+          const tokenUrl = "https://open.tiktokapis.com/v2/oauth/token/";
+          const response = await fetch(tokenUrl, {
             method: "POST",
             headers: {
               "Content-Type": "application/x-www-form-urlencoded",
@@ -104,7 +105,7 @@ export const authOptions: NextAuthOptions = {
               client_secret: provider.clientSecret || '',
               code: params.code || '',
               grant_type: "authorization_code",
-              redirect_uri: params.redirect_uri || '',
+              redirect_uri: String(params.redirect_uri || ''),
             }),
           });
           const tokens = await response.json();
@@ -117,8 +118,9 @@ export const authOptions: NextAuthOptions = {
           fields: "open_id,union_id,avatar_url,display_name,follower_count,following_count,likes_count,video_count"
         },
         async request({ tokens, provider }) {
+          const userinfoUrl = "https://open.tiktokapis.com/v2/user/info/";
           const response = await fetch(
-            `${provider.userinfo?.url}?fields=open_id,union_id,avatar_url,display_name,follower_count,following_count,likes_count,video_count`,
+            `${userinfoUrl}?fields=open_id,union_id,avatar_url,display_name,follower_count,following_count,likes_count,video_count`,
             {
               headers: {
                 Authorization: `Bearer ${tokens.access_token}`,

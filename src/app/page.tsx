@@ -1074,7 +1074,8 @@ export default function Home() {
               <ul className="mt-4 space-y-2 text-sm text-gray-300">
                 <li><Link href="/about" className="hover:text-[#01257D]">Sobre Nosotros</Link></li>
                 <li><Link href="/contact" className="hover:text-[#01257D]">Contacto</Link></li>
-                <li><Link href="/privacy" className="hover:text-[#01257D]">Política de Privacidad</Link></li>
+                <li><Link href="/politica-de-privacidad" className="hover:text-[#01257D]">Política de Privacidad</Link></li>
+                <li><Link href="/terminos-de-servicio" className="hover:text-[#01257D]">Términos de Servicio</Link></li>
               </ul>
             </div>
           </div>

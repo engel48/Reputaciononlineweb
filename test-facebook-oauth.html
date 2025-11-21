@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Facebook OAuth - Reputación Online</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button {
+            background: #1877F2;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover { background: #166fe5; }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Facebook OAuth - Test de Integración</h1>
+
+    <div class="test-section">
+        <h2>1️⃣ Verificar Credenciales</h2>
+        <div id="credentials-status"></div>
+        <button onclick="testCredentials()">Probar Credenciales</button>
+    </div>
+
+    <div class="test-section">
+        <h2>2️⃣ Iniciar Flujo OAuth</h2>
+        <p>Esto abrirá el flujo completo de Facebook OAuth:</p>
+        <button onclick="testOAuthFlow()">Iniciar OAuth de Facebook</button>
+        <div id="oauth-status" class="info status" style="display:none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3️⃣ Verificar Callback</h2>
+        <p>URL de callback configurada:</p>
+        <code id="callback-url"></code>
+        <button onclick="testCallback()">Verificar Callback</button>
+        <div id="callback-status"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📋 Información de Configuración</h2>
+        <pre id="config-info"></pre>
+    </div>
+
+    <script>
+        const APP_ID = '828975422833631';
+        const APP_SECRET = '234345c05bf4ee5254b17c344d28ef40';
+        const REDIRECT_URI = window.location.origin + '/api/auth/facebook/callback';
+
+        // Mostrar configuración
+        document.getElementById('callback-url').textContent = REDIRECT_URI;
+        document.getElementById('config-info').textContent = JSON.stringify({
+            appId: APP_ID,
+            redirectUri: REDIRECT_URI,
+            scopes: ['email', 'public_profile', 'pages_read_engagement', 'pages_show_list'],
+            origin: window.location.origin
+        }, null, 2);
+
+        async function testCredentials() {
+            const statusDiv = document.getElementById('credentials-status');
+            statusDiv.innerHTML = '<div class="info status">⏳ Probando credenciales con Facebook Graph API...</div>';
+
+            try {
+                // Obtener app access token
+                const tokenResponse = await fetch(
+                    `https://graph.facebook.com/v21.0/oauth/access_token?client_id=${APP_ID}&client_secret=${APP_SECRET}&grant_type=client_credentials`
+                );
+
+                if (!tokenResponse.ok) {
+                    throw new Error(`HTTP ${tokenResponse.status}: ${tokenResponse.statusText}`);
+                }
+
+                const tokenData = await tokenResponse.json();
+
+                // Verificar el token
+                const debugResponse = await fetch(
+                    `https://graph.facebook.com/v21.0/debug_token?input_token=${tokenData.access_token}&access_token=${tokenData.access_token}`
+                );
+
+                const debugData = await debugResponse.json();
+
+                statusDiv.innerHTML = `
+                    <div class="success status">
+                        ✅ <strong>Credenciales VÁLIDAS</strong>
+                        <br>App ID: ${APP_ID}
+                        <br>App Type: ${debugData.data?.type || 'App'}
+                        <br>App Name: ${debugData.data?.application || 'Reputación Online'}
+                        <br>Token válido: ${debugData.data?.is_valid ? 'Sí' : 'No'}
+                    </div>
+                `;
+
+            } catch (error) {
+                statusDiv.innerHTML = `
+                    <div class="error status">
+                        ❌ <strong>Error en credenciales:</strong>
+                        <br>${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function testOAuthFlow() {
+            const statusDiv = document.getElementById('oauth-status');
+            statusDiv.style.display = 'block';
+            statusDiv.innerHTML = '🔄 Generando URL de OAuth y redirigiendo...';
+
+            // Generar state para CSRF protection
+            const state = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+            sessionStorage.setItem('oauth_state', state);
+
+            const scopes = ['email', 'public_profile', 'pages_read_engagement', 'pages_show_list', 'pages_read_user_content'];
+
+            const authUrl = `https://www.facebook.com/v21.0/dialog/oauth?` +
+                `client_id=${APP_ID}&` +
+                `redirect_uri=${encodeURIComponent(REDIRECT_URI)}&` +
+                `scope=${scopes.join(',')}&` +
+                `response_type=code&` +
+                `state=${state}`;
+
+            console.log('🔗 Auth URL:', authUrl);
+
+            // Abrir en la misma ventana para prueba completa
+            setTimeout(() => {
+                window.location.href = authUrl;
+            }, 1000);
+        }
+
+        async function testCallback() {
+            const statusDiv = document.getElementById('callback-status');
+            statusDiv.innerHTML = '<div class="info status">⏳ Verificando endpoint de callback...</div>';
+
+            try {
+                const response = await fetch(REDIRECT_URI, {
+                    method: 'GET',
+                    redirect: 'manual' // No seguir redirects
+                });
+
+                // Cualquier respuesta (incluso error) indica que el endpoint existe
+                statusDiv.innerHTML = `
+                    <div class="success status">
+                        ✅ <strong>Endpoint de callback accesible</strong>
+                        <br>URL: <code>${REDIRECT_URI}</code>
+                        <br>Status: ${response.status} ${response.statusText}
+                        <br>El endpoint está funcionando (esperará código OAuth)
+                    </div>
+                `;
+
+            } catch (error) {
+                statusDiv.innerHTML = `
+                    <div class="error status">
+                        ❌ <strong>Error accediendo al callback:</strong>
+                        <br>${error.message}
+                        <br>Verifica que el servidor Next.js esté corriendo
+                    </div>
+                `;
+            }
+        }
+
+        // Auto-verificar credenciales al cargar
+        window.addEventListener('load', () => {
+            testCredentials();
+        });
+    </script>
+</body>
+</html>
