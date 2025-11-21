@@ -248,6 +248,10 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
   };
 
   const handleOAuthError = (error: string) => {
+    // Extraer detalles del error si existen
+    const urlParams = new URLSearchParams(window.location.search);
+    const errorDetails = urlParams.get('details');
+
     const errorMessages: Record<string, string> = {
       // Errores generales
       'threads_not_available': 'Threads aún no está disponible para integración',
@@ -272,8 +276,15 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
       'tiktok_init_failed': 'Error al iniciar conexión con TikTok. Intenta de nuevo.'
     };
 
-    const message = errorMessages[error] || `Error en la autenticación: ${error}`;
+    let message = errorMessages[error] || `Error en la autenticación: ${error}`;
+
+    // Agregar detalles si existen
+    if (errorDetails) {
+      message += ` (Detalles: ${errorDetails})`;
+    }
+
     console.error('🔴 OAuth Error:', error, '→', message);
+    console.error('   Error details:', errorDetails);
     setMessage({ type: 'error', text: message });
 
     // Limpiar URL

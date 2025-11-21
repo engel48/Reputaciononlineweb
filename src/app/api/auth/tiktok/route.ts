@@ -65,8 +65,14 @@ export async function GET(request: NextRequest) {
 
   } catch (error: any) {
     console.error('❌ Error iniciando OAuth de TikTok:', error);
+    console.error('   Error name:', error.name);
+    console.error('   Error message:', error.message);
+    console.error('   Error stack:', error.stack);
+    console.error('   TIKTOK_CLIENT_KEY exists:', !!TIKTOK_CLIENT_KEY);
+    console.error('   NEXTAUTH_URL:', NEXTAUTH_URL);
+
     return NextResponse.redirect(
-      `${NEXTAUTH_URL}/dashboard/redes-sociales?error=tiktok_init_failed`
+      `${NEXTAUTH_URL}/dashboard/redes-sociales?error=tiktok_init_failed&details=${encodeURIComponent(error.message || 'Unknown error')}`
     );
   }
 }
