@@ -72,66 +72,8 @@ export default function CrisisManagement({ userProfile }: CrisisManagementProps)
   const [crisisAlerts, setCrisisAlerts] = useState<CrisisAlert[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
   const [crisisConfig, setCrisisConfig] = useState<any>(null);
-
-  const [responseTemplates, setResponseTemplates] = useState<ResponseTemplate[]>([
-    {
-      id: '1',
-      name: 'Aclaración Política General',
-      type: 'social',
-      content: 'Queremos aclarar que las declaraciones han sido sacadas de contexto. Nuestra posición siempre ha sido...',
-      platform: 'Twitter',
-      approval: 'manual',
-      conditions: ['Controversia política', 'Malinterpretación']
-    },
-    {
-      id: '2',
-      name: 'Respuesta a Desinformación',
-      type: 'press',
-      content: 'Comunicado oficial: Desmentimos categóricamente la información falsa que circula...',
-      platform: 'Medios',
-      approval: 'auto',
-      conditions: ['Fake news', 'Información falsa']
-    },
-    {
-      id: '3',
-      name: 'Respuesta de Crisis Urgente',
-      type: 'social',
-      content: 'Mensaje urgente: Queremos dirigirnos directamente a la ciudadanía para...',
-      platform: 'Todas las redes',
-      approval: 'manual',
-      conditions: ['Crisis crítica', 'Escalación máxima']
-    }
-  ]);
-
-  const [escalationRules, setEscalationRules] = useState<EscalationRule[]>([
-    {
-      id: '1',
-      name: 'Alcance Crítico',
-      trigger: 'reach',
-      threshold: 1000000,
-      actions: ['Notificar CEO', 'Activar protocolo de crisis', 'Preparar rueda de prensa'],
-      notifications: ['WhatsApp', 'SMS', 'Email'],
-      active: true
-    },
-    {
-      id: '2',
-      name: 'Sentiment Extremo',
-      trigger: 'sentiment',
-      threshold: 20,
-      actions: ['Respuesta inmediata', 'Contactar medios amigos', 'Activar voceros'],
-      notifications: ['WhatsApp', 'Llamada telefónica'],
-      active: true
-    },
-    {
-      id: '3',
-      name: 'Viral Negativo',
-      trigger: 'engagement',
-      threshold: 50000,
-      actions: ['Contra-campaña', 'Influencers de apoyo', 'Contenido de respuesta'],
-      notifications: ['WhatsApp', 'Email'],
-      active: true
-    }
-  ]);
+  const [responseTemplates, setResponseTemplates] = useState<ResponseTemplate[]>([]);
+  const [escalationRules, setEscalationRules] = useState<EscalationRule[]>([]);
 
   // REAL crisis monitoring using mention velocity and sentiment analysis
   useEffect(() => {
@@ -149,12 +91,16 @@ export default function CrisisManagement({ userProfile }: CrisisManagementProps)
         setUserId(session.user.id);
 
         // Fetch crisis configuration from Supabase
-        const configResponse = await fetch(`/api/crisis-config?userId=${session.user.id}`);
+        const configResponse = await fetch(`/api/crisis-management/config?userId=${session.user.id}`);
         const config = await configResponse.json();
         setCrisisConfig(config);
 
-        if (config.escalation_rules) {
-          setEscalationRules(config.escalation_rules);
+        // Set real configuration from Supabase
+        if (config.templates) {
+          setResponseTemplates(config.templates);
+        }
+        if (config.rules) {
+          setEscalationRules(config.rules);
         }
 
         // Fetch recent mentions (last 24h) for velocity analysis
@@ -481,8 +427,22 @@ export default function CrisisManagement({ userProfile }: CrisisManagementProps)
           </button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {responseTemplates.map((template) => (
+        {responseTemplates.length === 0 ? (
+          <div className="text-center py-12">
+            <MessageCircle className="mx-auto h-16 w-16 text-gray-400 mb-4" />
+            <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">
+              No hay plantillas de respuesta
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              Crea plantillas personalizadas para responder rápidamente a crisis
+            </p>
+            <button className="px-6 py-3 bg-[#01257D] text-white rounded-lg hover:bg-[#01257D]/90">
+              Crear Primera Plantilla
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {responseTemplates.map((template) => (
             <div key={template.id} className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
               <div className="flex items-center justify-between mb-3">
                 <h4 className="font-semibold">{template.name}</h4>
@@ -529,7 +489,8 @@ export default function CrisisManagement({ userProfile }: CrisisManagementProps)
               </div>
             </div>
           ))}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -545,8 +506,22 @@ export default function CrisisManagement({ userProfile }: CrisisManagementProps)
           </button>
         </div>
 
-        <div className="space-y-4">
-          {escalationRules.map((rule) => (
+        {escalationRules.length === 0 ? (
+          <div className="text-center py-12">
+            <ArrowUp className="mx-auto h-16 w-16 text-gray-400 mb-4" />
+            <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">
+              No hay reglas de escalación
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              Define reglas automáticas para escalar crisis según severidad
+            </p>
+            <button className="px-6 py-3 bg-[#01257D] text-white rounded-lg hover:bg-[#01257D]/90">
+              Crear Primera Regla
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {escalationRules.map((rule) => (
             <div key={rule.id} className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center space-x-3">
@@ -591,7 +566,8 @@ export default function CrisisManagement({ userProfile }: CrisisManagementProps)
               </div>
             </div>
           ))}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Emergency Contacts from Config */}

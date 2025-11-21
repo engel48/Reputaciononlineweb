@@ -46,29 +46,41 @@ export default function SocialListeningPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState(new Date());
   const [autoRefresh, setAutoRefresh] = useState(true);
-  const [userProfile, setUserProfile] = useState<UserProfile>({
-    type: 'político',
-    specialization: 'Alcalde',
-    region: 'Bogotá'
-  });
-  
-  const [metrics, setMetrics] = useState<ListeningMetrics>({
-    totalMentions: 2847,
-    sentiment: {
-      positive: 68,
-      negative: 18,
-      neutral: 14
-    },
-    reach: 1245890,
-    engagement: 23.4,
-    crisisAlerts: 2,
-    mediaAppearances: 12
-  });
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [metrics, setMetrics] = useState<ListeningMetrics | null>(null);
+
+  // Fetch real data from APIs
+  useEffect(() => {
+    const fetchRealData = async () => {
+      try {
+        const session = await fetch('/api/auth/session').then(r => r.json());
+        if (!session?.user) {
+          setIsLoading(false);
+          return;
+        }
+
+        const metricsResponse = await fetch(`/api/social-listening/metrics?userId=${session.user.id}`);
+        const metricsData = await metricsResponse.json();
+        setMetrics(metricsData.metrics || null);
+
+        const profileResponse = await fetch(`/api/user/profile?userId=${session.user.id}`);
+        const profileData = await profileResponse.json();
+        setUserProfile(profileData.profile || null);
+
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error loading data:', error);
+        setMetrics(null);
+        setUserProfile(null);
+        setIsLoading(false);
+      }
+    };
+    fetchRealData();
+  }, []);
 
   // Determinar tipo de usuario para personalización
   const getUserType = () => {
-    // Lógica para determinar si es político, influencer, etc.
-    return userProfile.type;
+    return userProfile?.type || 'empresa';
   };
 
   // Configuración de tabs basada en el tipo de usuario
@@ -300,7 +312,15 @@ export default function SocialListeningPage() {
 }
 
 // Componente Overview Tab
-function OverviewTab({ metrics, userProfile }: { metrics: ListeningMetrics, userProfile: UserProfile }) {
+function OverviewTab({ metrics, userProfile }: { metrics: ListeningMetrics | null, userProfile: UserProfile | null }) {
+  if (!metrics) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-600 dark:text-gray-400">Cargando datos reales...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Métricas principales */}
@@ -368,15 +388,15 @@ function OverviewTab({ metrics, userProfile }: { metrics: ListeningMetrics, user
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-gray-600 dark:text-gray-400">Tipo:</span>
-              <span className="font-medium capitalize">{userProfile.type}</span>
+              <span className="font-medium capitalize">{userProfile?.type || 'No especificado'}</span>
             </div>
-            {userProfile.specialization && (
+            {userProfile?.specialization && (
               <div className="flex items-center justify-between">
                 <span className="text-gray-600 dark:text-gray-400">Especialización:</span>
                 <span className="font-medium">{userProfile.specialization}</span>
               </div>
             )}
-            {userProfile.region && (
+            {userProfile?.region && (
               <div className="flex items-center justify-between">
                 <span className="text-gray-600 dark:text-gray-400">Región:</span>
                 <span className="font-medium">{userProfile.region}</span>
@@ -389,21 +409,9 @@ function OverviewTab({ metrics, userProfile }: { metrics: ListeningMetrics, user
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
           <h3 className="text-lg font-semibold mb-4">Alertas Recientes</h3>
           <div className="space-y-3">
-            <AlertItem
-              type="warning"
-              message="Incremento en menciones negativas"
-              time="Hace 2 horas"
-            />
-            <AlertItem
-              type="success"
-              message="Pico de engagement detectado"
-              time="Hace 4 horas"
-            />
-            <AlertItem
-              type="info"
-              message="Nueva aparición en medios"
-              time="Hace 6 horas"
-            />
+            <div className="text-center py-8 text-gray-500">
+              Sin alertas en este momento
+            </div>
           </div>
         </div>
       </div>

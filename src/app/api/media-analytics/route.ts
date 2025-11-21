@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { aiService } from '@/lib/ai-service';
+import { performRealAnalysis } from '@/lib/realNewsAPI';
 
 interface MediaAnalytics {
   sourceId: string;
@@ -28,13 +28,12 @@ interface MediaAnalytics {
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('🔍 Obteniendo analytics reales de medios de comunicación...');
+    console.log('🔍 Obteniendo analytics REALES de medios colombianos...');
 
     const { searchParams } = new URL(request.url);
     const mediaSource = searchParams.get('source');
 
     if (mediaSource) {
-      // Análisis específico para un medio
       const analytics = await generateRealMediaAnalytics(mediaSource);
       return NextResponse.json({
         success: true,
@@ -44,7 +43,7 @@ export async function GET(request: NextRequest) {
 
     // Análisis para todos los medios principales
     const mainMediaSources = [
-      'El Tiempo', 'El Espectador', 'Semana', 
+      'El Tiempo', 'El Espectador', 'Semana',
       'Caracol Radio', 'RCN Radio', 'Blu Radio'
     ];
 
@@ -63,149 +62,76 @@ export async function GET(request: NextRequest) {
     console.error('Error en análisis de medios:', error);
     return NextResponse.json({
       success: false,
-      error: 'Error obteniendo analytics de medios'
+      error: 'Error obteniendo analytics de medios',
+      data: []
     }, { status: 500 });
   }
 }
 
 async function generateRealMediaAnalytics(sourceName: string): Promise<MediaAnalytics> {
   try {
-    console.log(`📊 Julia: Generando analytics reales para: ${sourceName}`);
+    console.log(`📊 Scraping REAL data para: ${sourceName}`);
 
-    try {
-      const response = await aiService.chat([
-        {
-          role: "system",
-          content: `Eres Julia, un analista de medios que genera estadísticas REALES y actualizadas para medios de comunicación colombianos.
+    // Usar performRealAnalysis para hacer scraping REAL del medio
+    const realData = await performRealAnalysis('', sourceName);
 
-          DATOS REALES REQUERIDOS:
-          - Tráfico web actualizado basado en datos públicos conocidos
-          - Engagement real en redes sociales del medio
-          - Artículos recientes con títulos realistas
-          - Métricas de alcance basadas en audiencia real
-          - Análisis de sentimiento de contenido real
+    if (realData && realData.articles && realData.articles.length > 0) {
+      const recentArticles = realData.articles.slice(0, 5).map((article: any) => ({
+        title: article.title,
+        date: article.publishedAt || new Date().toISOString(),
+        sentiment: article.sentiment || 'neutral',
+        views: article.engagement || 0,
+        url: article.url || generateArticleUrl(sourceName, article.title)
+      }));
 
-          FUENTES DE DATOS:
-          - Estadísticas de tráfico web conocidas
-          - Datos de redes sociales públicos
-          - Tendencias actuales de noticias
-          - Patrones de engagement reales
-
-          Genera datos que reflejen la realidad actual del medio.`
-        },
-        {
-          role: "user",
-          content: `Genera analytics REALES y actualizados para "${sourceName}".
-
-          INFORMACIÓN REQUERIDA:
-          - Tráfico diario realista basado en el tamaño del medio
-          - Menciones mensuales reales estimadas
-          - Engagement real en redes sociales
-          - 5 artículos recientes con títulos realistas de noticias colombianas
-          - Análisis de sentimiento basado en tipo de contenido
-
-          PARÁMETROS:
-          - Fecha: Diciembre 2024
-          - Región: Colombia
-          - Tipo: Medios tradicionales y digitales
-          - Métricas: Basadas en datos reales estimados
-
-          JSON FORMAT:
-          {
-            "monthlyMentions": número_realista,
-            "dailyTraffic": tráfico_diario_estimado,
-            "sentiment": {
-              "positive": porcentaje,
-              "negative": porcentaje,  
-              "neutral": porcentaje
-            },
-            "trendsToday": tendencias_hoy,
-            "engagement": {
-              "shares": compartidos_estimados,
-              "comments": comentarios_estimados,
-              "likes": likes_estimados
-            },
-            "recentArticles": [
-              {
-                "title": "título_noticia_realista",
-                "date": "fecha_ISO",
-                "sentiment": "positive|negative|neutral",
-                "views": vistas_estimadas,
-                "category": "categoría_noticia"
-              }
-            ]
-          }`
-        }
-      ], { max_tokens: 2000, temperature: 0.1 });
-      
-      if (response) {
-      try {
-        let cleanResponse = response.trim();
-        if (cleanResponse.startsWith('```json')) {
-          cleanResponse = cleanResponse.replace(/```json\s*/, '').replace(/```\s*$/, '');
-        } else if (cleanResponse.startsWith('```')) {
-          cleanResponse = cleanResponse.replace(/```\s*/, '').replace(/```\s*$/, '');
-        }
-
-        const analyticsData = JSON.parse(cleanResponse);
-        
-        // Validar y completar datos
-        const validatedData = {
-          monthlyMentions: analyticsData.monthlyMentions || Math.floor(Math.random() * 500) + 100,
-          dailyTraffic: analyticsData.dailyTraffic || Math.floor(Math.random() * 100000) + 20000,
-          sentiment: {
-            positive: analyticsData.sentiment?.positive || Math.floor(Math.random() * 40) + 30,
-            negative: analyticsData.sentiment?.negative || Math.floor(Math.random() * 30) + 10,
-            neutral: analyticsData.sentiment?.neutral || Math.floor(Math.random() * 30) + 20
-          },
-          trendsToday: analyticsData.trendsToday || Math.floor(Math.random() * 15) + 5,
+      const result: MediaAnalytics = {
+        sourceId: sourceName.toLowerCase().replace(/\s+/g, '-'),
+        sourceName,
+        realTimeData: {
+          monthlyMentions: realData.articles.length,
+          dailyTraffic: realData.sources?.length || 0,
+          sentiment: realData.overallSentiment || { positive: 0, negative: 0, neutral: 0 },
+          reachEstimate: getReachEstimate(sourceName),
+          lastUpdate: new Date().toISOString(),
+          trendsToday: realData.articles.length,
           engagement: {
-            shares: analyticsData.engagement?.shares || Math.floor(Math.random() * 2000) + 500,
-            comments: analyticsData.engagement?.comments || Math.floor(Math.random() * 1000) + 200,
-            likes: analyticsData.engagement?.likes || Math.floor(Math.random() * 5000) + 1000
+            shares: 0,
+            comments: 0,
+            likes: 0
           },
-          recentArticles: (analyticsData.recentArticles || []).slice(0, 5).map((article: any) => ({
-            title: article.title || `Noticia de ${sourceName}`,
-            date: article.date || new Date().toISOString(),
-            sentiment: article.sentiment || 'neutral',
-            views: article.views || Math.floor(Math.random() * 50000) + 5000,
-            url: generateArticleUrl(sourceName, article.title || 'noticia')
-          }))
-        };
-
-        // Si no hay artículos, generar algunos de respaldo
-        if (validatedData.recentArticles.length === 0) {
-          validatedData.recentArticles = generateBackupArticles(sourceName);
+          recentArticles
         }
+      };
 
-        const result: MediaAnalytics = {
-          sourceId: sourceName.toLowerCase().replace(/\s+/g, '-'),
-          sourceName,
-          realTimeData: {
-            ...validatedData,
-            reachEstimate: getReachEstimate(sourceName),
-            lastUpdate: new Date().toISOString()
-          }
-        };
-
-        console.log(`✅ Julia: Analytics generados para ${sourceName}: ${validatedData.monthlyMentions} menciones`);
-        return result;
-
-      } catch (parseError) {
-        console.error(`🚨 Julia: Error parsing analytics for ${sourceName}:`, parseError);
-        return generateFallbackAnalytics(sourceName);
-      }
-    }
-    } catch (aiError) {
-      console.error(`🚨 Julia: AI service error for ${sourceName}:`, aiError);
-      return generateFallbackAnalytics(sourceName);
+      console.log(`✅ Datos REALES obtenidos para ${sourceName}: ${realData.articles.length} artículos`);
+      return result;
     }
 
-    return generateFallbackAnalytics(sourceName);
+    // Si no hay datos reales, retornar estructura vacía
+    console.log(`⚠️ Sin datos reales disponibles para ${sourceName}`);
+    return createEmptyAnalytics(sourceName);
+
   } catch (error) {
-    console.error(`🚨 Julia: Error generating analytics for ${sourceName}:`, error);
-    return generateFallbackAnalytics(sourceName);
+    console.error(`🚨 Error obteniendo analytics para ${sourceName}:`, error);
+    return createEmptyAnalytics(sourceName);
   }
+}
+
+function createEmptyAnalytics(sourceName: string): MediaAnalytics {
+  return {
+    sourceId: sourceName.toLowerCase().replace(/\s+/g, '-'),
+    sourceName,
+    realTimeData: {
+      monthlyMentions: 0,
+      dailyTraffic: 0,
+      sentiment: { positive: 0, negative: 0, neutral: 0 },
+      reachEstimate: getReachEstimate(sourceName),
+      lastUpdate: new Date().toISOString(),
+      trendsToday: 0,
+      engagement: { shares: 0, comments: 0, likes: 0 },
+      recentArticles: []
+    }
+  };
 }
 
 function getReachEstimate(sourceName: string): number {
@@ -217,8 +143,8 @@ function getReachEstimate(sourceName: string): number {
     'RCN Radio': 1800000,
     'Blu Radio': 600000
   };
-  
-  return reachData[sourceName] || Math.floor(Math.random() * 500000) + 100000;
+
+  return reachData[sourceName] || 500000;
 }
 
 function generateArticleUrl(sourceName: string, title: string): string {
@@ -236,60 +162,6 @@ function generateArticleUrl(sourceName: string, title: string): string {
     .replace(/[^\w\s-]/g, '')
     .replace(/\s+/g, '-')
     .substring(0, 50);
-  
-  return `${baseUrl}/noticia/${slug}-${Date.now()}`;
-}
 
-function generateBackupArticles(sourceName: string) {
-  const topics = [
-    'Análisis político: Nuevas reformas económicas en Colombia',
-    'Situación social: Perspectivas actuales del país',
-    'Desarrollo económico: Impacto en regiones colombianas',
-    'Política internacional: Relaciones diplomáticas',
-    'Cultura y sociedad: Tendencias actuales',
-    'Noticias de última hora: Actualizaciones en vivo',
-    'Reportaje especial: Investigación en profundidad'
-  ];
-
-  return Array.from({ length: 5 }, (_, i) => {
-    const topic = topics[Math.floor(Math.random() * topics.length)];
-    const sentiment = ['positive', 'negative', 'neutral'][Math.floor(Math.random() * 3)] as 'positive' | 'negative' | 'neutral';
-    const daysAgo = Math.floor(Math.random() * 7) + 1;
-    const date = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000);
-
-    return {
-      title: topic,
-      date: date.toISOString(),
-      sentiment,
-      views: Math.floor(Math.random() * 50000) + 5000,
-      url: generateArticleUrl(sourceName, topic)
-    };
-  });
-}
-
-function generateFallbackAnalytics(sourceName: string): MediaAnalytics {
-  console.log(`🔄 Julia: Generando analytics de respaldo para ${sourceName}`);
-  
-  return {
-    sourceId: sourceName.toLowerCase().replace(/\s+/g, '-'),
-    sourceName,
-    realTimeData: {
-      monthlyMentions: Math.floor(Math.random() * 500) + 100,
-      dailyTraffic: Math.floor(Math.random() * 100000) + 20000,
-      sentiment: {
-        positive: Math.floor(Math.random() * 40) + 30,
-        negative: Math.floor(Math.random() * 30) + 10,
-        neutral: Math.floor(Math.random() * 30) + 20
-      },
-      reachEstimate: getReachEstimate(sourceName),
-      lastUpdate: new Date().toISOString(),
-      trendsToday: Math.floor(Math.random() * 15) + 5,
-      engagement: {
-        shares: Math.floor(Math.random() * 2000) + 500,
-        comments: Math.floor(Math.random() * 1000) + 200,
-        likes: Math.floor(Math.random() * 5000) + 1000
-      },
-      recentArticles: generateBackupArticles(sourceName)
-    }
-  };
+  return `${baseUrl}/noticia/${slug}`;
 }

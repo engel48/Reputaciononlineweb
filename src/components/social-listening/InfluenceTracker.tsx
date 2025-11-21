@@ -287,30 +287,34 @@ export default function InfluenceTracker({ userProfile }: InfluenceTrackerProps)
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
           <h3 className="text-lg font-semibold mb-4">Brand Safety Analysis</h3>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span>Contenido apropiado</span>
-              <span className="text-green-600 font-medium">98%</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Lenguaje profesional</span>
-              <span className="text-green-600 font-medium">95%</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Sin controversias</span>
-              <span className="text-green-600 font-medium">92%</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Alineación de valores</span>
-              <span className="text-green-600 font-medium">89%</span>
-            </div>
-            <div className="mt-4 p-3 bg-green-50 rounded-lg">
-              <div className="flex items-center space-x-2">
-                <CheckCircle className="w-5 h-5 text-green-600" />
-                <span className="text-green-800 font-medium">Perfil seguro para marcas</span>
+          {metrics?.brandSafetyScore && metrics.brandSafetyScore > 0 ? (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span>Contenido apropiado</span>
+                <span className={`font-medium ${metrics.brandSafetyScore >= 90 ? 'text-green-600' : 'text-yellow-600'}`}>
+                  {metrics.brandSafetyScore}%
+                </span>
+              </div>
+              <div className="mt-4 p-3 bg-green-50 rounded-lg">
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                  <span className="text-green-800 font-medium">
+                    {metrics.brandSafetyScore >= 90 ? 'Perfil seguro para marcas' : 'Mejora continua recomendada'}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="text-center py-8">
+              <Shield className="mx-auto h-12 w-12 text-gray-400 mb-3" />
+              <p className="text-gray-600 mb-4">
+                Conecta tus redes sociales para análisis de Brand Safety
+              </p>
+              <button className="px-4 py-2 bg-[#01257D] text-white rounded-lg hover:bg-[#01257D]/90">
+                Conectar Redes Sociales
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">

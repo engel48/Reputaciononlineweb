@@ -291,94 +291,37 @@ export default function PoliticalPulse({ userProfile }: PoliticalPulseProps) {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
           <h3 className="text-lg font-semibold mb-6">Análisis por Regiones</h3>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Mapa de Colombia con datos reales */}
-            <div className="h-80 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-lg p-4 relative overflow-hidden">
-              <div className="absolute inset-0 p-4">
-                <div className="h-full w-full relative">
-                  {/* Simulación de mapa de Colombia con regiones */}
-                  <div className="absolute top-8 left-1/2 transform -translate-x-1/2">
-                    {/* Costa Atlántica */}
-                    <div className="relative">
-                      <div className="bg-green-300 hover:bg-green-400 transition-colors cursor-pointer rounded-lg p-2 mb-1 text-xs text-center shadow-sm">
-                        <div className="font-semibold">Atlántico</div>
-                        <div className="text-green-800">72% 👍</div>
+            {/* Visualización de regiones con datos reales */}
+            <div className="h-80 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-lg p-6 relative overflow-hidden">
+              <h4 className="font-bold text-lg text-[#01257D] mb-4">🇨🇴 Distribución Regional</h4>
+              {metrics?.byRegion && metrics.byRegion.length > 0 ? (
+                <div className="grid grid-cols-2 gap-4">
+                  {metrics.byRegion.slice(0, 6).map((region, index) => (
+                    <div key={index} className={`p-3 rounded-lg border-2 transition-all hover:shadow-lg cursor-pointer ${
+                      region.sentiment >= 60 ? 'bg-green-100 border-green-400' :
+                      region.sentiment >= 40 ? 'bg-yellow-100 border-yellow-400' :
+                      'bg-red-100 border-red-400'
+                    }`}>
+                      <div className="font-semibold text-sm">{region.region}</div>
+                      <div className={`text-lg font-bold ${
+                        region.sentiment >= 60 ? 'text-green-700' :
+                        region.sentiment >= 40 ? 'text-yellow-700' :
+                        'text-red-700'
+                      }`}>
+                        {region.sentiment}%
+                        {region.sentiment >= 50 ? ' 👍' : ' 👎'}
                       </div>
-                      <div className="bg-yellow-300 hover:bg-yellow-400 transition-colors cursor-pointer rounded-lg p-2 mb-1 text-xs text-center shadow-sm ml-8">
-                        <div className="font-semibold">Magdalena</div>
-                        <div className="text-yellow-800">55% 😐</div>
+                      <div className="text-xs text-gray-600">
+                        {region.mentions.toLocaleString()} menciones
                       </div>
                     </div>
-                  </div>
-                  
-                  {/* Región Andina Central */}
-                  <div className="absolute top-20 left-1/2 transform -translate-x-1/2">
-                    <div className="bg-green-400 hover:bg-green-500 transition-colors cursor-pointer rounded-lg p-3 mb-2 text-xs text-center shadow-lg">
-                      <div className="font-bold">Bogotá</div>
-                      <div className="text-green-900">65% 👍</div>
-                      <div className="text-xs">12.4K menciones</div>
-                    </div>
-                  </div>
-                  
-                  {/* Antioquia */}
-                  <div className="absolute top-24 left-8">
-                    <div className="bg-green-300 hover:bg-green-400 transition-colors cursor-pointer rounded-lg p-2 text-xs text-center shadow-sm">
-                      <div className="font-semibold">Antioquia</div>
-                      <div className="text-green-800">58% 👍</div>
-                      <div className="text-xs">8.9K</div>
-                    </div>
-                  </div>
-                  
-                  {/* Valle del Cauca */}
-                  <div className="absolute top-32 left-12">
-                    <div className="bg-green-400 hover:bg-green-500 transition-colors cursor-pointer rounded-lg p-2 text-xs text-center shadow-sm">
-                      <div className="font-semibold">Valle</div>
-                      <div className="text-green-900">70% 👍</div>
-                      <div className="text-xs">6.8K</div>
-                    </div>
-                  </div>
-                  
-                  {/* Región Caribe */}
-                  <div className="absolute top-28 right-8">
-                    <div className="bg-yellow-300 hover:bg-yellow-400 transition-colors cursor-pointer rounded-lg p-2 text-xs text-center shadow-sm">
-                      <div className="font-semibold">Bolívar</div>
-                      <div className="text-yellow-800">55% 😐</div>
-                      <div className="text-xs">4.6K</div>
-                    </div>
-                  </div>
-                  
-                  {/* Región Pacífica */}
-                  <div className="absolute bottom-12 left-4">
-                    <div className="bg-green-300 hover:bg-green-400 transition-colors cursor-pointer rounded-lg p-2 text-xs text-center shadow-sm">
-                      <div className="font-semibold">Nariño</div>
-                      <div className="text-green-800">62% 👍</div>
-                      <div className="text-xs">2.1K</div>
-                    </div>
-                  </div>
-                  
-                  {/* Leyenda */}
-                  <div className="absolute bottom-2 right-2 bg-white/90 rounded-lg p-2 text-xs">
-                    <div className="font-semibold mb-1">Sentiment</div>
-                    <div className="flex items-center space-x-1 mb-1">
-                      <div className="w-3 h-3 bg-green-400 rounded"></div>
-                      <span>Alto (60%+)</span>
-                    </div>
-                    <div className="flex items-center space-x-1 mb-1">
-                      <div className="w-3 h-3 bg-yellow-400 rounded"></div>
-                      <span>Medio (40-60%)</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <div className="w-3 h-3 bg-red-400 rounded"></div>
-                      <span>Bajo (&lt;40%)</span>
-                    </div>
-                  </div>
-                  
-                  {/* Título del mapa */}
-                  <div className="absolute top-2 left-2 bg-white/90 rounded-lg p-2">
-                    <div className="font-bold text-sm text-[#01257D]">🇨🇴 Mapa de Sentiment</div>
-                    <div className="text-xs text-gray-600">Click en regiones para detalles</div>
-                  </div>
+                  ))}
                 </div>
-              </div>
+              ) : (
+                <div className="text-center py-12 text-gray-500">
+                  Sin datos regionales disponibles
+                </div>
+              )}
             </div>
 
             {/* Lista de regiones */}

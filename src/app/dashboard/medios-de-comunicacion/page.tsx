@@ -32,56 +32,7 @@ interface MediaSource {
   };
 }
 
-// Función para generar datos reales en tiempo real para cada medio
-const generateRealTimeData = (mediaName: string) => {
-  const now = new Date();
-  const baseReach = {
-    'El Tiempo': 1500000,
-    'El Espectador': 800000,
-    'Semana': 1200000,
-    'Caracol Radio': 2000000,
-    'RCN Radio': 1800000,
-    'Blu Radio': 600000
-  };
-
-  const recentTitles = [
-    `Análisis político: Nuevas reformas económicas`,
-    `Situación social en Colombia: Perspectivas actuales`,
-    `Desarrollo económico: Impacto en regiones`,
-    `Política internacional: Relaciones diplomáticas`,
-    `Cultura y sociedad: Tendencias actuales`,
-    `Noticias de última hora: Actualizaciones en vivo`,
-    `Reportaje especial: Investigación en profundidad`,
-    `Opinión editorial: Perspectivas del día`
-  ];
-
-  const baseViews = baseReach[mediaName as keyof typeof baseReach] || Math.floor(Math.random() * 500000) + 100000;
-  const dailyTraffic = Math.floor(baseViews * (0.8 + Math.random() * 0.4) / 30);
-  
-  return {
-    monthlyMentions: Math.floor(Math.random() * 500) + 100,
-    dailyTraffic,
-    sentiment: {
-      positive: Math.floor(Math.random() * 40) + 30,
-      negative: Math.floor(Math.random() * 30) + 10,
-      neutral: Math.floor(Math.random() * 30) + 20
-    },
-    reachEstimate: baseViews,
-    lastUpdate: now.toISOString(),
-    trendsToday: Math.floor(Math.random() * 15) + 5,
-    engagement: {
-      shares: Math.floor(Math.random() * 2000) + 500,
-      comments: Math.floor(Math.random() * 1000) + 200,
-      likes: Math.floor(Math.random() * 5000) + 1000
-    },
-    recentArticles: Array.from({ length: 3 }, (_, i) => ({
-      title: recentTitles[Math.floor(Math.random() * recentTitles.length)],
-      date: new Date(now.getTime() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
-      sentiment: ['positive', 'negative', 'neutral'][Math.floor(Math.random() * 3)] as 'positive' | 'negative' | 'neutral',
-      views: Math.floor(Math.random() * 50000) + 5000
-    }))
-  };
-};
+// REMOVED: generateRealTimeData() - using real API data instead
 
 const MediosComunicacionPage = () => {
   const [mediaSources, setMediaSources] = useState<MediaSource[]>([
@@ -142,56 +93,44 @@ const MediosComunicacionPage = () => {
   const [showMetrics, setShowMetrics] = useState<string | null>(null);
   const [realTimeDataLoaded, setRealTimeDataLoaded] = useState(false);
 
-  // Cargar datos en tiempo real al montar el componente
+  // Cargar datos REALES desde la API (sin Math.random())
   useEffect(() => {
     const loadRealTimeData = async () => {
       try {
-        console.log('🔄 Cargando datos reales de medios...');
-        const response = await fetch('/api/media-analytics');
+        console.log('🔄 Cargando datos reales de medios desde API...');
+        const response = await fetch('/api/media-analytics?realtime=true');
         const result = await response.json();
-        
-        if (result.success) {
-          // Mapear los datos de la API a nuestras fuentes de medios
+
+        if (result.success && result.data) {
+          // Mapear los datos REALES de la API
           const updatedSources = mediaSources.map(source => {
-            const apiData = result.data.find((item: any) => 
+            const apiData = result.data.find((item: any) =>
               item.sourceName.toLowerCase() === source.name.toLowerCase()
             );
-            
+
             return {
               ...source,
-              realTimeData: apiData ? apiData.realTimeData : generateRealTimeData(source.name)
+              realTimeData: apiData ? apiData.realTimeData : undefined
             };
           });
-          
+
           setMediaSources(updatedSources);
           console.log('✅ Datos reales de medios cargados exitosamente');
         } else {
-          // Fallback a datos locales si la API falla
-          const updatedSources = mediaSources.map(source => ({
-            ...source,
-            realTimeData: generateRealTimeData(source.name)
-          }));
-          setMediaSources(updatedSources);
-          console.log('⚠️ Usando datos locales como respaldo');
+          console.log('⚠️ Sin datos de API disponibles');
         }
-        
+
         setRealTimeDataLoaded(true);
       } catch (error) {
         console.error('Error cargando datos de medios:', error);
-        // Fallback a datos locales
-        const updatedSources = mediaSources.map(source => ({
-          ...source,
-          realTimeData: generateRealTimeData(source.name)
-        }));
-        setMediaSources(updatedSources);
         setRealTimeDataLoaded(true);
       }
     };
 
     loadRealTimeData();
-    
-    // Actualizar datos cada 3 minutos para datos reales
-    const interval = setInterval(loadRealTimeData, 180000);
+
+    // Actualizar datos cada 60 segundos
+    const interval = setInterval(loadRealTimeData, 60000);
     return () => clearInterval(interval);
   }, []);
 
