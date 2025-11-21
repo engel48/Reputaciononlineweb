@@ -47,10 +47,6 @@ export const getAuthenticatedUser = async (): Promise<User | null> => {
     const socialMediaResponse = await fetch(`/api/social-media?userId=${session.user.id}`);
     const socialMediaData = await socialMediaResponse.json();
 
-    // Obtener menciones REALES desde Supabase
-    const mentionsResponse = await fetch(`/api/mentions/recent?userId=${session.user.id}&limit=10`);
-    const mentionsData = await mentionsResponse.json();
-
     return {
       id: userData.id,
       email: userData.email,
@@ -58,8 +54,11 @@ export const getAuthenticatedUser = async (): Promise<User | null> => {
       role: userData.role,
       plan: userData.plan,
       credits: userData.credits,
-      socialMedia: socialMediaData.platforms || [],
-      recentMentions: mentionsData.mentions || []
+      avatarUrl: userData.avatarUrl || userData.avatar || '/default-avatar.png',
+      createdAt: userData.createdAt || new Date().toISOString(),
+      darkMode: userData.darkMode || false,
+      notifications: userData.notifications !== undefined ? userData.notifications : true,
+      socialMedia: socialMediaData.platforms || []
     };
   } catch (error) {
     console.error('Error getting authenticated user:', error);

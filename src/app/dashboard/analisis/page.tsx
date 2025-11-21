@@ -656,7 +656,7 @@ export default function AnalisisPage() {
               <CardFooter className="border-t bg-gray-50 px-6 py-3 dark:border-gray-800 dark:bg-gray-900">
                 <div className="flex items-center justify-between w-full">
                   <div className="text-sm text-gray-600 dark:text-gray-400">
-                    Total de menciones: <span className="font-medium">1,248</span>
+                    Total de menciones: <span className="font-medium">{socialData?.data?.mentions?.total?.toLocaleString() || '0'}</span>
                   </div>
                   <Button variant="outline" size="sm">
                     Exportar datos

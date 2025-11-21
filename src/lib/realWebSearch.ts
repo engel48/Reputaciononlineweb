@@ -55,25 +55,15 @@ export async function searchColombianMedia(query: string): Promise<NewsResult[]>
     'Portafolio', 'La República', 'Noticias Caracol', 'El Colombiano'
   ];
 
-  const results: NewsResult[] = [];
-  const now = new Date();
+  // ❌ ELIMINADO - No generar noticias falsas
+  // Esta función simulaba noticias que no existen
+  // Para obtener noticias reales, se debe:
+  // 1. Integrar con APIs de noticias (NewsAPI, MediaStack, etc.)
+  // 2. Hacer scraping real con permisos de los medios
+  // 3. Usar RSS feeds de medios colombianos
 
-  // Generar 3-5 noticias simuladas pero realistas
-  for (let i = 0; i < Math.min(5, Math.floor(Math.random() * 3) + 3); i++) {
-    const outlet = mediaOutlets[Math.floor(Math.random() * mediaOutlets.length)];
-    const daysAgo = Math.floor(Math.random() * 30);
-    const newsDate = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
-    
-    results.push({
-      title: `${query}: Últimas noticias y análisis`,
-      content: `Cobertura completa sobre ${query} en ${outlet}. Análisis detallado de los últimos acontecimientos.`,
-      url: `https://www.${outlet.toLowerCase().replace(/ /g, '')}.com/noticias/${query.toLowerCase().replace(/ /g, '-')}-${Date.now()}`,
-      source: outlet,
-      date: newsDate.toISOString()
-    });
-  }
-
-  return results;
+  console.warn('searchColombianMedia: No se generan noticias simuladas. Integre APIs reales de noticias.');
+  return [];
 }
 
 // Función para buscar usando DuckDuckGo Instant Answer API (sin scraping)

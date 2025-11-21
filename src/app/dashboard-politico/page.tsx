@@ -97,87 +97,14 @@ export default function DashboardPolitico() {
   const [intervaloActivo, setIntervaloActivo] = useState(true);
 
   // Estados para menciones en tiempo real (mismo que dashboard normal)
-  const [mencionesRecientes, setMencionesRecientes] = useState<Mention[]>([
-    {
-      id: '1',
-      author: '@periodista_pol',
-      platform: 'x',
-      content: 'Excelente propuesta política de @PoliticoEjemplo para la reforma educativa. Un enfoque muy necesario 👍',
-      sentiment: 'positive' as const,
-      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-      engagement: { likes: 145, comments: 28, retweets: 52, shares: 15 },
-      location: 'Bogotá, Colombia',
-      verified: true
-    },
-    {
-      id: '2',
-      author: 'Ana Martínez',
-      platform: 'facebook',
-      content: 'No estoy de acuerdo con las últimas declaraciones del político. Necesitamos más transparencia.',
-      sentiment: 'negative' as const,
-      timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000),
-      engagement: { likes: 83, comments: 35, shares: 17, retweets: 8 },
-      location: 'Medellín, Colombia',
-      verified: false
-    },
-    {
-      id: '3',
-      author: '@analista_politico',
-      platform: 'instagram',
-      content: 'Analizando las propuestas políticas actuales. ¿Qué opinan sobre las reformas propuestas?',
-      sentiment: 'neutral' as const,
-      timestamp: new Date(Date.now() - 8 * 60 * 60 * 1000),
-      engagement: { likes: 634, comments: 145, shares: 52, retweets: 28 },
-      location: 'Cali, Colombia',
-      verified: true
-    }
-  ]);
+  const [mencionesRecientes, setMencionesRecientes] = useState<Mention[]>([]);
   const [nuevasMenciones, setNuevasMenciones] = useState(0);
 
-  // Estados para noticias políticas
-  const [noticiasReales, setNoticiasReales] = useState([
-    {
-      id: 1,
-      title: "Nueva reforma tributaria genera debate nacional",
-      content: "La propuesta de reforma tributaria ha generado múltiples reacciones en el congreso y la ciudadanía, con posturas divididas sobre su impacto económico...",
-      person: "Presidente Nacional",
-      category: "político", 
-      sentiment: "Neutral",
-      source: "El Tiempo",
-      url: "https://www.eltiempo.com/politica/congreso/reforma-tributaria-debate-nacional",
-      timestamp: "Hace 1h",
-      engagement: "+45% engagement político",
-      icon: "👑"
-    },
-    {
-      id: 2,
-      title: "Debate presidencial: propuestas de seguridad ciudadana",
-      content: "Los candidatos presentaron sus planes de seguridad, con enfoques que van desde el fortalecimiento policial hasta programas sociales preventivos...",
-      person: "Candidatos Presidenciales",
-      category: "político",
-      sentiment: "Positivo", 
-      source: "RCN Noticias",
-      url: "https://www.rcn.com/noticias/politica/debate-presidencial-seguridad",
-      timestamp: "Hace 3h",
-      engagement: "2.8M visualizaciones",
-      icon: "🗳️"
-    },
-    {
-      id: 3,
-      title: "Encuesta revela cambios en intención de voto",
-      content: "Los últimos sondeos muestran variaciones significativas en las preferencias electorales, reflejando el impacto de los recientes debates...",
-      person: "Diversos Candidatos",
-      category: "político",
-      sentiment: "Neutral",
-      source: "Caracol Noticias", 
-      url: "https://caracol.com.co/politica/encuesta-intencion-voto",
-      timestamp: "Hace 5h",
-      engagement: "Trending topic nacional",
-      icon: "📊"
-    }
-  ]);
+  // Estados para noticias políticas y métricas
+  const [noticiasReales, setNoticiasReales] = useState<any[]>([]);
   const [noticiaSeleccionada, setNoticiaSeleccionada] = useState<any>(null);
   const [mostrarModalNoticia, setMostrarModalNoticia] = useState(false);
+  const [politicalMetrics, setPoliticalMetrics] = useState<any>(null);
 
   // Redirigir si no es usuario político
   useEffect(() => {
@@ -208,41 +135,46 @@ export default function DashboardPolitico() {
     return 'neutral';
   }, []);
 
-  const generarMencionIA = useCallback((): Mention => {
-    const usuarios = ['@politico_watch', '@ciudadano_opina', '@analista_gov', '@voz_publica', '@democracia_viva'];
-    const plataformas = ['x', 'facebook', 'instagram', 'linkedin'];
-    const ubicaciones = ['Bogotá, Colombia', 'Medellín, Colombia', 'Cali, Colombia', 'Barranquilla, Colombia', 'Bucaramanga, Colombia'];
-    
-    const contenidosPoliticos = [
-      'Las nuevas propuestas de política pública son muy prometedoras 🏛️',
-      'Necesitamos más transparencia en la gestión gubernamental 📊',
-      'Excelente trabajo en el debate presidencial de ayer 🗳️',
-      'Las reformas propuestas beneficiarán a la ciudadanía 👥',
-      'Es hora de que los políticos cumplan sus promesas electorales ⚖️',
-      'El plan de gobierno presentado aborda los temas importantes 📋',
-      'Esperamos ver resultados concretos en esta administración 🎯'
-    ];
-    
-    const contenido = contenidosPoliticos[Math.floor(Math.random() * contenidosPoliticos.length)];
-    const sentiment = analizarSentimientoConIA(contenido);
-    
-    return {
-      id: `pol_${Date.now()}`,
-      author: usuarios[Math.floor(Math.random() * usuarios.length)],
-      platform: plataformas[Math.floor(Math.random() * plataformas.length)],
-      content: contenido,
-      sentiment: sentiment as 'positive' | 'negative' | 'neutral',
-      timestamp: new Date(),
-      engagement: {
-        likes: Math.floor(Math.random() * 200) + 50,
-        comments: Math.floor(Math.random() * 50) + 10,
-        retweets: Math.floor(Math.random() * 80) + 20,
-        shares: Math.floor(Math.random() * 30) + 5
-      },
-      location: ubicaciones[Math.floor(Math.random() * ubicaciones.length)],
-      verified: Math.random() > 0.6
-    };
-  }, [analizarSentimientoConIA]);
+  // Función para cargar métricas políticas reales
+  const cargarMetricasPoliticas = useCallback(async () => {
+    try {
+      const response = await fetch('/api/political-analytics');
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        setPoliticalMetrics(result.data);
+        console.log('✅ Métricas políticas REALES cargadas:', result.data);
+      } else {
+        console.warn('⚠️ No hay métricas políticas disponibles');
+        setPoliticalMetrics({
+          approval_rating: 0,
+          disapproval_rating: 0,
+          undecided: 0,
+          voting_intention: 0,
+          political_reach: 0,
+          engagement_index: 0,
+          approval_trend: 0,
+          demographic_breakdown: [],
+          top_topics: [],
+          platform_engagement: {}
+        });
+      }
+    } catch (error) {
+      console.error('❌ Error cargando métricas políticas:', error);
+      setPoliticalMetrics({
+        approval_rating: 0,
+        disapproval_rating: 0,
+        undecided: 0,
+        voting_intention: 0,
+        political_reach: 0,
+        engagement_index: 0,
+        approval_trend: 0,
+        demographic_breakdown: [],
+        top_topics: [],
+        platform_engagement: {}
+      });
+    }
+  }, []);
 
   // Funciones para noticias
   const abrirNoticia = useCallback((noticia: any) => {
@@ -255,19 +187,41 @@ export default function DashboardPolitico() {
     setNoticiaSeleccionada(null);
   }, []);
 
-  // Función para actualizar menciones cada 5 minutos
-  const actualizarMenciones = useCallback(() => {
-    if (Math.random() > 0.2) { // 80% probabilidad de nueva mención política
-      const nuevaMencion = generarMencionIA();
-      setMencionesRecientes(prev => {
-        const updated = [nuevaMencion, ...prev].slice(0, 10);
-        return updated;
-      });
-      setNuevasMenciones(prev => prev + 1);
-      
-      setTimeout(() => setNuevasMenciones(0), 10000);
+  // Función para cargar menciones políticas reales
+  const cargarMencionesPolíticas = useCallback(async () => {
+    try {
+      const response = await fetch('/api/mentions/recent?category=political&limit=10');
+      const result = await response.json();
+
+      if (result.success && result.data?.mentions) {
+        setMencionesRecientes(result.data.mentions);
+        console.log('✅ Menciones políticas REALES cargadas');
+      } else {
+        setMencionesRecientes([]);
+      }
+    } catch (error) {
+      console.error('❌ Error cargando menciones políticas:', error);
+      setMencionesRecientes([]);
     }
-  }, [generarMencionIA]);
+  }, []);
+
+  // Función para cargar noticias políticas reales
+  const cargarNoticiasPolíticas = useCallback(async () => {
+    try {
+      const response = await fetch('/api/news/political?limit=12');
+      const result = await response.json();
+
+      if (result.success && result.data?.news) {
+        setNoticiasReales(result.data.news);
+        console.log('✅ Noticias políticas REALES cargadas');
+      } else {
+        setNoticiasReales([]);
+      }
+    } catch (error) {
+      console.error('❌ Error cargando noticias políticas:', error);
+      setNoticiasReales([]);
+    }
+  }, []);
 
   // Función para cargar datos reales desde la API
   const cargarDatosReales = useCallback(async () => {
@@ -297,45 +251,65 @@ export default function DashboardPolitico() {
     if (manual) setActualizandoDatos(false);
   }, [cargarDatosReales]);
 
-  // Efectos (mismo que dashboard normal)
+  // Efectos - Cargar datos iniciales
   useEffect(() => {
     cargarDatosReales();
-  }, [cargarDatosReales]);
+    cargarMetricasPoliticas();
+    cargarMencionesPolíticas();
+    cargarNoticiasPolíticas();
+  }, [cargarDatosReales, cargarMetricasPoliticas, cargarMencionesPolíticas, cargarNoticiasPolíticas]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsAnalyzing(false);
     }, 8000);
-    
+
     return () => clearTimeout(timer);
   }, []);
 
+  // Auto-actualización de datos generales cada minuto
   useEffect(() => {
     if (!intervaloActivo || cargandoDatos) return;
-    
+
     const interval = setInterval(() => {
       cargarDatosReales();
     }, 60000);
-    
+
     return () => clearInterval(interval);
   }, [cargarDatosReales, intervaloActivo, cargandoDatos]);
 
+  // Auto-actualización de métricas políticas cada minuto
   useEffect(() => {
     if (!intervaloActivo) return;
-    
-    const mencionesInterval = setInterval(() => {
-      actualizarMenciones();
-    }, 300000);
-    
-    const initialTimeout = setTimeout(() => {
-      actualizarMenciones();
+
+    const interval = setInterval(() => {
+      cargarMetricasPoliticas();
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, [cargarMetricasPoliticas, intervaloActivo]);
+
+  // Auto-actualización de menciones políticas cada 30 segundos
+  useEffect(() => {
+    if (!intervaloActivo) return;
+
+    const interval = setInterval(() => {
+      cargarMencionesPolíticas();
     }, 30000);
-    
-    return () => {
-      clearInterval(mencionesInterval);
-      clearTimeout(initialTimeout);
-    };
-  }, [actualizarMenciones, intervaloActivo]);
+
+    return () => clearInterval(interval);
+  }, [cargarMencionesPolíticas, intervaloActivo]);
+
+  // Auto-actualización de noticias políticas cada 2 minutos
+  useEffect(() => {
+    if (!intervaloActivo) return;
+
+    const interval = setInterval(() => {
+      cargarNoticiasPolíticas();
+    }, 120000);
+
+    return () => clearInterval(interval);
+  }, [cargarNoticiasPolíticas, intervaloActivo]);
 
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -513,12 +487,18 @@ export default function DashboardPolitico() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-blue-100">Aprobación</p>
-              <p className="text-3xl font-bold">72.4%</p>
+              <p className="text-3xl font-bold">
+                {politicalMetrics?.approval_rating?.toFixed(1) || '0'}%
+              </p>
             </div>
-            <TrendingUp className="w-8 h-8 text-blue-200" />
+            {(politicalMetrics?.approval_trend || 0) >= 0 ? (
+              <TrendingUp className="w-8 h-8 text-blue-200" />
+            ) : (
+              <TrendingDown className="w-8 h-8 text-blue-200" />
+            )}
           </div>
           <div className="mt-2 text-sm text-blue-100">
-            +5.2% vs mes anterior
+            {politicalMetrics?.approval_trend >= 0 ? '+' : ''}{politicalMetrics?.approval_trend?.toFixed(1) || '0'}% vs mes anterior
           </div>
         </motion.div>
 
@@ -531,12 +511,14 @@ export default function DashboardPolitico() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-green-100">Intención de Voto</p>
-              <p className="text-3xl font-bold">68.1%</p>
+              <p className="text-3xl font-bold">
+                {politicalMetrics?.voting_intention?.toFixed(1) || '0'}%
+              </p>
             </div>
             <Target className="w-8 h-8 text-green-200" />
           </div>
           <div className="mt-2 text-sm text-green-100">
-            +2.8% esta semana
+            {politicalMetrics?.voting_intention > 0 ? 'Tendencia positiva' : 'Sin datos disponibles'}
           </div>
         </motion.div>
 
@@ -549,7 +531,9 @@ export default function DashboardPolitico() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-purple-100">Alcance Político</p>
-              <p className="text-3xl font-bold">2.8M</p>
+              <p className="text-3xl font-bold">
+                {politicalMetrics?.political_reach ? (politicalMetrics.political_reach / 1000000).toFixed(1) + 'M' : '0'}
+              </p>
             </div>
             <Globe className="w-8 h-8 text-purple-200" />
           </div>
@@ -567,12 +551,14 @@ export default function DashboardPolitico() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-orange-100">Engagement Político</p>
-              <p className="text-3xl font-bold">94.2%</p>
+              <p className="text-3xl font-bold">
+                {politicalMetrics?.engagement_index?.toFixed(1) || '0'}%
+              </p>
             </div>
             <Activity className="w-8 h-8 text-orange-200" />
           </div>
           <div className="mt-2 text-sm text-orange-100">
-            Por encima del promedio
+            {politicalMetrics?.engagement_index > 50 ? 'Por encima del promedio' : 'Sin datos disponibles'}
           </div>
         </motion.div>
       </div>
@@ -681,7 +667,7 @@ export default function DashboardPolitico() {
           </div>
         </motion.div>
         
-        <motion.div 
+        <motion.div
           custom={2}
           initial="hidden"
           animate="visible"
@@ -693,38 +679,48 @@ export default function DashboardPolitico() {
           <div className="absolute top-2 right-2">
             <div className={`h-2 w-2 rounded-full ${errorConexion ? 'bg-red-400' : 'bg-green-400'} animate-pulse`}></div>
           </div>
-          
+
           <h3 className="mb-2 text-sm font-semibold text-gray-800 dark:text-gray-200">Aprobación Ciudadana</h3>
           <div className="flex items-end justify-between">
             <AnimatePresence mode="wait">
-              <motion.p 
-                key="72.4"
+              <motion.p
+                key={politicalMetrics?.approval_rating || 0}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 className="text-3xl font-bold text-gray-900 dark:text-white"
               >
-                72.4%
+                {politicalMetrics?.approval_rating?.toFixed(1) || '0'}%
               </motion.p>
             </AnimatePresence>
-            <div className="flex items-center text-green-600 dark:text-green-400">
-              <TrendingUp className="mr-1 h-4 w-4" />
-              <span className="text-sm font-medium">+5.2%</span>
+            <div className={`flex items-center ${(politicalMetrics?.approval_trend || 0) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+              {(politicalMetrics?.approval_trend || 0) >= 0 ? (
+                <TrendingUp className="mr-1 h-4 w-4" />
+              ) : (
+                <TrendingDown className="mr-1 h-4 w-4" />
+              )}
+              <span className="text-sm font-medium">
+                {politicalMetrics?.approval_trend >= 0 ? '+' : ''}{politicalMetrics?.approval_trend?.toFixed(1) || '0'}%
+              </span>
             </div>
           </div>
           <div className="mt-4">
             <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-              <motion.div 
+              <motion.div
                 className="h-2 rounded-full bg-green-500"
                 initial={{ width: '0%' }}
-                animate={{ width: '72%' }}
+                animate={{ width: `${politicalMetrics?.approval_rating || 0}%` }}
                 transition={{ duration: 1, delay: 0.7 }}
               ></motion.div>
             </div>
           </div>
           <div className="mt-2 flex justify-between text-xs text-gray-600 dark:text-gray-300">
-            <span>Desaprobación: <span className="font-medium">22.1%</span></span>
-            <span>Indecisos: <span className="font-medium">5.5%</span></span>
+            <span>Desaprobación: <span className="font-medium">
+              {politicalMetrics?.disapproval_rating?.toFixed(1) || '0'}%
+            </span></span>
+            <span>Indecisos: <span className="font-medium">
+              {politicalMetrics?.undecided?.toFixed(1) || '0'}%
+            </span></span>
           </div>
         </motion.div>
       </div>
@@ -774,16 +770,19 @@ export default function DashboardPolitico() {
                 <div className="p-2 bg-blue-500 rounded-lg">
                   <TrendingUp className="w-4 h-4 text-white" />
                 </div>
-                <span className="text-green-500 text-xs font-semibold">+34%</span>
+                <span className="text-green-500 text-xs font-semibold">
+                  {datosEnTiempoReal.mentions.total > 0 ? '+' : ''}
+                  {Math.floor(datosEnTiempoReal.mentions.total * 0.34)}
+                </span>
               </div>
               <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                {(datosEnTiempoReal.mentions.total * 6.8).toLocaleString()}
+                {datosEnTiempoReal.mentions.total.toLocaleString()}
               </div>
               <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                 Interacciones Políticas
               </div>
               <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                ↑ +2.8K hoy
+                {datosEnTiempoReal.mentions.total > 0 ? 'Datos en tiempo real' : 'Sin interacciones'}
               </div>
             </motion.div>
 
@@ -799,16 +798,18 @@ export default function DashboardPolitico() {
                 <div className="p-2 bg-green-500 rounded-lg">
                   <Target className="w-4 h-4 text-white" />
                 </div>
-                <span className="text-green-500 text-xs font-semibold">+12%</span>
+                <span className="text-green-500 text-xs font-semibold">
+                  {politicalMetrics?.voting_intention > 0 ? 'Activo' : '--'}
+                </span>
               </div>
               <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                68.1%
+                {politicalMetrics?.voting_intention?.toFixed(1) || '0'}%
               </div>
               <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                 Intención de Voto
               </div>
               <div className="text-xs text-green-600 dark:text-green-400 mt-1">
-                Tendencia positiva
+                {politicalMetrics?.voting_intention > 0 ? 'Tendencia positiva' : 'Sin datos disponibles'}
               </div>
             </motion.div>
 
@@ -824,16 +825,18 @@ export default function DashboardPolitico() {
                 <div className="p-2 bg-purple-500 rounded-lg">
                   <Globe className="w-4 h-4 text-white" />
                 </div>
-                <span className="text-green-500 text-xs font-semibold">+28%</span>
+                <span className="text-green-500 text-xs font-semibold">
+                  {politicalMetrics?.political_reach > 0 ? 'Activo' : '--'}
+                </span>
               </div>
               <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                4.2M
+                {politicalMetrics?.political_reach ? (politicalMetrics.political_reach / 1000000).toFixed(1) + 'M' : '0'}
               </div>
               <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                 Alcance Político
               </div>
               <div className="text-xs text-purple-600 dark:text-purple-400 mt-1">
-                ↑ +890K esta semana
+                {politicalMetrics?.political_reach > 0 ? 'Votantes potenciales' : 'Sin datos disponibles'}
               </div>
             </motion.div>
 
@@ -849,16 +852,18 @@ export default function DashboardPolitico() {
                 <div className="p-2 bg-orange-500 rounded-lg">
                   <Zap className="w-4 h-4 text-white" />
                 </div>
-                <span className="text-green-500 text-xs font-semibold">🔥</span>
+                <span className="text-green-500 text-xs font-semibold">
+                  {politicalMetrics?.engagement_index > 75 ? '🔥' : politicalMetrics?.engagement_index > 0 ? 'Activo' : '--'}
+                </span>
               </div>
               <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                97.8
+                {politicalMetrics?.engagement_index?.toFixed(1) || '0'}
               </div>
               <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                 Índice de Influencia
               </div>
               <div className="text-xs text-orange-600 dark:text-orange-400 mt-1">
-                Muy alto
+                {politicalMetrics?.engagement_index > 75 ? 'Muy alto' : politicalMetrics?.engagement_index > 0 ? 'Medio' : 'Sin datos'}
               </div>
             </motion.div>
           </div>
@@ -870,59 +875,45 @@ export default function DashboardPolitico() {
               <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">
                 Engagement Político por Plataforma
               </h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                    <span className="text-sm text-gray-700 dark:text-gray-300">X (Twitter)</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <div className="w-20 bg-gray-200 dark:bg-gray-600 rounded-full h-1.5">
-                      <div className="bg-blue-500 h-1.5 rounded-full" style={{width: '92%'}}></div>
-                    </div>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">92%</span>
-                  </div>
+              {politicalMetrics?.platform_engagement && Object.keys(politicalMetrics.platform_engagement).length > 0 ? (
+                <div className="space-y-3">
+                  {Object.entries(politicalMetrics.platform_engagement).map(([platform, percentage]: [string, any]) => {
+                    const platformColors: Record<string, string> = {
+                      x: 'bg-blue-500',
+                      facebook: 'bg-blue-600',
+                      instagram: 'bg-pink-500',
+                      linkedin: 'bg-indigo-500'
+                    };
+                    return (
+                      <div key={platform} className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <div className={`w-3 h-3 ${platformColors[platform] || 'bg-gray-500'} rounded-full`}></div>
+                          <span className="text-sm text-gray-700 dark:text-gray-300 capitalize">
+                            {platform === 'x' ? 'X (Twitter)' : platform}
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-3">
+                          <div className="w-20 bg-gray-200 dark:bg-gray-600 rounded-full h-1.5">
+                            <div
+                              className={`${platformColors[platform] || 'bg-gray-500'} h-1.5 rounded-full`}
+                              style={{ width: `${percentage}%` }}
+                            ></div>
+                          </div>
+                          <span className="text-sm font-medium text-gray-900 dark:text-white">
+                            {percentage}%
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 bg-blue-600 rounded-full"></div>
-                    <span className="text-sm text-gray-700 dark:text-gray-300">Facebook</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <div className="w-20 bg-gray-200 dark:bg-gray-600 rounded-full h-1.5">
-                      <div className="bg-blue-600 h-1.5 rounded-full" style={{width: '85%'}}></div>
-                    </div>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">85%</span>
-                  </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <BarChart3 className="mx-auto h-12 w-12 mb-3 opacity-50" />
+                  <p className="text-sm">No hay datos de engagement por plataforma</p>
+                  <p className="text-xs mt-2">Conecta tus redes sociales para ver estadísticas</p>
                 </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 bg-pink-500 rounded-full"></div>
-                    <span className="text-sm text-gray-700 dark:text-gray-300">Instagram</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <div className="w-20 bg-gray-200 dark:bg-gray-600 rounded-full h-1.5">
-                      <div className="bg-pink-500 h-1.5 rounded-full" style={{width: '78%'}}></div>
-                    </div>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">78%</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 bg-indigo-500 rounded-full"></div>
-                    <span className="text-sm text-gray-700 dark:text-gray-300">LinkedIn</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <div className="w-20 bg-gray-200 dark:bg-gray-600 rounded-full h-1.5">
-                      <div className="bg-indigo-500 h-1.5 rounded-full" style={{width: '89%'}}></div>
-                    </div>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">89%</span>
-                  </div>
-                </div>
-              </div>
+              )}
             </div>
 
             {/* Top contenido político */}
@@ -1121,9 +1112,10 @@ export default function DashboardPolitico() {
               </div>
             </div>
             <div className="p-4 max-h-96 overflow-y-auto">
-              <div className="space-y-4">
-                <AnimatePresence>
-                  {mencionesRecientes.map((mencion, index) => {
+              {mencionesRecientes.length > 0 ? (
+                <div className="space-y-4">
+                  <AnimatePresence>
+                    {mencionesRecientes.map((mencion, index) => {
                     const getPlatformIcon = (platform: string) => {
                       switch (platform) {
                         case 'x': return <XLogo className="h-5 w-5" />;
@@ -1223,16 +1215,25 @@ export default function DashboardPolitico() {
                         </div>
                       </motion.div>
                     );
-                  })}
-                </AnimatePresence>
-              </div>
-              
-              <div className="mt-4 text-center">
-                <button className="text-sm font-medium text-[#01257D] hover:text-[#01257D]/90 dark:text-[#01257D] dark:hover:text-[#01257D]/90 flex items-center mx-auto">
-                  Ver análisis político completo con IA 
-                  <ArrowUpRight className="ml-1 h-4 w-4" />
-                </button>
-              </div>
+                    })}
+                  </AnimatePresence>
+                </div>
+              ) : (
+                <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                  <MessageSquare className="mx-auto h-16 w-16 mb-4 opacity-50" />
+                  <p className="text-lg font-medium mb-2">No hay menciones políticas disponibles</p>
+                  <p className="text-sm">Conecta tus redes sociales para comenzar a recopilar menciones</p>
+                </div>
+              )}
+
+              {mencionesRecientes.length > 0 && (
+                <div className="mt-4 text-center">
+                  <button className="text-sm font-medium text-[#01257D] hover:text-[#01257D]/90 dark:text-[#01257D] dark:hover:text-[#01257D]/90 flex items-center mx-auto">
+                    Ver análisis político completo con IA
+                    <ArrowUpRight className="ml-1 h-4 w-4" />
+                  </button>
+                </div>
+              )}
             </div>
           </motion.div>
         </div>
@@ -1345,61 +1346,71 @@ export default function DashboardPolitico() {
           </div>
           
           {/* Noticias Grid - Políticas */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {noticiasReales.map((noticia, index) => {
-              const getSentimentColor = (sentiment: string) => {
-                switch (sentiment) {
-                  case 'Positivo': return 'bg-green-100 text-green-800';
-                  case 'Negativo': return 'bg-red-100 text-red-800';
-                  default: return 'bg-yellow-100 text-yellow-800';
-                }
-              };
+          {noticiasReales.length > 0 ? (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {noticiasReales.map((noticia, index) => {
+                  const getSentimentColor = (sentiment: string) => {
+                    switch (sentiment) {
+                      case 'Positivo': return 'bg-green-100 text-green-800';
+                      case 'Negativo': return 'bg-red-100 text-red-800';
+                      default: return 'bg-yellow-100 text-yellow-800';
+                    }
+                  };
 
-              return (
-                <motion.div
-                  key={noticia.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 * (index + 1) }}
-                  className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:shadow-lg transition-all duration-200 cursor-pointer hover:scale-[1.02]"
-                  onClick={() => abrirNoticia(noticia)}
-                >
-                  <div className="flex items-center space-x-2 mb-2">
-                    <div className="w-8 h-8 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center">
-                      <span className="text-sm">{noticia.icon}</span>
-                    </div>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">{noticia.person}</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${getSentimentColor(noticia.sentiment)}`}>
-                      {noticia.sentiment}
-                    </span>
-                  </div>
-                  <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2 hover:text-[#01257D] transition-colors">
-                    {noticia.title}
-                  </h4>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
-                    Análisis político: {noticia.engagement}, impacto {noticia.sentiment.toLowerCase()}...
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500">{noticia.timestamp} • {noticia.source}</span>
-                    <div className="flex items-center space-x-1">
-                      <Sparkles className="w-3 h-3 text-blue-500" />
-                      <span className="text-xs text-blue-600">IA</span>
-                    </div>
-                  </div>
-                  <div className="mt-2 text-xs text-blue-600 hover:text-blue-800 font-medium">
-                    📖 Click para leer noticia política completa
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-          
-          <div className="mt-4 text-center">
-            <button className="text-sm font-medium text-[#01257D] hover:text-[#01257D]/90 dark:text-[#01257D] dark:hover:text-[#01257D]/90 flex items-center mx-auto">
-              Ver más noticias políticas analizadas 
-              <ArrowUpRight className="ml-1 h-4 w-4" />
-            </button>
-          </div>
+                  return (
+                    <motion.div
+                      key={noticia.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 * (index + 1) }}
+                      className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:shadow-lg transition-all duration-200 cursor-pointer hover:scale-[1.02]"
+                      onClick={() => abrirNoticia(noticia)}
+                    >
+                      <div className="flex items-center space-x-2 mb-2">
+                        <div className="w-8 h-8 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center">
+                          <span className="text-sm">{noticia.icon}</span>
+                        </div>
+                        <span className="text-sm font-medium text-gray-900 dark:text-white">{noticia.person}</span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${getSentimentColor(noticia.sentiment)}`}>
+                          {noticia.sentiment}
+                        </span>
+                      </div>
+                      <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2 hover:text-[#01257D] transition-colors">
+                        {noticia.title}
+                      </h4>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+                        Análisis político: {noticia.engagement}, impacto {noticia.sentiment.toLowerCase()}...
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-500">{noticia.timestamp} • {noticia.source}</span>
+                        <div className="flex items-center space-x-1">
+                          <Sparkles className="w-3 h-3 text-blue-500" />
+                          <span className="text-xs text-blue-600">IA</span>
+                        </div>
+                      </div>
+                      <div className="mt-2 text-xs text-blue-600 hover:text-blue-800 font-medium">
+                        📖 Click para leer noticia política completa
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+
+              <div className="mt-4 text-center">
+                <button className="text-sm font-medium text-[#01257D] hover:text-[#01257D]/90 dark:text-[#01257D] dark:hover:text-[#01257D]/90 flex items-center mx-auto">
+                  Ver más noticias políticas analizadas
+                  <ArrowUpRight className="ml-1 h-4 w-4" />
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-16 text-gray-500 dark:text-gray-400">
+              <Newspaper className="mx-auto h-20 w-20 mb-4 opacity-50" />
+              <p className="text-lg font-medium mb-2">No hay noticias políticas disponibles</p>
+              <p className="text-sm">Las noticias políticas aparecerán aquí cuando estén disponibles</p>
+            </div>
+          )}
         </motion.div>
       </div>
 
@@ -1466,35 +1477,35 @@ export default function DashboardPolitico() {
             <h3 className="font-semibold text-gray-900 dark:text-white">
               Aprobación por Demografía
             </h3>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">18-35 años</span>
-                <div className="flex items-center space-x-2">
-                  <div className="w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                    <div className="bg-blue-600 h-2 rounded-full" style={{width: '68%'}}></div>
-                  </div>
-                  <span className="text-sm font-medium">68%</span>
-                </div>
+            {politicalMetrics?.demographic_breakdown && politicalMetrics.demographic_breakdown.length > 0 ? (
+              <div className="space-y-3">
+                {politicalMetrics.demographic_breakdown.map((demo: any, index: number) => {
+                  const colors = ['bg-blue-600', 'bg-green-600', 'bg-purple-600', 'bg-orange-600'];
+                  return (
+                    <div key={demo.age_group || index} className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        {demo.age_group || `Grupo ${index + 1}`}
+                      </span>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                          <div
+                            className={`${colors[index % colors.length]} h-2 rounded-full`}
+                            style={{ width: `${demo.approval || 0}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-sm font-medium">{demo.approval?.toFixed(0) || 0}%</span>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">36-50 años</span>
-                <div className="flex items-center space-x-2">
-                  <div className="w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                    <div className="bg-green-600 h-2 rounded-full" style={{width: '74%'}}></div>
-                  </div>
-                  <span className="text-sm font-medium">74%</span>
-                </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                <Users className="mx-auto h-12 w-12 mb-3 opacity-50" />
+                <p className="text-sm">No hay datos demográficos disponibles</p>
+                <p className="text-xs mt-2">Los análisis aparecerán aquí cuando haya datos suficientes</p>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">51+ años</span>
-                <div className="flex items-center space-x-2">
-                  <div className="w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                    <div className="bg-purple-600 h-2 rounded-full" style={{width: '76%'}}></div>
-                  </div>
-                  <span className="text-sm font-medium">76%</span>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
 
           {/* Temas principales */}
@@ -1502,24 +1513,32 @@ export default function DashboardPolitico() {
             <h3 className="font-semibold text-gray-900 dark:text-white">
               Temas Políticos Más Mencionados
             </h3>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                <span className="text-sm font-medium">Política Económica</span>
-                <span className="text-sm text-green-600 dark:text-green-400">+23%</span>
+            {politicalMetrics?.top_topics && politicalMetrics.top_topics.length > 0 ? (
+              <div className="space-y-3">
+                {politicalMetrics.top_topics.map((topic: any, index: number) => {
+                  const colors = [
+                    'text-green-600 dark:text-green-400',
+                    'text-blue-600 dark:text-blue-400',
+                    'text-purple-600 dark:text-purple-400',
+                    'text-orange-600 dark:text-orange-400'
+                  ];
+                  return (
+                    <div key={topic.topic || index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      <span className="text-sm font-medium">{topic.topic || `Tema ${index + 1}`}</span>
+                      <span className={`text-sm ${colors[index % colors.length]}`}>
+                        {topic.percentage >= 0 ? '+' : ''}{topic.percentage?.toFixed(0) || 0}%
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
-              <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                <span className="text-sm font-medium">Educación Pública</span>
-                <span className="text-sm text-blue-600 dark:text-blue-400">+18%</span>
+            ) : (
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                <MessageSquare className="mx-auto h-12 w-12 mb-3 opacity-50" />
+                <p className="text-sm">No hay temas políticos identificados</p>
+                <p className="text-xs mt-2">Los temas más mencionados aparecerán aquí</p>
               </div>
-              <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                <span className="text-sm font-medium">Reforma Tributaria</span>
-                <span className="text-sm text-purple-600 dark:text-purple-400">+15%</span>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                <span className="text-sm font-medium">Seguridad Ciudadana</span>
-                <span className="text-sm text-orange-600 dark:text-orange-400">+12%</span>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </motion.div>

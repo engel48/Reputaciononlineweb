@@ -154,31 +154,31 @@ export default function SocialListeningPage() {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'overview':
-        return <OverviewTab metrics={metrics} userProfile={userProfile} />;
+        return userProfile ? <OverviewTab metrics={metrics} userProfile={userProfile} /> : null;
       case 'political':
-        return hasFeature('hasAdvancedAnalytics') ? 
-          <PoliticalPulse userProfile={userProfile} /> : 
+        return hasFeature('hasAdvancedAnalytics') && userProfile ?
+          <PoliticalPulse userProfile={userProfile} /> :
           <FeatureGate feature="hasAdvancedAnalytics"><></></FeatureGate>;
       case 'influence':
-        return hasFeature('hasAdvancedAnalytics') ? 
+        return hasFeature('hasAdvancedAnalytics') && userProfile ?
           <InfluenceTracker userProfile={userProfile} /> : 
           <FeatureGate feature="hasAdvancedAnalytics"><></></FeatureGate>;
       case 'audience':
-        return <AudienceIntelligence userProfile={userProfile} />;
+        return userProfile ? <AudienceIntelligence userProfile={userProfile} /> : null;
       case 'crisis':
-        return hasFeature('hasCrisisManagement') ? 
-          <CrisisManagement userProfile={userProfile} /> : 
+        return hasFeature('hasCrisisManagement') && userProfile ?
+          <CrisisManagement userProfile={userProfile} /> :
           <FeatureGate feature="hasCrisisManagement"><></></FeatureGate>;
       case 'media':
-        return hasFeature('hasMediaCoverage') ? 
-          <MediaMonitoring userProfile={userProfile} /> : 
+        return hasFeature('hasMediaCoverage') && userProfile ?
+          <MediaMonitoring userProfile={userProfile} /> :
           <FeatureGate feature="hasMediaCoverage"><></></FeatureGate>;
       case 'brand':
-        return hasFeature('hasPredictiveAnalytics') ? 
-          <AIBrandAdvisor userProfile={userProfile} /> : 
+        return hasFeature('hasPredictiveAnalytics') && userProfile ?
+          <AIBrandAdvisor userProfile={userProfile} /> :
           <FeatureGate feature="hasPredictiveAnalytics"><></></FeatureGate>;
       default:
-        return <OverviewTab metrics={metrics} userProfile={userProfile} />;
+        return userProfile ? <OverviewTab metrics={metrics} userProfile={userProfile} /> : null;
     }
   };
 
@@ -217,20 +217,20 @@ export default function SocialListeningPage() {
                     <PlanBadge className="ml-3" />
                   </h1>
                   <p className="text-xl text-blue-100 mb-4">
-                    Monitoreo inteligente para {userProfile.type}s como {user?.name}
+                    Monitoreo inteligente para {userProfile?.type || 'usuario'}s como {user?.name}
                   </p>
                   <div className="flex flex-wrap gap-4 text-sm">
                     <div className="flex items-center">
                       <Activity className="w-4 h-4 mr-2" />
-                      <span>{metrics.totalMentions.toLocaleString()} menciones</span>
+                      <span>{metrics?.totalMentions?.toLocaleString() || '0'} menciones</span>
                     </div>
                     <div className="flex items-center">
                       <TrendingUp className="w-4 h-4 mr-2" />
-                      <span>{metrics.sentiment.positive}% sentiment positivo</span>
+                      <span>{metrics?.sentiment?.positive || '0'}% sentiment positivo</span>
                     </div>
                     <div className="flex items-center">
                       <Globe className="w-4 h-4 mr-2" />
-                      <span>{(metrics.reach / 1000000).toFixed(1)}M alcance</span>
+                      <span>{metrics?.reach ? (metrics.reach / 1000000).toFixed(1) : '0'}M alcance</span>
                     </div>
                   </div>
                 </div>
@@ -238,11 +238,11 @@ export default function SocialListeningPage() {
                 <div className="flex flex-col space-y-3">
                   <div className="flex items-center space-x-3">
                     <div className={`h-3 w-3 rounded-full animate-pulse ${
-                      metrics.crisisAlerts > 0 ? 'bg-red-400' : 'bg-green-400'
+                      (metrics?.crisisAlerts || 0) > 0 ? 'bg-red-400' : 'bg-green-400'
                     }`}></div>
                     <span className="text-sm">
-                      {metrics.crisisAlerts > 0 ? 
-                        `${metrics.crisisAlerts} alertas activas` : 
+                      {(metrics?.crisisAlerts || 0) > 0 ?
+                        `${metrics?.crisisAlerts || 0} alertas activas` :
                         'Sin crisis detectadas'
                       }
                     </span>

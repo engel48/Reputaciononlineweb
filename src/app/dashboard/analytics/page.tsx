@@ -50,19 +50,21 @@ export default function AnalyticsPage() {
   const headerRef = useRef<HTMLDivElement>(null);
   const engagementIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Función para simular actualización de engagement en tiempo real
+  // ❌ FUNCIÓN ELIMINADA - SIMULABA DATOS FALSOS
+  // Esta función simulaba variaciones aleatorias de engagement que no eran reales
   const updateRealTimeEngagement = () => {
     setIsRefreshing(true);
-    
-    // Simular variación del engagement entre 45-65
-    const variation = (Math.random() - 0.5) * 4; // Variación de -2 a +2
-    const newValue = Math.max(45, Math.min(65, realTimeEngagement + variation));
-    
+
+    // ✅ En lugar de simular, deberíamos obtener datos reales de la API
+    // Por ahora, simplemente actualizar el timestamp sin cambiar el valor
     setTimeout(() => {
-      setRealTimeEngagement(Math.round(newValue * 10) / 10);
+      // TODO: Implementar llamada a API real para obtener engagement actual
+      // const newEngagement = await getRealtimeEngagement(user.id);
+      // setRealTimeEngagement(newEngagement);
+
       setLastUpdate(new Date());
       setIsRefreshing(false);
-      
+
       // Show notification
       setShowUpdateNotification(true);
       setTimeout(() => setShowUpdateNotification(false), 3000);

@@ -73,10 +73,10 @@ async function generateRealMediaAnalytics(sourceName: string): Promise<MediaAnal
     console.log(`📊 Scraping REAL data para: ${sourceName}`);
 
     // Usar performRealAnalysis para hacer scraping REAL del medio
-    const realData = await performRealAnalysis('', sourceName);
+    const realData = await performRealAnalysis(sourceName);
 
-    if (realData && realData.articles && realData.articles.length > 0) {
-      const recentArticles = realData.articles.slice(0, 5).map((article: any) => ({
+    if (realData && realData.realNews && realData.realNews.length > 0) {
+      const recentArticles = realData.realNews.slice(0, 5).map((article: any) => ({
         title: article.title,
         date: article.publishedAt || new Date().toISOString(),
         sentiment: article.sentiment || 'neutral',
@@ -88,12 +88,12 @@ async function generateRealMediaAnalytics(sourceName: string): Promise<MediaAnal
         sourceId: sourceName.toLowerCase().replace(/\s+/g, '-'),
         sourceName,
         realTimeData: {
-          monthlyMentions: realData.articles.length,
-          dailyTraffic: realData.sources?.length || 0,
-          sentiment: realData.overallSentiment || { positive: 0, negative: 0, neutral: 0 },
+          monthlyMentions: realData.realNews.length,
+          dailyTraffic: realData.totalMentions || 0,
+          sentiment: realData.sentiment || { positive: 0, negative: 0, neutral: 0 },
           reachEstimate: getReachEstimate(sourceName),
           lastUpdate: new Date().toISOString(),
-          trendsToday: realData.articles.length,
+          trendsToday: realData.realNews.length,
           engagement: {
             shares: 0,
             comments: 0,
@@ -103,7 +103,7 @@ async function generateRealMediaAnalytics(sourceName: string): Promise<MediaAnal
         }
       };
 
-      console.log(`✅ Datos REALES obtenidos para ${sourceName}: ${realData.articles.length} artículos`);
+      console.log(`✅ Datos REALES obtenidos para ${sourceName}: ${realData.realNews.length} artículos`);
       return result;
     }
 

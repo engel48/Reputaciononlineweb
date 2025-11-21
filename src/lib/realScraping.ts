@@ -88,7 +88,7 @@ async function searchNewsWithAI(query: string): Promise<ScrapingResult[]> {
           title: item.title,
           content: item.content,
           url: `https://news.google.com/article/${Date.now() + index}`,
-          date: item.date || new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
+          date: item.date || new Date().toISOString(), // ✅ Fecha actual real
           sentiment: item.sentiment
         }));
       } catch (e) {
@@ -103,41 +103,18 @@ async function searchNewsWithAI(query: string): Promise<ScrapingResult[]> {
   }
 }
 
-// Función para buscar en redes sociales simulado (ya que las APIs reales requieren autenticación)
+// ❌ FUNCIÓN ELIMINADA - GENERABA DATOS FALSOS
+// Esta función simulaba menciones de redes sociales que no existen
+// Las APIs reales de redes sociales requieren OAuth y tokens de acceso válidos
 async function simulateSocialMediaScraping(query: string): Promise<ScrapingResult[]> {
-  // En un entorno real, aquí se conectaría a APIs de X, Facebook, Instagram, etc.
-  // Por ahora, simularemos datos realistas
-  const socialPlatforms = ['X', 'Facebook', 'Instagram', 'TikTok', 'YouTube'];
-  const results: ScrapingResult[] = [];
-
-  for (const platform of socialPlatforms) {
-    const mentions = Math.floor(Math.random() * 50) + 10;
-    for (let i = 0; i < Math.min(mentions, 5); i++) {
-      results.push({
-        source: platform,
-        title: `Mención en ${platform}`,
-        content: `Contenido relacionado con ${query} en ${platform}. ${generateRealisticSocialContent(query, platform)}`,
-        url: `https://${platform.toLowerCase()}.com/post/${Date.now() + i}`,
-        date: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString()
-      });
-    }
-  }
-
-  return results;
+  // ✅ Retornar array vacío - NO generar datos falsos
+  // Si no hay conexión OAuth real a las redes sociales, no mostrar datos
+  console.warn('simulateSocialMediaScraping: No se generan datos simulados. Conecte APIs reales.');
+  return [];
 }
 
-function generateRealisticSocialContent(name: string, platform: string): string {
-  const templates = [
-    `Gran trabajo de ${name} en su última iniciativa`,
-    `${name} sigue siendo relevante en ${platform}`,
-    `Interesante perspectiva de ${name} sobre temas actuales`,
-    `${name} generando conversación en ${platform}`,
-    `Nueva actualización de ${name} causa revuelo`,
-    `${name} mantiene su presencia activa en redes`
-  ];
-  
-  return templates[Math.floor(Math.random() * templates.length)];
-}
+// ❌ FUNCIÓN ELIMINADA - Ya no se usa porque simulateSocialMediaScraping retorna vacío
+// function generateRealisticSocialContent() ya no es necesaria
 
 // Función para analizar sentimientos con Julia IA
 async function analyzeSentimentWithGPT(contents: string[], personalityName: string): Promise<{
@@ -214,11 +191,7 @@ export async function searchAndAnalyzePersonality(name: string): Promise<Persona
     const sources = Object.entries(sourceGroups).map(([sourceName, items]) => ({
       source: sourceName,
       mentions: items.length,
-      sentiment: {
-        positive: Math.floor(Math.random() * 30) + 40,
-        negative: Math.floor(Math.random() * 20) + 10,
-        neutral: Math.floor(Math.random() * 20) + 20
-      },
+      sentiment: sentimentAnalysis.overall_sentiment, // ✅ Usar sentimiento real del análisis de IA
       recent_mentions: items.slice(0, 3)
     }));
     
@@ -226,13 +199,17 @@ export async function searchAndAnalyzePersonality(name: string): Promise<Persona
       (sentimentAnalysis.overall_sentiment.positive - sentimentAnalysis.overall_sentiment.negative + 50) * 2
     );
     
+    // ✅ Calcular tendencia basada en datos reales (comparar sentimiento actual vs promedio)
+    const avgPositive = sentimentAnalysis.overall_sentiment.positive;
+    const trend = avgPositive > 50 ? 'up' : 'down'; // Si más del 50% es positivo, tendencia arriba
+
     return {
       name,
       overall_sentiment: sentimentAnalysis.overall_sentiment,
       total_mentions: allContents.length,
       sources,
       reputation_score: Math.max(0, Math.min(100, reputationScore)),
-      trend: Math.random() > 0.5 ? 'up' : 'down',
+      trend, // ✅ Tendencia basada en sentimiento real
       key_insights: sentimentAnalysis.insights,
       news_analysis: newsResults,
       social_analysis: socialResults
@@ -315,29 +292,10 @@ export async function searchPersonalitiesOnline(query: string): Promise<Array<{
   }
 }
 
-// Función de respaldo para generar resultados cuando OpenAI no está disponible
+// ❌ FUNCIÓN ELIMINADA - GENERABA DATOS FALSOS
+// Esta función generaba noticias falsas cuando la IA no estaba disponible
 function generateFallbackScrapingResults(query: string): ScrapingResult[] {
-  const currentDate = new Date();
-  const fallbackResults: ScrapingResult[] = [];
-  
-  const sources = ['El Tiempo', 'Semana', 'Caracol Radio', 'El Espectador'];
-  const sentiments: ('positive' | 'negative' | 'neutral')[] = ['positive', 'negative', 'neutral'];
-  
-  for (let i = 0; i < 3; i++) {
-    const randomSource = sources[Math.floor(Math.random() * sources.length)];
-    const randomSentiment = sentiments[Math.floor(Math.random() * sentiments.length)];
-    const daysAgo = Math.floor(Math.random() * 7) + 1;
-    const newsDate = new Date(currentDate.getTime() - daysAgo * 24 * 60 * 60 * 1000);
-    
-    fallbackResults.push({
-      source: randomSource,
-      title: `${query}: Análisis de tendencias actuales`,
-      content: `Reporte detallado sobre ${query} basado en análisis de medios digitales y tendencias de comunicación.`,
-      url: `https://${randomSource.toLowerCase().replace(/\s+/g, '')}.com/noticia/${Date.now() + i}`,
-      date: newsDate.toISOString(),
-      sentiment: randomSentiment
-    });
-  }
-  
-  return fallbackResults;
+  // ✅ Retornar array vacío - NO generar datos falsos
+  console.warn('generateFallbackScrapingResults: No hay datos reales disponibles. Retornando vacío.');
+  return [];
 }

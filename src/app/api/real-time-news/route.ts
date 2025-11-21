@@ -161,7 +161,7 @@ Genera las noticias ahora:`;
             content: news.content || 'Contenido no disponible',
             source: REAL_NEWS_SOURCES.find(s => s.name === news.source)?.name || 'El Tiempo',
             url: generateNewsUrl(news.source, news.title, index),
-            publishedAt: news.publishedAt || new Date(Date.now() - Math.random() * 6 * 60 * 60 * 1000).toISOString(),
+            publishedAt: news.publishedAt || new Date().toISOString(), // ✅ Fecha actual real, no aleatoria
             sentiment: news.sentiment || 'neutral',
             category: news.category || 'social',
             relevanceScore: Math.min(100, Math.max(60, news.relevanceScore || 75)),
@@ -262,22 +262,23 @@ function generateFallbackNews(): RealTimeNews[] {
     }
   ];
 
+  // ✅ Usar templates predefinidos sin aleatoriedad en asignación de fuentes
   for (let i = 0; i < 8; i++) {
     const template = newsTemplates[i];
-    const randomSource = REAL_NEWS_SOURCES[Math.floor(Math.random() * REAL_NEWS_SOURCES.length)];
-    const hoursAgo = Math.floor(Math.random() * 6); // Últimas 6 horas
+    const source = REAL_NEWS_SOURCES[i % REAL_NEWS_SOURCES.length]; // Rotar fuentes de forma determinística
+    const hoursAgo = i; // Distribuir noticias cada hora, no aleatoriamente
     const publishTime = new Date(now.getTime() - hoursAgo * 60 * 60 * 1000);
 
     fallbackNews.push({
       id: `fallback_news_${Date.now()}_${i}`,
       title: template.title,
       content: template.content,
-      source: randomSource.name,
-      url: generateNewsUrl(randomSource.name, template.title, i),
+      source: source.name,
+      url: generateNewsUrl(source.name, template.title, i),
       publishedAt: publishTime.toISOString(),
       sentiment: template.sentiment,
       category: template.category,
-      relevanceScore: Math.floor(Math.random() * 25) + 70, // 70-95
+      relevanceScore: 75, // ✅ Valor fijo razonable, no aleatorio
       verified: true,
       region: 'Colombia',
       imageUrl: `https://via.placeholder.com/400x200?text=${encodeURIComponent(template.title.substring(0, 30))}`
