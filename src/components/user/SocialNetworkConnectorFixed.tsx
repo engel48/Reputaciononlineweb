@@ -139,13 +139,23 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
 
     try {
       const response = await fetch('/api/social-connect?action=list', {
+        method: 'GET',
+        credentials: 'include', // ✅ IMPORTANTE: Enviar cookies con la petición
         headers: {
           'Content-Type': 'application/json',
         }
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        // Intentar parsear error JSON si existe
+        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (e) {
+          // Si no es JSON, usar mensaje por defecto
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -195,6 +205,7 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
       // Enviar código al backend para exchange por access token
       const response = await fetch('/api/social-connect', {
         method: 'POST',
+        credentials: 'include', // ✅ Enviar cookies
         headers: {
           'Content-Type': 'application/json',
         },
@@ -352,6 +363,7 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
     try {
       const response = await fetch('/api/social-connect', {
         method: 'POST',
+        credentials: 'include', // ✅ Enviar cookies
         headers: {
           'Content-Type': 'application/json',
         },
@@ -384,6 +396,7 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
     try {
       const response = await fetch('/api/social-connect', {
         method: 'POST',
+        credentials: 'include', // ✅ Enviar cookies
         headers: {
           'Content-Type': 'application/json',
         },
@@ -415,6 +428,7 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
     try {
       const response = await fetch('/api/social-connect', {
         method: 'POST',
+        credentials: 'include', // ✅ Enviar cookies
         headers: {
           'Content-Type': 'application/json',
         },
