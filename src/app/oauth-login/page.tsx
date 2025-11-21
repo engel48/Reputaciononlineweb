@@ -203,14 +203,10 @@ export default function OAuthLogin() {
           break;
 
         case 'tiktok':
-          const tiktokClientKey = process.env.NEXT_PUBLIC_TIKTOK_CLIENT_KEY;
-          if (!tiktokClientKey) {
-            throw new Error('TikTok OAuth no está configurado. Contacta al administrador.');
-          }
-          // Guardar state en cookie para validación en callback
-          document.cookie = `tiktok_oauth_state=${state}; path=/; max-age=600; SameSite=Lax`;
-          authUrl = `${config.authUrl}?client_key=${tiktokClientKey}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=user.info.basic,video.list&response_type=code&state=${state}`;
-          break;
+          // TikTok usa el backend API directamente (tiene credenciales del servidor)
+          console.log('🔍 TikTok OAuth: Redirigiendo a /api/auth/tiktok');
+          window.location.href = '/api/auth/tiktok';
+          return; // Salir temprano, el backend maneja todo
 
         default:
           throw new Error(`Plataforma ${platform} no soportada`);

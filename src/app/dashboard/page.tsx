@@ -14,6 +14,7 @@ import InstagramDashboardSection from '@/components/dashboard/InstagramDashboard
 import LinkedInDashboardSection from '@/components/dashboard/LinkedInDashboardSection';
 import XDashboardSection from '@/components/dashboard/XDashboardSection';
 import ThreadsDashboardSection from '@/components/dashboard/ThreadsDashboardSection';
+import TikTokDashboardSection from '@/components/dashboard/TikTokDashboardSection';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowUpRight, RefreshCw, TrendingUp, TrendingDown, Facebook, Instagram, CreditCard, Brain, Sparkles, Wifi, WifiOff, AlertTriangle, Search, Zap, BarChart3, Users, MessageSquare, Activity, Target, Award, Globe, Clock, Newspaper, Bot, X } from 'lucide-react';
 import XLogo from '@/components/icons/XLogo';
@@ -651,6 +652,11 @@ export default function Dashboard() {
       {/* Threads Analytics Section */}
       <div className="mb-4 sm:mb-6">
         <ThreadsDashboardSection />
+      </div>
+
+      {/* TikTok Analytics Section */}
+      <div className="mb-4 sm:mb-6">
+        <TikTokDashboardSection />
       </div>
 
       {/* ========================================== */}
