@@ -30,10 +30,22 @@ export async function GET(request: NextRequest) {
     const state = Math.random().toString(36).substring(2, 15) +
                   Math.random().toString(36).substring(2, 15);
 
+    // Scopes solicitados:
+    // - user.info.basic: Información básica del usuario
+    // - user.info.stats: Estadísticas (follower_count, following_count, likes_count, video_count)
+    // - user.info.profile: Perfil detallado (bio_description, is_verified, profile_deep_link)
+    // - video.list: Lista de videos del usuario
+    const scopes = [
+      'user.info.basic',
+      'user.info.stats',
+      'user.info.profile',
+      'video.list'
+    ].join(',');
+
     // Guardar state en cookie para validar en callback
     const cookieStore = await cookies();
     const response = NextResponse.redirect(
-      `https://www.tiktok.com/v2/auth/authorize/?client_key=${TIKTOK_CLIENT_KEY}&redirect_uri=${encodeURIComponent(`${NEXTAUTH_URL}/api/auth/tiktok/callback`)}&scope=user.info.basic,video.list&response_type=code&state=${state}`
+      `https://www.tiktok.com/v2/auth/authorize/?client_key=${TIKTOK_CLIENT_KEY}&redirect_uri=${encodeURIComponent(`${NEXTAUTH_URL}/api/auth/tiktok/callback`)}&scope=${scopes}&response_type=code&state=${state}`
     );
 
     response.cookies.set('tiktok_oauth_state', state, {

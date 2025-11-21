@@ -86,7 +86,8 @@ export default function TerminosDeServicio() {
               </p>
               <p className="leading-relaxed">
                 <strong>4.3 TikTok:</strong> Al conectar su cuenta de TikTok, accedemos a información básica
-                de usuario y lista de videos según los permisos otorgados (user.info.basic, video.list).
+                de usuario, estadísticas, detalles de perfil y lista de videos según los permisos otorgados
+                (user.info.basic, user.info.stats, user.info.profile, video.list).
               </p>
               <p className="leading-relaxed">
                 <strong>4.4 Revocación:</strong> Puede revocar el acceso a cualquier red social en cualquier

@@ -193,8 +193,10 @@ export default function PoliticaDePrivacidad() {
                 <strong>6.2 Permisos de TikTok:</strong> Solicitamos los siguientes scopes:
               </p>
               <ul className="list-disc list-inside space-y-1 ml-8">
-                <li><code className="bg-slate-100 px-2 py-1 rounded">user.info.basic</code> - Información básica de perfil</li>
-                <li><code className="bg-slate-100 px-2 py-1 rounded">video.list</code> - Lista de videos públicos</li>
+                <li><code className="bg-slate-100 px-2 py-1 rounded">user.info.basic</code> - Información básica de perfil (ID, nombre, avatar)</li>
+                <li><code className="bg-slate-100 px-2 py-1 rounded">user.info.stats</code> - Estadísticas del usuario (seguidores, likes, conteo de videos)</li>
+                <li><code className="bg-slate-100 px-2 py-1 rounded">user.info.profile</code> - Detalles de perfil (biografía, verificación, enlaces)</li>
+                <li><code className="bg-slate-100 px-2 py-1 rounded">video.list</code> - Lista de videos públicos con métricas</li>
               </ul>
               <p className="leading-relaxed mt-3">
                 <strong>6.3 Propósito:</strong> Utilizamos estos datos exclusivamente para:

@@ -78,7 +78,7 @@ const SOCIAL_PLATFORMS: Record<string, SocialPlatformConfig> = {
     clientId: process.env.TIKTOK_CLIENT_ID || '',
     clientSecret: process.env.TIKTOK_CLIENT_SECRET || '',
     redirectUri: process.env.NEXT_PUBLIC_BASE_URL + '/api/auth/callback/tiktok',
-    scopes: ['user.info.basic', 'video.list'],
+    scopes: ['user.info.basic', 'user.info.stats', 'user.info.profile', 'video.list'],
     authUrl: 'https://www.tiktok.com/auth/authorize/',
     tokenUrl: 'https://open-api.tiktok.com/oauth/access_token/'
   },
