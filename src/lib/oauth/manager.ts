@@ -3,6 +3,7 @@ import { twitterOAuth, TwitterProfile } from './twitter';
 import { linkedinOAuth, LinkedInProfile } from './linkedin';
 import { youtubeOAuth, YouTubeProfile } from './youtube';
 import { threadsOAuth, ThreadsProfile } from './threads';
+import { tiktokOAuth, TikTokProfile } from './tiktok';
 
 export type SocialPlatform = 'facebook' | 'instagram' | 'x' | 'linkedin' | 'youtube' | 'threads' | 'tiktok';
 
@@ -129,6 +130,16 @@ export class SocialOAuthManager {
             // Obtener métricas adicionales para followers
             const metrics = await threadsOAuth.getProfileMetrics(accessToken, profileData.id);
             followers = metrics?.followers_count || 0;
+          }
+          break;
+
+        case 'tiktok':
+          profileData = await tiktokOAuth.getProfile(accessToken);
+          if (profileData) {
+            username = profileData.display_name;
+            displayName = profileData.display_name;
+            profileImage = profileData.avatar_url_100 || profileData.avatar_url;
+            followers = profileData.follower_count || 0;
           }
           break;
 

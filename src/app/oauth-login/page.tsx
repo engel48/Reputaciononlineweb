@@ -50,7 +50,7 @@ const platformConfig = {
     name: 'TikTok',
     color: '#000000',
     bgColor: '#FFFFFF',
-    authUrl: null // TikTok requiere configuración especial
+    authUrl: 'https://www.tiktok.com/v2/auth/authorize/'
   }
 };
 
@@ -200,6 +200,16 @@ export default function OAuthLogin() {
             throw new Error('Instagram OAuth no está configurado. Contacta al administrador.');
           }
           authUrl = `${config.authUrl}?client_id=${instaClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=user_profile,user_media&response_type=code&state=${state}`;
+          break;
+
+        case 'tiktok':
+          const tiktokClientKey = process.env.NEXT_PUBLIC_TIKTOK_CLIENT_KEY;
+          if (!tiktokClientKey) {
+            throw new Error('TikTok OAuth no está configurado. Contacta al administrador.');
+          }
+          // Guardar state en cookie para validación en callback
+          document.cookie = `tiktok_oauth_state=${state}; path=/; max-age=600; SameSite=Lax`;
+          authUrl = `${config.authUrl}?client_key=${tiktokClientKey}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=user.info.basic,video.list&response_type=code&state=${state}`;
           break;
 
         default:

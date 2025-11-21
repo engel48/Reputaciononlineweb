@@ -77,6 +77,69 @@ export const authOptions: NextAuthOptions = {
         };
       },
     },
+    // TikTok OAuth
+    {
+      id: "tiktok",
+      name: "TikTok",
+      type: "oauth",
+      authorization: {
+        url: "https://www.tiktok.com/v2/auth/authorize/",
+        params: {
+          client_key: process.env.TIKTOK_CLIENT_KEY || process.env.NEXT_PUBLIC_TIKTOK_CLIENT_KEY || '',
+          scope: "user.info.basic,video.list",
+          response_type: "code",
+          state: "",
+        },
+      },
+      token: {
+        url: "https://open.tiktokapis.com/v2/oauth/token/",
+        async request({ params, provider }) {
+          const response = await fetch(provider.token?.url as string, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams({
+              client_key: provider.clientId || '',
+              client_secret: provider.clientSecret || '',
+              code: params.code || '',
+              grant_type: "authorization_code",
+              redirect_uri: params.redirect_uri || '',
+            }),
+          });
+          const tokens = await response.json();
+          return { tokens };
+        },
+      },
+      userinfo: {
+        url: "https://open.tiktokapis.com/v2/user/info/",
+        params: {
+          fields: "open_id,union_id,avatar_url,display_name,follower_count,following_count,likes_count,video_count"
+        },
+        async request({ tokens, provider }) {
+          const response = await fetch(
+            `${provider.userinfo?.url}?fields=open_id,union_id,avatar_url,display_name,follower_count,following_count,likes_count,video_count`,
+            {
+              headers: {
+                Authorization: `Bearer ${tokens.access_token}`,
+              },
+            }
+          );
+          const data = await response.json();
+          return data.data?.user || {};
+        },
+      },
+      clientId: process.env.TIKTOK_CLIENT_KEY || process.env.NEXT_PUBLIC_TIKTOK_CLIENT_KEY || '',
+      clientSecret: process.env.TIKTOK_CLIENT_SECRET || '',
+      profile(profile: any) {
+        return {
+          id: profile.open_id,
+          name: profile.display_name,
+          email: '', // TikTok no proporciona email
+          image: profile.avatar_url,
+        };
+      },
+    },
   ],
   callbacks: {
     async jwt({ token, account, profile }) {
@@ -139,7 +202,8 @@ async function saveSocialMediaConnection(
       'google': 'youtube', // Google se usa para YouTube
       'linkedin': 'linkedin',
       'threads': 'threads',
-      'youtube': 'youtube'
+      'youtube': 'youtube',
+      'tiktok': 'tiktok'
     };
 
     const platform = platformMap[account.provider];
@@ -180,6 +244,12 @@ async function saveSocialMediaConnection(
         username = profile?.username || '';
         profileUrl = `https://threads.net/@${username}`;
         profileImage = profile?.threads_profile_picture_url || '';
+        break;
+      case 'tiktok':
+        username = profile?.display_name || '';
+        profileUrl = profile?.profile_deep_link || `https://www.tiktok.com/@${profile?.open_id}`;
+        followers = profile?.follower_count || 0;
+        profileImage = profile?.avatar_url || '';
         break;
     }
 
