@@ -379,8 +379,8 @@ export default function Dashboard() {
   
   // Memoizar cálculos costosos
   const estadisticasCalculadas = useMemo(() => {
-    const total = datosEnTiempoReal.mentions.total;
-    const positive = datosEnTiempoReal.mentions.positive;
+    const total = datosEnTiempoReal?.mentions?.total ?? 0;
+    const positive = datosEnTiempoReal?.mentions?.positive ?? 0;
     const porcentajePositivo = total > 0 ? ((positive / total) * 100).toFixed(1) : '0.0';
     const crecimientoSemanal = '+12.5%'; // En producción vendría del backend
     

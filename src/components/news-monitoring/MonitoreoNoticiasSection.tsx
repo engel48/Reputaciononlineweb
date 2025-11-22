@@ -67,7 +67,7 @@ export default function MonitoreoNoticiasSection() {
 
       const data = await response.json();
 
-      if (data.success && data.data?.sites) {
+      if (data.success && Array.isArray(data.data?.sites)) {
         setSitiosMonitoreados(
           data.data.sites.map((site: any) => ({
             id: site.id,
@@ -110,7 +110,7 @@ export default function MonitoreoNoticiasSection() {
 
       const data = await response.json();
 
-      if (data.success && data.data?.mentions) {
+      if (data.success && Array.isArray(data.data?.mentions)) {
         setMencionesRecientes(
           data.data.mentions.map((mention: any) => ({
             id: mention.id,
