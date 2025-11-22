@@ -133,7 +133,7 @@ export async function GET(request: NextRequest) {
 
     const analytics = await generateRealTimeAnalytics();
 
-    console.log(`✅ Analytics generados: ${analytics.mentions.total} menciones totales`);
+    console.log(`✅ Analytics generados: ${analytics?.mentions?.total || 0} menciones totales`);
 
     return NextResponse.json({
       success: true,

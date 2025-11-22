@@ -44,6 +44,10 @@ export default function SelectorSitiosNoticias({
 
   // Filtrar sitios según búsqueda y categoría
   const sitiosFiltrados = useMemo(() => {
+    if (!sitios || !Array.isArray(sitios)) {
+      return [];
+    }
+
     return sitios.filter(sitio => {
       const coincideBusqueda = sitio.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
                                sitio.descripcion?.toLowerCase().includes(busqueda.toLowerCase());
@@ -55,7 +59,7 @@ export default function SelectorSitiosNoticias({
   }, [sitios, busqueda, categoriaFiltro]);
 
   // Obtener sitio seleccionado actual
-  const sitioActual = sitios.find(s => s.id === sitioSeleccionado);
+  const sitioActual = sitios?.find(s => s.id === sitioSeleccionado);
 
   // Categorías disponibles
   const categorias: (CategoriaSitioNoticia | 'todas')[] = [

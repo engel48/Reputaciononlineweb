@@ -4,17 +4,18 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import * as jwt from 'jsonwebtoken';
+import { supabase } from '@/lib/supabase-server';
 import { getSiteById } from '@/lib/news-monitoring/sites-config';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const JWT_SECRET = process.env.JWT_SECRET || 'reputacion-online-secret-key-2025';
 
 export async function GET(request: NextRequest) {
   try {
-    // Obtener token de autenticación
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
+    // Obtener token de autenticación desde cookie
+    const authToken = request.cookies.get('auth-token')?.value;
+
+    if (!authToken) {
       return NextResponse.json(
         {
           success: false,
@@ -28,19 +29,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const token = authHeader.substring(7);
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      global: {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    });
-
-    // Verificar usuario autenticado
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    // Verificar token JWT
+    let userId: string;
+    try {
+      const decoded = jwt.verify(authToken, JWT_SECRET) as { userId: string; email: string };
+      userId = decoded.userId;
+    } catch (error) {
       return NextResponse.json(
         {
           success: false,
@@ -80,7 +74,7 @@ export async function GET(request: NextRequest) {
         is_read,
         is_starred
       `)
-      .eq('user_id', user.id);
+      .eq('user_id', userId);
 
     // Aplicar filtros
     if (siteId) {
@@ -110,7 +104,7 @@ export async function GET(request: NextRequest) {
     const { data: monitoredSites } = await supabase
       .from('monitored_news_sites')
       .select('id, site_id')
-      .eq('user_id', user.id);
+      .eq('user_id', userId);
 
     const siteMap = new Map(monitoredSites?.map(s => [s.id, s.site_id]) || []);
 
@@ -135,7 +129,7 @@ export async function GET(request: NextRequest) {
     const { data: stats } = await supabase
       .from('news_mentions')
       .select('sentiment, is_read')
-      .eq('user_id', user.id);
+      .eq('user_id', userId);
 
     const statistics = {
       total: stats?.length || 0,
@@ -255,7 +249,7 @@ export async function PATCH(request: NextRequest) {
       .from('news_mentions')
       .update(updateData)
       .eq('id', mentionId)
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .select()
       .single();
 

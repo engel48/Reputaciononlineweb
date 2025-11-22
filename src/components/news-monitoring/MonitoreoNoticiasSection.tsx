@@ -56,14 +56,15 @@ export default function MonitoreoNoticiasSection() {
     try {
       setLoading(true);
 
-      // Obtener token de autenticación
-      const token = localStorage.getItem('token') || '';
-
+      // Cookie-based auth - no need for Authorization header
       const response = await fetch('/api/news-monitoring/user-sites', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include', // Enviar cookies automáticamente
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
       const data = await response.json();
 
       if (data.success && data.data?.sites) {
@@ -98,13 +99,15 @@ export default function MonitoreoNoticiasSection() {
 
   const loadMentions = async () => {
     try {
-      const token = localStorage.getItem('token') || '';
-
+      // Cookie-based auth - no need for Authorization header
       const response = await fetch('/api/news-monitoring/mentions?limit=20', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include', // Enviar cookies automáticamente
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
       const data = await response.json();
 
       if (data.success && data.data?.mentions) {
