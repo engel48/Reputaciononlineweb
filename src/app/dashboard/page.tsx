@@ -8,6 +8,8 @@ import JuliaChat from '@/components/dashboard/JuliaChat';
 import SimpleBuscador from '@/components/dashboard/SimpleBuscador';
 import SimpleChat from '@/components/dashboard/SimpleChat';
 import PoliticalDashboard from '@/components/dashboard/PoliticalDashboard';
+import NoticiasColombia from '@/components/dashboard/NoticiasColombia';
+import MonitoreoNoticiasSection from '@/components/news-monitoring/MonitoreoNoticiasSection';
 import YouTubeDashboardSection from '@/components/dashboard/YouTubeDashboardSection';
 import FacebookDashboardSection from '@/components/dashboard/FacebookDashboardSection';
 import InstagramDashboardSection from '@/components/dashboard/InstagramDashboardSection';
@@ -92,10 +94,8 @@ export default function Dashboard() {
   const { user } = useUser();
   const { hasFeature, currentPlan } = usePlan();
   
-  
-  // Estados para controlar la animación y datos
-  const [neuralNetworkMode, setNeuralNetworkMode] = useState<'sentiment' | 'platform' | 'engagement'>('sentiment');
-  const [isAnalyzing, setIsAnalyzing] = useState(true);
+
+  // Estados para controlar los datos del dashboard
   const [datosEnTiempoReal, setDatosEnTiempoReal] = useState(defaultData);
   const [cargandoDatos, setCargandoDatos] = useState(false);
   const [ultimaActualizacion, setUltimaActualizacion] = useState(new Date());
@@ -289,15 +289,6 @@ export default function Dashboard() {
     cargarMencionesReales();
   }, [cargarMencionesReales]);
 
-  // Efecto para simular análisis completado
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsAnalyzing(false);
-    }, 8000); // Reducido a 8 segundos
-    
-    return () => clearTimeout(timer);
-  }, []);
-  
   // Efecto para actualización automática de datos reales
   useEffect(() => {
     if (!intervaloActivo || cargandoDatos) return;
@@ -944,76 +935,11 @@ export default function Dashboard() {
       <div className="mb-6">
         <DynamicMencionesMap />
       </div>
-      
-      {/* Análisis de IA - Pensamiento de Julia Mejorado (Movido debajo del mapa) */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2, duration: 0.5 }}
-        className="mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
-            <Sparkles className="mr-2 h-5 w-5 text-blue-500" />
-            Julia IA - Procesamiento Cognitivo
-          </h2>
-          <div className="flex items-center space-x-4">
-            {/* Selector de modo de análisis */}
-            <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
-              {['sentiment', 'platform', 'engagement'].map((mode) => (
-                <button
-                  key={mode}
-                  onClick={() => setNeuralNetworkMode(mode as any)}
-                  className={`px-3 py-1 text-xs rounded-md transition-all duration-200 ${
-                    neuralNetworkMode === mode
-                      ? 'bg-blue-500 text-white'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
-                  }`}
-                >
-                  {mode === 'sentiment' ? 'Sentimiento' : mode === 'platform' ? 'Plataforma' : 'Engagement'}
-                </button>
-              ))}
-            </div>
-            
-            <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
-              {isAnalyzing ? (
-                <>
-                  <span className="relative flex h-3 w-3 mr-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
-                  </span>
-                  Analizando en tiempo real
-                </>
-              ) : (
-                <>
-                  <div className="h-3 w-3 mr-2 rounded-full bg-green-500"></div>
-                  Análisis completado
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-        
-        <div className="card bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 p-0 overflow-hidden rounded-xl shadow-lg border border-blue-100 dark:border-gray-700 relative">
-          {/* Alerta de conexión si hay problemas */}
-          {errorConexion && (
-            <div className="absolute top-4 right-4 z-10 bg-red-100 dark:bg-red-900 border border-red-300 dark:border-red-700 rounded-lg p-2 flex items-center text-sm text-red-800 dark:text-red-200">
-              <AlertTriangle className="h-4 w-4 mr-2" />
-              Conexión limitada
-            </div>
-          )}
-          
-          <div className="w-full" style={{ height: "350px" }}>
-            <JuliaThinkingAnimation 
-              particleCount={errorConexion ? 50 : 100}
-              showMentions={!errorConexion}
-              responsive={true}
-              className="w-full h-full"
-              title={isAnalyzing ? `Julia está analizando ${neuralNetworkMode === 'sentiment' ? 'sentimientos' : neuralNetworkMode === 'platform' ? 'plataformas' : 'engagement'}` : 'Análisis completado'}
-              subtitle={isAnalyzing ? "Procesando menciones y sentimientos en tiempo real" : `Última actualización: ${ultimaActualizacion.toLocaleTimeString()}`}
-            />
-          </div>
-        </div>
-      </motion.div>
+
+      {/* Noticias de Colombia en Tiempo Real - NUEVA SECCIÓN */}
+      <div className="mb-6">
+        <NoticiasColombia />
+      </div>
       
       {/* Menciones recientes y actividad - RESPONSIVE */}
       <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
@@ -1493,41 +1419,9 @@ export default function Dashboard() {
         </motion.div>
       </div>
 
-      {/* Julia Chat - VERSIÓN RESPONSIVE CON ANIMACIONES MEJORADAS */}
+      {/* Monitoreo de Noticias - NUEVA SECCIÓN */}
       <div className="mb-4 sm:mb-6">
-        <motion.div
-          custom={6}
-          initial="hidden"
-          animate="visible"
-          variants={statsVariants}
-          whileHover={{ scale: 1.005, transition: { duration: 0.3 } }}
-          className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 sm:p-6 border border-gray-200 dark:border-gray-700"
-        >
-          <div className="flex items-center space-x-3 mb-4">
-            <div className="relative">
-              <div className="p-3 bg-gradient-to-r from-[#01257D] via-purple-600 to-blue-600 rounded-xl shadow-lg">
-                <Bot className="w-6 h-6 text-white" />
-              </div>
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-white animate-pulse"></div>
-            </div>
-            <div>
-              <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white flex items-center">
-                <span className="bg-gradient-to-r from-[#01257D] to-purple-600 bg-clip-text text-transparent">
-                  Julia IA
-                </span>
-                <span className="ml-2 text-sm bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full dark:bg-blue-900/30 dark:text-blue-300">
-                  Asistente
-                </span>
-              </h2>
-              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                Análisis avanzado de reputación con IA • Asistente Julia integrado
-              </p>
-            </div>
-          </div>
-          
-          {/* Chat funcional */}
-          <SimpleChat />
-        </motion.div>
+        <MonitoreoNoticiasSection />
       </div>
 
       {/* Panel Político - Solo para usuarios que seleccionaron perfil político en el registro */}

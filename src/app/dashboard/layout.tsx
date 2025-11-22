@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/context/UserContext';
 import { CreditProvider } from '@/context/CreditosContext';
-import { Home, BarChart3, Hash, Users, Menu, Search, FileText, Headphones, Share2 } from 'lucide-react';
+import { Home, BarChart3, Hash, Users, Menu, Search, FileText, Headphones, Share2, Brain } from 'lucide-react';
 import NotificationCenter from '@/components/notifications/NotificationCenter';
 import UserProfile from '@/components/user/UserProfile';
 import HeaderSearch from '@/components/dashboard/HeaderSearch';
@@ -186,6 +186,11 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
             <Link href="/dashboard/redes-sociales" className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium ${pathname === '/dashboard/redes-sociales' ? 'bg-[#01257D]/10 text-[#01257D] dark:bg-[#01257D]/20 dark:text-[#01257D]' : 'text-gray-600 hover:bg-[#01257D]/10 hover:text-[#01257D] dark:text-gray-300 dark:hover:bg-[#01257D]/20 dark:hover:text-[#01257D]'}`}>
               <Share2 className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 ${pathname === '/dashboard/redes-sociales' ? 'text-[#01257D] dark:text-white' : 'text-gray-400 group-hover:text-[#01257D] dark:text-gray-400 dark:group-hover:text-white'}`} />
               {(menuOpen || menuHovered || isMobile) && 'Redes Sociales'}
+            </Link>
+
+            <Link href="/dashboard/julia" className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium ${pathname === '/dashboard/julia' ? 'bg-[#01257D]/10 text-[#01257D] dark:bg-[#01257D]/20 dark:text-[#01257D]' : 'text-gray-600 hover:bg-[#01257D]/10 hover:text-[#01257D] dark:text-gray-300 dark:hover:bg-[#01257D]/20 dark:hover:text-[#01257D]'}`}>
+              <Brain className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 ${pathname === '/dashboard/julia' ? 'text-[#01257D] dark:text-white' : 'text-gray-400 group-hover:text-[#01257D] dark:text-gray-400 dark:group-hover:text-white'}`} />
+              {(menuOpen || menuHovered || isMobile) && 'Julia IA'}
             </Link>
 
             <Link href="/dashboard/creditos/reportes" className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium ${pathname === '/dashboard/creditos/reportes' ? 'bg-[#01257D]/10 text-[#01257D] dark:bg-[#01257D]/20 dark:text-[#01257D]' : 'text-gray-600 hover:bg-[#01257D]/10 hover:text-[#01257D] dark:text-gray-300 dark:hover:bg-[#01257D]/20 dark:hover:text-[#01257D]'}`}>
