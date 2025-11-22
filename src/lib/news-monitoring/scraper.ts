@@ -445,7 +445,9 @@ class RateLimiter {
   private cleanup(): void {
     const oneHourAgo = Date.now() - 60 * 60 * 1000;
 
-    for (const [siteId, requests] of this.requests.entries()) {
+    // Convert to array to avoid iterator issues with tsconfig target es5
+    const entries = Array.from(this.requests.entries());
+    for (const [siteId, requests] of entries) {
       const recentRequests = requests.filter(time => time > oneHourAgo);
       if (recentRequests.length === 0) {
         this.requests.delete(siteId);

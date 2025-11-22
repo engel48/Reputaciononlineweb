@@ -10,7 +10,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { NoticiasColombiaScraper } from '@/lib/scraping/noticias-colombia';
+import { NoticiasColombiaScraper, type ScrapedArticle } from '@/lib/scraping/noticias-colombia';
 import { getSitioConfig } from '@/lib/scraping/sitios-config';
 
 export const dynamic = 'force-dynamic';
@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
     const paginatedArticles = result.articles.slice(offset, offset + limit);
 
     // Get recent articles from database if scraping failed
-    let dbArticles = [];
+    let dbArticles: ScrapedArticle[] = [];
     if (!result.success) {
       dbArticles = await NoticiasColombiaScraper.getRecentArticles(sitioId, limit, offset);
     }

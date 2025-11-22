@@ -34,7 +34,7 @@ export default function MonitoreoNoticiasSection() {
   const [mencionesRecientes, setMencionesRecientes] = useState<Mention[]>([]);
   const [loading, setLoading] = useState(true);
   const [isScanning, setIsScanning] = useState(false);
-  const [scanningS iteId, setScanningSiteId] = useState<string | null>(null);
+  const [scanningSiteId, setScanningSiteId] = useState<string | null>(null);
 
   // Modales
   const [showAgregarModal, setShowAgregarModal] = useState(false);

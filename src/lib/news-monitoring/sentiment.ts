@@ -228,10 +228,10 @@ export function analyzeMultipleParagraphs(
   const avgScore = analyses.reduce((sum, a) => sum + a.score, 0) / analyses.length;
   const avgConfidence = analyses.reduce((sum, a) => sum + a.confidence, 0) / analyses.length;
 
-  // Combinar keywords
-  const allPositive = [...new Set(analyses.flatMap(a => a.matchedKeywords.positive))];
-  const allNegative = [...new Set(analyses.flatMap(a => a.matchedKeywords.negative))];
-  const allNeutral = [...new Set(analyses.flatMap(a => a.matchedKeywords.neutral))];
+  // Combinar keywords (using Array.from to avoid iterator issues with tsconfig target es5)
+  const allPositive = Array.from(new Set(analyses.flatMap(a => a.matchedKeywords.positive)));
+  const allNegative = Array.from(new Set(analyses.flatMap(a => a.matchedKeywords.negative)));
+  const allNeutral = Array.from(new Set(analyses.flatMap(a => a.matchedKeywords.neutral)));
 
   // Determinar sentimiento general
   let sentiment: SentimentType = 'neutral';

@@ -6,7 +6,7 @@
  * - Hit tracking for analytics
  */
 
-import { getDatabaseAdapter } from '@/lib/database-adapter';
+import { getDatabase } from '@/lib/database-adapter';
 
 export interface CacheEntry {
   id: string;
@@ -37,7 +37,7 @@ export class ScrapingCache {
    */
   static async get(sitioId: string): Promise<any | null> {
     try {
-      const db = await getDatabaseAdapter();
+      const db = await getDatabase();
       const now = new Date().toISOString();
       const cacheKey = this.generateCacheKey(sitioId);
 
@@ -73,7 +73,7 @@ export class ScrapingCache {
    */
   static async set(sitioId: string, data: any): Promise<boolean> {
     try {
-      const db = await getDatabaseAdapter();
+      const db = await getDatabase();
       const now = new Date();
       const expiresAt = new Date(now.getTime() + this.TTL_MINUTES * 60 * 1000);
 
@@ -112,7 +112,7 @@ export class ScrapingCache {
    */
   static async has(sitioId: string): Promise<boolean> {
     try {
-      const db = await getDatabaseAdapter();
+      const db = await getDatabase();
       const now = new Date().toISOString();
       const cacheKey = this.generateCacheKey(sitioId);
 
@@ -135,7 +135,7 @@ export class ScrapingCache {
    */
   static async invalidate(sitioId: string): Promise<boolean> {
     try {
-      const db = await getDatabaseAdapter();
+      const db = await getDatabase();
       const cacheKey = this.generateCacheKey(sitioId);
 
       await db.executeQuery('DELETE FROM scraping_cache WHERE cache_key = ?', [cacheKey]);
@@ -151,7 +151,7 @@ export class ScrapingCache {
    */
   static async cleanup(): Promise<number> {
     try {
-      const db = await getDatabaseAdapter();
+      const db = await getDatabase();
       const now = new Date().toISOString();
 
       const result = await db.executeQuery(
@@ -172,7 +172,7 @@ export class ScrapingCache {
    */
   static async getStats(): Promise<CacheStats> {
     try {
-      const db = await getDatabaseAdapter();
+      const db = await getDatabase();
 
       const statsQuery = `
         SELECT
@@ -225,7 +225,7 @@ export class ScrapingCache {
    */
   static async clear(): Promise<boolean> {
     try {
-      const db = await getDatabaseAdapter();
+      const db = await getDatabase();
       await db.executeQuery('DELETE FROM scraping_cache');
       return true;
     } catch (error) {
@@ -251,7 +251,7 @@ export class ScrapingCache {
    */
   private static async incrementHits(cacheId: string): Promise<void> {
     try {
-      const db = await getDatabaseAdapter();
+      const db = await getDatabase();
       await db.executeQuery(
         'UPDATE scraping_cache SET hits = hits + 1 WHERE id = ?',
         [cacheId]
@@ -318,7 +318,9 @@ class MemoryCache {
     const now = Date.now();
     let deleted = 0;
 
-    for (const [key, entry] of this.cache.entries()) {
+    // Convert to array to avoid iterator issues with tsconfig target es5
+    const entries = Array.from(this.cache.entries());
+    for (const [key, entry] of entries) {
       if (now > entry.expires) {
         this.cache.delete(key);
         deleted++;

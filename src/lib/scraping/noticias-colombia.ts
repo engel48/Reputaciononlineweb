@@ -7,10 +7,15 @@
  * - Comprehensive error handling
  */
 
-import * as cheerio from 'cheerio';
 import { getSitioConfig, type SitioConfig } from './sitios-config';
 import { ScrapingCache } from './cache';
-import { getDatabaseAdapter } from '@/lib/database-adapter';
+import { getDatabase } from '@/lib/database-adapter';
+
+// Dynamic import for cheerio to avoid webpack bundling issues
+async function loadCheerio() {
+  const cheerio = await import('cheerio');
+  return cheerio;
+}
 
 export interface ScrapedArticle {
   id: string;
@@ -70,7 +75,9 @@ class RateLimiter {
 
   cleanup() {
     const now = Date.now();
-    for (const [sitioId, timestamps] of this.requestTimestamps.entries()) {
+    // Convert to array to avoid iterator issues with tsconfig target es5
+    const entries = Array.from(this.requestTimestamps.entries());
+    for (const [sitioId, timestamps] of entries) {
       const recent = timestamps.filter(t => now - t < 60000);
       if (recent.length === 0) {
         this.requestTimestamps.delete(sitioId);
@@ -166,7 +173,7 @@ export class NoticiasColombiaScraper {
       );
 
       // Parse HTML with Cheerio
-      const articles = this.parseArticles(html, sitioConfig);
+      const articles = await this.parseArticles(html, sitioConfig);
 
       // Save articles to database
       await this.saveArticles(articles, sitioId);
@@ -263,7 +270,8 @@ export class NoticiasColombiaScraper {
   /**
    * Parse articles from HTML using Cheerio
    */
-  private static parseArticles(html: string, config: SitioConfig): ScrapedArticle[] {
+  private static async parseArticles(html: string, config: SitioConfig): Promise<ScrapedArticle[]> {
+    const cheerio = await loadCheerio();
     const $ = cheerio.load(html);
     const articles: ScrapedArticle[] = [];
     const { selectores } = config;
@@ -341,7 +349,7 @@ export class NoticiasColombiaScraper {
   /**
    * Extract text from element using selector
    */
-  private static extractText($container: cheerio.Cheerio<any>, selector: string): string | null {
+  private static extractText($container: any, selector: string): string | null {
     const element = $container.find(selector).first();
     if (element.length === 0) {
       // Try selecting from container itself
@@ -355,7 +363,7 @@ export class NoticiasColombiaScraper {
    * Extract attribute from element
    */
   private static extractAttribute(
-    $container: cheerio.Cheerio<any>,
+    $container: any,
     selector: string,
     attribute: string
   ): string | null {
@@ -370,7 +378,7 @@ export class NoticiasColombiaScraper {
   /**
    * Extract and parse datetime
    */
-  private static extractDateTime($container: cheerio.Cheerio<any>, selector: string): string | null {
+  private static extractDateTime($container: any, selector: string): string | null {
     const element = $container.find(selector).first();
     if (element.length === 0) return null;
 
@@ -464,7 +472,7 @@ export class NoticiasColombiaScraper {
     if (articles.length === 0) return;
 
     try {
-      const db = await getDatabaseAdapter();
+      const db = await getDatabase();
 
       for (const article of articles) {
         const query = `
@@ -511,7 +519,7 @@ export class NoticiasColombiaScraper {
     error?: string
   ): Promise<void> {
     try {
-      const db = await getDatabaseAdapter();
+      const db = await getDatabase();
       const now = new Date().toISOString();
 
       const query = `
@@ -551,7 +559,7 @@ export class NoticiasColombiaScraper {
     }
   ): Promise<void> {
     try {
-      const db = await getDatabaseAdapter();
+      const db = await getDatabase();
       const id = `log_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
       const query = `
@@ -581,7 +589,7 @@ export class NoticiasColombiaScraper {
    */
   static async getStats(sitioId: string): Promise<ScrapingStats | null> {
     try {
-      const db = await getDatabaseAdapter();
+      const db = await getDatabase();
 
       const query = `
         SELECT
@@ -615,7 +623,7 @@ export class NoticiasColombiaScraper {
     offset = 0
   ): Promise<ScrapedArticle[]> {
     try {
-      const db = await getDatabaseAdapter();
+      const db = await getDatabase();
 
       const query = `
         SELECT * FROM noticias_colombia

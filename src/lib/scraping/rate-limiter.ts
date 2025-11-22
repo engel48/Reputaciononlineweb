@@ -88,7 +88,9 @@ class RateLimiter {
    */
   private cleanup(): void {
     const now = Date.now();
-    for (const [key, entry] of this.requests.entries()) {
+    // Convert to array to avoid iterator issues with tsconfig target es5
+    const entries = Array.from(this.requests.entries());
+    for (const [key, entry] of entries) {
       if (now > entry.resetTime) {
         this.requests.delete(key);
       }
