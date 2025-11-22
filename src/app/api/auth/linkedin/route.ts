@@ -1,10 +1,8 @@
 /**
- * LinkedIn OAuth Callback - Sistema REAL
+ * LinkedIn OAuth Token Exchange - Sistema REAL
  *
- * Procesa el callback de autenticación de LinkedIn y guarda
- * los tokens de forma segura en Supabase.
- *
- * Flujo directo (no popup) siguiendo el patrón de Facebook.
+ * Endpoint POST que intercambia el código de autorización por access token
+ * y guarda la conexión en Supabase con encriptación.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -18,47 +16,39 @@ const REDIRECT_URI = process.env.NEXTAUTH_URL
   ? `${process.env.NEXTAUTH_URL}/api/auth/linkedin/callback`
   : 'http://localhost:3000/api/auth/linkedin/callback';
 
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const code = searchParams.get('code');
-  const error = searchParams.get('error');
-  const errorDescription = searchParams.get('error_description');
-
-  console.log('💼 LinkedIn OAuth Callback recibido');
-
-  // Manejar errores de OAuth
-  if (error) {
-    console.error('❌ LinkedIn OAuth error:', error, errorDescription);
-    return NextResponse.redirect(
-      `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard/redes-sociales?error=${error}&description=${encodeURIComponent(errorDescription || '')}`
-    );
-  }
-
-  // Validar que tenemos el código de autorización
-  if (!code) {
-    console.error('❌ No se recibió código de autorización');
-    return NextResponse.redirect(
-      `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard/redes-sociales?error=no_code`
-    );
-  }
-
-  // Validar configuración
-  if (!LINKEDIN_CLIENT_ID || !LINKEDIN_CLIENT_SECRET) {
-    console.error('❌ LinkedIn credentials no configuradas en .env');
-    return NextResponse.redirect(
-      `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard/redes-sociales?error=config_missing`
-    );
-  }
-
+export async function POST(request: NextRequest) {
   try {
+    const { code, state } = await request.json();
+
+    console.log('💼 LinkedIn OAuth - POST endpoint recibido');
+
+    // Validar que tenemos el código
+    if (!code) {
+      console.error('❌ No se recibió código de autorización');
+      return NextResponse.json(
+        { success: false, error: 'No se recibió código de autorización' },
+        { status: 400 }
+      );
+    }
+
+    // Validar configuración
+    if (!LINKEDIN_CLIENT_ID || !LINKEDIN_CLIENT_SECRET) {
+      console.error('❌ LinkedIn credentials no configuradas en .env');
+      return NextResponse.json(
+        { success: false, error: 'Credenciales de LinkedIn no configuradas' },
+        { status: 500 }
+      );
+    }
+
     // Obtener usuario actual desde cookie JWT
     const cookieStore = await cookies();
     const authToken = cookieStore.get('auth-token')?.value;
 
     if (!authToken) {
       console.error('❌ Usuario no autenticado');
-      return NextResponse.redirect(
-        `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/login?error=not_authenticated`
+      return NextResponse.json(
+        { success: false, error: 'Usuario no autenticado' },
+        { status: 401 }
       );
     }
 
@@ -66,8 +56,9 @@ export async function GET(request: NextRequest) {
     const decoded = jwt.decode(authToken) as { userId: string } | null;
     if (!decoded || !decoded.userId) {
       console.error('❌ Token JWT inválido');
-      return NextResponse.redirect(
-        `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/login?error=invalid_token`
+      return NextResponse.json(
+        { success: false, error: 'Token JWT inválido' },
+        { status: 401 }
       );
     }
 
@@ -97,8 +88,9 @@ export async function GET(request: NextRequest) {
     if (!tokenResponse.ok) {
       const errorData = await tokenResponse.text();
       console.error('❌ Error obteniendo access token:', errorData);
-      return NextResponse.redirect(
-        `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard/redes-sociales?error=token_exchange_failed`
+      return NextResponse.json(
+        { success: false, error: 'Error obteniendo access token de LinkedIn' },
+        { status: tokenResponse.status }
       );
     }
 
@@ -110,7 +102,7 @@ export async function GET(request: NextRequest) {
     // PASO 2: Obtener perfil del usuario usando LinkedIn v2 API
     console.log('🔄 Obteniendo perfil del usuario...');
 
-    // LinkedIn userinfo endpoint (OpenID Connect compatible)
+    // Obtener información básica del perfil
     const profileResponse = await fetch('https://api.linkedin.com/v2/userinfo', {
       headers: {
         'Authorization': `Bearer ${access_token}`,
@@ -119,8 +111,9 @@ export async function GET(request: NextRequest) {
 
     if (!profileResponse.ok) {
       console.error('❌ Error obteniendo perfil de LinkedIn');
-      return NextResponse.redirect(
-        `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard/redes-sociales?error=profile_fetch_failed`
+      return NextResponse.json(
+        { success: false, error: 'Error obteniendo perfil de LinkedIn' },
+        { status: profileResponse.status }
       );
     }
 
@@ -147,20 +140,30 @@ export async function GET(request: NextRequest) {
 
     if (!saved) {
       console.error('❌ Error guardando conexión en Supabase');
-      return NextResponse.redirect(
-        `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard/redes-sociales?error=save_failed`
+      return NextResponse.json(
+        { success: false, error: 'Error guardando conexión en base de datos' },
+        { status: 500 }
       );
     }
 
     console.log('✅ LinkedIn conectado exitosamente');
-    return NextResponse.redirect(
-      `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard/redes-sociales?success=linkedin`
-    );
+
+    return NextResponse.json({
+      success: true,
+      profile: {
+        id: profile.sub || profile.id,
+        name: profile.name,
+        email: profile.email,
+        picture: profile.picture
+      },
+      token: access_token
+    });
 
   } catch (error) {
-    console.error('❌ Error en LinkedIn OAuth callback:', error);
-    return NextResponse.redirect(
-      `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard/redes-sociales?error=oauth_failed`
+    console.error('❌ Error en LinkedIn OAuth POST:', error);
+    return NextResponse.json(
+      { success: false, error: 'Error procesando autenticación de LinkedIn' },
+      { status: 500 }
     );
   }
 }
