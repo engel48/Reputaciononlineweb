@@ -181,9 +181,10 @@ export async function GET(request: NextRequest) {
  */
 export async function PATCH(request: NextRequest) {
   try {
-    // Obtener token de autenticación
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
+    // Obtener token de autenticación desde cookie
+    const authToken = request.cookies.get('auth-token')?.value;
+
+    if (!authToken) {
       return NextResponse.json(
         {
           success: false,
@@ -197,19 +198,12 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    const token = authHeader.substring(7);
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      global: {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    });
-
-    // Verificar usuario autenticado
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    // Verificar token JWT
+    let userId: string;
+    try {
+      const decoded = jwt.verify(authToken, JWT_SECRET) as { userId: string; email: string };
+      userId = decoded.userId;
+    } catch (error) {
       return NextResponse.json(
         {
           success: false,
