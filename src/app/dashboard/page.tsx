@@ -17,6 +17,7 @@ import LinkedInDashboardSection from '@/components/dashboard/LinkedInDashboardSe
 import XDashboardSection from '@/components/dashboard/XDashboardSection';
 import ThreadsDashboardSection from '@/components/dashboard/ThreadsDashboardSection';
 import TikTokDashboardSection from '@/components/dashboard/TikTokDashboardSection';
+import ConnectionsHealthPanel from '@/components/dashboard/ConnectionsHealthPanel';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowUpRight, RefreshCw, TrendingUp, TrendingDown, Facebook, Instagram, CreditCard, Brain, Sparkles, Wifi, WifiOff, AlertTriangle, Search, Zap, BarChart3, Users, MessageSquare, Activity, Target, Award, Globe, Clock, Newspaper, Bot, X } from 'lucide-react';
 import XLogo from '@/components/icons/XLogo';
@@ -610,6 +611,19 @@ export default function Dashboard() {
           </div>
         </motion.div>
       </div>
+
+      {/* ========================================== */}
+      {/* ESTADO DE SALUD DE CONEXIONES OAUTH */}
+      {/* ========================================== */}
+      <motion.div
+        custom={3}
+        initial="hidden"
+        animate="visible"
+        variants={statsVariants}
+        className="mb-4 sm:mb-6"
+      >
+        <ConnectionsHealthPanel />
+      </motion.div>
 
       {/* ========================================== */}
       {/* REDES SOCIALES - SECCIÓN PRINCIPAL */}
