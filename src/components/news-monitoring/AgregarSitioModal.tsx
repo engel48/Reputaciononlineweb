@@ -71,7 +71,7 @@ export default function AgregarSitioModal({
   };
 
   const handleSubmit = async () => {
-    if (!selectedSite || searchTerms.length === 0) return;
+    if (!selectedSite) return;
 
     setIsSubmitting(true);
     try {
@@ -207,7 +207,7 @@ export default function AgregarSitioModal({
             {/* Paso 2: Términos de búsqueda */}
             <div className="mb-6">
               <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-3">
-                2. Términos de búsqueda {searchTerms.length > 0 && (
+                2. Términos de búsqueda <span className="text-gray-500 dark:text-gray-400 font-normal">(Opcional)</span> {searchTerms.length > 0 && (
                   <span className="text-blue-600 dark:text-blue-400">({searchTerms.length})</span>
                 )}
               </label>
@@ -258,7 +258,7 @@ export default function AgregarSitioModal({
 
               {searchTerms.length === 0 && (
                 <p className="text-xs text-gray-500 dark:text-gray-400 italic">
-                  Agrega al menos un término para monitorear
+                  Sin términos específicos, se monitoreará todo el contenido del sitio
                 </p>
               )}
             </div>
@@ -288,12 +288,12 @@ export default function AgregarSitioModal({
             </div>
 
             {/* Resumen */}
-            {selectedSite && searchTerms.length > 0 && (
+            {selectedSite && (
               <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
                 <h4 className="font-semibold text-blue-900 dark:text-blue-300 mb-2">Resumen:</h4>
                 <ul className="text-sm text-blue-800 dark:text-blue-300 space-y-1">
                   <li>• Sitio: <strong>{selectedSite.name}</strong></li>
-                  <li>• Términos: <strong>{searchTerms.join(', ')}</strong></li>
+                  <li>• Términos: <strong>{searchTerms.length > 0 ? searchTerms.join(', ') : 'Todas las noticias del sitio'}</strong></li>
                   <li>• Frecuencia: <strong>{SCAN_FREQUENCY_LABELS[scanFrequency]}</strong></li>
                 </ul>
               </div>
@@ -311,7 +311,7 @@ export default function AgregarSitioModal({
             </button>
             <button
               onClick={handleSubmit}
-              disabled={!selectedSite || searchTerms.length === 0 || isSubmitting}
+              disabled={!selectedSite || isSubmitting}
               className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
             >
               {isSubmitting ? (
