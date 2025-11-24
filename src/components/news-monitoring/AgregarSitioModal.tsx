@@ -125,9 +125,9 @@ export default function AgregarSitioModal({
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-2xl font-bold">Agregar Sitio para Monitorear</h2>
+                <h2 className="text-2xl font-bold">Activar Sitio del Catálogo</h2>
                 <p className="text-blue-100 mt-1">
-                  Selecciona un sitio de noticias y configura los términos de búsqueda
+                  Selecciona sitios verificados de nuestro catálogo y configura tus términos de búsqueda
                 </p>
               </div>
               <button

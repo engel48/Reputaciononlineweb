@@ -380,7 +380,7 @@ export default function MonitoreoNoticiasSection() {
             <div>
               <h2 className="text-2xl font-bold">Monitoreo de Noticias - Colombia</h2>
               <p className="text-blue-100 mt-1">
-                Monitorea 50 sitios de noticias colombianos en tiempo real
+                Selecciona de nuestro catálogo de 50 sitios de noticias colombianos verificados
               </p>
             </div>
           </div>
@@ -395,19 +395,19 @@ export default function MonitoreoNoticiasSection() {
             }`}
           >
             <Plus className="w-5 h-5" />
-            <span>Agregar Sitio</span>
+            <span>Activar Sitios</span>
           </button>
         </div>
 
         {/* Contador de sitios */}
         <div className="mt-4 flex items-center space-x-2 text-sm">
           <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full">
-            {sitiosMonitoreados.length}/{MAX_MONITORED_SITES} Sitios Monitoreados
+            {sitiosMonitoreados.length}/{MAX_MONITORED_SITES} Sitios Activos
           </span>
           {!canAddMoreSites && (
             <span className="flex items-center space-x-1 text-amber-200">
               <AlertCircle className="w-4 h-4" />
-              <span>Límite alcanzado</span>
+              <span>Límite alcanzado - Desactiva sitios para activar otros</span>
             </span>
           )}
         </div>
@@ -483,17 +483,17 @@ export default function MonitoreoNoticiasSection() {
           <div className="bg-white dark:bg-gray-800 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700 p-12 text-center">
             <Newspaper className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-              No tienes sitios monitoreados
+              No tienes sitios activos
             </h3>
             <p className="text-gray-500 dark:text-gray-400 mb-6">
-              Comienza agregando sitios de noticias para monitorear menciones en tiempo real
+              Selecciona sitios de nuestro catálogo verificado de medios colombianos para comenzar a monitorear menciones en tiempo real
             </p>
             <button
               onClick={() => setShowAgregarModal(true)}
               className="inline-flex items-center space-x-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
             >
               <Plus className="w-5 h-5" />
-              <span>Agregar Primer Sitio</span>
+              <span>Seleccionar Sitios del Catálogo</span>
             </button>
           </div>
         ) : (
