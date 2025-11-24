@@ -71,7 +71,7 @@ export default function NoticiasColombia({
       const response = await fetch('/api/noticias-colombia/sitios');
       const data = await response.json();
 
-      if (data.success) {
+      if (data.success && Array.isArray(data.sitios)) {
         setSitios(data.sitios);
 
         // Si no hay sitio seleccionado, seleccionar el primero por defecto

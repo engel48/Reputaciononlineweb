@@ -63,19 +63,22 @@ export async function POST(request: NextRequest) {
     // Validar request body
     const body: ActivateSiteRequest = await request.json();
 
-    if (!body.siteId || !body.searchTerms || body.searchTerms.length === 0) {
+    if (!body.siteId) {
       return NextResponse.json(
         {
           success: false,
           error: {
             code: 'VALIDATION_ERROR',
-            message: 'siteId y searchTerms son requeridos',
+            message: 'siteId es requerido',
           },
           timestamp: new Date().toISOString(),
         },
         { status: 400 }
       );
     }
+
+    // searchTerms es opcional - si no se proporciona, se monitorea todo el sitio
+    const searchTerms = body.searchTerms || [];
 
     // Validar que el sitio existe en el catálogo
     const siteConfig = getSiteById(body.siteId);
@@ -108,7 +111,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validar límite de términos de búsqueda (max 10)
-    if (body.searchTerms.length > 10) {
+    if (searchTerms.length > 10) {
       return NextResponse.json(
         {
           success: false,
@@ -122,24 +125,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Sanitizar términos de búsqueda
-    const sanitizedTerms = body.searchTerms
+    // Sanitizar términos de búsqueda (si se proporcionan)
+    // Si no hay términos, se monitoreará todo el contenido del sitio
+    const sanitizedTerms = searchTerms
       .map(term => term.trim().toLowerCase())
       .filter(term => term.length > 0 && term.length <= 100);
-
-    if (sanitizedTerms.length === 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: 'INVALID_SEARCH_TERMS',
-            message: 'Al menos un término de búsqueda válido es requerido',
-          },
-          timestamp: new Date().toISOString(),
-        },
-        { status: 400 }
-      );
-    }
 
     // Verificar límite de sitios monitoreados por usuario (max 10)
     const { data: existingSites, error: countError } = await supabase
