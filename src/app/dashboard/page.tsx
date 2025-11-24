@@ -5,7 +5,6 @@ import CreditosSummary from '@/components/creditos/CreditosSummary';
 import MencionesMap from '@/components/dashboard/MencionesMap';
 import AdvancedSearch from '@/components/dashboard/AdvancedSearch';
 import JuliaChat from '@/components/dashboard/JuliaChat';
-import SimpleBuscador from '@/components/dashboard/SimpleBuscador';
 import SimpleChat from '@/components/dashboard/SimpleChat';
 import PoliticalDashboard from '@/components/dashboard/PoliticalDashboard';
 import NoticiasColombia from '@/components/dashboard/NoticiasColombia';
@@ -27,7 +26,6 @@ import LoadingAnimation from '@/components/ui/LoadingAnimation';
 import { useUser } from '@/context/UserContext';
 import { usePlan } from '@/context/PlanContext';
 import FeatureGate, { UsageLimit, PlanBadge } from '@/components/plan/FeatureGate';
-import { useRealTimeNews } from '@/hooks/useRealTimeNews';
 
 // Interfaces
 interface MentionEngagement {
@@ -112,29 +110,7 @@ export default function Dashboard() {
   const [mencionesRecientes, setMencionesRecientes] = useState<Mention[]>([]);
   const [nuevasMenciones, setNuevasMenciones] = useState(0);
   const [cargandoMenciones, setCargandoMenciones] = useState(true);
-  
-  // Usar hook de noticias en tiempo real
-  const {
-    news: noticiasReales,
-    isLoading: cargandoNoticias,
-    error: errorNoticias,
-    lastUpdated: ultimaActualizacionNoticias,
-    isRealTime: noticiasEnTiempoReal,
-    sources: fuentesNoticias,
-    isRefreshing: refrescandoNoticias,
-    refreshNews: refrescarNoticias,
-    getSentimentStats,
-    getRecentNews
-  } = useRealTimeNews({
-    category: 'all',
-    limit: 12,
-    autoRefresh: true,
-    refreshInterval: 3 * 60 * 1000 // 3 minutos
-  });
-  
-  const [noticiaSeleccionada, setNoticiaSeleccionada] = useState<any>(null);
-  const [mostrarModalNoticia, setMostrarModalNoticia] = useState(false);
-  
+
   // Red neuronal simulada para análisis de sentimientos
   const analizarSentimientoConIA = useCallback((contenido: string) => {
     // Simulación de análisis de sentimiento con IA
@@ -165,19 +141,7 @@ export default function Dashboard() {
     // ... código que generaba datos falsos eliminado
   }, [analizarSentimientoConIA]);
   */
-  
-  // Función para abrir noticia en modal
-  const abrirNoticia = useCallback((noticia: any) => {
-    setNoticiaSeleccionada(noticia);
-    setMostrarModalNoticia(true);
-  }, []);
-  
-  // Función para cerrar modal de noticia
-  const cerrarModalNoticia = useCallback(() => {
-    setMostrarModalNoticia(false);
-    setNoticiaSeleccionada(null);
-  }, []);
-  
+
   // ❌ ELIMINADO: Función que generaba menciones FALSAS cada 5 minutos
   // Las menciones reales se cargan desde la API automáticamente
   /*
@@ -408,37 +372,6 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       {/* Notificación de sistema mejorado en tiempo real */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-gradient-to-r from-emerald-600 via-blue-600 to-purple-600 text-white p-4 rounded-xl shadow-lg border-2 border-emerald-300"
-        style={{ fontSize: '16px', fontWeight: 'bold' }}
-      >
-        <div className="flex items-center space-x-3">
-          <div className="animate-bounce">
-            📡
-          </div>
-          <div>
-            <p className="text-lg">¡NOTICIAS REALES EN TIEMPO REAL MEJORADAS!</p>
-            <p className="text-sm opacity-90">
-              ✅ {noticiasEnTiempoReal ? 'Fuentes verificadas activas' : 'Cargando fuentes...'} 
-              ✅ {fuentesNoticias.length} medios conectados 
-              ✅ Actualización cada 3 minutos
-            </p>
-          </div>
-          <div className="flex items-center space-x-2">
-            {noticiasEnTiempoReal ? (
-              <div className="h-3 w-3 bg-green-400 rounded-full animate-pulse"></div>
-            ) : (
-              <RefreshCw className="h-4 w-4 animate-spin" />
-            )}
-            <span className="text-sm">
-              {noticiasEnTiempoReal ? 'ACTIVO' : 'CONECTANDO'}
-            </span>
-          </div>
-        </div>
-      </motion.div>
-
       {/* Encabezado */}
       <div className="flex items-center justify-between">
         <div>
@@ -916,35 +849,6 @@ export default function Dashboard() {
       </motion.div>
       </FeatureGate>
 
-      {/* Búsqueda Avanzada - Ahora en la barra superior para mejor UX */}
-      <motion.div
-        custom={3}
-        initial="hidden"
-        animate="visible"
-        variants={statsVariants}
-        whileHover={{ scale: 1.01, transition: { duration: 0.2 } }}
-        className="mb-4 sm:mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 sm:p-6 border border-gray-200 dark:border-gray-700"
-      >
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-gradient-to-r from-[#01257D] to-blue-600 rounded-lg">
-              <Search className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
-                🔍 Búsqueda Avanzada de Personalidades
-              </h2>
-              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                Utiliza el buscador de la barra superior para búsquedas rápidas o explora aquí con filtros avanzados
-              </p>
-            </div>
-          </div>
-        </div>
-        
-        {/* Buscador avanzado con filtros */}
-        <SimpleBuscador />
-      </motion.div>
-
       {/* Mapa de menciones */}
       <div className="mb-6">
         <DynamicMencionesMap />
@@ -1217,222 +1121,6 @@ export default function Dashboard() {
         </motion.div>
       </div>
 
-      {/* Noticias en Tiempo Real con IA */}
-      <div className="mb-4 sm:mb-6">
-        <motion.div
-          custom={5}
-          initial="hidden"
-          animate="visible"
-          variants={statsVariants}
-          whileHover={{ scale: 1.002, transition: { duration: 0.3 } }}
-          className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 sm:p-6 border border-gray-200 dark:border-gray-700"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-gradient-to-r from-red-500 to-orange-500 rounded-lg">
-                <Globe className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
-                  📺 Noticias Relevantes en Tiempo Real
-                </h2>
-                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                  {noticiasEnTiempoReal 
-                    ? `Fuentes reales: ${fuentesNoticias.slice(0, 3).join(', ')}`
-                    : 'Cargando fuentes en tiempo real...'
-                  }
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              {/* Estado de actualización */}
-              {cargandoNoticias || refrescandoNoticias ? (
-                <div className="flex items-center space-x-2">
-                  <RefreshCw className="h-3 w-3 animate-spin text-blue-500" />
-                  <span className="text-xs text-blue-600 font-medium">ACTUALIZANDO</span>
-                </div>
-              ) : (
-                <div className="flex items-center space-x-2">
-                  <div className={`h-2 w-2 rounded-full animate-pulse ${noticiasEnTiempoReal ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
-                  <span className={`text-xs font-medium ${noticiasEnTiempoReal ? 'text-green-600' : 'text-yellow-600'}`}>
-                    {noticiasEnTiempoReal ? 'TIEMPO REAL' : 'DATOS CACHE'}
-                  </span>
-                </div>
-              )}
-              
-              {/* Última actualización */}
-              {ultimaActualizacionNoticias && (
-                <span className="text-xs text-gray-500">
-                  {new Date(ultimaActualizacionNoticias).toLocaleTimeString()}
-                </span>
-              )}
-              
-              {/* Botón de refresh manual */}
-              <button
-                onClick={refrescarNoticias}
-                disabled={refrescandoNoticias}
-                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-                title="Refrescar noticias"
-              >
-                <RefreshCw className={`h-4 w-4 text-gray-500 ${refrescandoNoticias ? 'animate-spin' : ''}`} />
-              </button>
-            </div>
-          </div>
-          
-          {/* Tabs para categorías */}
-          <div className="flex space-x-1 mb-4 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
-            <button className="flex-1 px-3 py-2 text-sm font-medium rounded-md bg-white dark:bg-gray-800 text-[#01257D] shadow-sm">
-              👑 Políticos
-            </button>
-            <button className="flex-1 px-3 py-2 text-sm font-medium rounded-md text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-800">
-              ⭐ Influencers
-            </button>
-            <button className="flex-1 px-3 py-2 text-sm font-medium rounded-md text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-800">
-              🏢 Empresas
-            </button>
-          </div>
-          
-          {/* Estadísticas de noticias en tiempo real */}
-          {noticiasReales.length > 0 && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 text-center">
-                <div className="text-xl font-bold text-blue-600 dark:text-blue-400">{noticiasReales.length}</div>
-                <div className="text-xs text-gray-600 dark:text-gray-400">Total Noticias</div>
-              </div>
-              <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 text-center">
-                <div className="text-xl font-bold text-green-600 dark:text-green-400">{getSentimentStats().positive}%</div>
-                <div className="text-xs text-gray-600 dark:text-gray-400">Positivas</div>
-              </div>
-              <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-3 text-center">
-                <div className="text-xl font-bold text-red-600 dark:text-red-400">{getSentimentStats().negative}%</div>
-                <div className="text-xs text-gray-600 dark:text-gray-400">Negativas</div>
-              </div>
-              <div className="bg-gray-50 dark:bg-gray-700/20 rounded-lg p-3 text-center">
-                <div className="text-xl font-bold text-gray-600 dark:text-gray-400">{getRecentNews(6).length}</div>
-                <div className="text-xs text-gray-600 dark:text-gray-400">Últimas 6h</div>
-              </div>
-            </div>
-          )}
-
-          {/* Noticias Grid - Datos Reales en Tiempo Real */}
-          {cargandoNoticias && (!noticiasReales || noticiasReales.length === 0) ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {Array.from({ length: 6 }).map((_, index) => (
-                <div key={index} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 animate-pulse">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <div className="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
-                    <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-20"></div>
-                    <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-16"></div>
-                  </div>
-                  <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded mb-2"></div>
-                  <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded mb-3"></div>
-                  <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-3/4"></div>
-                </div>
-              ))}
-            </div>
-          ) : errorNoticias ? (
-            <div className="text-center py-8">
-              <div className="text-red-500 mb-2">⚠️ Error cargando noticias</div>
-              <div className="text-sm text-gray-500 mb-4">{errorNoticias}</div>
-              <button 
-                onClick={refrescarNoticias}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-              >
-                Reintentar
-              </button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {noticiasReales.map((noticia, index) => {
-                const getSentimentColor = (sentiment: string) => {
-                  switch (sentiment) {
-                    case 'positive': return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
-                    case 'negative': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
-                    default: return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300';
-                  }
-                };
-
-                const getCategoryIcon = (category: string) => {
-                  switch (category) {
-                    case 'política': return '🏛️';
-                    case 'economía': return '💰';
-                    case 'tecnología': return '💻';
-                    case 'cultura': return '🎭';
-                    default: return '📰';
-                  }
-                };
-
-                const getTimeAgo = (publishedAt: string) => {
-                  const now = new Date();
-                  const published = new Date(publishedAt);
-                  const diffInMinutes = Math.floor((now.getTime() - published.getTime()) / (1000 * 60));
-                  
-                  if (diffInMinutes < 60) return `Hace ${diffInMinutes}m`;
-                  if (diffInMinutes < 1440) return `Hace ${Math.floor(diffInMinutes / 60)}h`;
-                  return `Hace ${Math.floor(diffInMinutes / 1440)}d`;
-                };
-
-                return (
-                  <motion.div
-                    key={noticia.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 * (index + 1) }}
-                    className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:shadow-lg transition-all duration-200 cursor-pointer hover:scale-[1.02] bg-white dark:bg-gray-800"
-                    onClick={() => abrirNoticia(noticia)}
-                  >
-                    <div className="flex items-center space-x-2 mb-3">
-                      <div className="text-lg">{getCategoryIcon(noticia.category)}</div>
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300 capitalize">{noticia.category}</span>
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${getSentimentColor(noticia.sentiment)}`}>
-                        {noticia.sentiment === 'positive' ? 'Positiva' : 
-                         noticia.sentiment === 'negative' ? 'Negativa' : 'Neutral'}
-                      </span>
-                      {noticia.verified && (
-                        <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
-                          <span className="text-white text-xs">✓</span>
-                        </div>
-                      )}
-                    </div>
-                    
-                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2 hover:text-[#01257D] transition-colors line-clamp-2">
-                      {noticia.title}
-                    </h4>
-                    
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
-                      {noticia.content}
-                    </p>
-                    
-                    <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                      <div className="flex items-center space-x-2">
-                        <span className="font-medium">{noticia.source}</span>
-                        <span>•</span>
-                        <span>{getTimeAgo(noticia.publishedAt)}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Clock className="w-3 h-3" />
-                        <span>Real</span>
-                      </div>
-                    </div>
-                    
-                    <div className="mt-2 text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium">
-                      📖 Click para leer completa
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-          )}
-          
-          <div className="mt-4 text-center">
-            <button className="text-sm font-medium text-[#01257D] hover:text-[#01257D]/90 dark:text-[#01257D] dark:hover:text-[#01257D]/90 flex items-center mx-auto">
-              Ver más noticias analizadas 
-              <ArrowUpRight className="ml-1 h-4 w-4" />
-            </button>
-          </div>
-        </motion.div>
-      </div>
-
       {/* Monitoreo de Noticias - NUEVA SECCIÓN */}
       <div className="mb-4 sm:mb-6">
         <MonitoreoNoticiasSection />
@@ -1450,115 +1138,6 @@ export default function Dashboard() {
         </motion.div>
       )}
       
-      {/* Modal para Noticias Reales */}
-      <AnimatePresence>
-        {mostrarModalNoticia && noticiaSeleccionada && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[99999] p-4"
-            onClick={cerrarModalNoticia}
-          >
-            <motion.div
-              initial={{ scale: 0.3, opacity: 0, y: 100 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.3, opacity: 0, y: 100 }}
-              transition={{ type: "spring", stiffness: 200, damping: 20 }}
-              className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Header del Modal */}
-              <div className="bg-gradient-to-r from-[#01257D] to-blue-600 p-6 text-white">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-white bg-opacity-20 rounded-lg">
-                      <Newspaper className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <h2 className="text-xl font-bold">Noticia en Tiempo Real</h2>
-                      <p className="text-blue-100">{noticiaSeleccionada.person}</p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={cerrarModalNoticia}
-                    className="p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors"
-                  >
-                    <X className="w-6 h-6" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Contenido del Modal */}
-              <div className="p-6 max-h-[calc(85vh-140px)] overflow-y-auto">
-                <div className="flex items-center space-x-2 mb-4">
-                  <span className="text-2xl">{noticiaSeleccionada.icon}</span>
-                  <span className="font-medium text-gray-900 dark:text-white">{noticiaSeleccionada.person}</span>
-                  <span className={`text-xs px-2 py-1 rounded-full ${
-                    noticiaSeleccionada.sentiment === 'Positivo' ? 'bg-green-100 text-green-800' :
-                    noticiaSeleccionada.sentiment === 'Negativo' ? 'bg-red-100 text-red-800' :
-                    'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {noticiaSeleccionada.sentiment}
-                  </span>
-                </div>
-
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                  {noticiaSeleccionada.title}
-                </h1>
-
-                <div className="flex items-center space-x-4 mb-6 text-sm text-gray-500">
-                  <span>{noticiaSeleccionada.timestamp}</span>
-                  <span>•</span>
-                  <span>{noticiaSeleccionada.source}</span>
-                  <span>•</span>
-                  <span>{noticiaSeleccionada.engagement}</span>
-                </div>
-
-                <div className="prose dark:prose-dark max-w-none mb-6">
-                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                    {noticiaSeleccionada.content}
-                  </p>
-                </div>
-
-                {/* Métricas de IA */}
-                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 mb-6">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <Sparkles className="w-5 h-5 text-blue-600" />
-                    <span className="font-semibold text-blue-800 dark:text-blue-300">Análisis con Julia IA</span>
-                  </div>
-                  <p className="text-sm text-blue-700 dark:text-blue-300">
-                    Impacto en redes sociales: <strong>{noticiaSeleccionada.engagement}</strong>
-                  </p>
-                  <p className="text-sm text-blue-700 dark:text-blue-300">
-                    Tendencia de sentimiento: <strong>{noticiaSeleccionada.sentiment}</strong>
-                  </p>
-                </div>
-
-                {/* Botones de Acción */}
-                <div className="flex items-center space-x-3">
-                  <a
-                    href={noticiaSeleccionada.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center space-x-2 bg-[#01257D] text-white px-4 py-2 rounded-lg hover:bg-[#013AAA] transition-colors"
-                  >
-                    <Globe className="w-4 h-4" />
-                    <span>Ver Noticia Original</span>
-                  </a>
-                  <button
-                    onClick={cerrarModalNoticia}
-                    className="px-4 py-2 border border-gray-300 text-gray-700 dark:text-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                  >
-                    Cerrar
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Julia Chat flotante removido - ahora está integrado arriba */}
     </div>
   );

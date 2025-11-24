@@ -193,6 +193,11 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
               {(menuOpen || menuHovered || isMobile) && 'Julia IA'}
             </Link>
 
+            <Link href="/dashboard/busqueda-noticias" className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium ${pathname === '/dashboard/busqueda-noticias' ? 'bg-[#01257D]/10 text-[#01257D] dark:bg-[#01257D]/20 dark:text-[#01257D]' : 'text-gray-600 hover:bg-[#01257D]/10 hover:text-[#01257D] dark:text-gray-300 dark:hover:bg-[#01257D]/20 dark:hover:text-[#01257D]'}`}>
+              <Search className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 ${pathname === '/dashboard/busqueda-noticias' ? 'text-[#01257D] dark:text-white' : 'text-gray-400 group-hover:text-[#01257D] dark:text-gray-400 dark:group-hover:text-white'}`} />
+              {(menuOpen || menuHovered || isMobile) && 'Búsqueda y Noticias'}
+            </Link>
+
             <Link href="/dashboard/creditos/reportes" className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium ${pathname === '/dashboard/creditos/reportes' ? 'bg-[#01257D]/10 text-[#01257D] dark:bg-[#01257D]/20 dark:text-[#01257D]' : 'text-gray-600 hover:bg-[#01257D]/10 hover:text-[#01257D] dark:text-gray-300 dark:hover:bg-[#01257D]/20 dark:hover:text-[#01257D]'}`}>
               <FileText className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 ${pathname === '/dashboard/creditos/reportes' ? 'text-[#01257D] dark:text-white' : 'text-gray-400 group-hover:text-[#01257D] dark:text-gray-400 dark:group-hover:text-white'}`} />
               {(menuOpen || menuHovered || isMobile) && 'Reportes'}
