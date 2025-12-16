@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 
 const platformConfig = {
   facebook: {
@@ -106,7 +106,7 @@ function generatePKCE(): string {
   return btoa(verifier).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 }
 
-export default function OAuthLogin() {
+function OAuthLoginContent() {
   const searchParams = useSearchParams();
   const platform = searchParams.get('platform') || 'facebook';
   const config = platformConfig[platform as keyof typeof platformConfig] || platformConfig.facebook;
@@ -449,5 +449,46 @@ export default function OAuthLogin() {
         </a>
       </div>
     </div>
+  );
+}
+
+function OAuthLoadingFallback() {
+  return (
+    <div style={{
+      padding: '40px',
+      textAlign: 'center',
+      fontFamily: 'system-ui, -apple-system, sans-serif',
+      backgroundColor: '#FFFFFF',
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center'
+    }}>
+      <div style={{
+        width: '40px',
+        height: '40px',
+        border: '3px solid #01257D',
+        borderTop: '3px solid transparent',
+        borderRadius: '50%',
+        animation: 'spin 1s linear infinite',
+        marginBottom: '20px'
+      }}></div>
+      <p style={{ color: '#666' }}>Cargando...</p>
+      <style>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+export default function OAuthLogin() {
+  return (
+    <Suspense fallback={<OAuthLoadingFallback />}>
+      <OAuthLoginContent />
+    </Suspense>
   );
 }

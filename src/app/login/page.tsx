@@ -9,7 +9,7 @@
 
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useSupabase } from '@/components/providers/SupabaseProvider'
 import { Eye, EyeOff, Mail, Lock, Check } from 'lucide-react'
@@ -20,7 +20,7 @@ import gsap from 'gsap'
 import { createTimeline, staggerFadeIn } from '@/lib/gsap-animations'
 import AnimatedBackground from '@/components/ui/AnimatedBackground'
 
-export default function LoginPage() {
+function LoginPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirect') || '/dashboard'
@@ -377,5 +377,24 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+function LoginLoadingFallback() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="text-center">
+        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[#01257D] border-t-transparent"></div>
+        <p className="mt-4 text-gray-600 dark:text-gray-400">Cargando...</p>
+      </div>
+    </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginLoadingFallback />}>
+      <LoginPageContent />
+    </Suspense>
   )
 }
