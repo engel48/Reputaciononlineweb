@@ -144,8 +144,6 @@ export default function MonitoreoNoticiasSection() {
     scanFrequency: ScanFrequency
   ) => {
     try {
-      const token = localStorage.getItem('token') || '';
-
       // Convertir frecuencia a minutos
       const checkFrequencyMinutes =
         scanFrequency === 'every15min' ? 15 :
@@ -156,8 +154,8 @@ export default function MonitoreoNoticiasSection() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
+        credentials: 'include', // Envía cookies automáticamente
         body: JSON.stringify({
           siteId,
           searchTerms,
@@ -191,8 +189,6 @@ export default function MonitoreoNoticiasSection() {
     scanFrequency: ScanFrequency
   ) => {
     try {
-      const token = localStorage.getItem('token') || '';
-
       const checkFrequencyMinutes =
         scanFrequency === 'every15min' ? 15 :
         scanFrequency === 'hourly' ? 60 :
@@ -202,8 +198,8 @@ export default function MonitoreoNoticiasSection() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
+        credentials: 'include', // Envía cookies automáticamente
         body: JSON.stringify({ searchTerms, checkFrequencyMinutes }),
       });
 
@@ -225,14 +221,12 @@ export default function MonitoreoNoticiasSection() {
 
   const handleToggleActive = async (siteId: string, isActive: boolean) => {
     try {
-      const token = localStorage.getItem('token') || '';
-
       const response = await fetch(`/api/news-monitoring/toggle-active/${siteId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
+        credentials: 'include', // Envía cookies automáticamente
         body: JSON.stringify({ isActive }),
       });
 
@@ -249,13 +243,9 @@ export default function MonitoreoNoticiasSection() {
 
   const handleDeleteSitio = async (siteId: string) => {
     try {
-      const token = localStorage.getItem('token') || '';
-
       const response = await fetch(`/api/news-monitoring/deactivate-site/${siteId}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include', // Envía cookies automáticamente
       });
 
       const data = await response.json();
@@ -275,14 +265,12 @@ export default function MonitoreoNoticiasSection() {
       setIsScanning(true);
       setScanningSiteId(siteId);
 
-      const token = localStorage.getItem('token') || '';
-
       const response = await fetch('/api/news-monitoring/scan-now', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
+        credentials: 'include', // Envía cookies automáticamente
         body: JSON.stringify({ monitoredSiteId: siteId }),
       });
 
@@ -307,13 +295,9 @@ export default function MonitoreoNoticiasSection() {
 
   const handleMarkAsRead = async (mentionId: string) => {
     try {
-      const token = localStorage.getItem('token') || '';
-
       const response = await fetch(`/api/news-monitoring/mark-read/${mentionId}`, {
         method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        credentials: 'include', // Envía cookies automáticamente
       });
 
       const data = await response.json();

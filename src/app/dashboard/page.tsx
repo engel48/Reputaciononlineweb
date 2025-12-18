@@ -7,7 +7,6 @@ import AdvancedSearch from '@/components/dashboard/AdvancedSearch';
 import JuliaChat from '@/components/dashboard/JuliaChat';
 import SimpleChat from '@/components/dashboard/SimpleChat';
 import PoliticalDashboard from '@/components/dashboard/PoliticalDashboard';
-import NoticiasColombia from '@/components/dashboard/NoticiasColombia';
 import MonitoreoNoticiasSection from '@/components/news-monitoring/MonitoreoNoticiasSection';
 import YouTubeDashboardSection from '@/components/dashboard/YouTubeDashboardSection';
 import FacebookDashboardSection from '@/components/dashboard/FacebookDashboardSection';
@@ -854,11 +853,6 @@ export default function Dashboard() {
         <DynamicMencionesMap />
       </div>
 
-      {/* Noticias de Colombia en Tiempo Real - NUEVA SECCIÓN */}
-      <div className="mb-6">
-        <NoticiasColombia />
-      </div>
-      
       {/* Menciones recientes y actividad - RESPONSIVE */}
       <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
         {/* Menciones en Tiempo Real con IA */}

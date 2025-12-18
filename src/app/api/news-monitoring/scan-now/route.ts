@@ -4,17 +4,18 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import * as jwt from 'jsonwebtoken';
+import { supabase } from '@/lib/supabase-server';
 import { scrapeSiteWithRateLimit } from '@/lib/news-monitoring/scraper';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const JWT_SECRET = process.env.JWT_SECRET || 'reputacion-online-secret-key-2025';
 
 export async function POST(request: NextRequest) {
   try {
-    // Obtener token de autenticación
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
+    // Obtener token de autenticación desde cookie (JWT Local)
+    const authToken = request.cookies.get('auth-token')?.value;
+
+    if (!authToken) {
       return NextResponse.json(
         {
           success: false,
@@ -28,19 +29,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const token = authHeader.substring(7);
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      global: {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    });
-
-    // Verificar usuario autenticado
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    // Verificar token JWT Local
+    let userId: string;
+    try {
+      const decoded = jwt.verify(authToken, JWT_SECRET) as { userId: string; email: string };
+      userId = decoded.userId;
+    } catch (error) {
       return NextResponse.json(
         {
           success: false,
@@ -76,7 +70,7 @@ export async function POST(request: NextRequest) {
       .from('monitored_news_sites')
       .select('*')
       .eq('id', monitoredSiteId)
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .single();
 
     if (fetchError || !monitoredSite) {
@@ -112,7 +106,7 @@ export async function POST(request: NextRequest) {
       .from('scraping_jobs')
       .insert({
         monitored_site_id: monitoredSite.id,
-        user_id: user.id,
+        user_id: userId,
         site_id: monitoredSite.site_id,
         status: 'pending',
         priority: 1, // Alta prioridad para scan manual
@@ -157,7 +151,7 @@ export async function POST(request: NextRequest) {
       // Guardar menciones encontradas
       if (scrapingResult.mentions.length > 0) {
         const mentionsToInsert = scrapingResult.mentions.map(mention => ({
-          user_id: user.id,
+          user_id: userId,
           monitored_site_id: monitoredSite.id,
           article_url: mention.article.url,
           article_title: mention.article.title,

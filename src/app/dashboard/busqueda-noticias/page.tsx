@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import SimpleBuscador from '@/components/dashboard/SimpleBuscador';
+import NoticiasColombia from '@/components/dashboard/NoticiasColombia';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Globe, Clock, RefreshCw, ArrowUpRight, X as CloseIcon } from 'lucide-react';
 import { useRealTimeNews } from '@/hooks/useRealTimeNews';
@@ -93,9 +94,20 @@ export default function BusquedaNoticiasPage() {
         <SimpleBuscador />
       </motion.div>
 
-      {/* SECCIÓN: NOTICIAS RELEVANTES EN TIEMPO REAL */}
+      {/* SECCIÓN: NOTICIAS DE COLOMBIA EN TIEMPO REAL - 50 SITIOS VERIFICADOS */}
       <motion.div
         custom={1}
+        initial="hidden"
+        animate="visible"
+        variants={statsVariants}
+        className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 sm:p-6 border border-gray-200 dark:border-gray-700"
+      >
+        <NoticiasColombia />
+      </motion.div>
+
+      {/* SECCIÓN: NOTICIAS RELEVANTES EN TIEMPO REAL */}
+      <motion.div
+        custom={2}
         initial="hidden"
         animate="visible"
         variants={statsVariants}

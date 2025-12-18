@@ -4,11 +4,11 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import * as jwt from 'jsonwebtoken';
+import { supabase } from '@/lib/supabase-server';
 import { getSiteById } from '@/lib/news-monitoring/sites-config';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const JWT_SECRET = process.env.JWT_SECRET || 'reputacion-online-secret-key-2025';
 
 interface ActivateSiteRequest {
   siteId: string;
@@ -18,9 +18,10 @@ interface ActivateSiteRequest {
 
 export async function POST(request: NextRequest) {
   try {
-    // Obtener token de autenticación
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
+    // Obtener token de autenticación desde cookie (JWT Local)
+    const authToken = request.cookies.get('auth-token')?.value;
+
+    if (!authToken) {
       return NextResponse.json(
         {
           success: false,
@@ -34,19 +35,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const token = authHeader.substring(7);
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      global: {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    });
-
-    // Verificar usuario autenticado
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    // Verificar token JWT Local
+    let userId: string;
+    try {
+      const decoded = jwt.verify(authToken, JWT_SECRET) as { userId: string; email: string };
+      userId = decoded.userId;
+    } catch (error) {
       return NextResponse.json(
         {
           success: false,
@@ -135,7 +129,7 @@ export async function POST(request: NextRequest) {
     const { data: existingSites, error: countError } = await supabase
       .from('monitored_news_sites')
       .select('id', { count: 'exact' })
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('is_active', true);
 
     if (countError) {
@@ -160,7 +154,7 @@ export async function POST(request: NextRequest) {
     const { data: existingSite } = await supabase
       .from('monitored_news_sites')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('site_id', body.siteId)
       .single();
 
@@ -190,7 +184,7 @@ export async function POST(request: NextRequest) {
       const { data: created, error: createError } = await supabase
         .from('monitored_news_sites')
         .insert({
-          user_id: user.id,
+          user_id: userId,
           site_id: body.siteId,
           is_active: true,
           search_terms: sanitizedTerms,

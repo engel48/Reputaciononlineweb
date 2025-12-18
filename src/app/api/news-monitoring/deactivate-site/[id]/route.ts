@@ -4,10 +4,10 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import * as jwt from 'jsonwebtoken';
+import { supabase } from '@/lib/supabase-server';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const JWT_SECRET = process.env.JWT_SECRET || 'reputacion-online-secret-key-2025';
 
 export async function DELETE(
   request: NextRequest,
@@ -30,9 +30,10 @@ export async function DELETE(
       );
     }
 
-    // Obtener token de autenticación
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
+    // Obtener token de autenticación desde cookie (JWT Local)
+    const authToken = request.cookies.get('auth-token')?.value;
+
+    if (!authToken) {
       return NextResponse.json(
         {
           success: false,
@@ -46,19 +47,12 @@ export async function DELETE(
       );
     }
 
-    const token = authHeader.substring(7);
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      global: {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    });
-
-    // Verificar usuario autenticado
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    // Verificar token JWT Local
+    let userId: string;
+    try {
+      const decoded = jwt.verify(authToken, JWT_SECRET) as { userId: string; email: string };
+      userId = decoded.userId;
+    } catch (error) {
       return NextResponse.json(
         {
           success: false,
@@ -77,7 +71,7 @@ export async function DELETE(
       .from('monitored_news_sites')
       .select('*')
       .eq('id', id)
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .single();
 
     if (fetchError || !monitoredSite) {
