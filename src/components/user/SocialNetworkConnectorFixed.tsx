@@ -4,12 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Facebook, 
-  Twitter, 
-  Instagram, 
-  Linkedin, 
-  Youtube, 
+import {
+  Facebook,
+  Twitter,
+  Instagram,
+  Youtube,
   MessageCircle,
   Music,
   RefreshCw,
@@ -38,7 +37,6 @@ interface SocialConnectionsState {
   facebook: SocialConnection;
   instagram: SocialConnection;
   x: SocialConnection;
-  linkedin: SocialConnection;
   youtube: SocialConnection;
   threads: SocialConnection;
   tiktok: SocialConnection;
@@ -73,13 +71,6 @@ const socialNetworks = [
     description: 'Monitorea menciones, hashtags y respuestas en X'
   },
   {
-    id: 'linkedin',
-    name: 'LinkedIn',
-    icon: Linkedin,
-    color: 'bg-[#0A66C2]',
-    description: 'Analiza tu actividad profesional y engagement en LinkedIn'
-  },
-  {
     id: 'youtube',
     name: 'YouTube',
     icon: Youtube,
@@ -107,7 +98,6 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
     facebook: { connected: false, username: '', displayName: '', followers: 0, profileImage: '', lastSync: null, metrics: { posts: 0, engagement: 0, reach: 0 } },
     instagram: { connected: false, username: '', displayName: '', followers: 0, profileImage: '', lastSync: null, metrics: { posts: 0, engagement: 0, reach: 0 } },
     x: { connected: false, username: '', displayName: '', followers: 0, profileImage: '', lastSync: null, metrics: { posts: 0, engagement: 0, reach: 0 } },
-    linkedin: { connected: false, username: '', displayName: '', followers: 0, profileImage: '', lastSync: null, metrics: { posts: 0, engagement: 0, reach: 0 } },
     youtube: { connected: false, username: '', displayName: '', followers: 0, profileImage: '', lastSync: null, metrics: { posts: 0, engagement: 0, reach: 0 } },
     threads: { connected: false, username: '', displayName: '', followers: 0, profileImage: '', lastSync: null, metrics: { posts: 0, engagement: 0, reach: 0 } },
     tiktok: { connected: false, username: '', displayName: '', followers: 0, profileImage: '', lastSync: null, metrics: { posts: 0, engagement: 0, reach: 0 } }

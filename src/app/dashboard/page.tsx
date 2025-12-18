@@ -11,7 +11,6 @@ import MonitoreoNoticiasSection from '@/components/news-monitoring/MonitoreoNoti
 import YouTubeDashboardSection from '@/components/dashboard/YouTubeDashboardSection';
 import FacebookDashboardSection from '@/components/dashboard/FacebookDashboardSection';
 import InstagramDashboardSection from '@/components/dashboard/InstagramDashboardSection';
-import LinkedInDashboardSection from '@/components/dashboard/LinkedInDashboardSection';
 import XDashboardSection from '@/components/dashboard/XDashboardSection';
 import ThreadsDashboardSection from '@/components/dashboard/ThreadsDashboardSection';
 import TikTokDashboardSection from '@/components/dashboard/TikTokDashboardSection';
@@ -574,11 +573,6 @@ export default function Dashboard() {
       {/* Instagram Analytics Section */}
       <div className="mb-4 sm:mb-6">
         <InstagramDashboardSection />
-      </div>
-
-      {/* LinkedIn Analytics Section */}
-      <div className="mb-4 sm:mb-6">
-        <LinkedInDashboardSection />
       </div>
 
       {/* X/Twitter Analytics Section */}

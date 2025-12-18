@@ -30,7 +30,8 @@ interface SocialConnectionsState {
   facebook: SocialConnection;
   instagram: SocialConnection;
   x: SocialConnection;
-  linkedin: SocialConnection;
+  youtube: SocialConnection;
+  threads: SocialConnection;
   tiktok: SocialConnection;
 }
 

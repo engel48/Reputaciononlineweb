@@ -1,11 +1,10 @@
 import { facebookOAuth, FacebookProfile } from './facebook';
 import { twitterOAuth, TwitterProfile } from './twitter';
-import { linkedinOAuth, LinkedInProfile } from './linkedin';
 import { youtubeOAuth, YouTubeProfile } from './youtube';
 import { threadsOAuth, ThreadsProfile } from './threads';
 import { tiktokOAuth, TikTokProfile } from './tiktok';
 
-export type SocialPlatform = 'facebook' | 'instagram' | 'x' | 'linkedin' | 'youtube' | 'threads' | 'tiktok';
+export type SocialPlatform = 'facebook' | 'instagram' | 'x' | 'youtube' | 'threads' | 'tiktok';
 
 export interface SocialConnection {
   platform: SocialPlatform;
@@ -93,21 +92,6 @@ export class SocialOAuthManager {
             displayName = profileData.name;
             profileImage = profileData.profile_image_url;
             followers = profileData.public_metrics?.followers_count || 0;
-          }
-          break;
-
-        case 'linkedin':
-          profileData = await linkedinOAuth.getProfile(accessToken);
-          if (profileData) {
-            username = `${profileData.localizedFirstName} ${profileData.localizedLastName}`;
-            displayName = username;
-            profileImage = profileData.profilePicture?.['displayImage~']?.elements?.[0]?.identifiers?.[0]?.identifier || '';
-            
-            // LinkedIn no proporciona fácilmente el número de seguidores personales
-            const organizations = await linkedinOAuth.getUserOrganizations(accessToken);
-            if (organizations.length > 0) {
-              followers = organizations[0].followerCount || 0;
-            }
           }
           break;
 
@@ -246,7 +230,6 @@ export class SocialOAuthManager {
         facebook: { platform: 'facebook', connected: false },
         instagram: { platform: 'instagram', connected: false },
         x: { platform: 'x', connected: false },
-        linkedin: { platform: 'linkedin', connected: false },
         youtube: { platform: 'youtube', connected: false },
         threads: { platform: 'threads', connected: false },
         tiktok: { platform: 'tiktok', connected: false }
@@ -283,7 +266,6 @@ export class SocialOAuthManager {
         facebook: { platform: 'facebook', connected: false },
         instagram: { platform: 'instagram', connected: false },
         x: { platform: 'x', connected: false },
-        linkedin: { platform: 'linkedin', connected: false },
         youtube: { platform: 'youtube', connected: false },
         threads: { platform: 'threads', connected: false },
         tiktok: { platform: 'tiktok', connected: false }
@@ -376,7 +358,6 @@ export class SocialOAuthManager {
       facebook: false,
       instagram: false,
       x: false,
-      linkedin: false,
       youtube: false,
       threads: false,
       tiktok: false
@@ -396,9 +377,6 @@ export class SocialOAuthManager {
               break;
             case 'x':
               isValid = await twitterOAuth.validateToken(connection.accessToken);
-              break;
-            case 'linkedin':
-              isValid = await linkedinOAuth.validateToken(connection.accessToken);
               break;
             case 'youtube':
               isValid = await youtubeOAuth.validateToken(connection.accessToken);

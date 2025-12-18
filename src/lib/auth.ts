@@ -2,7 +2,6 @@ import { NextAuthOptions } from "next-auth"
 import FacebookProvider from "next-auth/providers/facebook"
 import TwitterProvider from "next-auth/providers/twitter"
 import GoogleProvider from "next-auth/providers/google"
-import LinkedInProvider from "next-auth/providers/linkedin"
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -40,15 +39,6 @@ export const authOptions: NextAuthOptions = {
       authorization: {
         params: {
           scope: 'tweet.read users.read follows.read offline.access',
-        },
-      },
-    }),
-    LinkedInProvider({
-      clientId: process.env.LINKEDIN_CLIENT_ID || '',
-      clientSecret: process.env.LINKEDIN_CLIENT_SECRET || '',
-      authorization: {
-        params: {
-          scope: 'r_liteprofile r_emailaddress r_organization_social',
         },
       },
     }),
@@ -139,7 +129,6 @@ async function saveSocialMediaConnection(
       'facebook': 'facebook',
       'twitter': 'x',
       'google': 'youtube', // Google se usa para YouTube
-      'linkedin': 'linkedin',
       'threads': 'threads',
       'youtube': 'youtube'
       // TikTok manejado por rutas personalizadas, no por NextAuth
@@ -174,10 +163,6 @@ async function saveSocialMediaConnection(
         username = profile?.name || '';
         profileUrl = profile?.picture || '';
         profileImage = profile?.picture || '';
-        break;
-      case 'linkedin':
-        username = (profile?.localizedFirstName || '') + ' ' + (profile?.localizedLastName || '');
-        profileUrl = profile?.publicProfileUrl || '';
         break;
       case 'threads':
         username = profile?.username || '';
