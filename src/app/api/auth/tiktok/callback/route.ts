@@ -26,11 +26,13 @@ export async function GET(request: NextRequest) {
 
   console.log('🎵 TikTok OAuth Callback recibido');
 
+  const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+
   // Manejar errores de OAuth
   if (error) {
     console.error('❌ TikTok OAuth error:', error, errorDescription);
     return NextResponse.redirect(
-      `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard/redes-sociales?error=${error}&description=${encodeURIComponent(errorDescription || '')}`
+      `${baseUrl}/oauth-callback?error=${error}&platform=tiktok&description=${encodeURIComponent(errorDescription || '')}`
     );
   }
 
@@ -38,7 +40,7 @@ export async function GET(request: NextRequest) {
   if (!code) {
     console.error('❌ No se recibió código de autorización');
     return NextResponse.redirect(
-      `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard/redes-sociales?error=no_code`
+      `${baseUrl}/oauth-callback?error=no_code&platform=tiktok`
     );
   }
 
@@ -49,7 +51,7 @@ export async function GET(request: NextRequest) {
   if (!state || state !== storedState) {
     console.error('❌ State de OAuth inválido (posible ataque CSRF)');
     return NextResponse.redirect(
-      `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard/redes-sociales?error=invalid_state`
+      `${baseUrl}/oauth-callback?error=invalid_state&platform=tiktok`
     );
   }
 
@@ -57,7 +59,7 @@ export async function GET(request: NextRequest) {
   if (!TIKTOK_CLIENT_KEY || !TIKTOK_CLIENT_SECRET) {
     console.error('❌ TikTok credentials no configuradas en .env');
     return NextResponse.redirect(
-      `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard/redes-sociales?error=config_missing`
+      `${baseUrl}/oauth-callback?error=config_missing&platform=tiktok`
     );
   }
 
@@ -68,7 +70,7 @@ export async function GET(request: NextRequest) {
     if (!authToken) {
       console.error('❌ Usuario no autenticado');
       return NextResponse.redirect(
-        `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/login?error=not_authenticated`
+        `${baseUrl}/oauth-callback?error=not_authenticated&platform=tiktok`
       );
     }
 
@@ -77,7 +79,7 @@ export async function GET(request: NextRequest) {
     if (!decoded || !decoded.userId) {
       console.error('❌ Token JWT inválido');
       return NextResponse.redirect(
-        `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/login?error=invalid_token`
+        `${baseUrl}/oauth-callback?error=invalid_token&platform=tiktok`
       );
     }
 
@@ -91,7 +93,7 @@ export async function GET(request: NextRequest) {
     if (!tokenData) {
       console.error('❌ Error obteniendo access token');
       return NextResponse.redirect(
-        `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard/redes-sociales?error=token_exchange_failed`
+        `${baseUrl}/oauth-callback?error=token_exchange_failed&platform=tiktok`
       );
     }
 
@@ -104,7 +106,7 @@ export async function GET(request: NextRequest) {
     if (!profile) {
       console.error('❌ Error obteniendo perfil de TikTok');
       return NextResponse.redirect(
-        `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard/redes-sociales?error=profile_fetch_failed`
+        `${baseUrl}/oauth-callback?error=profile_fetch_failed&platform=tiktok`
       );
     }
 
@@ -132,13 +134,13 @@ export async function GET(request: NextRequest) {
     if (!saved) {
       console.error('❌ Error guardando conexión en Supabase');
       return NextResponse.redirect(
-        `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard/redes-sociales?error=save_failed`
+        `${baseUrl}/oauth-callback?error=save_failed&platform=tiktok`
       );
     }
 
-    // Limpiar cookie de state
+    // Limpiar cookie de state y redirigir a página de callback OAuth
     const response = NextResponse.redirect(
-      `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard/redes-sociales?success=tiktok`
+      `${baseUrl}/oauth-callback?success=tiktok`
     );
 
     response.cookies.delete('tiktok_oauth_state');
@@ -148,8 +150,9 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('❌ Error en TikTok OAuth callback:', error);
+    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
     return NextResponse.redirect(
-      `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard/redes-sociales?error=oauth_failed`
+      `${baseUrl}/oauth-callback?error=oauth_failed&platform=tiktok`
     );
   }
 }

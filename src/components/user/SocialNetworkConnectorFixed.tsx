@@ -128,7 +128,7 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
     setIsValidating(true);
 
     try {
-      const response = await fetch('/api/social-connect?action=list', {
+      const response = await fetch('/api/social-connect', {
         method: 'GET',
         credentials: 'include', // ✅ IMPORTANTE: Enviar cookies con la petición
         headers: {

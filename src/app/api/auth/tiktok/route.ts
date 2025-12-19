@@ -8,6 +8,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
+// Forzar renderizado dinámico porque usa cookies
+export const dynamic = 'force-dynamic';
+
 const TIKTOK_CLIENT_KEY = process.env.TIKTOK_CLIENT_KEY || process.env.NEXT_PUBLIC_TIKTOK_CLIENT_KEY;
 const NEXTAUTH_URL = process.env.NEXTAUTH_URL || 'http://localhost:3000';
 

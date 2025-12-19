@@ -842,11 +842,6 @@ export default function Dashboard() {
       </motion.div>
       </FeatureGate>
 
-      {/* Mapa de menciones */}
-      <div className="mb-6">
-        <DynamicMencionesMap />
-      </div>
-
       {/* Menciones recientes y actividad - RESPONSIVE */}
       <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
         {/* Menciones en Tiempo Real con IA */}
@@ -1125,8 +1120,17 @@ export default function Dashboard() {
           <PoliticalDashboard />
         </motion.div>
       )}
-      
-      {/* Julia Chat flotante removido - ahora está integrado arriba */}
+
+      {/* Mapa de Menciones - Al final del dashboard */}
+      <motion.div
+        custom={8}
+        initial="hidden"
+        animate="visible"
+        variants={statsVariants}
+        className="mb-4 sm:mb-6"
+      >
+        <DynamicMencionesMap />
+      </motion.div>
     </div>
   );
 }

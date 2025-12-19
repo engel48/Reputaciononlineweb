@@ -1,12 +1,13 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Facebook, Instagram, Globe } from 'lucide-react';
+import { Facebook, Instagram, Globe, RefreshCw, AlertCircle } from 'lucide-react';
 import XLogo from '@/components/icons/XLogo';
 import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
 
 // Necesitamos arreglar el problema de los iconos en Leaflet con Next.js
 import L from 'leaflet';
@@ -88,133 +89,155 @@ interface Mencion {
     lng: number;
     name: string;
   };
+  timestamp?: string;
 }
 
-// Datos de menciones reales para Latinoamérica
-const menciones: Mencion[] = [
-  {
-    id: '1',
-    author: '@mariarodriguez_co',
-    content: 'Excelente análisis de reputación digital. Herramientas muy profesionales para empresas latinoamericanas 💼✨',
-    sentiment: 'positive',
-    platform: 'x',
-    location: {
-      lat: 4.6097,
-      lng: -74.0817,
-      name: 'Bogotá, Colombia'
-    }
-  },
-  {
-    id: '2',
-    author: 'Carlos Mendoza',
-    content: 'He usado varias plataformas de monitoreo pero esta realmente entiende el mercado latino. Muy recomendada',
-    sentiment: 'positive',
-    platform: 'facebook',
-    location: {
-      lat: 3.4516,
-      lng: -76.5320,
-      name: 'Cali, Colombia'
-    }
-  },
-  {
-    id: '3',
-    author: '@digitalinfluencer',
-    content: 'Probando la plataforma de reputación online. Los reportes son detallados pero el precio podría ser mejor 🤔',
-    sentiment: 'neutral',
-    platform: 'instagram',
-    location: {
-      lat: 6.2476,
-      lng: -75.5658,
-      name: 'Medellín, Colombia'
-    }
-  },
-  {
-    id: '4',
-    author: '@techreview_mx',
-    content: 'La actualización mejoró significativamente el análisis de sentimientos. Ahora incluye más fuentes mexicanas 🇲🇽',
-    sentiment: 'positive',
-    platform: 'x',
-    location: {
-      lat: 19.4326,
-      lng: -99.1332,
-      name: 'Ciudad de México, México'
-    }
-  },
-  {
-    id: '5',
-    author: 'Ana Silva',
-    content: 'Como community manager, esta herramienta me ahorra horas de trabajo manual. El dashboard es muy intuitivo',
-    sentiment: 'positive',
-    platform: 'facebook',
-    location: {
-      lat: -34.6118,
-      lng: -58.3960,
-      name: 'Buenos Aires, Argentina'
-    }
-  },
-  {
-    id: '6',
-    author: '@marketingbr',
-    content: 'Ótima ferramenta para monitoramento no Brasil. Precisa melhorar a análise de trending topics 📊',
-    sentiment: 'neutral',
-    platform: 'x',
-    location: {
-      lat: -23.5558,
-      lng: -46.6396,
-      name: 'São Paulo, Brasil'
-    }
-  },
-  {
-    id: '7',
-    author: 'Luis Fernández',
-    content: 'Llevamos 6 meses usando la plataforma y los resultados han superado las expectativas. ROI excelente',
-    sentiment: 'positive',
-    platform: 'instagram',
-    location: {
-      lat: 10.4806,
-      lng: -66.9036,
-      name: 'Caracas, Venezuela'
-    }
-  },
-  {
-    id: '8',
-    author: '@agenciaperu',
-    content: 'Herramienta sólida para el mercado peruano. El soporte técnico respondió rápido a nuestras consultas 👍',
-    sentiment: 'positive',
-    platform: 'x',
-    location: {
-      lat: -12.0464,
-      lng: -77.0428,
-      name: 'Lima, Perú'
-    }
-  }
-];
+interface MapStats {
+  positive: number;
+  negative: number;
+  neutral: number;
+}
 
 const MencionesMap = () => {
-  // Posición central del mapa (Centrado en Latinoamérica)
-  const center = [-8.7832, -55.4915]; // Centro geográfico de Sudamérica
+  const [menciones, setMenciones] = useState<Mencion[]>([]);
+  const [stats, setStats] = useState<MapStats>({ positive: 0, negative: 0, neutral: 0 });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<string>('');
+
+  // Funcion para cargar menciones desde la API
+  const fetchMenciones = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/mentions/map?limit=20&hours=168', {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          setError('Inicia sesion para ver menciones');
+        } else {
+          setError('Error al cargar menciones');
+        }
+        return;
+      }
+
+      const data = await response.json();
+
+      if (data.success && data.data) {
+        setMenciones(data.data.mentions || []);
+        setStats(data.data.stats || { positive: 0, negative: 0, neutral: 0 });
+        setLastUpdated(new Date().toLocaleTimeString());
+      }
+    } catch (err) {
+      console.error('Error fetching map mentions:', err);
+      setError('Error de conexion');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Cargar menciones al montar el componente
+  useEffect(() => {
+    fetchMenciones();
+
+    // Actualizar cada 5 minutos
+    const interval = setInterval(fetchMenciones, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Posicion central del mapa (Centrado en Latinoamerica)
+  const center = [-8.7832, -55.4915]; // Centro geografico de Sudamerica
   
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="relative z-[1]" // Z-index muy bajo para evitar interferencias
+      className="relative z-[1]"
     >
-      <Card className="overflow-hidden shadow-xl border-2 border-gray-200 dark:border-gray-700"> {/* Prevenir overflow del mapa */}
+      <Card className="overflow-hidden shadow-xl border-2 border-gray-200 dark:border-gray-700">
         <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900">
-          <CardTitle className="flex items-center space-x-2">
-            <Globe className="w-5 h-5 text-blue-600" />
-            <span>Mapa de Menciones en Tiempo Real</span>
-          </CardTitle>
-          <CardDescription>Distribución geográfica de menciones reales en Latinoamérica • Última actualización: {new Date().toLocaleTimeString()}</CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center space-x-2">
+                <Globe className="w-5 h-5 text-blue-600" />
+                <span>Mapa de Menciones en Tiempo Real</span>
+              </CardTitle>
+              <CardDescription>
+                {menciones.length > 0
+                  ? `Distribucion geografica de ${menciones.length} menciones en Latinoamerica`
+                  : 'Distribucion geografica de menciones en Latinoamerica'
+                }
+                {lastUpdated && ` • Ultima actualizacion: ${lastUpdated}`}
+              </CardDescription>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={fetchMenciones}
+              disabled={loading}
+              className="ml-2"
+            >
+              <RefreshCw className={`w-4 h-4 mr-1 ${loading ? 'animate-spin' : ''}`} />
+              Actualizar
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="p-0">
           <div className="h-[450px] w-full relative z-[1]">
-            <MapContainer 
-              center={[center[0], center[1]]} 
-              zoom={3} 
-              style={{ height: '100%', width: '100%', zIndex: 1 }} // Z-index muy bajo
+            {/* Estado de carga */}
+            {loading && menciones.length === 0 && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800 z-10">
+                <div className="text-center">
+                  <RefreshCw className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-2" />
+                  <p className="text-gray-600 dark:text-gray-400">Cargando menciones...</p>
+                </div>
+              </div>
+            )}
+
+            {/* Estado de error */}
+            {error && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800 z-10">
+                <div className="text-center">
+                  <AlertCircle className="w-8 h-8 text-orange-500 mx-auto mb-2" />
+                  <p className="text-gray-600 dark:text-gray-400">{error}</p>
+                  <Button variant="outline" size="sm" onClick={fetchMenciones} className="mt-2">
+                    Reintentar
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Estado sin datos */}
+            {!loading && !error && menciones.length === 0 && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800 z-10">
+                <div className="text-center max-w-md px-4">
+                  <Globe className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                  <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Sin menciones aun
+                  </h3>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">
+                    Cuando se detecten menciones en redes sociales o medios de noticias,
+                    apareceran aqui en el mapa con su ubicacion geografica.
+                  </p>
+                  <p className="text-gray-400 dark:text-gray-500 text-xs mt-3">
+                    Conecta tus redes sociales y activa el monitoreo de noticias para comenzar.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <MapContainer
+              center={[center[0], center[1]]}
+              zoom={3}
+              style={{ height: '100%', width: '100%', zIndex: 1 }}
               scrollWheelZoom={true}
               zoomControl={true}
               attributionControl={true}
@@ -225,9 +248,9 @@ const MencionesMap = () => {
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
-              
+
               {menciones.map((mencion) => (
-                <Marker 
+                <Marker
                   key={mencion.id}
                   position={[mencion.location.lat, mencion.location.lng]}
                   icon={getIconByPlatform(mencion.platform)}
@@ -258,19 +281,19 @@ const MencionesMap = () => {
             </MapContainer>
           </div>
           
-          {/* Estadísticas y leyenda mejoradas */}
+          {/* Estadisticas y leyenda */}
           <div className="p-4 bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-800 dark:to-gray-900 border-t border-gray-200 dark:border-gray-700">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">{menciones.filter(m => m.sentiment === 'positive').length}</div>
+                <div className="text-2xl font-bold text-green-600">{stats.positive}</div>
                 <div className="text-xs text-gray-600 dark:text-gray-400">Positivas</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-red-600">{menciones.filter(m => m.sentiment === 'negative').length}</div>
+                <div className="text-2xl font-bold text-red-600">{stats.negative}</div>
                 <div className="text-xs text-gray-600 dark:text-gray-400">Negativas</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-gray-600">{menciones.filter(m => m.sentiment === 'neutral').length}</div>
+                <div className="text-2xl font-bold text-gray-600">{stats.neutral}</div>
                 <div className="text-xs text-gray-600 dark:text-gray-400">Neutrales</div>
               </div>
               <div className="text-center">
@@ -278,7 +301,7 @@ const MencionesMap = () => {
                 <div className="text-xs text-gray-600 dark:text-gray-400">Total</div>
               </div>
             </div>
-            
+
             <div className="flex flex-wrap gap-4 justify-center">
               <div className="flex items-center space-x-1">
                 <div className="h-3 w-3 rounded-full bg-black"></div>
@@ -293,9 +316,15 @@ const MencionesMap = () => {
                 <span className="text-xs text-gray-600 dark:text-gray-400">Instagram ({menciones.filter(m => m.platform === 'instagram').length})</span>
               </div>
               <div className="flex items-center space-x-1">
-                <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-xs text-green-600 font-medium">En tiempo real</span>
+                <div className="h-3 w-3 rounded-full bg-gray-500"></div>
+                <span className="text-xs text-gray-600 dark:text-gray-400">Noticias ({menciones.filter(m => m.platform === 'news').length})</span>
               </div>
+              {menciones.length > 0 && (
+                <div className="flex items-center space-x-1">
+                  <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-xs text-green-600 font-medium">Datos reales</span>
+                </div>
+              )}
             </div>
           </div>
         </CardContent>
