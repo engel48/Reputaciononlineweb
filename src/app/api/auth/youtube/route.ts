@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 
+// Forzar renderizado dinámico porque usa cookies
+export const dynamic = 'force-dynamic';
+
 /**
  * YouTube OAuth Handler
  *
@@ -93,7 +96,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Autenticar usuario
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const authToken = cookieStore.get('auth-token')?.value;
 
     if (!authToken) {

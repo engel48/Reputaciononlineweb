@@ -180,24 +180,43 @@ export class SocialOAuthManager {
 
   /**
    * Desconecta una red social para un usuario
+   * Actualiza en Supabase directamente
    */
   async disconnectSocialNetwork(userId: string, platform: SocialPlatform): Promise<boolean> {
     try {
-      const userData = this.connections.get(userId);
-      if (!userData || !userData.connections[platform]) {
-        return false;
+      // Importar Supabase
+      const { supabase } = await import('@/lib/supabase-server');
+
+      // Actualizar en Supabase - marcar como desconectado y limpiar tokens
+      const { error: updateError } = await supabase
+        .from('social_media')
+        .update({
+          connected: false,
+          access_token: null,
+          refresh_token: null,
+          token_expiry: null,
+          last_sync: new Date().toISOString()
+        })
+        .eq('user_id', userId)
+        .eq('platform', platform);
+
+      if (updateError) {
+        console.error(`❌ Error actualizando Supabase para ${platform}:`, updateError);
+        throw updateError;
       }
 
-      // Marcar como desconectado
-      userData.connections[platform] = {
-        platform,
-        connected: false
-      };
+      // También actualizar memoria local
+      const userData = this.connections.get(userId);
+      if (userData && userData.connections[platform]) {
+        userData.connections[platform] = {
+          platform,
+          connected: false
+        };
+        userData.lastUpdated = new Date().toISOString();
+        this.connections.set(userId, userData);
+      }
 
-      userData.lastUpdated = new Date().toISOString();
-      this.connections.set(userId, userData);
-
-      console.log(`✅ ${platform} desconectado exitosamente para usuario ${userId}`);
+      console.log(`✅ ${platform} desconectado exitosamente para usuario ${userId} (Supabase actualizado)`);
       return true;
 
     } catch (error) {
