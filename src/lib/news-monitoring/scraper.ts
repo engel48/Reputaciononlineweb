@@ -169,17 +169,15 @@ async function scrapeRSS(
         hash: generateArticleHash(item.link, item.title),
       };
 
-      // Verificar menciones
-      const { matches, matchedTerms } = checkForMentions(article, searchTerms);
-
-      if (matches) {
-        // Analizar sentimiento
-        const context = extractContext(article.content, matchedTerms[0], 300);
-        const sentimentAnalysis = analyzeSentiment(context, matchedTerms[0]);
+      // Si no hay términos de búsqueda, incluir TODOS los artículos como noticias generales
+      if (searchTerms.length === 0) {
+        // Analizar sentimiento del artículo completo
+        const context = article.content.substring(0, 300);
+        const sentimentAnalysis = analyzeSentiment(context, article.title);
 
         result.mentions.push({
           article,
-          matchedTerms,
+          matchedTerms: ['[noticia general]'],
           context,
           sentiment: {
             type: sentimentAnalysis.sentiment,
@@ -189,6 +187,28 @@ async function scrapeRSS(
         });
 
         result.mentionsFound++;
+      } else {
+        // Verificar menciones con términos específicos
+        const { matches, matchedTerms } = checkForMentions(article, searchTerms);
+
+        if (matches) {
+          // Analizar sentimiento
+          const context = extractContext(article.content, matchedTerms[0], 300);
+          const sentimentAnalysis = analyzeSentiment(context, matchedTerms[0]);
+
+          result.mentions.push({
+            article,
+            matchedTerms,
+            context,
+            sentiment: {
+              type: sentimentAnalysis.sentiment,
+              score: sentimentAnalysis.score,
+              confidence: sentimentAnalysis.confidence,
+            },
+          });
+
+          result.mentionsFound++;
+        }
       }
     }
 
@@ -380,17 +400,8 @@ export async function scrapeSite(
     };
   }
 
-  if (searchTerms.length === 0) {
-    return {
-      success: false,
-      siteId,
-      articlesScraped: 0,
-      mentionsFound: 0,
-      mentions: [],
-      scrapedAt: new Date(),
-      error: 'No search terms provided',
-    };
-  }
+  // Si no hay términos de búsqueda, el scraper traerá todas las noticias recientes
+  // sin filtrar por menciones específicas (Opción A del usuario)
 
   // Ejecutar el scraper apropiado
   switch (siteConfig.scrapingMethod) {
