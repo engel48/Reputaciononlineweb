@@ -7,7 +7,7 @@ export interface CreditTransaction {
   id: string;
   date: string;
   amount: number;
-  type: 'purchase' | 'usage' | 'bonus';
+  type: 'purchase' | 'usage' | 'bonus' | 'refund';
   description: string;
   service?: string;
   status: 'completed' | 'pending' | 'failed';
@@ -28,18 +28,18 @@ interface CreditContextType {
   totalPurchased: number;
   totalUsed: number;
   isLoading: boolean;
-  
+
   // Historial y transacciones
   transactions: CreditTransaction[];
-  
+
   // Planes disponibles
   availablePlans: CreditPlan[];
-  
+
   // Acciones
   purchaseCredits: (planId: string) => Promise<boolean>;
   useCredits: (amount: number, service: string, description: string) => Promise<boolean>;
   refreshData: () => Promise<void>;
-  
+
   // Utilidades
   getMonthlyUsage: () => number;
   getWeeklyUsage: () => number;
@@ -48,36 +48,36 @@ interface CreditContextType {
 
 const CreditContext = createContext<CreditContextType | undefined>(undefined);
 
-// Datos simulados para demostración
-const DEMO_PLANS: CreditPlan[] = [
+// Planes disponibles (estos son los productos que se pueden comprar)
+const AVAILABLE_PLANS: CreditPlan[] = [
   {
-    id: 'basic',
-    name: 'Plan Básico',
+    id: 'basico',
+    name: 'Plan Basico',
     credits: 1000,
     price: 89900,
     features: [
       'Monitoreo de 3 redes sociales',
-      'Análisis básico de sentimiento',
+      'Analisis basico de sentimiento',
       'Reportes mensuales',
       'Soporte por email'
     ]
   },
   {
-    id: 'professional',
-    name: 'Plan Professional',
+    id: 'profesional',
+    name: 'Plan Profesional',
     credits: 3000,
     price: 199900,
     popular: true,
     features: [
       'Monitoreo de 10 redes sociales',
-      'Análisis avanzado de sentimiento',
+      'Analisis avanzado de sentimiento',
       'Reportes personalizados',
       'Alertas en tiempo real',
       'Soporte prioritario'
     ]
   },
   {
-    id: 'enterprise',
+    id: 'empresarial',
     name: 'Plan Empresarial',
     credits: 10000,
     price: 499900,
@@ -92,92 +92,72 @@ const DEMO_PLANS: CreditPlan[] = [
   }
 ];
 
-const DEMO_TRANSACTIONS: CreditTransaction[] = [
-  {
-    id: 'tx-001',
-    date: '2025-06-15T10:30:00Z',
-    amount: 3000,
-    type: 'purchase',
-    description: 'Compra Plan Professional',
-    status: 'completed'
-  },
-  {
-    id: 'tx-002',
-    date: '2025-06-14T14:20:00Z',
-    amount: -150,
-    type: 'usage',
-    description: 'Análisis de sentimiento - Instagram',
-    service: 'sentiment_analysis',
-    status: 'completed'
-  },
-  {
-    id: 'tx-003',
-    date: '2025-06-13T09:45:00Z',
-    amount: -75,
-    type: 'usage',
-    description: 'Monitoreo menciones - Twitter/X',
-    service: 'social_monitoring',
-    status: 'completed'
-  },
-  {
-    id: 'tx-004',
-    date: '2025-06-12T16:15:00Z',
-    amount: -200,
-    type: 'usage',
-    description: 'Análisis competencia - Facebook',
-    service: 'competitor_analysis',
-    status: 'completed'
-  },
-  {
-    id: 'tx-005',
-    date: '2025-06-10T11:00:00Z',
-    amount: 500,
-    type: 'bonus',
-    description: 'Bono de bienvenida',
-    status: 'completed'
-  }
-];
-
 export const CreditProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [currentBalance, setCurrentBalance] = useState<number>(0);
   const [totalPurchased, setTotalPurchased] = useState<number>(0);
   const [totalUsed, setTotalUsed] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [transactions, setTransactions] = useState<CreditTransaction[]>([]);
-  const [availablePlans] = useState<CreditPlan[]>(DEMO_PLANS);
+  const [availablePlans] = useState<CreditPlan[]>(AVAILABLE_PLANS);
 
-  // Inicializar datos
-  useEffect(() => {
-    const initializeData = async () => {
-      try {
-        setIsLoading(true);
-        
-        // Simular carga de datos desde API
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        setTransactions(DEMO_TRANSACTIONS);
-        
-        // Calcular totales basados en transacciones
-        const purchased = DEMO_TRANSACTIONS
-          .filter(t => t.type === 'purchase' || t.type === 'bonus')
-          .reduce((sum, t) => sum + t.amount, 0);
-        
-        const used = Math.abs(DEMO_TRANSACTIONS
-          .filter(t => t.type === 'usage')
-          .reduce((sum, t) => sum + t.amount, 0));
-        
-        setTotalPurchased(purchased);
-        setTotalUsed(used);
-        setCurrentBalance(purchased - used);
-        
-      } catch (error) {
-        console.error('Error inicializando datos de créditos:', error);
-      } finally {
-        setIsLoading(false);
+  // Cargar datos reales desde la API
+  const loadCreditsData = async () => {
+    try {
+      setIsLoading(true);
+
+      // Obtener datos del usuario y transacciones desde la API
+      const response = await fetch('/api/credits', {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        // Si no hay autenticacion, mostrar balance en 0
+        if (response.status === 401) {
+          setCurrentBalance(0);
+          setTotalPurchased(0);
+          setTotalUsed(0);
+          setTransactions([]);
+          return;
+        }
+        throw new Error('Error al cargar creditos');
       }
-    };
 
-    initializeData();
+      const data = await response.json();
+
+      if (data.success) {
+        setCurrentBalance(data.data.balance || 0);
+        setTotalPurchased(data.data.totalPurchased || 0);
+        setTotalUsed(data.data.totalUsed || 0);
+
+        // Mapear transacciones de la base de datos
+        const mappedTransactions: CreditTransaction[] = (data.data.transactions || []).map((t: any) => ({
+          id: t.id,
+          date: t.created_at,
+          amount: t.amount,
+          type: t.type,
+          description: t.description || '',
+          service: t.related_entity || undefined,
+          status: 'completed' as const,
+        }));
+
+        setTransactions(mappedTransactions);
+      }
+    } catch (error) {
+      console.error('Error cargando datos de creditos:', error);
+      // En caso de error, mantener valores en 0
+      setCurrentBalance(0);
+      setTotalPurchased(0);
+      setTotalUsed(0);
+      setTransactions([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Inicializar datos al montar el componente
+  useEffect(() => {
+    loadCreditsData();
   }, []);
 
   const purchaseCredits = async (planId: string): Promise<boolean> => {
@@ -185,22 +165,33 @@ export const CreditProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       const plan = availablePlans.find(p => p.id === planId);
       if (!plan) return false;
 
-      const newTransaction: CreditTransaction = {
-        id: `tx-${Date.now()}`,
-        date: new Date().toISOString(),
-        amount: plan.credits,
-        type: 'purchase',
-        description: `Compra ${plan.name}`,
-        status: 'completed'
-      };
+      // Llamar a la API para registrar la compra
+      const response = await fetch('/api/credits/purchase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          planId: plan.id,
+          credits: plan.credits,
+          amount: plan.price,
+        }),
+      });
 
-      setTransactions(prev => [newTransaction, ...prev]);
-      setCurrentBalance(prev => prev + plan.credits);
-      setTotalPurchased(prev => prev + plan.credits);
+      if (!response.ok) {
+        throw new Error('Error al procesar compra');
+      }
 
-      return true;
+      const data = await response.json();
+
+      if (data.success) {
+        // Recargar datos para reflejar cambios
+        await loadCreditsData();
+        return true;
+      }
+
+      return false;
     } catch (error) {
-      console.error('Error comprando créditos:', error);
+      console.error('Error comprando creditos:', error);
       return false;
     }
   };
@@ -209,38 +200,45 @@ export const CreditProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     try {
       if (currentBalance < amount) return false;
 
-      const newTransaction: CreditTransaction = {
-        id: `tx-${Date.now()}`,
-        date: new Date().toISOString(),
-        amount: -amount,
-        type: 'usage',
-        description,
-        service,
-        status: 'completed'
-      };
+      // Llamar a la API para registrar el uso
+      const response = await fetch('/api/credits/use', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          amount,
+          service,
+          description,
+        }),
+      });
 
-      setTransactions(prev => [newTransaction, ...prev]);
-      setCurrentBalance(prev => prev - amount);
-      setTotalUsed(prev => prev + amount);
+      if (!response.ok) {
+        throw new Error('Error al usar creditos');
+      }
 
-      return true;
+      const data = await response.json();
+
+      if (data.success) {
+        // Recargar datos para reflejar cambios
+        await loadCreditsData();
+        return true;
+      }
+
+      return false;
     } catch (error) {
-      console.error('Error usando créditos:', error);
+      console.error('Error usando creditos:', error);
       return false;
     }
   };
 
   const refreshData = async (): Promise<void> => {
-    setIsLoading(true);
-    // Simular actualización de datos
-    await new Promise(resolve => setTimeout(resolve, 500));
-    setIsLoading(false);
+    await loadCreditsData();
   };
 
   const getMonthlyUsage = (): number => {
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    
+
     return Math.abs(transactions
       .filter(t => t.type === 'usage' && new Date(t.date) >= monthStart)
       .reduce((sum, t) => sum + t.amount, 0));
@@ -249,7 +247,7 @@ export const CreditProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const getWeeklyUsage = (): number => {
     const now = new Date();
     const weekStart = new Date(now.setDate(now.getDate() - now.getDay()));
-    
+
     return Math.abs(transactions
       .filter(t => t.type === 'usage' && new Date(t.date) >= weekStart)
       .reduce((sum, t) => sum + t.amount, 0));

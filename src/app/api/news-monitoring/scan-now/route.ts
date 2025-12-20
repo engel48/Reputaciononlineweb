@@ -101,21 +101,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Crear job de scraping
+    // Crear job de scraping (usando estructura correcta de scraping_jobs)
     const { data: job, error: jobError } = await supabase
       .from('scraping_jobs')
       .insert({
-        monitored_site_id: monitoredSite.id,
         user_id: userId,
-        site_id: monitoredSite.site_id,
+        platform: monitoredSite.site_id, // Usamos platform para el site_id
+        job_type: 'news_scraping',
         status: 'pending',
         priority: 1, // Alta prioridad para scan manual
+        config: {
+          monitored_site_id: monitoredSite.id,
+          search_terms: monitoredSite.search_terms || [],
+        },
       })
       .select()
       .single();
 
     if (jobError) {
-      throw new Error(`Job creation error: ${jobError.message}`);
+      console.error('[NEWS-MONITORING] Job creation error:', jobError);
+      // Continuar sin job tracking si falla
     }
 
     // Ejecutar scraping inmediatamente
@@ -123,14 +128,16 @@ export async function POST(request: NextRequest) {
 
     const startTime = Date.now();
 
-    // Actualizar job a processing
-    await supabase
-      .from('scraping_jobs')
-      .update({
-        status: 'processing',
-        started_at: new Date().toISOString(),
-      })
-      .eq('id', job.id);
+    // Actualizar job a processing (si se creó correctamente)
+    if (job?.id) {
+      await supabase
+        .from('scraping_jobs')
+        .update({
+          status: 'processing',
+          started_at: new Date().toISOString(),
+        })
+        .eq('id', job.id);
+    }
 
     // Ejecutar scraping con rate limiting
     const scrapingResult = await scrapeSiteWithRateLimit(
@@ -176,16 +183,21 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // Actualizar job como completado
-      await supabase
-        .from('scraping_jobs')
-        .update({
-          status: 'completed',
-          completed_at: new Date().toISOString(),
-          articles_found: scrapingResult.articlesScraped,
-          mentions_found: scrapingResult.mentionsFound,
-        })
-        .eq('id', job.id);
+      // Actualizar job como completado (si existe)
+      if (job?.id) {
+        await supabase
+          .from('scraping_jobs')
+          .update({
+            status: 'completed',
+            completed_at: new Date().toISOString(),
+            result: {
+              articles_found: scrapingResult.articlesScraped,
+              mentions_found: scrapingResult.mentionsFound,
+              duration_ms: duration,
+            },
+          })
+          .eq('id', job.id);
+      }
 
       // Actualizar last_checked_at del sitio monitoreado
       await supabase
@@ -199,7 +211,7 @@ export async function POST(request: NextRequest) {
         {
           success: true,
           data: {
-            jobId: job.id,
+            jobId: job?.id || null,
             articlesScraped: scrapingResult.articlesScraped,
             mentionsFound: scrapingResult.mentionsFound,
             mentions: scrapingResult.mentions.map(m => ({
@@ -219,15 +231,17 @@ export async function POST(request: NextRequest) {
       );
 
     } else {
-      // Actualizar job como fallido
-      await supabase
-        .from('scraping_jobs')
-        .update({
-          status: 'failed',
-          completed_at: new Date().toISOString(),
-          error_message: scrapingResult.error || 'Unknown error',
-        })
-        .eq('id', job.id);
+      // Actualizar job como fallido (si existe)
+      if (job?.id) {
+        await supabase
+          .from('scraping_jobs')
+          .update({
+            status: 'failed',
+            completed_at: new Date().toISOString(),
+            error_message: scrapingResult.error || 'Unknown error',
+          })
+          .eq('id', job.id);
+      }
 
       return NextResponse.json(
         {
