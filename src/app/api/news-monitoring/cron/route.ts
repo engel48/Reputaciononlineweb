@@ -9,10 +9,13 @@ import { processQueue, getQueueStats, cleanupOldJobs } from '@/lib/news-monitori
 
 export async function GET(request: NextRequest) {
   try {
-    // Verificar cron secret para seguridad
+    // Verificar cron secret para seguridad (opcional si no está configurado)
     const cronSecret = request.headers.get('x-cron-secret');
+    const configuredSecret = process.env.CRON_SECRET;
 
-    if (cronSecret !== process.env.CRON_SECRET) {
+    // Si hay un secret configurado, verificarlo
+    // Si no hay secret configurado, permitir acceso (útil para desarrollo y Coolify)
+    if (configuredSecret && cronSecret !== configuredSecret) {
       return NextResponse.json(
         {
           success: false,

@@ -51,22 +51,26 @@ async function processSite(job: MonitoredSiteJob): Promise<void> {
 
   console.log(`[QUEUE] Processing site: ${job.siteId} for user: ${job.userId}`);
 
-  // Crear job en la base de datos
+  // Crear job en la base de datos (usando schema correcto)
   const { data: dbJob, error: jobError } = await supabase
     .from('scraping_jobs')
     .insert({
-      monitored_site_id: job.id,
       user_id: job.userId,
-      site_id: job.siteId,
+      platform: job.siteId,
+      job_type: 'news_scraping',
       status: 'pending',
       priority: 5, // Prioridad normal para jobs automáticos
+      config: {
+        monitored_site_id: job.id,
+        search_terms: job.searchTerms || [],
+      },
     })
     .select()
     .single();
 
   if (jobError) {
     console.error('[QUEUE] Error creating job:', jobError);
-    return;
+    // Continuar sin tracking de job
   }
 
   const startTime = Date.now();
@@ -123,8 +127,11 @@ async function processSite(job: MonitoredSiteJob): Promise<void> {
         .update({
           status: 'completed',
           completed_at: new Date().toISOString(),
-          articles_found: result.articlesScraped,
-          mentions_found: result.mentionsFound,
+          result: {
+            articles_found: result.articlesScraped,
+            mentions_found: result.mentionsFound,
+            success: true,
+          },
         })
         .eq('id', dbJob.id);
 
@@ -145,7 +152,10 @@ async function processSite(job: MonitoredSiteJob): Promise<void> {
         .update({
           status: 'failed',
           completed_at: new Date().toISOString(),
-          error_message: result.error || 'Unknown error',
+          result: {
+            success: false,
+            error: result.error || 'Unknown error',
+          },
         })
         .eq('id', dbJob.id);
 
@@ -156,14 +166,19 @@ async function processSite(job: MonitoredSiteJob): Promise<void> {
     console.error(`[QUEUE] ✗ Error processing site ${job.siteId}:`, error);
 
     // Actualizar job como fallido
-    await supabase
-      .from('scraping_jobs')
-      .update({
-        status: 'failed',
-        completed_at: new Date().toISOString(),
-        error_message: error.message || 'Unknown error',
-      })
-      .eq('id', dbJob.id);
+    if (dbJob?.id) {
+      await supabase
+        .from('scraping_jobs')
+        .update({
+          status: 'failed',
+          completed_at: new Date().toISOString(),
+          result: {
+            success: false,
+            error: error.message || 'Unknown error',
+          },
+        })
+        .eq('id', dbJob.id);
+    }
   }
 }
 
