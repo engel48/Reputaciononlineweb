@@ -5,6 +5,7 @@ import ClientWrapper from './ClientWrapper';
 import { SupabaseProvider } from '@/components/providers/SupabaseProvider';
 import { UserProvider } from '@/contexts/UserContext';
 import { CreditsProvider } from '@/contexts/CreditsContext';
+import { SWRProvider } from '@/lib/swr-config';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -21,15 +22,17 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={inter.className}>
-        <SupabaseProvider>
-          <UserProvider>
-            <CreditsProvider>
-              <ClientWrapper>
-                {children}
-              </ClientWrapper>
-            </CreditsProvider>
-          </UserProvider>
-        </SupabaseProvider>
+        <SWRProvider>
+          <SupabaseProvider>
+            <UserProvider>
+              <CreditsProvider>
+                <ClientWrapper>
+                  {children}
+                </ClientWrapper>
+              </CreditsProvider>
+            </UserProvider>
+          </SupabaseProvider>
+        </SWRProvider>
       </body>
     </html>
   );
