@@ -18,7 +18,6 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { youtubeOAuth } from './youtube';
-import { tiktokOAuth } from './tiktok';
 import { facebookOAuth } from './facebook';
 
 const supabase = createClient(
@@ -90,34 +89,6 @@ export class TokenRefreshService {
           // Por ahora, marcar para reconexión manual
           result.error = 'YouTube requiere reconexión manual por ahora';
           await this.logRefreshAttempt(userId, platform, false, result.error);
-          break;
-
-        case 'tiktok':
-          // TikTok tiene método de refresh implementado
-          newTokenData = await tiktokOAuth.refreshAccessToken(refreshToken);
-
-          if (newTokenData) {
-            // Actualizar en BD
-            const { error } = await supabase.rpc('update_refreshed_token', {
-              p_connection_id: connectionId,
-              p_access_token: newTokenData.access_token,
-              p_refresh_token: newTokenData.refresh_token,
-              p_expires_in: newTokenData.expires_in
-            });
-
-            if (!error) {
-              result.success = true;
-              result.new_expiry = new Date(Date.now() + newTokenData.expires_in * 1000).toISOString();
-              await this.logRefreshAttempt(userId, platform, true);
-              console.log(`✅ Token de ${platform} renovado exitosamente para conexión ${connectionId}`);
-            } else {
-              result.error = error.message;
-              await this.logRefreshAttempt(userId, platform, false, error.message);
-            }
-          } else {
-            result.error = 'No se pudo obtener nuevo token de TikTok';
-            await this.logRefreshAttempt(userId, platform, false, result.error);
-          }
           break;
 
         case 'facebook':

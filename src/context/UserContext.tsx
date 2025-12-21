@@ -3,9 +3,9 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { gsap } from 'gsap';
 
-// Tipado para redes sociales
+// Tipado para redes sociales (4 plataformas soportadas)
 interface SocialMedia {
-  platform: 'x' | 'facebook' | 'instagram' | 'tiktok' | 'youtube' | 'threads';
+  platform: 'x' | 'facebook' | 'instagram' | 'youtube';
   username: string;
   followers: number;
   connected: boolean;
@@ -15,7 +15,7 @@ interface SocialMedia {
 // Tipado para menciones
 interface Mention {
   id: string;
-  source: 'x' | 'facebook' | 'instagram' | 'news' | 'blogs' | 'youtube' | 'threads' | 'tiktok';
+  source: 'x' | 'facebook' | 'instagram' | 'news' | 'blogs' | 'youtube';
   author: string;
   content: string;
   date: string;

@@ -25,8 +25,6 @@ interface SocialConnectionsState {
   instagram: SocialConnection;
   x: SocialConnection;
   youtube: SocialConnection;
-  threads: SocialConnection;
-  tiktok: SocialConnection;
 }
 
 export default function RedesSocialesPage() {

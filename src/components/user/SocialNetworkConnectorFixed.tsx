@@ -9,8 +9,6 @@ import {
   Twitter,
   Instagram,
   Youtube,
-  MessageCircle,
-  Music,
   RefreshCw,
   ExternalLink,
   CheckCircle,
@@ -38,8 +36,6 @@ interface SocialConnectionsState {
   instagram: SocialConnection;
   x: SocialConnection;
   youtube: SocialConnection;
-  threads: SocialConnection;
-  tiktok: SocialConnection;
 }
 
 interface SocialNetworkConnectorProps {
@@ -76,20 +72,6 @@ const socialNetworks = [
     icon: Youtube,
     color: 'bg-[#FF0000]',
     description: 'Monitorea comentarios y métricas de tu canal de YouTube'
-  },
-  {
-    id: 'threads',
-    name: 'Threads',
-    icon: MessageCircle,
-    color: 'bg-black',
-    description: 'Conecta tu cuenta de Threads para análisis de contenido'
-  },
-  {
-    id: 'tiktok',
-    name: 'TikTok',
-    icon: Music,
-    color: 'bg-[#FE2C55]',
-    description: 'Analiza videos, comentarios y tendencias en TikTok'
   }
 ];
 
@@ -98,9 +80,7 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
     facebook: { connected: false, username: '', displayName: '', followers: 0, profileImage: '', lastSync: null, metrics: { posts: 0, engagement: 0, reach: 0 } },
     instagram: { connected: false, username: '', displayName: '', followers: 0, profileImage: '', lastSync: null, metrics: { posts: 0, engagement: 0, reach: 0 } },
     x: { connected: false, username: '', displayName: '', followers: 0, profileImage: '', lastSync: null, metrics: { posts: 0, engagement: 0, reach: 0 } },
-    youtube: { connected: false, username: '', displayName: '', followers: 0, profileImage: '', lastSync: null, metrics: { posts: 0, engagement: 0, reach: 0 } },
-    threads: { connected: false, username: '', displayName: '', followers: 0, profileImage: '', lastSync: null, metrics: { posts: 0, engagement: 0, reach: 0 } },
-    tiktok: { connected: false, username: '', displayName: '', followers: 0, profileImage: '', lastSync: null, metrics: { posts: 0, engagement: 0, reach: 0 } }
+    youtube: { connected: false, username: '', displayName: '', followers: 0, profileImage: '', lastSync: null, metrics: { posts: 0, engagement: 0, reach: 0 } }
   });
 
   const [loading, setLoading] = useState<Record<string, boolean>>({});
@@ -665,7 +645,6 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
             <p>• Para conectar redes sociales, necesitas tener permisos de administrador en las cuentas.</p>
             <p>• Los tokens de acceso se validan automáticamente y se renuevan cuando es necesario.</p>
             <p>• La sincronización de datos se realiza cada 30 minutos automáticamente.</p>
-            <p>• Algunas plataformas como Threads y TikTok están en desarrollo.</p>
           </div>
         </CardContent>
       </Card>

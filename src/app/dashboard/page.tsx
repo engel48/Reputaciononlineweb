@@ -12,8 +12,6 @@ import YouTubeDashboardSection from '@/components/dashboard/YouTubeDashboardSect
 import FacebookDashboardSection from '@/components/dashboard/FacebookDashboardSection';
 import InstagramDashboardSection from '@/components/dashboard/InstagramDashboardSection';
 import XDashboardSection from '@/components/dashboard/XDashboardSection';
-import ThreadsDashboardSection from '@/components/dashboard/ThreadsDashboardSection';
-import TikTokDashboardSection from '@/components/dashboard/TikTokDashboardSection';
 import ConnectionsHealthPanel from '@/components/dashboard/ConnectionsHealthPanel';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowUpRight, RefreshCw, TrendingUp, TrendingDown, Facebook, Instagram, CreditCard, Brain, Sparkles, Wifi, WifiOff, AlertTriangle, Search, Zap, BarChart3, Users, MessageSquare, Activity, Target, Award, Globe, Clock, Newspaper, Bot, X } from 'lucide-react';
@@ -580,16 +578,6 @@ export default function Dashboard() {
         <XDashboardSection />
       </div>
 
-      {/* Threads Analytics Section */}
-      <div className="mb-4 sm:mb-6">
-        <ThreadsDashboardSection />
-      </div>
-
-      {/* TikTok Analytics Section */}
-      <div className="mb-4 sm:mb-6">
-        <TikTokDashboardSection />
-      </div>
-
       {/* ========================================== */}
       {/* SECCIÓN SECUNDARIA - MÉTRICAS Y ANÁLISIS */}
       {/* ========================================== */}
@@ -765,11 +753,8 @@ export default function Dashboard() {
                       youtube: 'bg-red-600',
                       facebook: 'bg-blue-600',
                       instagram: 'bg-pink-500',
-                      linkedin: 'bg-blue-700',
                       x: 'bg-black',
-                      twitter: 'bg-blue-400',
-                      threads: 'bg-gray-900',
-                      tiktok: 'bg-black'
+                      twitter: 'bg-blue-400'
                     };
                     const color = platformColors[platformKey] || 'bg-gray-500';
                     const engagementRate = Math.min(data.engagementRate || 0, 100);

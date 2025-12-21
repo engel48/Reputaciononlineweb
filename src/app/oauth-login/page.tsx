@@ -28,29 +28,11 @@ const platformConfig = {
     bgColor: '#FFFFFF',
     authUrl: 'https://twitter.com/i/oauth2/authorize'
   },
-  linkedin: {
-    name: 'LinkedIn',
-    color: '#0A66C2',
-    bgColor: '#F3F2EF',
-    authUrl: 'https://www.linkedin.com/oauth/v2/authorization'
-  },
   youtube: {
     name: 'YouTube',
     color: '#FF0000',
     bgColor: '#FFFFFF',
     authUrl: 'https://accounts.google.com/o/oauth2/v2/auth'
-  },
-  threads: {
-    name: 'Threads',
-    color: '#000000',
-    bgColor: '#FFFFFF',
-    authUrl: null // Threads aún no disponible
-  },
-  tiktok: {
-    name: 'TikTok',
-    color: '#000000',
-    bgColor: '#FFFFFF',
-    authUrl: 'https://www.tiktok.com/v2/auth/authorize/'
   }
 };
 
@@ -78,16 +60,6 @@ const logos = {
   youtube: (
     <svg width="40" height="40" viewBox="0 0 24 24" fill="white">
       <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-    </svg>
-  ),
-  threads: (
-    <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10c1.384 0 2.706-.282 3.908-.79l-.184-.459c-1.084.436-2.264.661-3.474.661-4.892 0-8.871-3.979-8.871-8.871S7.108 3.67 12 3.67s8.871 3.979 8.871 8.871c0 .669-.074 1.32-.215 1.947l.588.147A9.354 9.354 0 0 0 21.462 12c0-5.177-4.197-9.374-9.374-9.374-.029 0-.058.002-.088.002zm.25 3.5A6.5 6.5 0 0 0 5.75 12a6.5 6.5 0 0 0 6.5 6.5c1.843 0 3.506-.767 4.69-2.001l-.425-.352A5.853 5.853 0 0 1 12.25 17.85 5.857 5.857 0 0 1 6.4 12a5.857 5.857 0 0 1 5.85-5.85c1.174 0 2.268.347 3.185.943l.33-.43A6.453 6.453 0 0 0 12.25 5.5z"/>
-    </svg>
-  ),
-  tiktok: (
-    <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
     </svg>
   )
 };
@@ -180,14 +152,6 @@ function OAuthLoginContent() {
           authUrl = `${config.authUrl}?client_id=${twitterClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=tweet.read users.read offline.access&response_type=code&code_challenge=${codeChallenge}&code_challenge_method=S256&state=${state}`;
           break;
 
-        case 'linkedin':
-          const linkedinClientId = process.env.NEXT_PUBLIC_LINKEDIN_CLIENT_ID;
-          if (!linkedinClientId) {
-            throw new Error('LinkedIn OAuth no está configurado. Contacta al administrador.');
-          }
-          authUrl = `${config.authUrl}?client_id=${linkedinClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=r_liteprofile r_emailaddress w_member_social&response_type=code&state=${state}`;
-          break;
-
         case 'youtube':
           // YouTube usa el backend API directamente (tiene credenciales del servidor)
           console.log('🔍 YouTube OAuth: Redirigiendo a /api/auth/youtube');
@@ -201,12 +165,6 @@ function OAuthLoginContent() {
           }
           authUrl = `${config.authUrl}?client_id=${instaClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=user_profile,user_media&response_type=code&state=${state}`;
           break;
-
-        case 'tiktok':
-          // TikTok usa el backend API directamente (tiene credenciales del servidor)
-          console.log('🔍 TikTok OAuth: Redirigiendo a /api/auth/tiktok');
-          window.location.href = '/api/auth/tiktok';
-          return; // Salir temprano, el backend maneja todo
 
         default:
           throw new Error(`Plataforma ${platform} no soportada`);
@@ -291,7 +249,7 @@ function OAuthLoginContent() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: platform === 'x' || platform === 'twitter' || platform === 'threads' ? '#000' : 'white'
+          color: platform === 'x' || platform === 'twitter' ? '#000' : 'white'
         }}>
           {logo}
         </div>

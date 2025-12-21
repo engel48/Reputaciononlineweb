@@ -1,10 +1,8 @@
 import { facebookOAuth, FacebookProfile } from './facebook';
 import { twitterOAuth, TwitterProfile } from './twitter';
 import { youtubeOAuth, YouTubeProfile } from './youtube';
-import { threadsOAuth, ThreadsProfile } from './threads';
-import { tiktokOAuth, TikTokProfile } from './tiktok';
 
-export type SocialPlatform = 'facebook' | 'instagram' | 'x' | 'youtube' | 'threads' | 'tiktok';
+export type SocialPlatform = 'facebook' | 'instagram' | 'x' | 'youtube';
 
 export interface SocialConnection {
   platform: SocialPlatform;
@@ -102,28 +100,6 @@ export class SocialOAuthManager {
             displayName = profileData.snippet.title;
             profileImage = profileData.snippet.thumbnails?.high?.url || '';
             followers = parseInt(profileData.statistics.subscriberCount) || 0;
-          }
-          break;
-
-        case 'threads':
-          profileData = await threadsOAuth.getProfile(accessToken);
-          if (profileData) {
-            username = profileData.username;
-            displayName = profileData.name;
-            profileImage = profileData.threads_profile_picture_url || '';
-            // Obtener métricas adicionales para followers
-            const metrics = await threadsOAuth.getProfileMetrics(accessToken, profileData.id);
-            followers = metrics?.followers_count || 0;
-          }
-          break;
-
-        case 'tiktok':
-          profileData = await tiktokOAuth.getProfile(accessToken);
-          if (profileData) {
-            username = profileData.display_name;
-            displayName = profileData.display_name;
-            profileImage = profileData.avatar_url_100 || profileData.avatar_url;
-            followers = profileData.follower_count || 0;
           }
           break;
 
@@ -244,14 +220,12 @@ export class SocialOAuthManager {
         console.error('Error cargando conexiones de Supabase:', error);
       }
 
-      // Crear objeto con todas las plataformas
+      // Crear objeto con todas las plataformas soportadas (4 redes)
       const connections: Record<SocialPlatform, SocialConnection> = {
         facebook: { platform: 'facebook', connected: false },
         instagram: { platform: 'instagram', connected: false },
         x: { platform: 'x', connected: false },
-        youtube: { platform: 'youtube', connected: false },
-        threads: { platform: 'threads', connected: false },
-        tiktok: { platform: 'tiktok', connected: false }
+        youtube: { platform: 'youtube', connected: false }
       };
 
       // Poblar con datos reales de Supabase
@@ -285,9 +259,7 @@ export class SocialOAuthManager {
         facebook: { platform: 'facebook', connected: false },
         instagram: { platform: 'instagram', connected: false },
         x: { platform: 'x', connected: false },
-        youtube: { platform: 'youtube', connected: false },
-        threads: { platform: 'threads', connected: false },
-        tiktok: { platform: 'tiktok', connected: false }
+        youtube: { platform: 'youtube', connected: false }
       };
     }
   }
@@ -377,9 +349,7 @@ export class SocialOAuthManager {
       facebook: false,
       instagram: false,
       x: false,
-      youtube: false,
-      threads: false,
-      tiktok: false
+      youtube: false
     };
 
     if (!userData) return results;
@@ -399,9 +369,6 @@ export class SocialOAuthManager {
               break;
             case 'youtube':
               isValid = await youtubeOAuth.validateToken(connection.accessToken);
-              break;
-            case 'threads':
-              isValid = await threadsOAuth.validateToken(connection.accessToken);
               break;
           }
 

@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
 
     const { platform, action, accessToken, refreshToken, expiresAt } = await request.json();
 
-    if (!platform || !['facebook', 'instagram', 'x', 'linkedin', 'youtube', 'threads', 'tiktok'].includes(platform)) {
+    if (!platform || !['facebook', 'instagram', 'x', 'youtube'].includes(platform)) {
       return NextResponse.json({ error: 'Plataforma no válida' }, { status: 400 });
     }
 
@@ -193,25 +193,14 @@ function generateOAuthUrl(platform: string): string {
     case 'twitter':
       return `${baseUrl}/api/auth/signin/twitter?callbackUrl=${encodeURIComponent(callbackUrl)}`;
     
-    case 'linkedin':
-      return `${baseUrl}/api/auth/signin/linkedin?callbackUrl=${encodeURIComponent(callbackUrl)}`;
-    
     case 'instagram':
       // Instagram usa Facebook Login con scopes específicos
       return `${baseUrl}/api/auth/signin/facebook?callbackUrl=${encodeURIComponent(callbackUrl)}&scope=instagram_basic`;
-    
+
     case 'youtube':
       // YouTube usa Google OAuth con scopes específicos
       return `${baseUrl}/api/auth/signin/google?callbackUrl=${encodeURIComponent(callbackUrl)}&scope=https://www.googleapis.com/auth/youtube.readonly`;
-    
-    case 'threads':
-      // Threads aún no está disponible en APIs públicas
-      return `${baseUrl}/dashboard/redes-sociales?error=threads_not_available`;
 
-    case 'tiktok':
-      // TikTok usa rutas personalizadas (no NextAuth)
-      return `/oauth-login?platform=tiktok`;
-    
     default:
       return `${baseUrl}/dashboard/redes-sociales?error=platform_not_supported`;
   }
