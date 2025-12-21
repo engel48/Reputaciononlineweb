@@ -137,7 +137,7 @@ export async function GET(request: NextRequest) {
         .from('news_mentions')
         .select('*')
         .eq('user_id', userId)
-        .order('created_at', { ascending: false })
+        .order('discovered_at', { ascending: false })
         .limit(limit);
 
       if (!newsError && newsMentions && newsMentions.length > 0) {
@@ -159,7 +159,7 @@ export async function GET(request: NextRequest) {
             sentiment,
             platform: 'news',
             location: { lat: city.lat, lng: city.lng, name: city.name },
-            timestamp: m.published_date || m.created_at
+            timestamp: m.published_date || m.discovered_at
           };
         });
       }
