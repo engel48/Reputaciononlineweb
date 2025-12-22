@@ -1,6 +1,7 @@
 /**
  * POST /api/news-monitoring/activate-site
  * Activa el monitoreo de un sitio de noticias para el usuario
+ * AUTOMÁTICAMENTE usa el nombre del usuario como término de búsqueda
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -12,7 +13,6 @@ const JWT_SECRET = process.env.JWT_SECRET || 'reputacion-online-secret-key-2025'
 
 interface ActivateSiteRequest {
   siteId: string;
-  searchTerms: string[];
   checkFrequencyMinutes?: number;
 }
 
@@ -54,6 +54,45 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Obtener el nombre del usuario de la base de datos
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('name, email')
+      .eq('id', userId)
+      .single();
+
+    if (userError || !userData) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'USER_NOT_FOUND',
+            message: 'No se pudo obtener la información del usuario',
+          },
+          timestamp: new Date().toISOString(),
+        },
+        { status: 404 }
+      );
+    }
+
+    // Generar términos de búsqueda automáticamente desde el nombre del usuario
+    const userName = userData.name || '';
+    const autoSearchTerms: string[] = [];
+
+    if (userName) {
+      // Agregar nombre completo
+      autoSearchTerms.push(userName.toLowerCase());
+
+      // Si tiene nombre y apellido, agregar variaciones
+      const nameParts = userName.trim().split(/\s+/);
+      if (nameParts.length >= 2) {
+        // Agregar solo el primer nombre
+        autoSearchTerms.push(nameParts[0].toLowerCase());
+        // Agregar solo el apellido
+        autoSearchTerms.push(nameParts[nameParts.length - 1].toLowerCase());
+      }
+    }
+
     // Validar request body
     const body: ActivateSiteRequest = await request.json();
 
@@ -71,8 +110,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // searchTerms es opcional - si no se proporciona, se monitorea todo el sitio
-    const searchTerms = body.searchTerms || [];
+    // Usar los términos automáticos del nombre del usuario
+    const searchTerms = autoSearchTerms;
 
     // Validar que el sitio existe en el catálogo
     const siteConfig = getSiteById(body.siteId);
@@ -104,26 +143,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validar límite de términos de búsqueda (max 10)
-    if (searchTerms.length > 10) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: 'TOO_MANY_SEARCH_TERMS',
-            message: 'Máximo 10 términos de búsqueda permitidos',
-          },
-          timestamp: new Date().toISOString(),
-        },
-        { status: 400 }
-      );
-    }
+    // Los términos ya están sanitizados (generados automáticamente del nombre)
+    const sanitizedTerms = searchTerms.filter(term => term.length > 0 && term.length <= 100);
 
-    // Sanitizar términos de búsqueda (si se proporcionan)
-    // Si no hay términos, se monitoreará todo el contenido del sitio
-    const sanitizedTerms = searchTerms
-      .map(term => term.trim().toLowerCase())
-      .filter(term => term.length > 0 && term.length <= 100);
+    console.log(`[NEWS-MONITORING] Términos de búsqueda automáticos para ${userData.name}:`, sanitizedTerms);
 
     // Verificar límite de sitios monitoreados por usuario (max 10)
     const { data: existingSites, error: countError } = await supabase
@@ -215,7 +238,7 @@ export async function POST(request: NextRequest) {
             createdAt: result.created_at,
           },
         },
-        message: `Monitoreo activado para ${siteConfig.name}`,
+        message: `Monitoreo activado para ${siteConfig.name}. Buscando menciones de "${userData.name}"`,
         timestamp: new Date().toISOString(),
       },
       { status: 200 }

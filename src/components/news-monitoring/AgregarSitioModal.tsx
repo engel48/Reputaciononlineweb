@@ -2,9 +2,10 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Plus, Trash2, Search, Check } from 'lucide-react';
+import { X, Search, Check, User, Plus } from 'lucide-react';
 import type { AvailableSite, ScanFrequency } from '@/types/news-monitoring';
 import { COLOMBIAN_NEWS_SITES, SCAN_FREQUENCY_LABELS } from '@/types/news-monitoring';
+import { useUser } from '@/context/UserContext';
 
 interface AgregarSitioModalProps {
   isOpen: boolean;
@@ -19,9 +20,8 @@ export default function AgregarSitioModal({
   onSubmit,
   currentMonitoredSiteIds,
 }: AgregarSitioModalProps) {
+  const { user } = useUser();
   const [selectedSite, setSelectedSite] = useState<AvailableSite | null>(null);
-  const [searchTerms, setSearchTerms] = useState<string[]>([]);
-  const [currentTerm, setCurrentTerm] = useState('');
   const [scanFrequency, setScanFrequency] = useState<ScanFrequency>('hourly');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -51,35 +51,15 @@ export default function AgregarSitioModal({
     digital: '💻 Digitales',
   };
 
-  const handleAddTerm = () => {
-    const trimmedTerm = currentTerm.trim();
-    if (trimmedTerm && !searchTerms.includes(trimmedTerm)) {
-      setSearchTerms([...searchTerms, trimmedTerm]);
-      setCurrentTerm('');
-    }
-  };
-
-  const handleRemoveTerm = (index: number) => {
-    setSearchTerms(searchTerms.filter((_, i) => i !== index));
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleAddTerm();
-    }
-  };
-
   const handleSubmit = async () => {
     if (!selectedSite) return;
 
     setIsSubmitting(true);
     try {
-      await onSubmit(selectedSite.id, searchTerms, scanFrequency);
+      // Se envían términos vacíos - el API los genera automáticamente del nombre del usuario
+      await onSubmit(selectedSite.id, [], scanFrequency);
       // Reset form
       setSelectedSite(null);
-      setSearchTerms([]);
-      setCurrentTerm('');
       setScanFrequency('hourly');
       setSearchQuery('');
       onClose();
@@ -94,8 +74,6 @@ export default function AgregarSitioModal({
   const handleClose = () => {
     if (!isSubmitting) {
       setSelectedSite(null);
-      setSearchTerms([]);
-      setCurrentTerm('');
       setScanFrequency('hourly');
       setSearchQuery('');
       onClose();
@@ -125,9 +103,9 @@ export default function AgregarSitioModal({
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-2xl font-bold">Activar Sitio del Catálogo</h2>
+                <h2 className="text-2xl font-bold">Activar Monitoreo de Noticias</h2>
                 <p className="text-blue-100 mt-1">
-                  Selecciona sitios verificados de nuestro catálogo y configura tus términos de búsqueda
+                  Selecciona sitios de noticias. El sistema buscará automáticamente tu nombre en ellos.
                 </p>
               </div>
               <button
@@ -204,63 +182,27 @@ export default function AgregarSitioModal({
               </div>
             </div>
 
-            {/* Paso 2: Términos de búsqueda */}
+            {/* Paso 2: Búsqueda automática */}
             <div className="mb-6">
               <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-3">
-                2. Términos de búsqueda <span className="text-gray-500 dark:text-gray-400 font-normal">(Opcional)</span> {searchTerms.length > 0 && (
-                  <span className="text-blue-600 dark:text-blue-400">({searchTerms.length})</span>
-                )}
+                2. Búsqueda automática
               </label>
 
-              <div className="flex space-x-2 mb-3">
-                <input
-                  type="text"
-                  value={currentTerm}
-                  onChange={(e) => setCurrentTerm(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Ej: Juan Pérez, Mi Empresa SA..."
-                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  disabled={isSubmitting}
-                />
-                <button
-                  onClick={handleAddTerm}
-                  disabled={!currentTerm.trim() || isSubmitting}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Agregar</span>
-                </button>
-              </div>
-
-              {/* Lista de términos agregados */}
-              {searchTerms.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {searchTerms.map((term, index) => (
-                    <motion.div
-                      key={index}
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      exit={{ scale: 0 }}
-                      className="flex items-center space-x-2 px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-lg"
-                    >
-                      <span className="text-sm font-medium">{term}</span>
-                      <button
-                        onClick={() => handleRemoveTerm(index)}
-                        disabled={isSubmitting}
-                        className="hover:bg-blue-200 dark:hover:bg-blue-800/50 rounded p-0.5 transition-colors"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </button>
-                    </motion.div>
-                  ))}
+              <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-green-100 dark:bg-green-800/50 rounded-full">
+                    <User className="w-5 h-5 text-green-600 dark:text-green-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-green-800 dark:text-green-300">
+                      Buscando menciones de: <strong>{user?.name || 'Tu nombre'}</strong>
+                    </p>
+                    <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                      El sistema buscará automáticamente tu nombre en las noticias del sitio seleccionado
+                    </p>
+                  </div>
                 </div>
-              )}
-
-              {searchTerms.length === 0 && (
-                <p className="text-xs text-gray-500 dark:text-gray-400 italic">
-                  Sin términos específicos, se monitoreará todo el contenido del sitio
-                </p>
-              )}
+              </div>
             </div>
 
             {/* Paso 3: Frecuencia de escaneo */}
@@ -293,7 +235,7 @@ export default function AgregarSitioModal({
                 <h4 className="font-semibold text-blue-900 dark:text-blue-300 mb-2">Resumen:</h4>
                 <ul className="text-sm text-blue-800 dark:text-blue-300 space-y-1">
                   <li>• Sitio: <strong>{selectedSite.name}</strong></li>
-                  <li>• Términos: <strong>{searchTerms.length > 0 ? searchTerms.join(', ') : 'Todas las noticias del sitio'}</strong></li>
+                  <li>• Buscando: <strong>"{user?.name || 'Tu nombre'}"</strong></li>
                   <li>• Frecuencia: <strong>{SCAN_FREQUENCY_LABELS[scanFrequency]}</strong></li>
                 </ul>
               </div>
