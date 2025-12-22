@@ -3,7 +3,7 @@
  *
  * Soporta:
  * - Autenticación con email/password
- * - OAuth con Google, Facebook, X (Twitter), LinkedIn
+ * - OAuth con Google, Facebook, X (Twitter)
  * - Redirección automática después del login
  */
 
@@ -14,7 +14,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useSupabase } from '@/components/providers/SupabaseProvider'
 import { Eye, EyeOff, Mail, Lock, Check } from 'lucide-react'
 import { FcGoogle } from 'react-icons/fc'
-import { FaFacebook, FaTwitter, FaLinkedin } from 'react-icons/fa'
+import { FaFacebook, FaTwitter } from 'react-icons/fa'
 import Link from 'next/link'
 import gsap from 'gsap'
 import { createTimeline, staggerFadeIn } from '@/lib/gsap-animations'
@@ -70,7 +70,7 @@ function LoginPageContent() {
     }
   }
 
-  async function handleOAuthLogin(provider: 'google' | 'facebook' | 'twitter' | 'linkedin') {
+  async function handleOAuthLogin(provider: 'google' | 'facebook' | 'twitter') {
     setError('')
 
     const { error } = await supabase.auth.signInWithOAuth({
@@ -326,7 +326,7 @@ function LoginPageContent() {
           </div>
 
           {/* OAuth Buttons */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <button
               onClick={() => handleOAuthLogin('google')}
               disabled={loading}
@@ -351,16 +351,7 @@ function LoginPageContent() {
               className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <FaTwitter className="w-5 h-5 mr-2 text-sky-500" />
-              <span className="text-sm font-medium text-gray-700">X / Twitter</span>
-            </button>
-
-            <button
-              onClick={() => handleOAuthLogin('linkedin')}
-              disabled={loading}
-              className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <FaLinkedin className="w-5 h-5 mr-2 text-blue-700" />
-              <span className="text-sm font-medium text-gray-700">LinkedIn</span>
+              <span className="text-sm font-medium text-gray-700">X</span>
             </button>
           </div>
 

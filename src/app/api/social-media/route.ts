@@ -7,6 +7,7 @@ import { authOptions } from "@/lib/auth"
 export async function GET(request: NextRequest) {
   try {
     // Datos de plataformas hardcodeadas como fallback SIEMPRE disponibles
+    // Solo incluimos: Facebook, X, Instagram, YouTube
     const defaultPlatforms = [
       {
         id: 'facebook-platform',
@@ -20,7 +21,7 @@ export async function GET(request: NextRequest) {
         lastSync: null
       },
       {
-        id: 'x-platform', 
+        id: 'x-platform',
         name: 'X (Twitter)',
         platform: 'x',
         isActive: true,
@@ -32,30 +33,8 @@ export async function GET(request: NextRequest) {
       },
       {
         id: 'instagram-platform',
-        name: 'Instagram', 
+        name: 'Instagram',
         platform: 'instagram',
-        isActive: true,
-        connected: false,
-        username: null,
-        profileUrl: null,
-        followers: 0,
-        lastSync: null
-      },
-      {
-        id: 'threads-platform',
-        name: 'Threads',
-        platform: 'threads', 
-        isActive: true,
-        connected: false,
-        username: null,
-        profileUrl: null,
-        followers: 0,
-        lastSync: null
-      },
-      {
-        id: 'linkedin-platform',
-        name: 'LinkedIn',
-        platform: 'linkedin',
         isActive: true,
         connected: false,
         username: null,
@@ -67,17 +46,6 @@ export async function GET(request: NextRequest) {
         id: 'youtube-platform',
         name: 'YouTube',
         platform: 'youtube',
-        isActive: true,
-        connected: false,
-        username: null,
-        profileUrl: null,
-        followers: 0,
-        lastSync: null
-      },
-      {
-        id: 'tiktok-platform',
-        name: 'TikTok',
-        platform: 'tiktok',
         isActive: true,
         connected: false,
         username: null,
@@ -139,6 +107,7 @@ export async function GET(request: NextRequest) {
     console.error('Error general en API social-media:', error)
     
     // Como último recurso, devolver plataformas hardcodeadas
+    // Solo incluimos: Facebook, X, Instagram, YouTube
     const fallbackPlatforms = [
       {
         id: 'facebook-platform',
@@ -152,7 +121,7 @@ export async function GET(request: NextRequest) {
         lastSync: null
       },
       {
-        id: 'x-platform', 
+        id: 'x-platform',
         name: 'X (Twitter)',
         platform: 'x',
         isActive: true,
@@ -164,30 +133,8 @@ export async function GET(request: NextRequest) {
       },
       {
         id: 'instagram-platform',
-        name: 'Instagram', 
+        name: 'Instagram',
         platform: 'instagram',
-        isActive: true,
-        connected: false,
-        username: null,
-        profileUrl: null,
-        followers: 0,
-        lastSync: null
-      },
-      {
-        id: 'threads-platform',
-        name: 'Threads',
-        platform: 'threads', 
-        isActive: true,
-        connected: false,
-        username: null,
-        profileUrl: null,
-        followers: 0,
-        lastSync: null
-      },
-      {
-        id: 'linkedin-platform',
-        name: 'LinkedIn',
-        platform: 'linkedin',
         isActive: true,
         connected: false,
         username: null,
@@ -199,17 +146,6 @@ export async function GET(request: NextRequest) {
         id: 'youtube-platform',
         name: 'YouTube',
         platform: 'youtube',
-        isActive: true,
-        connected: false,
-        username: null,
-        profileUrl: null,
-        followers: 0,
-        lastSync: null
-      },
-      {
-        id: 'tiktok-platform',
-        name: 'TikTok',
-        platform: 'tiktok',
         isActive: true,
         connected: false,
         username: null,
