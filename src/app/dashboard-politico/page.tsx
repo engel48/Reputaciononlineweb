@@ -882,7 +882,7 @@ export default function DashboardPolitico() {
                       x: 'bg-blue-500',
                       facebook: 'bg-blue-600',
                       instagram: 'bg-pink-500',
-                      linkedin: 'bg-indigo-500'
+                      youtube: 'bg-red-500'
                     };
                     return (
                       <div key={platform} className="flex items-center justify-between">
@@ -1121,7 +1121,7 @@ export default function DashboardPolitico() {
                         case 'x': return <XLogo className="h-5 w-5" />;
                         case 'facebook': return <Facebook className="h-5 w-5" />;
                         case 'instagram': return <Instagram className="h-5 w-5" />;
-                        case 'linkedin': return <Users className="h-5 w-5" />;
+                        case 'youtube': return <Users className="h-5 w-5" />;
                         default: return <MessageSquare className="h-5 w-5" />;
                       }
                     };
@@ -1131,7 +1131,7 @@ export default function DashboardPolitico() {
                         case 'x': return 'bg-black text-white dark:bg-gray-700';
                         case 'facebook': return 'bg-blue-600 text-white';
                         case 'instagram': return 'bg-pink-500 text-white';
-                        case 'linkedin': return 'bg-blue-700 text-white';
+                        case 'youtube': return 'bg-red-600 text-white';
                         default: return 'bg-gray-500 text-white';
                       }
                     };

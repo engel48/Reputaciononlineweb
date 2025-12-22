@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, AlertTriangle, User, MapPin, Briefcase, Facebook, Instagram, Linkedin, Globe, ArrowUpRight } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, User, MapPin, Briefcase, Facebook, Instagram, Youtube, Globe, ArrowUpRight } from 'lucide-react';
 import XLogo from '@/components/icons/XLogo';
 
 type ResultadoBusqueda = {
@@ -17,7 +17,7 @@ type ResultadoBusqueda = {
     x: boolean;
     facebook: boolean;
     instagram: boolean;
-    linkedin: boolean;
+    youtube: boolean;
     web: boolean;
   };
   menciones: number;
@@ -98,7 +98,7 @@ export default function PersonaCard({ persona, onClick }: PersonaCardProps) {
             {persona.presencia.x && <XLogo className="h-4 w-4" />}
             {persona.presencia.facebook && <Facebook className="h-4 w-4 text-[#1877F2]" />}
             {persona.presencia.instagram && <Instagram className="h-4 w-4 text-[#E4405F]" />}
-            {persona.presencia.linkedin && <Linkedin className="h-4 w-4 text-[#0A66C2]" />}
+            {persona.presencia.youtube && <Youtube className="h-4 w-4 text-[#FF0000]" />}
             {persona.presencia.web && <Globe className="h-4 w-4 text-gray-500" />}
           </div>
         </div>

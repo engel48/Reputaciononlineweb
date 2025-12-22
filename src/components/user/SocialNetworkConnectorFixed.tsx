@@ -224,26 +224,17 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
 
     const errorMessages: Record<string, string> = {
       // Errores generales
-      'threads_not_available': 'Threads aún no está disponible para integración',
-      'tiktok_not_available': 'TikTok requiere configuración especial',
       'platform_not_supported': 'Plataforma no soportada',
       'access_denied': 'Acceso denegado por el usuario',
       'invalid_request': 'Solicitud OAuth inválida',
-
-      // Errores específicos de TikTok OAuth
-      'no_code': 'No se recibió código de autorización de TikTok',
       'invalid_state': 'Error de seguridad: Estado OAuth inválido. Por favor intenta de nuevo.',
-      'config_missing': 'TikTok no está configurado correctamente. Contacta al administrador.',
-      'not_authenticated': 'Debes iniciar sesión antes de conectar TikTok',
+      'config_missing': 'Plataforma no configurada correctamente. Contacta al administrador.',
+      'not_authenticated': 'Debes iniciar sesión antes de conectar la red social',
       'invalid_token': 'Tu sesión ha expirado. Por favor inicia sesión de nuevo.',
-      'token_exchange_failed': 'Error al obtener autorización de TikTok. Intenta de nuevo.',
-      'profile_fetch_failed': 'No se pudo obtener tu perfil de TikTok. Verifica los permisos.',
+      'token_exchange_failed': 'Error al obtener autorización. Intenta de nuevo.',
+      'profile_fetch_failed': 'No se pudo obtener tu perfil. Verifica los permisos.',
       'save_failed': 'Error al guardar la conexión. Intenta de nuevo.',
-      'oauth_failed': 'Error en el proceso de autenticación con TikTok',
-
-      // Errores de otras plataformas
-      'tiktok_not_configured': 'TikTok no está configurado. Contacta al administrador.',
-      'tiktok_init_failed': 'Error al iniciar conexión con TikTok. Intenta de nuevo.'
+      'oauth_failed': 'Error en el proceso de autenticación'
     };
 
     let message = errorMessages[error] || `Error en la autenticación: ${error}`;

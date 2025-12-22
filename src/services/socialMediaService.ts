@@ -189,61 +189,6 @@ export class InstagramService {
   }
 }
 
-// Servicio para extraer datos de LinkedIn
-export class LinkedInService {
-  private accessToken: string
-
-  constructor(accessToken: string) {
-    this.accessToken = accessToken
-  }
-
-  async getUserProfile() {
-    try {
-      const response = await fetch(
-        'https://api.linkedin.com/v2/people/~:(id,firstName,lastName,profilePicture)',
-        {
-          headers: {
-            'Authorization': `Bearer ${this.accessToken}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      )
-      return await response.json()
-    } catch (error) {
-      console.error('Error fetching LinkedIn profile:', error)
-      throw error
-    }
-  }
-
-  async getRecentPosts(): Promise<SocialPost[]> {
-    try {
-      // LinkedIn API es más restrictiva, pero podemos obtener posts básicos
-      const response = await fetch(
-        'https://api.linkedin.com/v2/shares?q=owners&owners=urn:li:person:PERSON_ID&count=10',
-        {
-          headers: {
-            'Authorization': `Bearer ${this.accessToken}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      )
-      const data = await response.json()
-
-      return data.elements?.map((share: any) => ({
-        id: share.id,
-        content: share.text?.text || '',
-        date: new Date(share.created?.time || 0).toISOString(),
-        likes: 0, // LinkedIn limita acceso a métricas
-        shares: 0,
-        comments: 0,
-        url: ''
-      })) || []
-    } catch (error) {
-      console.error('Error fetching LinkedIn posts:', error)
-      return []
-    }
-  }
-}
 
 // Servicio para extraer datos de YouTube (via Google API)
 export class YouTubeService {
@@ -339,11 +284,6 @@ export class SocialListeningService {
             case 'instagram':
               const igService = new InstagramService(connection.accessToken)
               posts = await igService.getRecentPosts('me')
-              break
-
-            case 'linkedin':
-              const liService = new LinkedInService(connection.accessToken)
-              posts = await liService.getRecentPosts()
               break
 
             case 'youtube':

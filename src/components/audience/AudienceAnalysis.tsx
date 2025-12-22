@@ -409,8 +409,7 @@ const AudienceAnalysis: React.FC<AudienceAnalysisProps> = ({
                   'X': { color: '#01257D', emoji: '🔗' },
                   'Instagram': { color: '#E4405F', emoji: '📸' },
                   'Facebook': { color: '#1877F2', emoji: '👥' },
-                  'LinkedIn': { color: '#0A66C2', emoji: '💼' },
-                  'TikTok': { color: '#FF0050', emoji: '🎵' }
+                  'YouTube': { color: '#FF0000', emoji: '🎥' }
                 };
                 const platformInfo = platforms[influencer.platform as keyof typeof platforms] || { color: '#6B7280', emoji: '📱' };
                 return (

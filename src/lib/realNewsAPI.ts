@@ -142,7 +142,7 @@ export async function analyzeRealSocialMedia(personalityName: string): Promise<a
     const response = await aiService.chat([
       {
         role: "system",
-        content: `Eres un analista de redes sociales que accede a datos REALES de X, Instagram, Facebook, TikTok.
+        content: `Eres un analista de redes sociales que accede a datos REALES de X, Instagram, Facebook, YouTube.
 
         ANÁLISIS REAL REQUERIDO:
         - Tendencias actuales en las redes de la persona

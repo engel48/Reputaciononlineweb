@@ -14,8 +14,7 @@ export default function ConsumosPorCanalChart() {
     { canal: 'Facebook', valor: 42380, color: '#1877F2' },
     { canal: 'Instagram', valor: 38750, color: '#E4405F' },
     { canal: 'X', valor: 31200, color: '#000000' },
-    { canal: 'LinkedIn', valor: 18450, color: '#0A66C2' },
-    { canal: 'TikTok', valor: 11600, color: '#000000' }
+    { canal: 'YouTube', valor: 22050, color: '#FF0000' }
   ];
 
   // Calcular el total y los porcentajes

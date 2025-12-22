@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { User, Camera, Save, X, UserCog, Shield, Megaphone, Award, Facebook, Instagram, Share2, Linkedin, Youtube, Globe, Settings, Bell, Lock, CreditCard, Crown, Check, Star, Zap, ArrowUpRight, AlertCircle, CheckCircle } from 'lucide-react';
+import { User, Camera, Save, X, UserCog, Shield, Megaphone, Award, Facebook, Instagram, Share2, Youtube, Globe, Settings, Bell, Lock, CreditCard, Crown, Check, Star, Zap, ArrowUpRight, AlertCircle, CheckCircle } from 'lucide-react';
+import XLogo from '@/components/icons/XLogo';
 import { useUser } from '@/context/UserContext';
 import { usePlan } from '@/context/PlanContext';
 import { useSearchParams } from 'next/navigation';
@@ -482,7 +483,7 @@ export default function ProfilePage() {
             {[
               { name: 'Facebook', icon: Facebook, color: 'bg-blue-600' },
               { name: 'Instagram', icon: Instagram, color: 'bg-pink-500' },
-              { name: 'LinkedIn', icon: Linkedin, color: 'bg-blue-700' },
+              { name: 'X', icon: XLogo, color: 'bg-black' },
               { name: 'YouTube', icon: Youtube, color: 'bg-red-600' }
             ].map((platform) => (
               <div key={platform.name} className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">

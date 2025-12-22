@@ -42,33 +42,6 @@ export const authOptions: NextAuthOptions = {
         },
       },
     }),
-    // Threads OAuth (via Facebook API)
-    {
-      id: "threads",
-      name: "Threads",
-      type: "oauth",
-      authorization: {
-        url: "https://www.facebook.com/v18.0/dialog/oauth",
-        params: {
-          scope: "threads_basic,threads_content_publish,threads_manage_insights",
-          response_type: "code",
-        },
-      },
-      token: "https://graph.facebook.com/v18.0/oauth/access_token",
-      userinfo: "https://graph.threads.net/v1.0/me?fields=id,username,name,threads_profile_picture_url",
-      clientId: process.env.FACEBOOK_CLIENT_ID || '',
-      clientSecret: process.env.FACEBOOK_CLIENT_SECRET || '',
-      profile(profile: any) {
-        return {
-          id: profile.id,
-          name: profile.name,
-          email: profile.email || '',
-          image: profile.threads_profile_picture_url,
-        };
-      },
-    },
-    // TikTok OAuth - Manejado por rutas personalizadas /api/auth/tiktok/*
-    // No usar NextAuth provider debido a la API no estándar de TikTok
   ],
   callbacks: {
     async jwt({ token, account, profile }) {
@@ -129,9 +102,7 @@ async function saveSocialMediaConnection(
       'facebook': 'facebook',
       'twitter': 'x',
       'google': 'youtube', // Google se usa para YouTube
-      'threads': 'threads',
       'youtube': 'youtube'
-      // TikTok manejado por rutas personalizadas, no por NextAuth
     };
 
     const platform = platformMap[account.provider];
@@ -164,12 +135,6 @@ async function saveSocialMediaConnection(
         profileUrl = profile?.picture || '';
         profileImage = profile?.picture || '';
         break;
-      case 'threads':
-        username = profile?.username || '';
-        profileUrl = `https://threads.net/@${username}`;
-        profileImage = profile?.threads_profile_picture_url || '';
-        break;
-      // TikTok case removed - handled by custom routes
     }
 
     // Calcular fecha de expiración

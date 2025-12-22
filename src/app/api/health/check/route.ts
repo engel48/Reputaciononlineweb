@@ -94,26 +94,6 @@ async function checkTwitterApi(): Promise<boolean> {
   }
 }
 
-async function checkLinkedInApi(): Promise<boolean> {
-  try {
-    const clientId = process.env.NEXT_PUBLIC_LINKEDIN_CLIENT_ID
-
-    if (!clientId) {
-      return true
-    }
-
-    // LinkedIn OAuth endpoint para health check
-    const response = await fetchWithTimeout('https://www.linkedin.com/oauth/v2/authorization', {
-      method: 'HEAD'
-    })
-
-    return response.ok || response.status === 400 // 400 es esperado sin parámetros
-  } catch (error) {
-    console.error('LinkedIn API check failed:', error)
-    return false
-  }
-}
-
 async function checkYouTubeApi(): Promise<boolean> {
   try {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
@@ -161,14 +141,12 @@ export async function GET() {
       supabaseHealth,
       facebookHealth,
       twitterHealth,
-      linkedinHealth,
       youtubeHealth,
       instagramHealth
     ] = await Promise.all([
       checkSupabase(),
       checkFacebookApi(),
       checkTwitterApi(),
-      checkLinkedInApi(),
       checkYouTubeApi(),
       checkInstagramApi()
     ])
@@ -177,7 +155,6 @@ export async function GET() {
       supabase: supabaseHealth,
       facebook: facebookHealth,
       twitter: twitterHealth,
-      linkedin: linkedinHealth,
       youtube: youtubeHealth,
       instagram: instagramHealth
     }

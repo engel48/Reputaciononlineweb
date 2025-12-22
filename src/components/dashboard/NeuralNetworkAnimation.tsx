@@ -64,7 +64,7 @@ const NeuralNetworkAnimation: React.FC<NeuralNetworkAnimationProps> = ({
       x: 0,
       facebook: 0,
       instagram: 0,
-      linkedin: 0,
+      youtube: 0,
       other: 0
     }
   });
@@ -217,11 +217,11 @@ const NeuralNetworkAnimation: React.FC<NeuralNetworkAnimationProps> = ({
         
         // Actualizar contadores de plataformas con distribución ponderada
         const platformWeights = {
-          x: 0.4,          // 40% probabilidad
-          facebook: 0.25, // 25% probabilidad
-          instagram: 0.2, // 20% probabilidad
-          linkedin: 0.1,  // 10% probabilidad
-          other: 0.05     // 5% probabilidad
+          x: 0.35,         // 35% probabilidad
+          facebook: 0.25,  // 25% probabilidad
+          instagram: 0.2,  // 20% probabilidad
+          youtube: 0.15,   // 15% probabilidad
+          other: 0.05      // 5% probabilidad
         };
         
         const random = Math.random();
@@ -349,9 +349,9 @@ const NeuralNetworkAnimation: React.FC<NeuralNetworkAnimationProps> = ({
               <span className="ml-2 font-semibold">{statsRef.current.platforms.instagram}</span>
             </div>
             <div className="flex items-center">
-              <div className="h-2 w-2 rounded-full bg-blue-800 mr-2"></div>
-              <span className="text-gray-700 dark:text-gray-300">LinkedIn:</span>
-              <span className="ml-2 font-semibold">{statsRef.current.platforms.linkedin}</span>
+              <div className="h-2 w-2 rounded-full bg-red-600 mr-2"></div>
+              <span className="text-gray-700 dark:text-gray-300">YouTube:</span>
+              <span className="ml-2 font-semibold">{statsRef.current.platforms.youtube}</span>
             </div>
           </div>
         )}

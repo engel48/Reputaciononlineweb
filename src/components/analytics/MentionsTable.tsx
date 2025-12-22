@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
-import { Facebook, Linkedin, Instagram, MessageCircle, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { Facebook, Instagram, MessageCircle, ThumbsUp, ThumbsDown, Youtube } from 'lucide-react';
 import XLogo from '@/components/icons/XLogo';
 
 interface Mention {
@@ -71,10 +71,10 @@ const MentionsTable: React.FC<MentionsTableProps> = ({ mentions, title }) => {
         return <XLogo className="h-4 w-4" />;
       case 'facebook':
         return <Facebook className="h-4 w-4 text-blue-600" />;
-      case 'linkedin':
-        return <Linkedin className="h-4 w-4 text-blue-700" />;
       case 'instagram':
         return <Instagram className="h-4 w-4 text-pink-500" />;
+      case 'youtube':
+        return <Youtube className="h-4 w-4 text-red-600" />;
       default:
         return <MessageCircle className="h-4 w-4 text-gray-500" />;
     }

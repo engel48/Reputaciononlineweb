@@ -34,8 +34,7 @@ export default function AsignarCreditosModal({ isOpen, onClose, onConfirm }: Asi
     { id: 'facebook', nombre: 'Facebook' },
     { id: 'x', nombre: 'X' },
     { id: 'instagram', nombre: 'Instagram' },
-    { id: 'linkedin', nombre: 'LinkedIn' },
-    { id: 'tiktok', nombre: 'TikTok' },
+    { id: 'youtube', nombre: 'YouTube' },
   ];
 
   // Opciones de planes predefinidos

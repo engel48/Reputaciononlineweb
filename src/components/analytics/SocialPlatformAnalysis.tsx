@@ -13,7 +13,7 @@ import {
   Title
 } from 'chart.js';
 import { motion } from 'framer-motion';
-import { Facebook, Instagram, Linkedin, Youtube, Globe } from 'lucide-react';
+import { Facebook, Instagram, Youtube, Globe } from 'lucide-react';
 import XLogo from '@/components/icons/XLogo';
 
 // Registro de componentes Chart.js
@@ -59,7 +59,7 @@ const SocialPlatformAnalysis: React.FC<SocialPlatformAnalysisProps> = ({
   // Obtener el icono de la plataforma
   const getPlatformIcon = (name: string) => {
     const iconProps = { size: 16, className: "mr-2" };
-    
+
     switch (name.toLowerCase()) {
       case 'x':
         return <XLogo {...iconProps} className="text-black dark:text-white mr-2" />;
@@ -67,8 +67,6 @@ const SocialPlatformAnalysis: React.FC<SocialPlatformAnalysisProps> = ({
         return <Facebook {...iconProps} className="text-[#1877F2] mr-2" />;
       case 'instagram':
         return <Instagram {...iconProps} className="text-[#E4405F] mr-2" />;
-      case 'linkedin':
-        return <Linkedin {...iconProps} className="text-[#0A66C2] mr-2" />;
       case 'youtube':
         return <Youtube {...iconProps} className="text-[#FF0000] mr-2" />;
       default:

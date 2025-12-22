@@ -46,7 +46,7 @@ export default function TerminosDeServicio() {
             <ul className="list-disc list-inside text-slate-700 space-y-2 ml-4">
               <li>Monitoreo de menciones en redes sociales y medios digitales</li>
               <li>Análisis de sentimiento y tendencias</li>
-              <li>Conexión con plataformas sociales (Facebook, X/Twitter, Instagram, YouTube, TikTok, LinkedIn, Threads)</li>
+              <li>Conexión con plataformas sociales (Facebook, X/Twitter, Instagram, YouTube)</li>
               <li>Reportes y estadísticas de reputación online</li>
               <li>Asistente AI especializado en gestión de reputación</li>
             </ul>
@@ -85,12 +85,7 @@ export default function TerminosDeServicio() {
                 proporcionar nuestros servicios de monitoreo y análisis de reputación.
               </p>
               <p className="leading-relaxed">
-                <strong>4.3 TikTok:</strong> Al conectar su cuenta de TikTok, accedemos a información básica
-                de usuario, estadísticas, detalles de perfil y lista de videos según los permisos otorgados
-                (user.info.basic, user.info.stats, user.info.profile, video.list).
-              </p>
-              <p className="leading-relaxed">
-                <strong>4.4 Revocación:</strong> Puede revocar el acceso a cualquier red social en cualquier
+                <strong>4.3 Revocación:</strong> Puede revocar el acceso a cualquier red social en cualquier
                 momento desde la configuración de su cuenta.
               </p>
             </div>

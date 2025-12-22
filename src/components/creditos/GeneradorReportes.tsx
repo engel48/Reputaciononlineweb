@@ -73,8 +73,7 @@ export default function GeneradorReportes() {
     { valor: 'facebook', nombre: 'Facebook' },
     { valor: 'instagram', nombre: 'Instagram' },
     { valor: 'x', nombre: 'X' },
-    { valor: 'linkedin', nombre: 'LinkedIn' },
-    { valor: 'tiktok', nombre: 'TikTok' },
+    { valor: 'youtube', nombre: 'YouTube' },
     { valor: 'general', nombre: 'General' }
   ];
   

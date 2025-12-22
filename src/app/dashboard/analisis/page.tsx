@@ -10,9 +10,9 @@ import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, 
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer 
 } from 'recharts';
-import { 
-  TrendingUp, TrendingDown, Minus, AlertCircle, CheckCircle, 
-  Facebook, Instagram, Linkedin, Download, Filter, Sparkles, Brain,
+import {
+  TrendingUp, TrendingDown, Minus, AlertCircle, CheckCircle,
+  Facebook, Instagram, Youtube, Download, Filter, Sparkles, Brain,
   MessageSquare, Heart, Share2, Users, Eye, BarChart3, Globe, Activity, AlertTriangle
 } from 'lucide-react';
 import XLogo from '@/components/icons/XLogo';
@@ -64,8 +64,8 @@ const PlatformIcon: React.FC<PlatformIconProps> = ({ platform }) => {
       return <Facebook className="h-4 w-4 text-[#1877F2]" />;
     case 'instagram':
       return <Instagram className="h-4 w-4 text-[#E4405F]" />;
-    case 'linkedin':
-      return <Linkedin className="h-4 w-4 text-[#0A66C2]" />;
+    case 'youtube':
+      return <Youtube className="h-4 w-4 text-[#FF0000]" />;
     default:
       return null;
   }
@@ -481,12 +481,12 @@ export default function AnalisisPage() {
                         radius={[0, 0, 0, 0]}
                         name="Instagram"
                       />
-                      <Bar 
-                        dataKey="LinkedIn" 
-                        stackId="a" 
-                        fill="#0A66C2" 
+                      <Bar
+                        dataKey="YouTube"
+                        stackId="a"
+                        fill="#FF0000"
                         radius={[4, 4, 0, 0]}
-                        name="LinkedIn"
+                        name="YouTube"
                       />
                     </BarChart>
                   </ResponsiveContainer>
@@ -648,7 +648,7 @@ export default function AnalisisPage() {
                       <Bar dataKey="X" stackId="a" fill="#000000" />
                       <Bar dataKey="Facebook" stackId="a" fill="#1877F2" />
                       <Bar dataKey="Instagram" stackId="a" fill="#E4405F" />
-                      <Bar dataKey="LinkedIn" stackId="a" fill="#0A66C2" />
+                      <Bar dataKey="YouTube" stackId="a" fill="#FF0000" />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>

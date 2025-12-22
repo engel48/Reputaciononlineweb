@@ -90,7 +90,7 @@ export default function PlanesPage() {
     },
     {
       question: "¿Qué plataformas sociales monitorean?",
-      answer: "Monitoreamos X (Twitter), Facebook, Instagram, LinkedIn, TikTok, YouTube, Reddit, y más de 100 sitios de noticias y blogs."
+      answer: "Monitoreamos X (Twitter), Facebook, Instagram, YouTube y más de 100 sitios de noticias y blogs."
     },
     {
       question: "¿Cómo funciona el análisis de sentimientos?",

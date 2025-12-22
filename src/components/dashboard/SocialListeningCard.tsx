@@ -189,10 +189,7 @@ export function SocialListeningCard() {
       facebook: '📘',
       x: '🐦',
       instagram: '📷',
-      linkedin: '💼',
-      youtube: '📹',
-      tiktok: '🎵',
-      threads: '🧵'
+      youtube: '📹'
     }
     return icons[platform] || '📱'
   }

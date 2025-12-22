@@ -6,16 +6,16 @@ import { useCredits, CreditTransaction } from '@/context/CreditosContext';
 // @ts-ignore
 import { motion } from 'framer-motion';
 // @ts-ignore
-import { 
-  Facebook, Instagram, Linkedin, 
-  TrendingUp, TrendingDown, CreditCard, 
+import {
+  Facebook, Instagram, Youtube,
+  TrendingUp, TrendingDown, CreditCard,
   Search, Calendar, Filter, ChevronDown
 } from 'lucide-react';
 // @ts-ignore
 import XLogo from '@/components/icons/XLogo';
 
 // @ts-ignore
-type FiltroCanal = 'todos' | 'facebook' | 'instagram' | 'x' | 'linkedin' | 'tiktok' | 'general';
+type FiltroCanal = 'todos' | 'facebook' | 'instagram' | 'x' | 'youtube' | 'general';
 // @ts-ignore
 type FiltroTipo = 'todos' | 'ingreso' | 'egreso';
 
@@ -104,10 +104,8 @@ export default function HistorialCreditos() {
         return <Instagram className="h-4 w-4 text-pink-600" />;
       case 'x':
         return <XLogo className="h-4 w-4" />;
-      case 'linkedin':
-        return <Linkedin className="h-4 w-4 text-blue-800" />;
-      case 'tiktok':
-        return <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-black text-xs font-bold text-white">T</span>;
+      case 'youtube':
+        return <Youtube className="h-4 w-4 text-red-600" />;
       default:
         return null;
     }

@@ -141,10 +141,7 @@ function getPlatformIcon(platform: string): string {
     facebook: '📘',
     instagram: '📸',
     x: '🐦',
-    twitter: '🐦',
-    linkedin: '💼',
-    tiktok: '📱',
-    threads: '🧵'
+    twitter: '🐦'
   };
   return icons[platform] || '🔗';
 }
@@ -155,10 +152,7 @@ function getPlatformDisplayName(platform: string): string {
     facebook: 'Facebook',
     instagram: 'Instagram',
     x: 'X (Twitter)',
-    twitter: 'X (Twitter)',
-    linkedin: 'LinkedIn',
-    tiktok: 'TikTok',
-    threads: 'Threads'
+    twitter: 'X (Twitter)'
   };
   return names[platform] || platform;
 }

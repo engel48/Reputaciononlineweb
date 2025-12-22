@@ -32,8 +32,7 @@ export default function AnalisisCreditosPage() {
     { canal: 'Facebook', consumo: 3840, porcentaje: 36.2 },
     { canal: 'X', consumo: 2560, porcentaje: 24.1 },
     { canal: 'Instagram', consumo: 1920, porcentaje: 18.1 },
-    { canal: 'LinkedIn', consumo: 960, porcentaje: 9.0 },
-    { canal: 'TikTok', consumo: 720, porcentaje: 6.8 },
+    { canal: 'YouTube', consumo: 1680, porcentaje: 15.9 },
     { canal: 'General', consumo: 620, porcentaje: 5.8 }
   ];
 

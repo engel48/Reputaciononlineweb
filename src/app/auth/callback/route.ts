@@ -1,7 +1,7 @@
 /**
  * OAuth Callback Route Handler
  *
- * Maneja los callbacks de OAuth providers (Google, Facebook, Twitter, LinkedIn)
+ * Maneja los callbacks de OAuth providers (Google, Facebook, X/Twitter, Instagram, YouTube)
  * y redirige al usuario al dashboard o a la ruta especificada
  */
 

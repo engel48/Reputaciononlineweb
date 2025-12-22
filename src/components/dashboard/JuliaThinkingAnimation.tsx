@@ -17,7 +17,7 @@ interface Particle {
 
 interface SocialMention {
   id: string;
-  platform: 'x' | 'facebook' | 'instagram' | 'linkedin' | 'other';
+  platform: 'x' | 'facebook' | 'instagram' | 'youtube' | 'other';
   text: string;
   timestamp: Date;
   processed: boolean;
@@ -159,8 +159,8 @@ const JuliaThinkingAnimation: React.FC<JuliaThinkingAnimationProps> = ({
   useEffect(() => {
     if (!showMentions) return;
     
-    const platforms: Array<'x' | 'facebook' | 'instagram' | 'linkedin' | 'other'> = 
-      ['x', 'facebook', 'instagram', 'linkedin', 'other'];
+    const platforms: Array<'x' | 'facebook' | 'instagram' | 'youtube' | 'other'> =
+      ['x', 'facebook', 'instagram', 'youtube', 'other'];
     
     const mentionTexts = [
       "Me encanta este producto, muy recomendable",

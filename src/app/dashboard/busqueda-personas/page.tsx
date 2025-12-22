@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { Search, User, MapPin, Briefcase, AlertTriangle, CheckCircle2, Clock, RefreshCcw, Facebook, Instagram, Linkedin, Globe } from 'lucide-react';
+import { Search, User, MapPin, Briefcase, AlertTriangle, CheckCircle2, Clock, RefreshCcw, Facebook, Instagram, Youtube, Globe } from 'lucide-react';
 import XLogo from '@/components/icons/XLogo';
 
 // Definición de tipos
@@ -24,7 +24,7 @@ type ResultadoBusqueda = {
     x: boolean;
     facebook: boolean;
     instagram: boolean;
-    linkedin: boolean;
+    youtube: boolean;
     web: boolean;
   };
   menciones: number;
@@ -117,7 +117,7 @@ const resultadosSimulados: ResultadoBusqueda[] = [
       x: true,
       facebook: true,
       instagram: true,
-      linkedin: true,
+      youtube: true,
       web: true
     },
     menciones: 320
@@ -135,7 +135,7 @@ const resultadosSimulados: ResultadoBusqueda[] = [
       x: true,
       facebook: true,
       instagram: true,
-      linkedin: false,
+      youtube: false,
       web: false
     },
     menciones: 180
@@ -153,7 +153,7 @@ const resultadosSimulados: ResultadoBusqueda[] = [
       x: true,
       facebook: false,
       instagram: true,
-      linkedin: true,
+      youtube: true,
       web: true
     },
     menciones: 250
@@ -171,7 +171,7 @@ const resultadosSimulados: ResultadoBusqueda[] = [
       x: true,
       facebook: true,
       instagram: false,
-      linkedin: true,
+      youtube: true,
       web: true
     },
     menciones: 320
@@ -238,7 +238,7 @@ const personaDetalleSimulada: PersonaDetalle = {
       sentimiento: 'positivo'
     },
     {
-      plataforma: 'LinkedIn',
+      plataforma: 'YouTube',
       usuario: 'Carlos Rodríguez',
       url: '#',
       seguidores: 8500,
@@ -429,10 +429,10 @@ export default function BusquedaPersonas() {
                             <span>Instagram</span>
                           </Button>
                         )}
-                        {personaSeleccionada.presencia.linkedin && (
+                        {personaSeleccionada.presencia.youtube && (
                           <Button variant="outline" size="sm" className="inline-flex items-center gap-1">
-                            <Linkedin className="w-3 h-3" />
-                            <span>LinkedIn</span>
+                            <Youtube className="w-3 h-3" />
+                            <span>YouTube</span>
                           </Button>
                         )}
                         {personaSeleccionada.presencia.web && (
@@ -547,7 +547,7 @@ export default function BusquedaPersonas() {
                                 {red.plataforma === 'X' && <XLogo className="w-4 h-4" />}
                                 {red.plataforma === 'Facebook' && <Facebook className="w-4 h-4" />}
                                 {red.plataforma === 'Instagram' && <Instagram className="w-4 h-4" />}
-                                {red.plataforma === 'LinkedIn' && <Linkedin className="w-4 h-4" />}
+                                {red.plataforma === 'YouTube' && <Youtube className="w-4 h-4" />}
                                 <div>
                                   <div className="font-medium">{red.plataforma}</div>
                                   <div className="text-xs text-gray-500">{red.usuario}</div>

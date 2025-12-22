@@ -62,35 +62,15 @@ const SOCIAL_PLATFORMS: Record<string, SocialPlatformConfig> = {
     authUrl: 'https://api.instagram.com/oauth/authorize',
     tokenUrl: 'https://api.instagram.com/oauth/access_token'
   },
-  linkedin: {
-    platform: 'linkedin',
-    name: 'LinkedIn',
-    clientId: process.env.LINKEDIN_CLIENT_ID || '',
-    clientSecret: process.env.LINKEDIN_CLIENT_SECRET || '',
-    redirectUri: process.env.NEXT_PUBLIC_BASE_URL + '/api/auth/callback/linkedin',
-    scopes: ['r_liteprofile', 'r_emailaddress', 'w_member_social'],
-    authUrl: 'https://www.linkedin.com/oauth/v2/authorization',
-    tokenUrl: 'https://www.linkedin.com/oauth/v2/accessToken'
-  },
-  tiktok: {
-    platform: 'tiktok',
-    name: 'TikTok',
-    clientId: process.env.TIKTOK_CLIENT_ID || '',
-    clientSecret: process.env.TIKTOK_CLIENT_SECRET || '',
-    redirectUri: process.env.NEXT_PUBLIC_BASE_URL + '/api/auth/callback/tiktok',
-    scopes: ['user.info.basic', 'user.info.stats', 'user.info.profile', 'video.list'],
-    authUrl: 'https://www.tiktok.com/auth/authorize/',
-    tokenUrl: 'https://open-api.tiktok.com/oauth/access_token/'
-  },
-  threads: {
-    platform: 'threads',
-    name: 'Threads',
-    clientId: process.env.THREADS_CLIENT_ID || '',
-    clientSecret: process.env.THREADS_CLIENT_SECRET || '',
-    redirectUri: process.env.NEXT_PUBLIC_BASE_URL + '/api/auth/callback/threads',
-    scopes: ['threads_basic', 'threads_content_publish'],
-    authUrl: 'https://threads.net/oauth/authorize',
-    tokenUrl: 'https://graph.threads.net/oauth/access_token'
+  youtube: {
+    platform: 'youtube',
+    name: 'YouTube',
+    clientId: process.env.YOUTUBE_CLIENT_ID || '',
+    clientSecret: process.env.YOUTUBE_CLIENT_SECRET || '',
+    redirectUri: process.env.NEXT_PUBLIC_BASE_URL + '/api/auth/callback/youtube',
+    scopes: ['https://www.googleapis.com/auth/youtube.readonly'],
+    authUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
+    tokenUrl: 'https://oauth2.googleapis.com/token'
   }
 };
 
@@ -164,12 +144,8 @@ export const fetchUserProfile = async (
       return await fetchFacebookProfile(accessToken);
     case 'instagram':
       return await fetchInstagramProfile(accessToken);
-    case 'linkedin':
-      return await fetchLinkedInProfile(accessToken);
-    case 'tiktok':
-      return await fetchTikTokProfile(accessToken);
-    case 'threads':
-      return await fetchThreadsProfile(accessToken);
+    case 'youtube':
+      return await fetchYouTubeProfile(accessToken);
     default:
       throw new Error(`Plataforma no soportada: ${platform}`);
   }
@@ -246,8 +222,8 @@ const fetchInstagramProfile = async (accessToken: string): Promise<SocialMediaPr
   };
 };
 
-const fetchLinkedInProfile = async (accessToken: string): Promise<SocialMediaProfile> => {
-  const response = await fetch('https://api.linkedin.com/v2/people/~:(id,firstName,lastName,profilePicture(displayImage~:playableStreams))', {
+const fetchYouTubeProfile = async (accessToken: string): Promise<SocialMediaProfile> => {
+  const response = await fetch('https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&mine=true', {
     headers: {
       'Authorization': `Bearer ${accessToken}`,
       'Content-Type': 'application/json'
@@ -255,66 +231,24 @@ const fetchLinkedInProfile = async (accessToken: string): Promise<SocialMediaPro
   });
 
   if (!response.ok) {
-    throw new Error('Error obteniendo perfil de LinkedIn');
+    throw new Error('Error obteniendo perfil de YouTube');
   }
 
   const data = await response.json();
-  const fullName = `${data.firstName.localized.en_US} ${data.lastName.localized.en_US}`;
+  const channel = data.items?.[0];
+
+  if (!channel) {
+    throw new Error('No se encontró canal de YouTube');
+  }
 
   return {
-    platform: 'linkedin',
-    username: fullName,
-    profileUrl: `https://linkedin.com/in/${data.id}`,
-    followers: 0, // Requiere permisos adicionales
+    platform: 'youtube',
+    username: channel.snippet?.title || '',
+    profileUrl: `https://youtube.com/channel/${channel.id}`,
+    followers: parseInt(channel.statistics?.subscriberCount || '0'),
     following: 0,
-    posts: 0,
-    profileImage: data.profilePicture?.displayImage?.elements?.[0]?.identifiers?.[0]?.identifier
-  };
-};
-
-const fetchTikTokProfile = async (accessToken: string): Promise<SocialMediaProfile> => {
-  const response = await fetch('https://open-api.tiktok.com/user/info/', {
-    headers: {
-      'Authorization': `Bearer ${accessToken}`,
-      'Content-Type': 'application/json'
-    }
-  });
-
-  if (!response.ok) {
-    throw new Error('Error obteniendo perfil de TikTok');
-  }
-
-  const data = await response.json();
-  const user = data.data.user;
-
-  return {
-    platform: 'tiktok',
-    username: user.display_name,
-    profileUrl: `https://tiktok.com/@${user.username}`,
-    followers: user.follower_count || 0,
-    following: user.following_count || 0,
-    posts: user.video_count || 0,
-    profileImage: user.avatar_url
-  };
-};
-
-const fetchThreadsProfile = async (accessToken: string): Promise<SocialMediaProfile> => {
-  const response = await fetch(`https://graph.threads.net/me?fields=id,username,threads_profile_picture_url&access_token=${accessToken}`);
-
-  if (!response.ok) {
-    throw new Error('Error obteniendo perfil de Threads');
-  }
-
-  const data = await response.json();
-
-  return {
-    platform: 'threads',
-    username: data.username,
-    profileUrl: `https://threads.net/@${data.username}`,
-    followers: 0, // Threads API aún limitada
-    following: 0,
-    posts: 0,
-    profileImage: data.threads_profile_picture_url
+    posts: parseInt(channel.statistics?.videoCount || '0'),
+    profileImage: channel.snippet?.thumbnails?.default?.url
   };
 };
 

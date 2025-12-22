@@ -9,7 +9,6 @@ interface ApiHealth {
   supabase: boolean
   facebook: boolean
   twitter: boolean
-  linkedin: boolean
   youtube: boolean
   instagram: boolean
 }
@@ -63,7 +62,6 @@ export default function ApiStatus({
         supabase: false,
         facebook: false,
         twitter: false,
-        linkedin: false,
         youtube: false,
         instagram: false
       })
@@ -136,7 +134,6 @@ export default function ApiStatus({
                   <ul className="mt-2 ml-4 list-disc space-y-1">
                     {!health.facebook && <li>Facebook - No disponible</li>}
                     {!health.twitter && <li>Twitter/X - No disponible</li>}
-                    {!health.linkedin && <li>LinkedIn - No disponible</li>}
                     {!health.youtube && <li>YouTube - No disponible</li>}
                     {!health.instagram && <li>Instagram - No disponible</li>}
                   </ul>

@@ -66,9 +66,6 @@ export default function PoliticaDePrivacidad() {
                   <li><strong>X/Twitter:</strong> Perfil, tweets, métricas de engagement</li>
                   <li><strong>Instagram:</strong> Perfil, publicaciones, estadísticas</li>
                   <li><strong>YouTube:</strong> Canal, videos, comentarios, métricas</li>
-                  <li><strong>TikTok:</strong> Perfil (open_id, display_name, avatar), lista de videos, métricas públicas (seguidores, likes)</li>
-                  <li><strong>LinkedIn:</strong> Perfil profesional, publicaciones</li>
-                  <li><strong>Threads:</strong> Perfil, publicaciones</li>
                 </ul>
               </div>
 
@@ -165,7 +162,7 @@ export default function PoliticaDePrivacidad() {
               </ul>
               <p className="leading-relaxed mt-3">
                 <strong>5.3 APIs de Redes Sociales:</strong> Accedemos a las APIs de Facebook, X/Twitter,
-                Instagram, YouTube, TikTok, LinkedIn y Threads únicamente con los permisos que usted otorga
+                Instagram y YouTube únicamente con los permisos que usted otorga
                 y para proporcionar nuestros servicios de monitoreo.
               </p>
               <p className="leading-relaxed">
@@ -177,68 +174,7 @@ export default function PoliticaDePrivacidad() {
 
           <section>
             <h2 className="text-2xl font-semibold text-slate-900 mb-4">
-              6. Integración con TikTok
-            </h2>
-            <div className="space-y-3 text-slate-700">
-              <p className="leading-relaxed">
-                <strong>6.1 Datos Recopilados de TikTok:</strong> Cuando conecta su cuenta de TikTok,
-                accedemos únicamente a:
-              </p>
-              <ul className="list-disc list-inside space-y-1 ml-8">
-                <li>Información básica del usuario (open_id, union_id, display_name, avatar)</li>
-                <li>Métricas públicas (follower_count, following_count, likes_count, video_count)</li>
-                <li>Lista de videos públicos con sus métricas</li>
-              </ul>
-              <p className="leading-relaxed mt-3">
-                <strong>6.2 Permisos de TikTok:</strong> Solicitamos los siguientes scopes:
-              </p>
-              <ul className="list-disc list-inside space-y-1 ml-8">
-                <li><code className="bg-slate-100 px-2 py-1 rounded">user.info.basic</code> - Información básica de perfil (ID, nombre, avatar)</li>
-                <li><code className="bg-slate-100 px-2 py-1 rounded">user.info.stats</code> - Estadísticas del usuario (seguidores, likes, conteo de videos)</li>
-                <li><code className="bg-slate-100 px-2 py-1 rounded">user.info.profile</code> - Detalles de perfil (biografía, verificación, enlaces)</li>
-                <li><code className="bg-slate-100 px-2 py-1 rounded">video.list</code> - Lista de videos públicos con métricas</li>
-              </ul>
-              <p className="leading-relaxed mt-3">
-                <strong>6.3 Propósito:</strong> Utilizamos estos datos exclusivamente para:
-              </p>
-              <ul className="list-disc list-inside space-y-1 ml-8">
-                <li>Mostrar sus métricas de TikTok en el dashboard</li>
-                <li>Analizar el rendimiento de sus videos</li>
-                <li>Generar reportes de reputación que incluyan su presencia en TikTok</li>
-                <li>Monitorear menciones y engagement</li>
-              </ul>
-              <p className="leading-relaxed mt-3">
-                <strong>6.4 Revocación:</strong> Puede desconectar su cuenta de TikTok en cualquier momento
-                desde la configuración de redes sociales. Esto revocará el acceso inmediatamente y eliminará
-                los tokens de nuestra base de datos.
-              </p>
-              <p className="leading-relaxed">
-                <strong>6.5 Cumplimiento TikTok:</strong> Cumplimos estrictamente con las{' '}
-                <a
-                  href="https://developers.tiktok.com/doc/tiktok-api-terms-of-service"
-                  className="text-blue-600 hover:underline"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  TikTok API Terms of Service
-                </a>
-                {' '}y{' '}
-                <a
-                  href="https://www.tiktok.com/legal/privacy-policy"
-                  className="text-blue-600 hover:underline"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  TikTok Privacy Policy
-                </a>
-                .
-              </p>
-            </div>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-semibold text-slate-900 mb-4">
-              7. Sus Derechos (GDPR y Ley 1581 de 2012 - Colombia)
+              6. Sus Derechos (GDPR y Ley 1581 de 2012 - Colombia)
             </h2>
             <p className="text-slate-700 leading-relaxed mb-3">
               Usted tiene derecho a:
