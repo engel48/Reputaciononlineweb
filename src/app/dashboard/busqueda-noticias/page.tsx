@@ -6,6 +6,17 @@ import NoticiasColombia from '@/components/dashboard/NoticiasColombia';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Globe, Clock, RefreshCw, ArrowUpRight, X as CloseIcon } from 'lucide-react';
 import { useRealTimeNews } from '@/hooks/useRealTimeNews';
+import dynamic from 'next/dynamic';
+
+// Importar el mapa dinámicamente para evitar problemas con SSR
+const DynamicMencionesMap = dynamic(() => import('@/components/dashboard/MencionesMap'), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[400px] w-full flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-md">
+      <div className="text-gray-500 dark:text-gray-400">Cargando mapa...</div>
+    </div>
+  ),
+});
 
 export default function BusquedaNoticiasPage() {
   // Usar hook de noticias en tiempo real
@@ -105,9 +116,19 @@ export default function BusquedaNoticiasPage() {
         <NoticiasColombia />
       </motion.div>
 
-      {/* SECCIÓN: NOTICIAS RELEVANTES EN TIEMPO REAL */}
+      {/* SECCIÓN: MAPA DE MENCIONES EN TIEMPO REAL */}
       <motion.div
         custom={2}
+        initial="hidden"
+        animate="visible"
+        variants={statsVariants}
+      >
+        <DynamicMencionesMap />
+      </motion.div>
+
+      {/* SECCIÓN: NOTICIAS RELEVANTES EN TIEMPO REAL */}
+      <motion.div
+        custom={3}
         initial="hidden"
         animate="visible"
         variants={statsVariants}

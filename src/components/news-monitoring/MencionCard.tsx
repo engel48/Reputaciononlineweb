@@ -43,13 +43,24 @@ export default function MencionCard({ mencion, onMarkAsRead, onOpenArticle }: Me
 
   const sentiment = getSentimentBadge();
 
-  const formatTimeAgo = (date: Date) => {
+  const formatTimeAgo = (dateInput: Date | string | null | undefined) => {
+    if (!dateInput) return 'Fecha no disponible';
+
+    // Convertir a Date si es string
+    const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+
+    // Verificar si la fecha es válida
+    if (isNaN(date.getTime())) return 'Fecha no disponible';
+
     const now = new Date();
     const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
 
+    if (diffInMinutes < 0) return 'Hace un momento';
+    if (diffInMinutes < 1) return 'Hace un momento';
     if (diffInMinutes < 60) return `Hace ${diffInMinutes} min`;
     if (diffInMinutes < 1440) return `Hace ${Math.floor(diffInMinutes / 60)}h`;
-    return `Hace ${Math.floor(diffInMinutes / 1440)} días`;
+    const days = Math.floor(diffInMinutes / 1440);
+    return `Hace ${days} ${days === 1 ? 'día' : 'días'}`;
   };
 
   const highlightTerm = (text: string, term: string) => {

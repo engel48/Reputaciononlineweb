@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import CreditosSummary from '@/components/creditos/CreditosSummary';
-import MencionesMap from '@/components/dashboard/MencionesMap';
 import AdvancedSearch from '@/components/dashboard/AdvancedSearch';
 import JuliaChat from '@/components/dashboard/JuliaChat';
 import SimpleChat from '@/components/dashboard/SimpleChat';
@@ -43,15 +42,6 @@ interface Mention {
   verified: boolean;
 }
 
-// Importar el mapa dinámicamente para evitar problemas con SSR
-const DynamicMencionesMap = dynamic(() => import('@/components/dashboard/MencionesMap'), {
-  ssr: false,
-  loading: () => (
-    <div className="h-[400px] w-full flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-md">
-      <div className="text-gray-500 dark:text-gray-400">Cargando mapa...</div>
-    </div>
-  ),
-});
 
 // Estado inicial - SIN DATOS HARDCODEADOS
 // Los datos reales se cargan desde la API /api/dashboard-analytics y /api/mentions/recent
@@ -1106,16 +1096,6 @@ export default function Dashboard() {
         </motion.div>
       )}
 
-      {/* Mapa de Menciones - Al final del dashboard */}
-      <motion.div
-        custom={8}
-        initial="hidden"
-        animate="visible"
-        variants={statsVariants}
-        className="mb-4 sm:mb-6"
-      >
-        <DynamicMencionesMap />
-      </motion.div>
     </div>
   );
 }
