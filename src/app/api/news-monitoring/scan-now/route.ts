@@ -101,6 +101,37 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Obtener el nombre del usuario para filtrar las noticias
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('name')
+      .eq('id', userId)
+      .single();
+
+    // Generar términos de búsqueda desde el nombre del usuario
+    let searchTerms: string[] = monitoredSite.search_terms || [];
+
+    // Si no hay términos configurados o están vacíos, usar el nombre del usuario
+    if (searchTerms.length === 0 && userData?.name) {
+      const userName = userData.name;
+      searchTerms = [userName.toLowerCase()];
+
+      // Agregar variaciones del nombre
+      const nameParts = userName.trim().split(/\s+/);
+      if (nameParts.length >= 2) {
+        searchTerms.push(nameParts[0].toLowerCase()); // Primer nombre
+        searchTerms.push(nameParts[nameParts.length - 1].toLowerCase()); // Apellido
+      }
+
+      // Actualizar los search_terms en la base de datos para futuros escaneos
+      await supabase
+        .from('monitored_news_sites')
+        .update({ search_terms: searchTerms })
+        .eq('id', monitoredSite.id);
+
+      console.log(`[NEWS-MONITORING] Auto-configured search terms from user name: ${searchTerms.join(', ')}`);
+    }
+
     // Crear job de scraping (usando estructura correcta de scraping_jobs)
     const { data: job, error: jobError } = await supabase
       .from('scraping_jobs')
@@ -112,7 +143,7 @@ export async function POST(request: NextRequest) {
         priority: 1, // Alta prioridad para scan manual
         config: {
           monitored_site_id: monitoredSite.id,
-          search_terms: monitoredSite.search_terms || [],
+          search_terms: searchTerms,
         },
       })
       .select()
@@ -140,9 +171,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Ejecutar scraping con rate limiting
+    // Usar los searchTerms que incluyen el nombre del usuario
     const scrapingResult = await scrapeSiteWithRateLimit(
       monitoredSite.site_id,
-      monitoredSite.search_terms
+      searchTerms
     );
 
     const duration = Date.now() - startTime;

@@ -51,6 +51,37 @@ async function processSite(job: MonitoredSiteJob): Promise<void> {
 
   console.log(`[QUEUE] Processing site: ${job.siteId} for user: ${job.userId}`);
 
+  // Si no hay términos de búsqueda, obtener el nombre del usuario
+  let searchTerms = job.searchTerms || [];
+
+  if (searchTerms.length === 0) {
+    const { data: userData } = await supabase
+      .from('users')
+      .select('name')
+      .eq('id', job.userId)
+      .single();
+
+    if (userData?.name) {
+      const userName = userData.name;
+      searchTerms = [userName.toLowerCase()];
+
+      // Agregar variaciones del nombre
+      const nameParts = userName.trim().split(/\s+/);
+      if (nameParts.length >= 2) {
+        searchTerms.push(nameParts[0].toLowerCase()); // Primer nombre
+        searchTerms.push(nameParts[nameParts.length - 1].toLowerCase()); // Apellido
+      }
+
+      // Actualizar los search_terms en la base de datos
+      await supabase
+        .from('monitored_news_sites')
+        .update({ search_terms: searchTerms })
+        .eq('id', job.id);
+
+      console.log(`[QUEUE] Auto-configured search terms from user name: ${searchTerms.join(', ')}`);
+    }
+  }
+
   // Crear job en la base de datos (usando schema correcto)
   const { data: dbJob, error: jobError } = await supabase
     .from('scraping_jobs')
@@ -62,7 +93,7 @@ async function processSite(job: MonitoredSiteJob): Promise<void> {
       priority: 5, // Prioridad normal para jobs automáticos
       config: {
         monitored_site_id: job.id,
-        search_terms: job.searchTerms || [],
+        search_terms: searchTerms,
       },
     })
     .select()
@@ -85,10 +116,10 @@ async function processSite(job: MonitoredSiteJob): Promise<void> {
       })
       .eq('id', dbJob.id);
 
-    // Ejecutar scraping
+    // Ejecutar scraping con los términos que incluyen el nombre del usuario
     const result: ScrapingResult = await scrapeSiteWithRateLimit(
       job.siteId,
-      job.searchTerms
+      searchTerms
     );
 
     const duration = Date.now() - startTime;
