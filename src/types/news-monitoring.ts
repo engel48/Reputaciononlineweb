@@ -43,7 +43,7 @@ export interface Mention {
   mentionContext: string;
   sentiment: 'positive' | 'negative' | 'neutral';
   sentimentScore: number;
-  publishedDate: Date;
+  publishedDate: Date | null;
   discoveredAt: Date;
   isRead: boolean;
   matchedTerm: string;
