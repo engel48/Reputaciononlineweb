@@ -13,7 +13,7 @@ export const WORKER_CONFIG: WorkerConfig = {
   worker_id: `worker-${crypto.randomUUID().split('-')[0]}`
 }
 
-// Rate Limits por Plataforma
+// Rate Limits por Plataforma (Facebook, X, Instagram, YouTube)
 export const RATE_LIMITS: Record<string, RateLimitConfig> = {
   facebook: {
     requests_per_hour: 200
@@ -24,17 +24,8 @@ export const RATE_LIMITS: Record<string, RateLimitConfig> = {
   twitter: {
     requests_per_minute: 20 // 300 per 15min = 20 per min
   },
-  linkedin: {
-    requests_per_hour: 100
-  },
   youtube: {
     requests_per_day: 10000
-  },
-  threads: {
-    requests_per_hour: 200
-  },
-  tiktok: {
-    requests_per_day: 1000
   }
 }
 
@@ -77,14 +68,12 @@ export const CRISIS_THRESHOLDS: Record<string, CrisisThresholds> = {
   }
 }
 
-// Costos de Créditos por Operación
+// Costos de Créditos por Operación (Facebook, X, Instagram, YouTube)
 export const CREDIT_COSTS = {
   scrape_facebook: 2,
   scrape_twitter: 2,
-  scrape_linkedin: 3,
   scrape_instagram: 2,
   scrape_youtube: 3,
-  scrape_threads: 2,
   sentiment_analysis: 1,
   entity_extraction: 1,
   crisis_detection: 0 // No cuesta créditos extra
@@ -106,13 +95,11 @@ export const NEGATIVE_KEYWORDS = [
   'decepción', 'lamentable', 'inaceptable', 'indignante', 'repudiable'
 ]
 
-// URLs de APIs
+// URLs de APIs (Facebook, X, Instagram, YouTube)
 export const API_URLS = {
   facebook: 'https://graph.facebook.com/v21.0',
   twitter: 'https://api.twitter.com/2',
-  linkedin: 'https://api.linkedin.com/v2',
-  youtube: 'https://www.googleapis.com/youtube/v3',
-  threads: 'https://graph.threads.net/v1.0'
+  youtube: 'https://www.googleapis.com/youtube/v3'
 }
 
 // Configuración de Gemini

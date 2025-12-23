@@ -329,14 +329,12 @@ async function createTestUsers() {
 // Poblar plataformas sociales
 function populateSocialPlatforms() {
   try {
+    // Plataformas soportadas: Facebook, X, Instagram, YouTube
     const platforms = [
       { name: 'Facebook', platform: 'facebook', isActive: true },
       { name: 'X', platform: 'x', isActive: true },
       { name: 'Instagram', platform: 'instagram', isActive: true },
-      { name: 'Threads', platform: 'threads', isActive: true },
-      { name: 'LinkedIn', platform: 'linkedin', isActive: true },
-      { name: 'YouTube', platform: 'youtube', isActive: true },
-      { name: 'TikTok', platform: 'tiktok', isActive: true }
+      { name: 'YouTube', platform: 'youtube', isActive: true }
     ];
 
     for (const platform of platforms) {

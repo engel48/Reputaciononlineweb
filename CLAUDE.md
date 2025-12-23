@@ -46,14 +46,11 @@ NEXTAUTH_URL=http://localhost:3000
 OPENAI_API_KEY=sk-...           # Primary AI service (optional - can be empty)
 DEEPSEEK_API_KEY=sk-...         # Fallback AI service (primary when OpenAI unavailable)
 
-# Social Media OAuth (7 platforms)
+# Social Media OAuth (4 platforms: Facebook, X, Instagram, YouTube)
 FACEBOOK_CLIENT_ID=...
 TWITTER_CLIENT_ID=...
-GOOGLE_CLIENT_ID=...
-LINKEDIN_CLIENT_ID=...
 INSTAGRAM_CLIENT_ID=...
 YOUTUBE_CLIENT_ID=...
-THREADS_CLIENT_ID=...
 ```
 
 ## Architecture Overview
@@ -84,7 +81,7 @@ Specialized AI assistant for reputation management:
 
 ### Social Media Integration
 Multi-platform OAuth system with comprehensive token management:
-- **7 Platforms**: Facebook, X/Twitter, LinkedIn, Instagram, YouTube, Threads, TikTok
+- **4 Platforms**: Facebook, X/Twitter, Instagram, YouTube
 - **OAuth Manager**: `/src/lib/oauth/manager.ts` handles all platform interactions
 - **Token Storage**: Automatic storage and refresh via NextAuth callbacks
 - **Fallback Data**: Realistic simulated data when APIs unavailable

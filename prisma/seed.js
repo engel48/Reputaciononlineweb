@@ -5,10 +5,11 @@ const prisma = new PrismaClient()
 
 async function main() {
   // Crear plataformas de redes sociales disponibles con configuración OAuth básica
+  // Plataformas soportadas: Facebook, X, Instagram, YouTube
   const socialPlatforms = [
-    { 
-      name: 'Facebook', 
-      platform: 'facebook', 
+    {
+      name: 'Facebook',
+      platform: 'facebook',
       isActive: true,
       oauthConfig: JSON.stringify({
         clientId: process.env.FACEBOOK_CLIENT_ID || '',
@@ -17,9 +18,9 @@ async function main() {
         redirectUri: process.env.NEXTAUTH_URL + '/api/auth/callback/facebook'
       })
     },
-    { 
-      name: 'X', 
-      platform: 'x', 
+    {
+      name: 'X',
+      platform: 'x',
       isActive: true,
       oauthConfig: JSON.stringify({
         clientId: process.env.TWITTER_CLIENT_ID || '',
@@ -28,9 +29,9 @@ async function main() {
         redirectUri: process.env.NEXTAUTH_URL + '/api/auth/callback/twitter'
       })
     },
-    { 
-      name: 'Instagram', 
-      platform: 'instagram', 
+    {
+      name: 'Instagram',
+      platform: 'instagram',
       isActive: true,
       oauthConfig: JSON.stringify({
         clientId: process.env.INSTAGRAM_CLIENT_ID || '',
@@ -39,49 +40,15 @@ async function main() {
         redirectUri: process.env.NEXTAUTH_URL + '/api/auth/callback/instagram'
       })
     },
-    { 
-      name: 'Threads', 
-      platform: 'threads', 
-      isActive: true,
-      oauthConfig: JSON.stringify({
-        // Threads usa la API de Instagram con permisos específicos
-        clientId: process.env.INSTAGRAM_CLIENT_ID || '',
-        clientSecret: process.env.INSTAGRAM_CLIENT_SECRET || '',
-        scope: 'threads_basic,threads_content_publish',
-        redirectUri: process.env.NEXTAUTH_URL + '/api/auth/callback/threads'
-      })
-    },
-    { 
-      name: 'LinkedIn', 
-      platform: 'linkedin', 
-      isActive: true,
-      oauthConfig: JSON.stringify({
-        clientId: process.env.LINKEDIN_CLIENT_ID || '',
-        clientSecret: process.env.LINKEDIN_CLIENT_SECRET || '',
-        scope: 'r_liteprofile,r_emailaddress,w_member_social',
-        redirectUri: process.env.NEXTAUTH_URL + '/api/auth/callback/linkedin'
-      })
-    },
-    { 
-      name: 'YouTube', 
-      platform: 'youtube', 
+    {
+      name: 'YouTube',
+      platform: 'youtube',
       isActive: true,
       oauthConfig: JSON.stringify({
         clientId: process.env.YOUTUBE_CLIENT_ID || '',
         clientSecret: process.env.YOUTUBE_CLIENT_SECRET || '',
         scope: 'https://www.googleapis.com/auth/youtube.readonly',
         redirectUri: process.env.NEXTAUTH_URL + '/api/auth/callback/youtube'
-      })
-    },
-    { 
-      name: 'TikTok', 
-      platform: 'tiktok', 
-      isActive: true,
-      oauthConfig: JSON.stringify({
-        clientId: process.env.TIKTOK_CLIENT_ID || '',
-        clientSecret: process.env.TIKTOK_CLIENT_SECRET || '',
-        scope: 'user.info.basic,video.list',
-        redirectUri: process.env.NEXTAUTH_URL + '/api/auth/callback/tiktok'
       })
     },
   ]

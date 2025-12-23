@@ -37,15 +37,12 @@ const PLAN_CONFIG = {
   }
 };
 
-// Plataformas soportadas para scraping
+// Plataformas soportadas para scraping: Facebook, X, Instagram, YouTube
 const SUPPORTED_PLATFORMS = [
   'facebook',
   'twitter',
   'instagram',
-  'linkedin',
-  'youtube',
-  'tiktok',
-  'threads'
+  'youtube'
 ];
 
 Deno.serve(async (req: Request) => {
