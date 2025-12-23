@@ -27,12 +27,37 @@ export default function CreditosSummary({ showDetails = true, variant = 'dashboa
   const monthlyUsage = getMonthlyUsage();
   const weeklyUsage = getWeeklyUsage();
   
-  // Determinar el estado de los créditos
+  // Determinar el estado de los créditos - LÓGICA CORREGIDA
+  // Usa valores absolutos, no porcentajes, para evitar asustar al usuario
   const getBalanceStatus = () => {
-    const percentage = totalPurchased > 0 ? (currentBalance / totalPurchased) * 100 : 0;
-    if (percentage < 10) return { status: 'critical', color: 'text-red-600', bgColor: 'bg-red-100', barColor: 'bg-red-500' };
-    if (percentage < 25) return { status: 'warning', color: 'text-yellow-600', bgColor: 'bg-yellow-100', barColor: 'bg-yellow-500' };
-    return { status: 'healthy', color: 'text-green-600', bgColor: 'bg-green-100', barColor: 'bg-[#01257D]' };
+    // Verde: >= 500 créditos (saludable)
+    // Cyan: >= 100 y < 500 (medio)
+    // Naranja: >= 10 y < 100 (bajo)
+    // Rojo: < 10 (crítico - casi vacío)
+    if (currentBalance < 10) return {
+      status: 'critical',
+      color: 'text-red-500',
+      bgColor: 'bg-red-50 dark:bg-red-900/20',
+      barColor: 'bg-red-500'
+    };
+    if (currentBalance < 100) return {
+      status: 'warning',
+      color: 'text-amber-500',
+      bgColor: 'bg-amber-50 dark:bg-amber-900/20',
+      barColor: 'bg-amber-500'
+    };
+    if (currentBalance < 500) return {
+      status: 'medium',
+      color: 'text-[#00E5FF]',
+      bgColor: 'bg-[#00E5FF]/10',
+      barColor: 'bg-[#00E5FF]'
+    };
+    return {
+      status: 'healthy',
+      color: 'text-emerald-500',
+      bgColor: 'bg-emerald-50 dark:bg-emerald-900/20',
+      barColor: 'bg-emerald-500'
+    };
   };
 
   const balanceStatus = getBalanceStatus();
@@ -57,7 +82,7 @@ export default function CreditosSummary({ showDetails = true, variant = 'dashboa
 
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+      <div className="bg-white dark:bg-[#151C2E] rounded-xl border border-gray-100 dark:border-[#1A202C] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.05)]">
         <div className="animate-pulse">
           <div className="flex items-center justify-between mb-4">
             <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-48"></div>
@@ -78,7 +103,7 @@ export default function CreditosSummary({ showDetails = true, variant = 'dashboa
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6"
+      className="bg-white dark:bg-[#151C2E] rounded-xl border border-gray-100 dark:border-[#1A202C] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.05)] transition-all duration-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)]"
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
@@ -98,7 +123,7 @@ export default function CreditosSummary({ showDetails = true, variant = 'dashboa
         
         <button
           onClick={refreshData}
-          className="p-2 text-gray-400 hover:text-[#01257D] transition-colors duration-200"
+          className="p-2 text-gray-400 hover:text-[#00E5FF] transition-colors duration-200"
           title="Actualizar datos"
         >
           <RefreshCw className="h-4 w-4" />
@@ -134,10 +159,15 @@ export default function CreditosSummary({ showDetails = true, variant = 'dashboa
                 <TrendingDown className="h-4 w-4" />
                 <span className="text-sm font-medium">Bajo</span>
               </>
+            ) : balanceStatus.status === 'medium' ? (
+              <>
+                <TrendingUp className="h-4 w-4" />
+                <span className="text-sm font-medium">Normal</span>
+              </>
             ) : (
               <>
                 <TrendingUp className="h-4 w-4" />
-                <span className="text-sm font-medium">Saludable</span>
+                <span className="text-sm font-medium">Excelente</span>
               </>
             )}
           </div>
@@ -162,23 +192,23 @@ export default function CreditosSummary({ showDetails = true, variant = 'dashboa
         <div className="space-y-4">
           {/* Estadísticas rápidas */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+            <div className="bg-gray-50 dark:bg-[#1A202C] rounded-xl p-4">
               <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                 Uso Mensual
               </p>
-              <p className="text-xl font-bold text-gray-900 dark:text-white mt-1">
+              <p className="text-xl font-bold text-[#0B1120] dark:text-white mt-1">
                 {monthlyUsage.toLocaleString('es-CO')}
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 créditos este mes
               </p>
             </div>
-            
-            <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+
+            <div className="bg-gray-50 dark:bg-[#1A202C] rounded-xl p-4">
               <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                 Uso Semanal
               </p>
-              <p className="text-xl font-bold text-gray-900 dark:text-white mt-1">
+              <p className="text-xl font-bold text-[#0B1120] dark:text-white mt-1">
                 {weeklyUsage.toLocaleString('es-CO')}
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -188,30 +218,30 @@ export default function CreditosSummary({ showDetails = true, variant = 'dashboa
           </div>
 
           {/* Resumen de totales */}
-          <div className="bg-gradient-to-r from-[#01257D]/5 to-[#01257D]/10 dark:from-[#01257D]/10 dark:to-[#01257D]/20 rounded-lg p-4 border border-[#01257D]/20">
+          <div className="bg-gradient-to-r from-[#00E5FF]/5 to-[#00E5FF]/10 dark:from-[#00E5FF]/10 dark:to-[#00E5FF]/20 rounded-xl p-4 border border-[#00E5FF]/20">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-medium text-gray-900 dark:text-white">Resumen Total</h3>
-              <span className="text-xs bg-[#01257D]/10 text-[#01257D] px-2 py-1 rounded-full font-medium">
+              <span className="text-xs bg-[#00E5FF]/10 text-[#00E5FF] px-2 py-1 rounded-full font-medium">
                 Periodo completo
               </span>
             </div>
-            
+
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Comprados</p>
-                <p className="text-lg font-bold text-green-600">
+                <p className="text-lg font-bold text-emerald-500">
                   +{totalPurchased.toLocaleString('es-CO')}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Utilizados</p>
-                <p className="text-lg font-bold text-red-600">
+                <p className="text-lg font-bold text-gray-500">
                   -{totalUsed.toLocaleString('es-CO')}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Balance</p>
-                <p className="text-lg font-bold text-[#01257D]">
+                <p className="text-lg font-bold text-[#00E5FF]">
                   {currentBalance.toLocaleString('es-CO')}
                 </p>
               </div>
@@ -223,13 +253,13 @@ export default function CreditosSummary({ showDetails = true, variant = 'dashboa
             <div className="flex space-x-3">
               <Link
                 href="/dashboard/creditos"
-                className="flex-1 bg-[#01257D] hover:bg-[#01257D]/90 text-white text-center py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200"
+                className="flex-1 bg-[#00E5FF] hover:bg-[#00B8D4] text-[#0B1120] text-center py-2.5 px-4 rounded-xl text-sm font-semibold transition-all duration-200 shadow-[0_4px_20px_rgba(0,229,255,0.15)] hover:shadow-[0_6px_25px_rgba(0,229,255,0.25)] hover:-translate-y-0.5"
               >
                 Ver Detalles
               </Link>
               <Link
                 href="/dashboard/creditos?tab=planes"
-                className="flex-1 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white text-center py-2 px-4 rounded-lg text-sm font-medium transition-colors duration-200"
+                className="flex-1 bg-[#0B1120] hover:bg-[#1A202C] text-white text-center py-2.5 px-4 rounded-xl text-sm font-semibold transition-all duration-200"
               >
                 Comprar Más
               </Link>

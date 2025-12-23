@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/context/UserContext';
 import { CreditProvider } from '@/context/CreditosContext';
-import { Home, BarChart3, Hash, Users, Menu, Search, FileText, Headphones, Share2, Brain } from 'lucide-react';
+import { Home, BarChart3, Hash, Users, Menu, Search, FileText, Headphones, Share2, Brain, Radio } from 'lucide-react';
 import NotificationCenter from '@/components/notifications/NotificationCenter';
 import UserProfile from '@/components/user/UserProfile';
 import HeaderSearch from '@/components/dashboard/HeaderSearch';
@@ -114,9 +114,9 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#0B1120]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#01257D] mx-auto"></div>
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#00E5FF] mx-auto"></div>
           <p className="mt-4 text-gray-600 dark:text-gray-400">Cargando...</p>
         </div>
       </div>
@@ -128,78 +128,87 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="flex min-h-screen bg-gray-50 dark:bg-[#0B1120]">
       {/* Overlay para cerrar el menú en móvil */}
       {isMobile && menuOpen && (
-        <div 
-          className="fixed inset-0 z-40 bg-gray-900 bg-opacity-50 transition-opacity" 
+        <div
+          className="fixed inset-0 z-40 bg-[#0B1120] bg-opacity-70 transition-opacity backdrop-blur-sm"
           onClick={() => setMenuOpen(false)}
         />
       )}
 
-      {/* Barra lateral de navegación */}
-      <aside 
-        className={`sidebar fixed inset-y-0 left-0 z-40 flex flex-col bg-white shadow-lg transition-all duration-300 dark:bg-gray-800 ${isMobile ? 'w-64' : (menuOpen || menuHovered) ? 'w-64' : 'w-20'}`}
+      {/* Barra lateral de navegación - NUEVO DISEÑO NAVY */}
+      <aside
+        className={`sidebar fixed inset-y-0 left-0 z-40 flex flex-col bg-[#0B1120] shadow-xl transition-all duration-300 ${isMobile ? 'w-64' : (menuOpen || menuHovered) ? 'w-64' : 'w-20'}`}
         style={isMobile && !menuOpen ? { transform: 'translateX(-100%)' } : {}}
         onMouseEnter={() => !isMobile && setMenuHovered(true)}
         onMouseLeave={() => !isMobile && setMenuHovered(false)}
       >
-        <div className="flex flex-shrink-0 items-center px-4">
+        <div className="flex flex-shrink-0 items-center px-4 py-4 border-b border-[#1A202C]">
           <div className="flex items-center">
-            {(menuOpen || menuHovered || isMobile) && (
+            {(menuOpen || menuHovered || isMobile) ? (
               <img
                 className="h-8 w-auto"
                 src="/rol-logo.png"
                 alt="Reputación Online"
               />
+            ) : (
+              <div className="w-10 h-10 rounded-xl bg-[#00E5FF]/10 flex items-center justify-center">
+                <span className="text-[#00E5FF] font-bold text-lg">R</span>
+              </div>
             )}
           </div>
         </div>
-        
-        <div className="mt-5 flex-1 space-y-1 px-2">
+
+        <div className="mt-4 flex-1 space-y-1 px-3 overflow-y-auto">
           <nav className="space-y-1">
-            <Link href="/dashboard" className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium ${pathname === '/dashboard' ? 'bg-[#01257D]/10 text-[#01257D] dark:bg-[#01257D]/20 dark:text-[#01257D]' : 'text-gray-600 hover:bg-[#01257D]/10 hover:text-[#01257D] dark:text-gray-300 dark:hover:bg-[#01257D]/20 dark:hover:text-[#01257D]'}`}>
-              <Home className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 ${pathname === '/dashboard' ? 'text-[#01257D] dark:text-white' : 'text-gray-400 group-hover:text-[#01257D] dark:text-gray-400 dark:group-hover:text-white'}`} />
+            <Link href="/dashboard" className={`group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${pathname === '/dashboard' ? 'bg-[#00E5FF]/15 text-[#00E5FF]' : 'text-gray-400 hover:bg-[#00E5FF]/10 hover:text-[#00E5FF]'}`}>
+              <Home className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 transition-colors ${pathname === '/dashboard' ? 'text-[#00E5FF]' : 'text-gray-500 group-hover:text-[#00E5FF]'}`} />
               {(menuOpen || menuHovered || isMobile) && 'Dashboard'}
             </Link>
 
-            <Link href="/dashboard/analisis" className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium ${pathname === '/dashboard/analisis' ? 'bg-[#01257D]/10 text-[#01257D] dark:bg-[#01257D]/20 dark:text-[#01257D]' : 'text-gray-600 hover:bg-[#01257D]/10 hover:text-[#01257D] dark:text-gray-300 dark:hover:bg-[#01257D]/20 dark:hover:text-[#01257D]'}`}>
-              <BarChart3 className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 ${pathname === '/dashboard/analisis' ? 'text-[#01257D] dark:text-white' : 'text-gray-400 group-hover:text-[#01257D] dark:text-gray-400 dark:group-hover:text-white'}`} />
+            <Link href="/dashboard/analisis" className={`group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${pathname === '/dashboard/analisis' ? 'bg-[#00E5FF]/15 text-[#00E5FF]' : 'text-gray-400 hover:bg-[#00E5FF]/10 hover:text-[#00E5FF]'}`}>
+              <BarChart3 className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 transition-colors ${pathname === '/dashboard/analisis' ? 'text-[#00E5FF]' : 'text-gray-500 group-hover:text-[#00E5FF]'}`} />
               {(menuOpen || menuHovered || isMobile) && 'Análisis'}
             </Link>
 
-            <Link href="/dashboard/hashtags" className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium ${pathname === '/dashboard/hashtags' ? 'bg-[#01257D]/10 text-[#01257D] dark:bg-[#01257D]/20 dark:text-[#01257D]' : 'text-gray-600 hover:bg-[#01257D]/10 hover:text-[#01257D] dark:text-gray-300 dark:hover:bg-[#01257D]/20 dark:hover:text-[#01257D]'}`}>
-              <Hash className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 ${pathname === '/dashboard/hashtags' ? 'text-[#01257D] dark:text-white' : 'text-gray-400 group-hover:text-[#01257D] dark:text-gray-400 dark:group-hover:text-white'}`} />
+            <Link href="/dashboard/monitoreo" className={`group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${pathname === '/dashboard/monitoreo' || pathname.startsWith('/dashboard/monitoreo') ? 'bg-[#00E5FF]/15 text-[#00E5FF]' : 'text-gray-400 hover:bg-[#00E5FF]/10 hover:text-[#00E5FF]'}`}>
+              <Radio className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 transition-colors ${pathname === '/dashboard/monitoreo' || pathname.startsWith('/dashboard/monitoreo') ? 'text-[#00E5FF]' : 'text-gray-500 group-hover:text-[#00E5FF]'}`} />
+              {(menuOpen || menuHovered || isMobile) && 'Monitoreo'}
+            </Link>
+
+            <Link href="/dashboard/hashtags" className={`group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${pathname === '/dashboard/hashtags' ? 'bg-[#00E5FF]/15 text-[#00E5FF]' : 'text-gray-400 hover:bg-[#00E5FF]/10 hover:text-[#00E5FF]'}`}>
+              <Hash className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 transition-colors ${pathname === '/dashboard/hashtags' ? 'text-[#00E5FF]' : 'text-gray-500 group-hover:text-[#00E5FF]'}`} />
               {(menuOpen || menuHovered || isMobile) && 'Hashtags'}
             </Link>
 
-            <Link href="/dashboard/audiencia" className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium ${pathname === '/dashboard/audiencia' ? 'bg-[#01257D]/10 text-[#01257D] dark:bg-[#01257D]/20 dark:text-[#01257D]' : 'text-gray-600 hover:bg-[#01257D]/10 hover:text-[#01257D] dark:text-gray-300 dark:hover:bg-[#01257D]/20 dark:hover:text-[#01257D]'}`}>
-              <Users className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 ${pathname === '/dashboard/audiencia' ? 'text-[#01257D] dark:text-white' : 'text-gray-400 group-hover:text-[#01257D] dark:text-gray-400 dark:group-hover:text-white'}`} />
+            <Link href="/dashboard/audiencia" className={`group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${pathname === '/dashboard/audiencia' ? 'bg-[#00E5FF]/15 text-[#00E5FF]' : 'text-gray-400 hover:bg-[#00E5FF]/10 hover:text-[#00E5FF]'}`}>
+              <Users className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 transition-colors ${pathname === '/dashboard/audiencia' ? 'text-[#00E5FF]' : 'text-gray-500 group-hover:text-[#00E5FF]'}`} />
               {(menuOpen || menuHovered || isMobile) && 'Análisis de Audiencia'}
             </Link>
 
-            <Link href="/dashboard/social-listening" className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium ${pathname === '/dashboard/social-listening' ? 'bg-[#01257D]/10 text-[#01257D] dark:bg-[#01257D]/20 dark:text-[#01257D]' : 'text-gray-600 hover:bg-[#01257D]/10 hover:text-[#01257D] dark:text-gray-300 dark:hover:bg-[#01257D]/20 dark:hover:text-[#01257D]'}`}>
-              <Headphones className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 ${pathname === '/dashboard/social-listening' ? 'text-[#01257D] dark:text-white' : 'text-gray-400 group-hover:text-[#01257D] dark:text-gray-400 dark:group-hover:text-white'}`} />
+            <Link href="/dashboard/social-listening" className={`group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${pathname === '/dashboard/social-listening' ? 'bg-[#00E5FF]/15 text-[#00E5FF]' : 'text-gray-400 hover:bg-[#00E5FF]/10 hover:text-[#00E5FF]'}`}>
+              <Headphones className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 transition-colors ${pathname === '/dashboard/social-listening' ? 'text-[#00E5FF]' : 'text-gray-500 group-hover:text-[#00E5FF]'}`} />
               {(menuOpen || menuHovered || isMobile) && 'Social Listening'}
             </Link>
 
-            <Link href="/dashboard/redes-sociales" className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium ${pathname === '/dashboard/redes-sociales' ? 'bg-[#01257D]/10 text-[#01257D] dark:bg-[#01257D]/20 dark:text-[#01257D]' : 'text-gray-600 hover:bg-[#01257D]/10 hover:text-[#01257D] dark:text-gray-300 dark:hover:bg-[#01257D]/20 dark:hover:text-[#01257D]'}`}>
-              <Share2 className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 ${pathname === '/dashboard/redes-sociales' ? 'text-[#01257D] dark:text-white' : 'text-gray-400 group-hover:text-[#01257D] dark:text-gray-400 dark:group-hover:text-white'}`} />
+            <Link href="/dashboard/redes-sociales" className={`group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${pathname === '/dashboard/redes-sociales' ? 'bg-[#00E5FF]/15 text-[#00E5FF]' : 'text-gray-400 hover:bg-[#00E5FF]/10 hover:text-[#00E5FF]'}`}>
+              <Share2 className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 transition-colors ${pathname === '/dashboard/redes-sociales' ? 'text-[#00E5FF]' : 'text-gray-500 group-hover:text-[#00E5FF]'}`} />
               {(menuOpen || menuHovered || isMobile) && 'Redes Sociales'}
             </Link>
 
-            <Link href="/dashboard/julia" className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium ${pathname === '/dashboard/julia' ? 'bg-[#01257D]/10 text-[#01257D] dark:bg-[#01257D]/20 dark:text-[#01257D]' : 'text-gray-600 hover:bg-[#01257D]/10 hover:text-[#01257D] dark:text-gray-300 dark:hover:bg-[#01257D]/20 dark:hover:text-[#01257D]'}`}>
-              <Brain className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 ${pathname === '/dashboard/julia' ? 'text-[#01257D] dark:text-white' : 'text-gray-400 group-hover:text-[#01257D] dark:text-gray-400 dark:group-hover:text-white'}`} />
+            <Link href="/dashboard/julia" className={`group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${pathname === '/dashboard/julia' ? 'bg-[#00E5FF]/15 text-[#00E5FF]' : 'text-gray-400 hover:bg-[#00E5FF]/10 hover:text-[#00E5FF]'}`}>
+              <Brain className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 transition-colors ${pathname === '/dashboard/julia' ? 'text-[#00E5FF]' : 'text-gray-500 group-hover:text-[#00E5FF]'}`} />
               {(menuOpen || menuHovered || isMobile) && 'Julia IA'}
             </Link>
 
-            <Link href="/dashboard/busqueda-noticias" className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium ${pathname === '/dashboard/busqueda-noticias' ? 'bg-[#01257D]/10 text-[#01257D] dark:bg-[#01257D]/20 dark:text-[#01257D]' : 'text-gray-600 hover:bg-[#01257D]/10 hover:text-[#01257D] dark:text-gray-300 dark:hover:bg-[#01257D]/20 dark:hover:text-[#01257D]'}`}>
-              <Search className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 ${pathname === '/dashboard/busqueda-noticias' ? 'text-[#01257D] dark:text-white' : 'text-gray-400 group-hover:text-[#01257D] dark:text-gray-400 dark:group-hover:text-white'}`} />
+            <Link href="/dashboard/busqueda-noticias" className={`group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${pathname === '/dashboard/busqueda-noticias' ? 'bg-[#00E5FF]/15 text-[#00E5FF]' : 'text-gray-400 hover:bg-[#00E5FF]/10 hover:text-[#00E5FF]'}`}>
+              <Search className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 transition-colors ${pathname === '/dashboard/busqueda-noticias' ? 'text-[#00E5FF]' : 'text-gray-500 group-hover:text-[#00E5FF]'}`} />
               {(menuOpen || menuHovered || isMobile) && 'Búsqueda y Noticias'}
             </Link>
 
-            <Link href="/dashboard/creditos/reportes" className={`group flex items-center rounded-md px-2 py-2 text-sm font-medium ${pathname === '/dashboard/creditos/reportes' ? 'bg-[#01257D]/10 text-[#01257D] dark:bg-[#01257D]/20 dark:text-[#01257D]' : 'text-gray-600 hover:bg-[#01257D]/10 hover:text-[#01257D] dark:text-gray-300 dark:hover:bg-[#01257D]/20 dark:hover:text-[#01257D]'}`}>
-              <FileText className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 ${pathname === '/dashboard/creditos/reportes' ? 'text-[#01257D] dark:text-white' : 'text-gray-400 group-hover:text-[#01257D] dark:text-gray-400 dark:group-hover:text-white'}`} />
+            <Link href="/dashboard/creditos/reportes" className={`group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${pathname === '/dashboard/creditos/reportes' ? 'bg-[#00E5FF]/15 text-[#00E5FF]' : 'text-gray-400 hover:bg-[#00E5FF]/10 hover:text-[#00E5FF]'}`}>
+              <FileText className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 transition-colors ${pathname === '/dashboard/creditos/reportes' ? 'text-[#00E5FF]' : 'text-gray-500 group-hover:text-[#00E5FF]'}`} />
               {(menuOpen || menuHovered || isMobile) && 'Reportes'}
             </Link>
           </nav>
@@ -208,20 +217,20 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 
       {/* Contenido principal */}
       <div className="main-content flex flex-1 flex-col transition-all duration-300" style={{ paddingLeft: isMobile ? '0' : (menuOpen || menuHovered) ? '16rem' : '5rem' }}>
-        {/* Barra superior */}
-        <header className="sticky top-0 z-50 flex h-16 flex-shrink-0 bg-white shadow dark:bg-gray-800">
+        {/* Barra superior - NUEVO DISEÑO */}
+        <header className="sticky top-0 z-50 flex h-16 flex-shrink-0 bg-white shadow-soft dark:bg-[#151C2E] border-b border-gray-100 dark:border-[#1A202C]">
           <div className="flex flex-1 justify-between px-4">
             <div className="flex flex-1 items-center">
               {/* Botón toggle menu para móvil y escritorio */}
               <button
-                className="mr-4 rounded-md border border-[#01257D] p-1.5 text-[#01257D] hover:bg-[#01257D]/10 hover:text-[#01257D] dark:border-[#01257D] dark:text-[#01257D] dark:hover:bg-[#01257D]/20 dark:hover:text-[#01257D]"
+                className="mr-4 rounded-lg border border-[#00E5FF]/30 p-1.5 text-[#00E5FF] hover:bg-[#00E5FF]/10 hover:border-[#00E5FF] transition-all duration-200"
                 onClick={toggleMenu}
                 title={menuOpen ? "Contraer menú" : "Expandir menú"}
               >
                 <span className="sr-only">{menuOpen ? "Contraer menú" : "Expandir menú"}</span>
                 <Menu className="h-5 w-5" />
               </button>
-              
+
               {/* Buscador rápido en la barra superior */}
               <HeaderSearch />
             </div>
@@ -229,7 +238,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
             <div className="ml-4 flex items-center justify-end space-x-4">
               {/* Centro de notificaciones */}
               <NotificationCenter />
-              
+
               {/* Perfil del usuario */}
               <UserProfile />
             </div>

@@ -362,10 +362,10 @@ export default function Dashboard() {
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center space-x-3">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+            <h1 className="text-3xl font-bold text-[#0B1120] dark:text-white">Dashboard</h1>
             <PlanBadge />
           </div>
-          <p className="mt-1 text-gray-600 dark:text-gray-300">Bienvenido a tu centro de monitoreo de reputación online</p>
+          <p className="mt-1 text-gray-500 dark:text-gray-400">Bienvenido a tu centro de monitoreo de reputación online</p>
         </div>
         <div className="flex items-center space-x-3">
           {/* Indicador de conexión */}
@@ -389,16 +389,16 @@ export default function Dashboard() {
           </div>
           
           {/* Botón de actualización mejorado */}
-          <button 
+          <button
             onClick={() => actualizarDatos(true)}
             disabled={actualizandoDatos}
-            className={`flex items-center text-sm px-4 py-2 rounded-lg transition-all duration-200 ${
+            className={`flex items-center text-sm px-4 py-2.5 rounded-xl font-semibold transition-all duration-200 ${
               actualizandoDatos
-                ? 'bg-gray-400 cursor-not-allowed'
+                ? 'bg-gray-400 cursor-not-allowed text-white'
                 : errorConexion
-                ? 'bg-red-600 hover:bg-red-700'
-                : 'bg-[#01257D] hover:bg-[#01257D]/90'
-            } text-white`}
+                ? 'bg-red-500 hover:bg-red-600 text-white'
+                : 'bg-[#00E5FF] hover:bg-[#00B8D4] text-[#0B1120] shadow-[0_4px_20px_rgba(0,229,255,0.15)] hover:shadow-[0_6px_25px_rgba(0,229,255,0.25)] hover:-translate-y-0.5'
+            }`}
           >
             <RefreshCw className={`mr-2 h-4 w-4 ${actualizandoDatos ? 'animate-spin' : ''}`} /> 
 {cargandoDatos ? 'Cargando...' : actualizandoDatos ? 'Actualizando...' : errorConexion ? 'Reintentar' : 'Actualizar Datos'}
@@ -419,30 +419,30 @@ export default function Dashboard() {
           
           {/* Mostrar límites de uso del plan */}
           <div className="mt-4 space-y-3">
-            <UsageLimit 
-              feature="maxSocialAccounts" 
-              currentUsage={3} 
+            <UsageLimit
+              feature="maxSocialAccounts"
+              currentUsage={3}
               label="Cuentas sociales conectadas"
-              className="bg-white dark:bg-gray-800 p-3 rounded-lg"
+              className="bg-white dark:bg-[#151C2E] p-3 rounded-xl border border-gray-100 dark:border-[#1A202C]"
             />
-            <UsageLimit 
-              feature="maxSearchQueries" 
-              currentUsage={27} 
+            <UsageLimit
+              feature="maxSearchQueries"
+              currentUsage={27}
               label="Búsquedas este mes"
-              className="bg-white dark:bg-gray-800 p-3 rounded-lg"
+              className="bg-white dark:bg-[#151C2E] p-3 rounded-xl border border-gray-100 dark:border-[#1A202C]"
             />
           </div>
         </motion.div>
         
         {/* Estadísticas rápidas MEJORADAS CON ANIMACIONES AVANZADAS */}
-        <motion.div 
+        <motion.div
           custom={1}
           initial="hidden"
           animate="visible"
           whileHover="hover"
           variants={cardVariants}
-          className="card p-3 sm:p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 cursor-pointer relative overflow-hidden border-2 border-blue-200 dark:border-blue-700"
-          style={{ boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}
+          className="rounded-xl p-4 sm:p-5 bg-gradient-to-br from-[#00E5FF]/5 to-[#00E5FF]/15 dark:from-[#00E5FF]/10 dark:to-[#00E5FF]/20 cursor-pointer relative overflow-hidden border border-[#00E5FF]/20"
+          style={{ boxShadow: '0 4px 20px rgba(0, 229, 255, 0.1)' }}
         >
           {/* Indicador de actualización en tiempo real */}
           <div className="absolute top-2 right-2">
@@ -469,8 +469,8 @@ export default function Dashboard() {
           </div>
           <div className="mt-4">
             <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-              <motion.div 
-                className="h-2 rounded-full bg-[#01257D]"
+              <motion.div
+                className="h-2 rounded-full bg-[#00E5FF]"
                 initial={{ width: '0%' }}
                 animate={{ width: '70%' }}
                 transition={{ duration: 1, delay: 0.5 }}
@@ -482,14 +482,14 @@ export default function Dashboard() {
           </div>
         </motion.div>
         
-        <motion.div 
+        <motion.div
           custom={2}
           initial="hidden"
           animate="visible"
           whileHover="hover"
           variants={cardVariants}
-          className="card p-3 sm:p-4 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900 dark:to-green-800 cursor-pointer relative overflow-hidden border-2 border-green-200 dark:border-green-700"
-          style={{ boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}
+          className="rounded-xl p-4 sm:p-5 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/30 cursor-pointer relative overflow-hidden border border-emerald-200 dark:border-emerald-700/50"
+          style={{ boxShadow: '0 4px 20px rgba(16, 185, 129, 0.1)' }}
         >
           {/* Indicador de actualización en tiempo real */}
           <div className="absolute top-2 right-2">
@@ -991,7 +991,7 @@ export default function Dashboard() {
                 </AnimatePresence>
 
                 <div className="mt-4 text-center">
-                  <button className="text-sm font-medium text-[#01257D] hover:text-[#01257D]/90 dark:text-[#01257D] dark:hover:text-[#01257D]/90 flex items-center mx-auto">
+                  <button className="text-sm font-semibold text-[#00E5FF] hover:text-[#00B8D4] flex items-center mx-auto transition-colors duration-200">
                     Ver análisis completo con IA
                     <ArrowUpRight className="ml-1 h-4 w-4" />
                   </button>

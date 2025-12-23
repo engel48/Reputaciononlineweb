@@ -3,16 +3,19 @@
 @tailwind utilities;
 
 :root {
-  --color-primary: #00B3B0;
-  --color-cyan: #0CA5E9;
+  /* Colores del Logo - Branding Principal */
+  --color-primary: #00E5FF;
+  --color-cyan: #00E5FF;
+  --color-navy: #0B1120;
+  --color-navy-medium: #1A202C;
   --color-background: #ffffff;
-  --color-foreground: #000000;
+  --color-foreground: #0B1120;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-background: #0f172a;
-    --color-foreground: #e2e8f0;
+    --color-background: #0B1120;
+    --color-foreground: #E2E8F0;
   }
 }
 
@@ -21,64 +24,91 @@ body {
   background: var(--color-background);
 }
 
-/* Estilos para elementos de la interfaz de usuario */
+/* Estilos para elementos de la interfaz de usuario - Nuevo Branding */
 .card {
-  @apply rounded-lg border border-gray-200 bg-white shadow-md dark:border-gray-700 dark:bg-gray-800;
+  @apply rounded-xl border border-gray-100 bg-white shadow-soft dark:border-brand-navy-700 dark:bg-brand-navy-800;
 }
 
 .heading-primary {
-  @apply text-3xl font-bold text-primary-600 dark:text-primary-400;
+  @apply text-3xl font-bold text-brand-navy-900 dark:text-white;
 }
 
 .heading-secondary {
-  @apply text-xl font-semibold text-gray-800 dark:text-gray-200;
+  @apply text-xl font-semibold text-brand-navy-800 dark:text-gray-200;
 }
 
 .button-primary {
-  @apply rounded-md bg-primary-600 px-4 py-2 text-white transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-primary-700 dark:hover:bg-primary-600;
+  @apply rounded-xl bg-brand-cyan px-4 py-2 font-semibold text-brand-navy-900 shadow-brand transition-all hover:bg-brand-cyan-600 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-brand-cyan focus:ring-offset-2;
 }
 
 .button-secondary {
-  @apply rounded-md bg-cyan-600 px-4 py-2 text-white transition-colors hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 dark:bg-cyan-700 dark:hover:bg-cyan-600;
+  @apply rounded-xl bg-brand-navy-900 px-4 py-2 font-semibold text-white transition-all hover:bg-brand-navy-800 focus:outline-none focus:ring-2 focus:ring-brand-navy focus:ring-offset-2;
 }
 
 .button-outline {
-  @apply rounded-md border border-primary-600 px-4 py-2 text-primary-600 transition-colors hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:border-primary-500 dark:text-primary-400 dark:hover:bg-gray-700;
+  @apply rounded-xl border-2 border-brand-cyan px-4 py-2 font-semibold text-brand-cyan transition-all hover:bg-brand-cyan-50 focus:outline-none focus:ring-2 focus:ring-brand-cyan focus:ring-offset-2 dark:hover:bg-brand-navy-800;
 }
 
-/* Estilos específicos para componentes de créditos */
+/* Estilos específicos para componentes de créditos - CORREGIDO */
 .credit-bar {
-  @apply h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700;
+  @apply h-2.5 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-brand-navy-700;
 }
 
 .credit-progress {
-  @apply h-2 rounded-full bg-primary-600 dark:bg-primary-500;
+  @apply h-2.5 rounded-full transition-all duration-500;
+}
+
+/* Lógica de colores CORREGIDA: verde=muchos, naranja=pocos, rojo=sin créditos */
+.credit-high {
+  @apply bg-success dark:bg-success;
+}
+
+.credit-medium {
+  @apply bg-brand-cyan dark:bg-brand-cyan;
 }
 
 .credit-low {
-  @apply bg-red-500 dark:bg-red-600;
+  @apply bg-warning dark:bg-warning;
 }
 
+.credit-critical {
+  @apply bg-error dark:bg-error;
+}
+
+/* Legacy - mantener compatibilidad */
 .credit-warning {
-  @apply bg-yellow-500 dark:bg-yellow-600;
+  @apply bg-warning dark:bg-warning;
 }
 
 .credit-info {
-  @apply bg-cyan-500 dark:bg-cyan-600;
+  @apply bg-brand-cyan dark:bg-brand-cyan;
 }
 
 .transaction-row {
-  @apply cursor-pointer border-b border-gray-200 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700;
+  @apply cursor-pointer border-b border-gray-100 transition-all hover:bg-brand-cyan-50 dark:border-brand-navy-700 dark:hover:bg-brand-navy-800;
 }
 
 .transaction-success {
-  @apply text-green-500 dark:text-green-400;
+  @apply text-success dark:text-success;
 }
 
 .transaction-error {
-  @apply text-red-500 dark:text-red-400;
+  @apply text-error dark:text-error;
 }
 
 .transaction-pending {
-  @apply text-yellow-500 dark:text-yellow-400;
+  @apply text-warning dark:text-warning;
+}
+
+/* Sentimiento badges */
+.sentiment-positive {
+  @apply bg-success-50 text-success border border-success/20;
+}
+
+.sentiment-negative {
+  @apply bg-error-50 text-error border border-error/20;
+}
+
+.sentiment-neutral {
+  @apply bg-gray-100 text-gray-600 border border-gray-200 dark:bg-brand-navy-700 dark:text-gray-300;
 }

@@ -4,9 +4,9 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { CreditProvider } from '@/context/CreditosContext';
-import { 
-  Home, CreditCard, BarChart3, Settings, Bell, Users, 
-  Search, User, LogOut, Menu, X, Database, Globe
+import {
+  Home, CreditCard, BarChart3, Settings, Bell, Users,
+  Search, User, LogOut, Menu, X, Database, Globe, DollarSign
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -48,36 +48,38 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="flex min-h-screen bg-gray-50 dark:bg-[#0B1120]">
       {/* Overlay para móvil */}
       {isMobile && mobileMenuOpen && (
-        <div 
-          className="fixed inset-0 z-40 bg-gray-900 bg-opacity-50 transition-opacity" 
+        <div
+          className="fixed inset-0 z-40 bg-[#0B1120] bg-opacity-70 backdrop-blur-sm transition-opacity"
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
 
-      {/* Barra lateral */}
-      <aside 
-        className={`fixed inset-y-0 left-0 z-50 flex flex-col bg-gray-800 transition-all duration-300 dark:bg-gray-900 ${
-          isMobile 
+      {/* Barra lateral - Nuevo diseño Navy */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex flex-col bg-[#0B1120] shadow-xl transition-all duration-300 ${
+          isMobile
             ? `w-64 transform ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`
             : `${isCollapsed ? 'w-20' : 'w-64'} hidden md:flex`
         }`}
       >
-        <div className="flex h-16 items-center justify-between border-b border-gray-700 bg-gray-900 px-6">
+        <div className="flex h-16 items-center justify-between border-b border-[#1A202C] px-6">
           <Link href="/admin" className="flex items-center">
-            <div className="h-8 w-8 rounded-md bg-primary-600"></div>
+            <div className="h-8 w-8 rounded-xl bg-[#00E5FF]/10 flex items-center justify-center">
+              <span className="text-[#00E5FF] font-bold text-lg">A</span>
+            </div>
             {(!isCollapsed || isMobile) && (
               <span className="ml-3 text-xl font-bold text-white">Admin Panel</span>
             )}
           </Link>
-          
+
           {/* Toggle button para desktop */}
           {!isMobile && (
             <button
               onClick={() => setIsCollapsed(!isCollapsed)}
-              className="p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 transition-colors"
+              className="p-2 rounded-lg text-gray-400 hover:text-[#00E5FF] hover:bg-[#00E5FF]/10 transition-colors"
               title={isCollapsed ? "Expandir menú" : "Colapsar menú"}
             >
               <Menu className="h-5 w-5" />
@@ -86,9 +88,9 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Usuario admin */}
-        <div className="border-b border-gray-700 p-4">
+        <div className="border-b border-[#1A202C] p-4">
           <div className="flex items-center">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-700 text-white">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#00E5FF]/10 text-[#00E5FF]">
               <User className="h-6 w-6" />
             </div>
             {(!isCollapsed || isMobile) && (
@@ -103,19 +105,19 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
         <div className="flex flex-1 flex-col overflow-y-auto py-4">
           <div className="px-3 py-2">
             {(!isCollapsed || isMobile) && (
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-400">Dashboard</h3>
+              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">Dashboard</h3>
             )}
             <nav className="space-y-1">
-              <Link 
-                href="/admin" 
-                className={`group flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white ${
-                  pathname === '/admin' ? 'bg-gray-700 text-white' : ''
+              <Link
+                href="/admin"
+                className={`group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
+                  pathname === '/admin' ? 'bg-[#00E5FF]/15 text-[#00E5FF]' : 'text-gray-400 hover:bg-[#00E5FF]/10 hover:text-[#00E5FF]'
                 }`}
                 title={isCollapsed ? 'Inicio' : ''}
               >
-                <Home className={`h-5 w-5 text-gray-400 group-hover:text-white ${
+                <Home className={`h-5 w-5 transition-colors ${
                   isCollapsed ? 'mx-auto' : 'mr-3'
-                } ${pathname === '/admin' ? 'text-white' : ''}`} />
+                } ${pathname === '/admin' ? 'text-[#00E5FF]' : 'text-gray-500 group-hover:text-[#00E5FF]'}`} />
                 {(!isCollapsed || isMobile) && 'Inicio'}
               </Link>
             </nav>
@@ -123,100 +125,112 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
 
           <div className="px-3 py-2">
             {(!isCollapsed || isMobile) && (
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-400">Créditos</h3>
+              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">Créditos</h3>
             )}
             <nav className="space-y-1">
-              <Link 
-                href="/admin/creditos" 
-                className={`group flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white ${
-                  pathname === '/admin/creditos' ? 'bg-gray-700 text-white' : ''
+              <Link
+                href="/admin/creditos"
+                className={`group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
+                  pathname === '/admin/creditos' ? 'bg-[#00E5FF]/15 text-[#00E5FF]' : 'text-gray-400 hover:bg-[#00E5FF]/10 hover:text-[#00E5FF]'
                 }`}
                 title={isCollapsed ? 'Gestión de Créditos' : ''}
               >
-                <CreditCard className={`h-5 w-5 text-gray-400 group-hover:text-white ${
+                <CreditCard className={`h-5 w-5 transition-colors ${
                   isCollapsed ? 'mx-auto' : 'mr-3'
-                } ${pathname === '/admin/creditos' ? 'text-white' : ''}`} />
+                } ${pathname === '/admin/creditos' ? 'text-[#00E5FF]' : 'text-gray-500 group-hover:text-[#00E5FF]'}`} />
                 {(!isCollapsed || isMobile) && 'Gestión de Créditos'}
               </Link>
-              <Link 
-                href="/admin/creditos/asignar" 
-                className={`group flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white ${
-                  pathname === '/admin/creditos/asignar' ? 'bg-gray-700 text-white' : ''
+              <Link
+                href="/admin/creditos/asignar"
+                className={`group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
+                  pathname === '/admin/creditos/asignar' ? 'bg-[#00E5FF]/15 text-[#00E5FF]' : 'text-gray-400 hover:bg-[#00E5FF]/10 hover:text-[#00E5FF]'
                 }`}
                 title={isCollapsed ? 'Asignar Créditos' : ''}
               >
-                <Database className={`h-5 w-5 text-gray-400 group-hover:text-white ${
+                <Database className={`h-5 w-5 transition-colors ${
                   isCollapsed ? 'mx-auto' : 'mr-3'
-                } ${pathname === '/admin/creditos/asignar' ? 'text-white' : ''}`} />
+                } ${pathname === '/admin/creditos/asignar' ? 'text-[#00E5FF]' : 'text-gray-500 group-hover:text-[#00E5FF]'}`} />
                 {(!isCollapsed || isMobile) && 'Asignar Créditos'}
               </Link>
-              <Link 
-                href="/admin/creditos/reportes" 
-                className={`group flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white ${
-                  pathname === '/admin/creditos/reportes' ? 'bg-gray-700 text-white' : ''
+              <Link
+                href="/admin/creditos/reportes"
+                className={`group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
+                  pathname === '/admin/creditos/reportes' ? 'bg-[#00E5FF]/15 text-[#00E5FF]' : 'text-gray-400 hover:bg-[#00E5FF]/10 hover:text-[#00E5FF]'
                 }`}
                 title={isCollapsed ? 'Reportes' : ''}
               >
-                <BarChart3 className={`h-5 w-5 text-gray-400 group-hover:text-white ${
+                <BarChart3 className={`h-5 w-5 transition-colors ${
                   isCollapsed ? 'mx-auto' : 'mr-3'
-                } ${pathname === '/admin/creditos/reportes' ? 'text-white' : ''}`} />
+                } ${pathname === '/admin/creditos/reportes' ? 'text-[#00E5FF]' : 'text-gray-500 group-hover:text-[#00E5FF]'}`} />
                 {(!isCollapsed || isMobile) && 'Reportes'}
+              </Link>
+              <Link
+                href="/admin/pagos"
+                className={`group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
+                  pathname === '/admin/pagos' ? 'bg-[#00E5FF]/15 text-[#00E5FF]' : 'text-gray-400 hover:bg-[#00E5FF]/10 hover:text-[#00E5FF]'
+                }`}
+                title={isCollapsed ? 'Pagos' : ''}
+              >
+                <DollarSign className={`h-5 w-5 transition-colors ${
+                  isCollapsed ? 'mx-auto' : 'mr-3'
+                } ${pathname === '/admin/pagos' ? 'text-[#00E5FF]' : 'text-gray-500 group-hover:text-[#00E5FF]'}`} />
+                {(!isCollapsed || isMobile) && 'Pagos'}
               </Link>
             </nav>
           </div>
 
           <div className="px-3 py-2">
             {(!isCollapsed || isMobile) && (
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-400">Gestión</h3>
+              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">Gestión</h3>
             )}
             <nav className="space-y-1">
-              <Link 
-                href="/admin/usuarios" 
-                className={`group flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white ${
-                  pathname === '/admin/usuarios' ? 'bg-gray-700 text-white' : ''
+              <Link
+                href="/admin/usuarios"
+                className={`group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
+                  pathname === '/admin/usuarios' ? 'bg-[#00E5FF]/15 text-[#00E5FF]' : 'text-gray-400 hover:bg-[#00E5FF]/10 hover:text-[#00E5FF]'
                 }`}
                 title={isCollapsed ? 'Usuarios' : ''}
               >
-                <Users className={`h-5 w-5 text-gray-400 group-hover:text-white ${
+                <Users className={`h-5 w-5 transition-colors ${
                   isCollapsed ? 'mx-auto' : 'mr-3'
-                } ${pathname === '/admin/usuarios' ? 'text-white' : ''}`} />
+                } ${pathname === '/admin/usuarios' ? 'text-[#00E5FF]' : 'text-gray-500 group-hover:text-[#00E5FF]'}`} />
                 {(!isCollapsed || isMobile) && 'Usuarios'}
               </Link>
-              <Link 
-                href="/admin/redes-sociales" 
-                className={`group flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white ${
-                  pathname === '/admin/redes-sociales' ? 'bg-gray-700 text-white' : ''
+              <Link
+                href="/admin/redes-sociales"
+                className={`group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
+                  pathname === '/admin/redes-sociales' ? 'bg-[#00E5FF]/15 text-[#00E5FF]' : 'text-gray-400 hover:bg-[#00E5FF]/10 hover:text-[#00E5FF]'
                 }`}
                 title={isCollapsed ? 'Redes Sociales' : ''}
               >
-                <Globe className={`h-5 w-5 text-gray-400 group-hover:text-white ${
+                <Globe className={`h-5 w-5 transition-colors ${
                   isCollapsed ? 'mx-auto' : 'mr-3'
-                } ${pathname === '/admin/redes-sociales' ? 'text-white' : ''}`} />
+                } ${pathname === '/admin/redes-sociales' ? 'text-[#00E5FF]' : 'text-gray-500 group-hover:text-[#00E5FF]'}`} />
                 {(!isCollapsed || isMobile) && 'Redes Sociales'}
               </Link>
-              <Link 
-                href="/admin/configuracion" 
-                className={`group flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white ${
-                  pathname === '/admin/configuracion' ? 'bg-gray-700 text-white' : ''
+              <Link
+                href="/admin/configuracion"
+                className={`group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
+                  pathname === '/admin/configuracion' ? 'bg-[#00E5FF]/15 text-[#00E5FF]' : 'text-gray-400 hover:bg-[#00E5FF]/10 hover:text-[#00E5FF]'
                 }`}
                 title={isCollapsed ? 'Configuración' : ''}
               >
-                <Settings className={`h-5 w-5 text-gray-400 group-hover:text-white ${
+                <Settings className={`h-5 w-5 transition-colors ${
                   isCollapsed ? 'mx-auto' : 'mr-3'
-                } ${pathname === '/admin/configuracion' ? 'text-white' : ''}`} />
+                } ${pathname === '/admin/configuracion' ? 'text-[#00E5FF]' : 'text-gray-500 group-hover:text-[#00E5FF]'}`} />
                 {(!isCollapsed || isMobile) && 'Configuración'}
               </Link>
             </nav>
           </div>
 
           {/* Logout at bottom of sidebar */}
-          <div className="mt-auto px-3 py-4 border-t border-gray-700">
+          <div className="mt-auto px-3 py-4 border-t border-[#1A202C]">
             <button
               onClick={handleLogout}
-              className="group flex items-center w-full rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+              className="group flex items-center w-full rounded-lg px-3 py-2.5 text-sm font-medium text-gray-400 hover:bg-red-500/10 hover:text-red-400 transition-all duration-200"
               title={isCollapsed ? 'Cerrar Sesión' : ''}
             >
-              <LogOut className={`h-5 w-5 text-gray-400 group-hover:text-white ${
+              <LogOut className={`h-5 w-5 text-gray-500 group-hover:text-red-400 transition-colors ${
                 isCollapsed ? 'mx-auto' : 'mr-3'
               }`} />
               {(!isCollapsed || isMobile) && 'Cerrar Sesión'}
@@ -229,23 +243,23 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
       <div className={`flex flex-1 flex-col transition-all duration-300 ${
         isMobile ? 'md:pl-0' : isCollapsed ? 'md:pl-20' : 'md:pl-64'
       }`}>
-        {/* Barra superior */}
-        <header className="sticky top-0 z-10 flex h-16 flex-shrink-0 bg-white shadow dark:bg-gray-800">
+        {/* Barra superior - Nuevo diseño */}
+        <header className="sticky top-0 z-10 flex h-16 flex-shrink-0 bg-white dark:bg-[#151C2E] shadow-[0_4px_20px_rgba(0,0,0,0.05)] border-b border-gray-100 dark:border-[#1A202C]">
           <div className="flex flex-1 justify-between px-4">
             <div className="flex flex-1 items-center md:ml-0">
               {/* Mobile menu button */}
-              <button 
+              <button
                 onClick={toggleSidebar}
-                className="-ml-0.5 -mt-0.5 inline-flex h-12 w-12 items-center justify-center rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 md:hidden"
+                className="-ml-0.5 -mt-0.5 inline-flex h-12 w-12 items-center justify-center rounded-lg text-gray-500 hover:text-[#00E5FF] hover:bg-[#00E5FF]/10 transition-colors md:hidden"
               >
                 <span className="sr-only">Abrir menú</span>
                 {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </button>
-              
+
               {/* Desktop toggle button */}
-              <button 
+              <button
                 onClick={() => setIsCollapsed(!isCollapsed)}
-                className="hidden md:inline-flex -ml-0.5 -mt-0.5 h-12 w-12 items-center justify-center rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
+                className="hidden md:inline-flex -ml-0.5 -mt-0.5 h-12 w-12 items-center justify-center rounded-lg text-gray-500 hover:text-[#00E5FF] hover:bg-[#00E5FF]/10 transition-colors"
                 title={isCollapsed ? "Expandir menú" : "Colapsar menú"}
               >
                 <span className="sr-only">{isCollapsed ? "Expandir" : "Colapsar"} menú</span>
@@ -257,7 +271,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
                     <Search className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
-                    className="block w-full rounded-md border border-gray-300 bg-white py-2 pl-10 pr-3 text-sm placeholder-gray-500 focus:border-primary-500 focus:text-gray-900 focus:placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:placeholder-gray-400"
+                    className="block w-full rounded-xl border border-gray-200 dark:border-[#1A202C] bg-gray-50 dark:bg-[#1A202C] py-2 pl-10 pr-3 text-sm placeholder-gray-500 dark:placeholder-gray-400 focus:border-[#00E5FF] focus:bg-white dark:focus:bg-[#151C2E] focus:outline-none focus:ring-2 focus:ring-[#00E5FF]/30 transition-all"
                     placeholder="Buscar..."
                     type="search"
                   />
@@ -267,27 +281,25 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
 
             <div className="ml-4 flex items-center md:ml-6">
               {/* Botón de notificaciones */}
-              <button className="rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-gray-800 dark:text-gray-300 dark:hover:text-white">
+              <button className="rounded-xl p-2 text-gray-400 hover:text-[#00E5FF] hover:bg-[#00E5FF]/10 transition-colors">
                 <span className="sr-only">Ver notificaciones</span>
-                <Bell className="h-6 w-6" />
+                <Bell className="h-5 w-5" />
               </button>
 
               {/* Perfil de usuario */}
               <div className="relative ml-3">
-                <div>
-                  <button className="flex max-w-xs items-center rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-gray-800">
-                    <span className="sr-only">Abrir menú de usuario</span>
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-700 text-white">
-                      <User className="h-5 w-5" />
-                    </div>
-                  </button>
-                </div>
+                <button className="flex items-center rounded-xl p-1 hover:bg-[#00E5FF]/10 transition-colors">
+                  <span className="sr-only">Abrir menú de usuario</span>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#00E5FF]/10 text-[#00E5FF]">
+                    <User className="h-5 w-5" />
+                  </div>
+                </button>
               </div>
 
               {/* Logout Button */}
               <button
                 onClick={handleLogout}
-                className="ml-3 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+                className="ml-3 inline-flex items-center px-3 py-2 text-sm font-medium rounded-xl text-gray-500 dark:text-gray-400 hover:text-red-500 hover:bg-red-500/10 transition-colors"
                 title="Cerrar Sesión"
               >
                 <LogOut className="h-4 w-4 mr-2" />
