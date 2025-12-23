@@ -166,7 +166,11 @@ export const userService = {
       'lastLogin': 'last_login',
       'nextBillingDate': 'next_billing_date',
       'additionalSources': 'additional_sources',
-      'updatedAt': 'updated_at'  // ⚠️ AGREGADO: Mapeo de updatedAt
+      'updatedAt': 'updated_at',
+      // Campos para perfil político
+      'partidoPolitico': 'partido_politico',
+      'cargoActual': 'cargo_actual',
+      'propuestasPrincipales': 'propuestas_principales'
     };
 
     const updateData: any = {};

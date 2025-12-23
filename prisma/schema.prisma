@@ -11,31 +11,36 @@ datasource db {
 }
 
 model User {
-  id                   String   @id @default(cuid())
-  email                String   @unique
-  password             String
-  name                 String?
-  company              String?
-  phone                String?
-  bio                  String?
-  avatarUrl            String?
-  role                 String   @default("user")
-  plan                 String   @default("free")
-  credits              Int      @default(0)
-  profileType          String?
-  category             String?
-  brandName            String?
-  otherCategory        String?
-  onboardingCompleted  Boolean  @default(false)
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
-  lastLogin            DateTime?
-  nextBillingDate      DateTime?
+  id                     String   @id @default(cuid())
+  email                  String   @unique
+  password               String
+  name                   String?
+  company                String?
+  phone                  String?
+  bio                    String?
+  avatarUrl              String?
+  role                   String   @default("user")
+  plan                   String   @default("free")
+  credits                Int      @default(0)
+  profileType            String?
+  category               String?
+  brandName              String?
+  otherCategory          String?
+  additionalSources      String?  // JSON string para fuentes adicionales
+  // Campos para perfil político
+  partidoPolitico        String?
+  cargoActual            String?
+  propuestasPrincipales  String?
+  onboardingCompleted    Boolean  @default(false)
+  isActive               Boolean  @default(true)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+  lastLogin              DateTime?
+  nextBillingDate        DateTime?
 
   // Relaciones
   socialMedia          SocialMedia[]
   mediaSources         UserMediaSource[]
-  additionalSources    String?  // JSON string para fuentes adicionales
   userStats            UserStats?
   notifications        Notification[]
   alerts               Alert[]
@@ -47,18 +52,18 @@ model User {
 
 model SocialPlatform {
   id          String  @id @default(cuid())
-  name        String  // 'Facebook', 'X', 'Instagram', etc.
-  platform    String  @unique // 'facebook', 'x', 'instagram', 'threads', 'linkedin', 'youtube'
+  name        String  // 'Facebook', 'X', 'Instagram', 'YouTube'
+  platform    String  @unique // 'facebook', 'x', 'instagram', 'youtube'
   isActive    Boolean @default(true)
   oauthConfig String? // OAuth configuration JSON as string for each platform
-  
+
   @@map("social_platforms")
 }
 
 model SocialMedia {
   id           String  @id @default(cuid())
   userId       String
-  platform     String  // 'facebook', 'x', 'instagram', 'threads', 'linkedin', 'youtube'
+  platform     String  // 'facebook', 'x', 'instagram', 'youtube'
   username     String?
   profileUrl   String?
   followers    Int     @default(0)
@@ -67,12 +72,12 @@ model SocialMedia {
   engagement   Float   @default(0)
   connected    Boolean @default(false)
   lastSync     DateTime?
-  
+
   // OAuth tokens for real API connections
   accessToken  String?
   refreshToken String?
   tokenExpiry  DateTime?
-  
+
   user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, platform])

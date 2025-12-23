@@ -32,6 +32,10 @@ db.exec(`
     category TEXT,
     brandName TEXT,
     otherCategory TEXT,
+    additionalSources TEXT,
+    partidoPolitico TEXT,
+    cargoActual TEXT,
+    propuestasPrincipales TEXT,
     onboardingCompleted INTEGER DEFAULT 0,
     isActive INTEGER DEFAULT 1,
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -101,6 +105,28 @@ try {
   console.log('✅ Columna additionalSources agregada a la tabla users');
 } catch (error) {
   // La columna ya existe, no hay problema
+}
+
+// Intentar agregar columnas para perfil político si no existen
+try {
+  db.exec(`ALTER TABLE users ADD COLUMN partidoPolitico TEXT DEFAULT NULL`);
+  console.log('✅ Columna partidoPolitico agregada a la tabla users');
+} catch (error) {
+  // La columna ya existe
+}
+
+try {
+  db.exec(`ALTER TABLE users ADD COLUMN cargoActual TEXT DEFAULT NULL`);
+  console.log('✅ Columna cargoActual agregada a la tabla users');
+} catch (error) {
+  // La columna ya existe
+}
+
+try {
+  db.exec(`ALTER TABLE users ADD COLUMN propuestasPrincipales TEXT DEFAULT NULL`);
+  console.log('✅ Columna propuestasPrincipales agregada a la tabla users');
+} catch (error) {
+  // La columna ya existe
 }
 
 // Función para generar IDs
