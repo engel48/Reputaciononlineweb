@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import UnifiedSearchInput from '@/components/dashboard/UnifiedSearchInput';
 import UnifiedMentionCard from '@/components/dashboard/UnifiedMentionCard';
+import KeywordManager from '@/components/dashboard/KeywordManager';
 
 interface SearchResult {
   id: string;
@@ -83,6 +84,7 @@ export default function MonitoreoPage() {
   const [sentimentFilter, setSentimentFilter] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [userKeywords, setUserKeywords] = useState<string[]>([]);
 
   // Función de búsqueda
   const performSearch = useCallback(async (query: string, type: string) => {
@@ -164,13 +166,24 @@ export default function MonitoreoPage() {
           </p>
         </div>
 
-        {/* Buscador Universal */}
-        <div className="mb-8">
-          <UnifiedSearchInput
-            onSearch={handleSearch}
-            loading={loading}
-            className="max-w-3xl"
-          />
+        {/* Buscador Universal y Configuración de Keywords */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          {/* Buscador - ocupa 2 columnas */}
+          <div className="lg:col-span-2">
+            <UnifiedSearchInput
+              onSearch={handleSearch}
+              loading={loading}
+              className="w-full"
+            />
+          </div>
+
+          {/* Gestor de palabras clave - 1 columna */}
+          <div className="lg:col-span-1">
+            <KeywordManager
+              onKeywordsChange={setUserKeywords}
+              compact={true}
+            />
+          </div>
         </div>
 
         {/* Tabs */}

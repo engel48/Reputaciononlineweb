@@ -50,6 +50,7 @@ const socialNetworks = [
     name: 'Facebook',
     icon: Facebook,
     color: 'bg-[#1877F2]',
+    iconColor: 'text-white',
     description: 'Conecta tu página de Facebook para monitorear comentarios y menciones'
   },
   {
@@ -57,13 +58,15 @@ const socialNetworks = [
     name: 'Instagram',
     icon: Instagram,
     color: 'bg-gradient-to-r from-[#FCAF45] via-[#E1306C] to-[#833AB4]',
+    iconColor: 'text-white',
     description: 'Conecta tu cuenta de Instagram Business para analizar posts y stories'
   },
   {
     id: 'x',
     name: 'X',
     icon: Twitter,
-    color: 'bg-black',
+    color: 'bg-[#0B1120]',
+    iconColor: 'text-white',
     description: 'Monitorea menciones, hashtags y respuestas en X'
   },
   {
@@ -71,6 +74,7 @@ const socialNetworks = [
     name: 'YouTube',
     icon: Youtube,
     color: 'bg-[#FF0000]',
+    iconColor: 'text-white',
     description: 'Monitorea comentarios y métricas de tu canal de YouTube'
   }
 ];
@@ -527,7 +531,7 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <div className={`p-2 rounded-lg ${network.color} text-white`}>
+                    <div className={`p-2 rounded-lg ${network.color} ${network.iconColor}`}>
                       <IconComponent className="w-5 h-5" />
                     </div>
                     <div>

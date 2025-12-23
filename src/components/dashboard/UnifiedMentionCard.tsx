@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import {
   Facebook, Instagram, Twitter, Youtube, Newspaper, Hash,
   ThumbsUp, MessageCircle, Share2, Eye, ExternalLink,
-  TrendingUp, TrendingDown, Minus, Clock, User
+  TrendingUp, TrendingDown, Minus, Clock, Check, BookOpen
 } from 'lucide-react';
 
 interface UnifiedMentionCardProps {
@@ -26,6 +26,7 @@ interface UnifiedMentionCardProps {
   };
   createdAt: string;
   source?: string;
+  onMarkAsRead?: (id: string) => void;
 }
 
 // Iconos de plataformas
@@ -40,39 +41,93 @@ const platformIcons: Record<string, React.ReactNode> = {
   multiple: <Hash className="h-4 w-4" />
 };
 
-// Colores de plataformas
+// Colores de plataformas - Navy/Cyan theme
 const platformColors: Record<string, string> = {
-  facebook: 'bg-blue-500',
+  facebook: 'bg-[#1877F2]',
   instagram: 'bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400',
-  x: 'bg-black dark:bg-white dark:text-black',
-  twitter: 'bg-sky-500',
+  x: 'bg-[#0B1120]',
+  twitter: 'bg-[#0B1120]',
   youtube: 'bg-red-600',
-  news: 'bg-gray-600',
+  news: 'bg-[#0B1120]',
   hashtag: 'bg-purple-600',
   multiple: 'bg-purple-600'
 };
 
-// Colores de sentimiento
+// Colores de sentimiento - Pastel profesional
 const sentimentConfig = {
   positive: {
-    bg: 'bg-green-100 dark:bg-green-900/30',
-    text: 'text-green-700 dark:text-green-400',
+    bg: 'bg-[#00E5FF]/10',
+    text: 'text-[#0B1120] dark:text-[#00E5FF]',
+    border: 'border-[#00E5FF]/30',
     icon: <TrendingUp className="h-3.5 w-3.5" />,
     label: 'Positivo'
   },
   negative: {
-    bg: 'bg-red-100 dark:bg-red-900/30',
+    bg: 'bg-red-50 dark:bg-red-900/20',
     text: 'text-red-700 dark:text-red-400',
+    border: 'border-red-200 dark:border-red-800',
     icon: <TrendingDown className="h-3.5 w-3.5" />,
     label: 'Negativo'
   },
   neutral: {
-    bg: 'bg-gray-100 dark:bg-gray-700',
+    bg: 'bg-gray-100 dark:bg-gray-700/50',
     text: 'text-gray-600 dark:text-gray-400',
+    border: 'border-gray-200 dark:border-gray-600',
     icon: <Minus className="h-3.5 w-3.5" />,
     label: 'Neutro'
   }
 };
+
+// Función para limpiar HTML entities
+function decodeHtmlEntities(text: string): string {
+  const entities: Record<string, string> = {
+    '&amp;': '&',
+    '&lt;': '<',
+    '&gt;': '>',
+    '&quot;': '"',
+    '&#039;': "'",
+    '&#39;': "'",
+    '&apos;': "'",
+    '&nbsp;': ' ',
+    '&mdash;': '—',
+    '&ndash;': '–',
+    '&hellip;': '…',
+    '&ldquo;': '"',
+    '&rdquo;': '"',
+    '&lsquo;': "\u2018",
+    '&rsquo;': "\u2019"
+  };
+
+  let decoded = text;
+  for (const [entity, char] of Object.entries(entities)) {
+    decoded = decoded.replace(new RegExp(entity, 'g'), char);
+  }
+
+  // También decodificar entidades numéricas
+  decoded = decoded.replace(/&#(\d+);/g, (_, num) => String.fromCharCode(parseInt(num)));
+  decoded = decoded.replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+
+  return decoded;
+}
+
+// Función para resaltar palabras clave con estilo sutil
+function highlightKeywords(text: string, keywords?: string[]): React.ReactNode {
+  if (!keywords || keywords.length === 0) return text;
+
+  const regex = new RegExp(`(${keywords.join('|')})`, 'gi');
+  const parts = text.split(regex);
+
+  return parts.map((part, i) => {
+    if (keywords.some(kw => kw.toLowerCase() === part.toLowerCase())) {
+      return (
+        <span key={i} className="font-semibold text-[#0B1120] dark:text-[#00E5FF] bg-[#00E5FF]/10 px-0.5 rounded">
+          {part}
+        </span>
+      );
+    }
+    return part;
+  });
+}
 
 export default function UnifiedMentionCard({
   id,
@@ -87,9 +142,11 @@ export default function UnifiedMentionCard({
   sentimentScore,
   engagement,
   createdAt,
-  source
+  source,
+  onMarkAsRead
 }: UnifiedMentionCardProps) {
   const [expanded, setExpanded] = useState(false);
+  const [isRead, setIsRead] = useState(false);
 
   // Formatear fecha relativa
   const formatRelativeTime = (dateStr: string) => {
@@ -101,9 +158,9 @@ export default function UnifiedMentionCard({
     const diffDays = Math.floor(diffMs / 86400000);
 
     if (diffMins < 1) return 'Ahora';
-    if (diffMins < 60) return `Hace ${diffMins}m`;
-    if (diffHours < 24) return `Hace ${diffHours}h`;
-    if (diffDays < 7) return `Hace ${diffDays}d`;
+    if (diffMins < 60) return `${diffMins}m`;
+    if (diffHours < 24) return `${diffHours}h`;
+    if (diffDays < 7) return `${diffDays}d`;
     return date.toLocaleDateString('es-CO', { day: 'numeric', month: 'short' });
   };
 
@@ -115,146 +172,139 @@ export default function UnifiedMentionCard({
     return num.toString();
   };
 
+  // Limpiar y preparar contenido
+  const cleanContent = decodeHtmlEntities(content);
+  const cleanTitle = title ? decodeHtmlEntities(title) : undefined;
+
   // Obtener configuración de sentimiento
   const sentimentInfo = sentimentConfig[sentiment] || sentimentConfig.neutral;
 
   // Truncar contenido
-  const maxLength = 200;
-  const shouldTruncate = content.length > maxLength;
-  const displayContent = expanded ? content : content.substring(0, maxLength) + (shouldTruncate ? '...' : '');
+  const maxLength = 150;
+  const shouldTruncate = cleanContent.length > maxLength;
+  const displayContent = expanded ? cleanContent : cleanContent.substring(0, maxLength) + (shouldTruncate ? '...' : '');
 
   // Calcular engagement total
   const totalEngagement = (engagement?.likes || 0) + (engagement?.shares || 0) + (engagement?.comments || 0);
 
+  // Marcar como leído
+  const handleMarkAsRead = () => {
+    setIsRead(true);
+    onMarkAsRead?.(id);
+  };
+
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-all duration-200 overflow-hidden border border-gray-100 dark:border-gray-700">
+    <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] transition-all duration-200 overflow-hidden border ${isRead ? 'border-gray-100 dark:border-gray-700 opacity-60' : 'border-gray-100 dark:border-gray-700'}`}>
       <div className="p-4">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <div className="flex items-center gap-3">
+        {/* Header compacto */}
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <div className="flex items-center gap-2 min-w-0">
             {/* Icono de plataforma */}
-            <div className={`flex items-center justify-center w-10 h-10 rounded-xl text-white ${platformColors[platform] || 'bg-gray-500'}`}>
+            <div className={`flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-lg text-white ${platformColors[platform] || 'bg-gray-500'}`}>
               {platformIcons[platform] || platformIcons.news}
             </div>
 
-            {/* Info del autor */}
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-gray-900 dark:text-white text-sm">
+            {/* Info compacta */}
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <span className="font-medium text-gray-900 dark:text-white truncate">
                   {author || source || 'Desconocido'}
                 </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400 capitalize">
-                  {platform === 'news' ? 'Noticia' : platform}
-                </span>
-              </div>
-              <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                <span>•</span>
+                <span className="capitalize">{platform === 'news' ? 'Noticia' : platform}</span>
+                <span>•</span>
                 <Clock className="h-3 w-3" />
-                {formatRelativeTime(createdAt)}
+                <span>{formatRelativeTime(createdAt)}</span>
               </div>
             </div>
           </div>
 
-          {/* Badge de sentimiento */}
-          <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${sentimentInfo.bg} ${sentimentInfo.text}`}>
-            {sentimentInfo.icon}
-            {sentimentInfo.label}
-            {sentimentScore !== undefined && (
-              <span className="ml-1 opacity-75">({Math.round(sentimentScore * 100)}%)</span>
-            )}
+          {/* Badge de sentimiento + Marcar leído */}
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${sentimentInfo.bg} ${sentimentInfo.text} ${sentimentInfo.border}`}>
+              {sentimentInfo.icon}
+              <span className="hidden sm:inline">{sentimentInfo.label}</span>
+            </div>
+
+            {/* Botón marcar como leído */}
+            <button
+              onClick={handleMarkAsRead}
+              disabled={isRead}
+              className={`p-1.5 rounded-lg transition-colors ${
+                isRead
+                  ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
+                  : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 hover:text-[#00E5FF]'
+              }`}
+              title={isRead ? 'Leído' : 'Marcar como leído'}
+            >
+              {isRead ? <Check className="h-4 w-4" /> : <BookOpen className="h-4 w-4" />}
+            </button>
           </div>
         </div>
 
         {/* Título (si existe) */}
-        {title && (
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
-            {title}
+        {cleanTitle && (
+          <h3 className="font-semibold text-gray-900 dark:text-white text-sm mb-1.5 line-clamp-2">
+            {cleanTitle}
           </h3>
         )}
 
-        {/* Contenido */}
-        <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
+        {/* Contenido condensado */}
+        <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
           {displayContent}
         </p>
         {shouldTruncate && (
           <button
             onClick={() => setExpanded(!expanded)}
-            className="text-[#00E5FF] hover:text-[#00B8D4] text-sm font-medium mt-1"
+            className="text-[#00E5FF] hover:text-[#00B8D4] text-xs font-medium mt-1"
           >
             {expanded ? 'Ver menos' : 'Ver más'}
           </button>
         )}
 
-        {/* Imagen (si existe) */}
-        {imageUrl && (
-          <div className="mt-3 rounded-lg overflow-hidden">
-            <img
-              src={imageUrl}
-              alt={title || 'Imagen de la mención'}
-              className="w-full h-40 object-cover"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = 'none';
-              }}
-            />
-          </div>
-        )}
-
-        {/* Engagement */}
-        {totalEngagement > 0 && (
-          <div className="flex items-center gap-4 mt-4 pt-3 border-t border-gray-100 dark:border-gray-700">
+        {/* Footer con engagement y acciones */}
+        <div className="flex items-center justify-between mt-3 pt-2 border-t border-gray-100 dark:border-gray-700">
+          {/* Métricas de engagement */}
+          <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
             {engagement?.likes !== undefined && engagement.likes > 0 && (
-              <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
-                <ThumbsUp className="h-4 w-4" />
-                <span className="text-sm">{formatNumber(engagement.likes)}</span>
+              <div className="flex items-center gap-1">
+                <ThumbsUp className="h-3.5 w-3.5" />
+                <span>{formatNumber(engagement.likes)}</span>
               </div>
             )}
             {engagement?.comments !== undefined && engagement.comments > 0 && (
-              <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
-                <MessageCircle className="h-4 w-4" />
-                <span className="text-sm">{formatNumber(engagement.comments)}</span>
+              <div className="flex items-center gap-1">
+                <MessageCircle className="h-3.5 w-3.5" />
+                <span>{formatNumber(engagement.comments)}</span>
               </div>
             )}
             {engagement?.shares !== undefined && engagement.shares > 0 && (
-              <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
-                <Share2 className="h-4 w-4" />
-                <span className="text-sm">{formatNumber(engagement.shares)}</span>
+              <div className="flex items-center gap-1">
+                <Share2 className="h-3.5 w-3.5" />
+                <span>{formatNumber(engagement.shares)}</span>
               </div>
             )}
             {engagement?.views !== undefined && engagement.views > 0 && (
-              <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
-                <Eye className="h-4 w-4" />
-                <span className="text-sm">{formatNumber(engagement.views)}</span>
+              <div className="flex items-center gap-1">
+                <Eye className="h-3.5 w-3.5" />
+                <span>{formatNumber(engagement.views)}</span>
               </div>
             )}
-
-            {/* Botón ver original */}
-            {url && (
-              <a
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="ml-auto flex items-center gap-1 text-[#00E5FF] hover:text-[#00B8D4] text-sm font-medium"
-              >
-                Ver original
-                <ExternalLink className="h-3.5 w-3.5" />
-              </a>
-            )}
           </div>
-        )}
 
-        {/* Si no hay engagement pero hay URL */}
-        {totalEngagement === 0 && url && (
-          <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700">
+          {/* Enlace al original */}
+          {url && (
             <a
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1 text-[#00E5FF] hover:text-[#00B8D4] text-sm font-medium"
+              className="flex items-center gap-1 text-[#00E5FF] hover:text-[#00B8D4] text-xs font-medium"
             >
               Ver original
-              <ExternalLink className="h-3.5 w-3.5" />
+              <ExternalLink className="h-3 w-3" />
             </a>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

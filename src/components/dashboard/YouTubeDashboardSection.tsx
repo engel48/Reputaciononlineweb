@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import {
   Youtube,
   TrendingUp,
@@ -10,16 +9,15 @@ import {
   ThumbsDown,
   MessageCircle,
   BarChart3,
-  Users,
   Video,
   RefreshCw,
   Loader2,
   AlertCircle,
-  CheckCircle2
+  CheckCircle2,
+  Play
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 
 interface YouTubeData {
   channel: {
@@ -119,7 +117,6 @@ export default function YouTubeDashboardSection() {
         throw new Error(result.error || 'Error al sincronizar');
       }
 
-      // Recargar datos después de sincronizar
       await loadData();
     } catch (err: any) {
       console.error('Error sincronizando:', err);
@@ -133,37 +130,49 @@ export default function YouTubeDashboardSection() {
     loadData();
   }, []);
 
+  // Estado de carga mejorado
   if (loading) {
     return (
-      <Card className="col-span-full">
-        <CardContent className="flex items-center justify-center h-64">
-          <Loader2 className="w-8 h-8 animate-spin text-red-600" />
-          <span className="ml-3 text-gray-600">Cargando datos de YouTube...</span>
+      <Card className="col-span-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+        <CardContent className="flex flex-col items-center justify-center h-64 gap-4">
+          <div className="relative">
+            <div className="w-16 h-16 rounded-2xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+              <Youtube className="w-8 h-8 text-red-600" />
+            </div>
+            <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center">
+              <Loader2 className="w-4 h-4 animate-spin text-[#00E5FF]" />
+            </div>
+          </div>
+          <div className="text-center">
+            <p className="font-medium text-gray-900 dark:text-white">Cargando YouTube Analytics</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Obteniendo datos del canal...</p>
+          </div>
         </CardContent>
       </Card>
     );
   }
 
+  // Estado de error / no conectado mejorado
   if (error || !data) {
     return (
-      <Card className="col-span-full border-yellow-200 bg-yellow-50">
-        <CardContent className="flex items-center justify-between p-6">
-          <div className="flex items-center">
-            <AlertCircle className="w-6 h-6 text-yellow-600 mr-3" />
-            <div>
-              <p className="font-semibold text-yellow-900">YouTube no conectado</p>
-              <p className="text-sm text-yellow-700">
-                {error || 'Conecta tu cuenta de YouTube en Redes Sociales para ver estadísticas'}
-              </p>
-            </div>
+      <Card className="col-span-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+        <CardContent className="flex flex-col items-center justify-center py-12 gap-4">
+          <div className="w-20 h-20 rounded-2xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+            <Youtube className="w-10 h-10 text-gray-400" />
           </div>
-          <Button
-            onClick={() => window.location.href = '/dashboard/redes-sociales'}
-            className="bg-red-600 hover:bg-red-700"
-          >
-            <Youtube className="w-4 h-4 mr-2" />
-            Conectar YouTube
-          </Button>
+          <div className="text-center max-w-sm">
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-1">YouTube no conectado</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              {error || 'Conecta tu canal de YouTube para ver estadísticas de comentarios y engagement'}
+            </p>
+            <Button
+              onClick={() => window.location.href = '/dashboard/redes-sociales'}
+              className="bg-[#00E5FF] hover:bg-[#00B8D4] text-[#0B1120] font-medium"
+            >
+              <Youtube className="w-4 h-4 mr-2" />
+              Conectar YouTube
+            </Button>
+          </div>
         </CardContent>
       </Card>
     );
@@ -175,244 +184,261 @@ export default function YouTubeDashboardSection() {
 
   const sentimentTrend = data.trends.sentiment_trend;
   const TrendIcon = sentimentTrend === 'improving' ? TrendingUp : sentimentTrend === 'declining' ? TrendingDown : BarChart3;
-  const trendColor = sentimentTrend === 'improving' ? 'text-green-600' : sentimentTrend === 'declining' ? 'text-red-600' : 'text-gray-600';
 
   return (
     <div className="space-y-6">
-      {/* Header con Score Principal */}
-      <Card className="col-span-full bg-gradient-to-br from-red-600 to-red-700 text-white border-0">
-        <CardHeader className="pb-4">
+      {/* Header: Perfil del Canal */}
+      <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+        <CardContent className="p-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-white/20 rounded-lg backdrop-blur-sm">
-                <Youtube className="w-8 h-8" />
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                <Youtube className="w-7 h-7 text-red-600" />
               </div>
               <div>
-                <CardTitle className="text-2xl font-bold text-white">
-                  YouTube Analytics
-                </CardTitle>
-                <CardDescription className="text-red-100 space-y-1">
-                  <div className="font-semibold">{data.channel.name}</div>
-                  <div className="text-sm">ID: {data.channel.id}</div>
-                  <div>{data.channel.followers.toLocaleString()} suscriptores · {data.channel.total_posts} videos</div>
-                </CardDescription>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">{data.channel.name}</h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  {data.channel.followers.toLocaleString()} suscriptores • {data.channel.total_posts} videos
+                </p>
               </div>
             </div>
             <Button
               onClick={handleSync}
               disabled={syncing}
-              variant="secondary"
-              size="sm"
-              className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+              variant="outline"
+              className="border-[#00E5FF] text-[#00E5FF] hover:bg-[#00E5FF]/10"
             >
               <RefreshCw className={`w-4 h-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
               {syncing ? 'Sincronizando...' : 'Sincronizar'}
             </Button>
           </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Score de Reputación */}
-            <div className="text-center">
-              <div className="text-6xl font-bold mb-2">
-                {data.overview.reputation_score}
-              </div>
-              <div className="text-red-100 text-sm">Score de Reputación</div>
-              <div className="mt-2">
-                <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
-                  {data.overview.reputation_score >= 80 ? 'Excelente' :
-                   data.overview.reputation_score >= 60 ? 'Bueno' :
-                   data.overview.reputation_score >= 40 ? 'Regular' : 'Necesita mejora'}
-                </Badge>
-              </div>
-            </div>
-
-            {/* Aprobación */}
-            <div className="text-center">
-              <div className="text-6xl font-bold mb-2">
-                {approvalRating.toFixed(0)}%
-              </div>
-              <div className="text-red-100 text-sm">Aprobación</div>
-              <div className="mt-2 flex items-center justify-center gap-2">
-                <TrendIcon className={`w-5 h-5 ${trendColor.replace('text-', 'text-white/')}`} />
-                <span className="text-sm text-red-100">
-                  {sentimentTrend === 'improving' ? 'Mejorando' :
-                   sentimentTrend === 'declining' ? 'Declinando' : 'Estable'}
-                </span>
-              </div>
-            </div>
-
-            {/* Total Comentarios */}
-            <div className="text-center">
-              <div className="text-6xl font-bold mb-2">
-                {data.overview.total_mentions.toLocaleString()}
-              </div>
-              <div className="text-red-100 text-sm">Comentarios Totales</div>
-              <div className="mt-2 text-sm text-red-100">
-                {data.trends.total_change > 0 ? '+' : ''}{data.trends.total_change} últimos 7 días
-              </div>
-            </div>
-          </div>
         </CardContent>
       </Card>
 
-      {/* Métricas Detalladas */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Sentimientos Positivos */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
-              <ThumbsUp className="w-4 h-4 mr-2 text-green-600" />
-              Comentarios Positivos
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-green-600">
-              {data.overview.positive_mentions}
+      {/* Tarjetas KPI */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Score de Reputación */}
+        <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Score de Reputación</span>
+              <div className="w-10 h-10 rounded-xl bg-[#00E5FF]/10 flex items-center justify-center">
+                <BarChart3 className="w-5 h-5 text-[#00E5FF]" />
+              </div>
             </div>
-            <div className="text-sm text-gray-500 mt-1">
-              {data.sentiment_distribution.positive_percentage.toFixed(1)}% del total
+            <div className="text-4xl font-bold text-[#0B1120] dark:text-white mb-1">
+              {data.overview.reputation_score}
             </div>
-            <div className="mt-3 h-2 bg-gray-200 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-green-600 rounded-full"
-                style={{ width: `${data.sentiment_distribution.positive_percentage}%` }}
-              />
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {data.overview.reputation_score >= 80 ? 'Excelente' :
+               data.overview.reputation_score >= 60 ? 'Bueno' :
+               data.overview.reputation_score >= 40 ? 'Regular' : 'Necesita mejora'}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Aprobación */}
+        <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Aprobación</span>
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                sentimentTrend === 'improving' ? 'bg-green-100 dark:bg-green-900/30' :
+                sentimentTrend === 'declining' ? 'bg-red-100 dark:bg-red-900/30' :
+                'bg-gray-100 dark:bg-gray-700'
+              }`}>
+                <TrendIcon className={`w-5 h-5 ${
+                  sentimentTrend === 'improving' ? 'text-green-600' :
+                  sentimentTrend === 'declining' ? 'text-red-600' :
+                  'text-gray-600'
+                }`} />
+              </div>
+            </div>
+            <div className="text-4xl font-bold text-[#0B1120] dark:text-white mb-1">
+              {approvalRating.toFixed(0)}%
+            </div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {sentimentTrend === 'improving' ? 'Mejorando' :
+               sentimentTrend === 'declining' ? 'Declinando' : 'Estable'}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Total Comentarios */}
+        <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Comentarios</span>
+              <div className="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                <MessageCircle className="w-5 h-5 text-purple-600" />
+              </div>
+            </div>
+            <div className="text-4xl font-bold text-[#0B1120] dark:text-white mb-1">
+              {data.overview.total_mentions.toLocaleString()}
+            </div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {data.trends.total_change > 0 ? '+' : ''}{data.trends.total_change} últimos 7 días
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Distribución de Sentimiento */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                <ThumbsUp className="w-5 h-5 text-green-600" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Positivos</span>
+                  <span className="font-bold text-green-600">{data.overview.positive_mentions}</span>
+                </div>
+                <div className="mt-2 h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-green-500 rounded-full transition-all"
+                    style={{ width: `${data.sentiment_distribution.positive_percentage}%` }}
+                  />
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Sentimientos Negativos */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
-              <ThumbsDown className="w-4 h-4 mr-2 text-red-600" />
-              Comentarios Negativos
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-red-600">
-              {data.overview.negative_mentions}
-            </div>
-            <div className="text-sm text-gray-500 mt-1">
-              {data.sentiment_distribution.negative_percentage.toFixed(1)}% del total
-            </div>
-            <div className="mt-3 h-2 bg-gray-200 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-red-600 rounded-full"
-                style={{ width: `${data.sentiment_distribution.negative_percentage}%` }}
-              />
+        <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                <MessageCircle className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Neutrales</span>
+                  <span className="font-bold text-gray-600 dark:text-gray-400">{data.overview.neutral_mentions}</span>
+                </div>
+                <div className="mt-2 h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gray-400 rounded-full transition-all"
+                    style={{ width: `${data.sentiment_distribution.neutral_percentage}%` }}
+                  />
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Sentimientos Neutrales */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600 flex items-center">
-              <MessageCircle className="w-4 h-4 mr-2 text-gray-600" />
-              Comentarios Neutrales
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-gray-600">
-              {data.overview.neutral_mentions}
-            </div>
-            <div className="text-sm text-gray-500 mt-1">
-              {data.sentiment_distribution.neutral_percentage.toFixed(1)}% del total
-            </div>
-            <div className="mt-3 h-2 bg-gray-200 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gray-600 rounded-full"
-                style={{ width: `${data.sentiment_distribution.neutral_percentage}%` }}
-              />
+        <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                <ThumbsDown className="w-5 h-5 text-red-600" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Negativos</span>
+                  <span className="font-bold text-red-600">{data.overview.negative_mentions}</span>
+                </div>
+                <div className="mt-2 h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-red-500 rounded-full transition-all"
+                    style={{ width: `${data.sentiment_distribution.negative_percentage}%` }}
+                  />
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Top Videos y Comentarios Positivos */}
+      {/* Videos y Comentarios */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top Videos */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
+        <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center text-base">
               <Video className="w-5 h-5 mr-2 text-red-600" />
               Videos Más Comentados
             </CardTitle>
-            <CardDescription>Tus videos con más interacción</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-3">
               {data.top_videos.slice(0, 3).map((video, index) => (
-                <div key={video.video_id} className="flex items-start gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
-                  <div className="flex-shrink-0 w-8 h-8 bg-red-600 text-white rounded-full flex items-center justify-center font-bold">
+                <div key={video.video_id} className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                  <div className="flex-shrink-0 w-8 h-8 bg-[#0B1120] text-white rounded-lg flex items-center justify-center font-bold text-sm">
                     {index + 1}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm text-gray-900 truncate">
+                    <p className="font-medium text-sm text-gray-900 dark:text-white truncate">
                       {video.video_title}
                     </p>
-                    <div className="flex items-center gap-3 mt-1">
-                      <span className="text-xs text-gray-500">
+                    <div className="flex items-center gap-3 mt-1 text-xs">
+                      <span className="text-gray-500 dark:text-gray-400">
                         {video.total_comments} comentarios
                       </span>
-                      <div className="flex items-center gap-1">
-                        <ThumbsUp className="w-3 h-3 text-green-600" />
-                        <span className="text-xs text-green-600">{video.positive_comments}</span>
+                      <div className="flex items-center gap-1 text-green-600">
+                        <ThumbsUp className="w-3 h-3" />
+                        {video.positive_comments}
                       </div>
-                      <div className="flex items-center gap-1">
-                        <ThumbsDown className="w-3 h-3 text-red-600" />
-                        <span className="text-xs text-red-600">{video.negative_comments}</span>
+                      <div className="flex items-center gap-1 text-red-600">
+                        <ThumbsDown className="w-3 h-3" />
+                        {video.negative_comments}
                       </div>
                     </div>
                   </div>
                 </div>
               ))}
               {data.top_videos.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
-                  <MessageCircle className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                  <p>No hay videos con comentarios aún</p>
-                  <p className="text-sm">Haz clic en Sincronizar para obtener datos</p>
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 mx-auto rounded-2xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-3">
+                    <Play className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">No hay videos con comentarios</p>
+                  <Button
+                    onClick={handleSync}
+                    variant="outline"
+                    size="sm"
+                    className="mt-3"
+                  >
+                    Sincronizar ahora
+                  </Button>
                 </div>
               )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Top Comentarios Positivos */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
+        {/* Mejores Comentarios */}
+        <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center text-base">
               <ThumbsUp className="w-5 h-5 mr-2 text-green-600" />
               Mejores Comentarios
             </CardTitle>
-            <CardDescription>Comentarios más positivos con más likes</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-3">
               {data.top_mentions.most_positive.slice(0, 3).map((mention, index) => (
-                <div key={index} className="p-3 rounded-lg bg-green-50 border border-green-100">
-                  <p className="text-sm text-gray-800 line-clamp-2 mb-2">
+                <div key={index} className="p-3 rounded-xl bg-[#00E5FF]/5 border border-[#00E5FF]/20">
+                  <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2 mb-2">
                     "{mention.text}"
                   </p>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-600 font-medium">{mention.author}</span>
-                    <div className="flex items-center gap-2">
-                      <ThumbsUp className="w-3 h-3 text-green-600" />
-                      <span className="text-green-700 font-semibold">{mention.likes}</span>
+                    <span className="text-gray-500 dark:text-gray-400">{mention.author}</span>
+                    <div className="flex items-center gap-1 text-[#00E5FF]">
+                      <ThumbsUp className="w-3 h-3" />
+                      <span className="font-semibold">{mention.likes}</span>
                     </div>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1 truncate">
-                    Video: {mention.video_title}
-                  </p>
                 </div>
               ))}
               {data.top_mentions.most_positive.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
-                  <CheckCircle2 className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                  <p>No hay comentarios positivos aún</p>
-                  <p className="text-sm">Haz clic en Sincronizar para obtener datos</p>
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 mx-auto rounded-2xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-3">
+                    <CheckCircle2 className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">No hay comentarios positivos aún</p>
                 </div>
               )}
             </div>
@@ -422,15 +448,15 @@ export default function YouTubeDashboardSection() {
 
       {/* Última sincronización */}
       {data.channel.last_sync && (
-        <div className="text-center text-sm text-gray-500">
-          Última sincronización: {new Date(data.channel.last_sync).toLocaleString('es-ES', {
+        <p className="text-center text-xs text-gray-500 dark:text-gray-400">
+          Última sincronización: {new Date(data.channel.last_sync).toLocaleString('es-CO', {
             day: '2-digit',
             month: '2-digit',
             year: 'numeric',
             hour: '2-digit',
             minute: '2-digit'
           })}
-        </div>
+        </p>
       )}
     </div>
   );
