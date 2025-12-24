@@ -135,12 +135,12 @@ function LoginPageContent() {
   }, [])
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="flex min-h-screen bg-[#0B1120]">
       {/* Panel lateral - Solo visible en pantallas medianas y grandes */}
-      <div className="relative hidden w-1/2 bg-gradient-to-br from-[#01257D] to-[#013AAA] md:block">
+      <div className="relative hidden w-1/2 bg-gradient-to-br from-[#0B1120] to-[#151C2E] md:block">
         <AnimatedBackground
           className="opacity-40"
-          particleColor="rgba(255, 255, 255, 0.6)"
+          particleColor="rgba(0, 229, 255, 0.4)"
         />
         <div className="absolute inset-0 flex flex-col items-center justify-center p-12 text-white">
           <div
@@ -168,32 +168,38 @@ function LoginPageContent() {
             ref={featuresRef}
             className="mt-4 space-y-4"
           >
-            <div className="rounded-lg bg-white bg-opacity-10 p-4">
+            <div className="rounded-xl bg-white/5 border border-[#00E5FF]/20 p-4 backdrop-blur-sm">
               <div className="mb-2 flex items-center">
-                <Check className="mr-2 h-5 w-5 text-green-400" />
+                <div className="mr-3 w-8 h-8 rounded-lg bg-[#00E5FF]/20 flex items-center justify-center">
+                  <Check className="h-4 w-4 text-[#00E5FF]" />
+                </div>
                 <h3 className="text-lg font-medium">Monitoreo en Tiempo Real</h3>
               </div>
-              <p className="text-sm text-white/80">
+              <p className="text-sm text-gray-300 ml-11">
                 Mantén el control total de tu reputación online con análisis en tiempo real de todas tus menciones.
               </p>
             </div>
 
-            <div className="rounded-lg bg-white bg-opacity-10 p-4">
+            <div className="rounded-xl bg-white/5 border border-[#00E5FF]/20 p-4 backdrop-blur-sm">
               <div className="mb-2 flex items-center">
-                <Check className="mr-2 h-5 w-5 text-green-400" />
+                <div className="mr-3 w-8 h-8 rounded-lg bg-[#00E5FF]/20 flex items-center justify-center">
+                  <Check className="h-4 w-4 text-[#00E5FF]" />
+                </div>
                 <h3 className="text-lg font-medium">Análisis con IA</h3>
               </div>
-              <p className="text-sm text-white/80">
+              <p className="text-sm text-gray-300 ml-11">
                 Nuestra asistente Julia analiza sentimientos y tendencias para brindarte insights accionables.
               </p>
             </div>
 
-            <div className="rounded-lg bg-white bg-opacity-10 p-4">
+            <div className="rounded-xl bg-white/5 border border-[#00E5FF]/20 p-4 backdrop-blur-sm">
               <div className="mb-2 flex items-center">
-                <Check className="mr-2 h-5 w-5 text-green-400" />
+                <div className="mr-3 w-8 h-8 rounded-lg bg-[#00E5FF]/20 flex items-center justify-center">
+                  <Check className="h-4 w-4 text-[#00E5FF]" />
+                </div>
                 <h3 className="text-lg font-medium">Reportes Profesionales</h3>
               </div>
-              <p className="text-sm text-white/80">
+              <p className="text-sm text-gray-300 ml-11">
                 Genera reportes detallados en PDF para compartir con tu equipo o stakeholders.
               </p>
             </div>
@@ -206,31 +212,31 @@ function LoginPageContent() {
       </div>
 
       {/* Formulario de login */}
-      <div className="flex w-full items-center justify-center px-4 md:w-1/2 md:px-0">
+      <div className="flex w-full items-center justify-center px-4 md:w-1/2 md:px-0 bg-[#0B1120]">
         <div
           ref={formRef}
           className="w-full max-w-md space-y-8 p-8"
         >
           {/* Logo solo visible en móviles */}
           <div className="text-center md:hidden">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[#01257D]">
-              <div className="h-8 w-8 rounded-full bg-white"></div>
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[#00E5FF]/10">
+              <span className="text-2xl font-bold text-[#00E5FF]">R</span>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Reputación Online</h1>
-            <p className="text-gray-500 dark:text-gray-400">Gestiona tu presencia digital</p>
+            <h1 className="text-2xl font-bold text-white">Reputación Online</h1>
+            <p className="text-gray-400">Gestiona tu presencia digital</p>
           </div>
 
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Iniciar Sesión</h2>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            <h2 className="text-2xl font-bold text-white">Iniciar Sesión</h2>
+            <p className="mt-2 text-sm text-gray-400">
               Ingresa tus credenciales para acceder a tu cuenta
             </p>
           </div>
 
           {/* Error message */}
           {error && (
-            <div className="rounded-md bg-red-50 p-4 dark:bg-red-900/20">
-              <p className="text-sm text-red-800 dark:text-red-300">{error}</p>
+            <div className="rounded-xl bg-red-500/10 border border-red-500/20 p-4">
+              <p className="text-sm text-red-400">{error}</p>
             </div>
           )}
 
@@ -239,12 +245,12 @@ function LoginPageContent() {
             <div className="space-y-4">
               {/* Email */}
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Correo electrónico <span className="text-red-500">*</span>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-300">
+                  Correo electrónico <span className="text-red-400">*</span>
                 </label>
                 <div className="relative mt-1">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                    <Mail className="h-5 w-5 text-gray-400" />
+                    <Mail className="h-5 w-5 text-gray-500" />
                   </div>
                   <input
                     id="email"
@@ -252,7 +258,7 @@ function LoginPageContent() {
                     autoComplete="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="block w-full rounded-md border-gray-300 py-3 pl-10 placeholder-gray-400 shadow-sm focus:border-[#01257D] focus:ring-[#01257D] dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                    className="block w-full rounded-xl border border-[#1F2840] bg-[#151C2E] py-3 pl-10 text-white placeholder-gray-500 shadow-sm focus:border-[#00E5FF] focus:ring-1 focus:ring-[#00E5FF] transition-colors"
                     placeholder="usuario@empresa.com"
                     required
                     disabled={loading}
@@ -262,12 +268,12 @@ function LoginPageContent() {
 
               {/* Contraseña */}
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Contraseña <span className="text-red-500">*</span>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-300">
+                  Contraseña <span className="text-red-400">*</span>
                 </label>
                 <div className="relative mt-1">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                    <Lock className="h-5 w-5 text-gray-400" />
+                    <Lock className="h-5 w-5 text-gray-500" />
                   </div>
                   <input
                     id="password"
@@ -275,14 +281,14 @@ function LoginPageContent() {
                     autoComplete="current-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="block w-full rounded-md border-gray-300 py-3 pl-10 pr-10 placeholder-gray-400 shadow-sm focus:border-[#01257D] focus:ring-[#01257D] dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                    className="block w-full rounded-xl border border-[#1F2840] bg-[#151C2E] py-3 pl-10 pr-10 text-white placeholder-gray-500 shadow-sm focus:border-[#00E5FF] focus:ring-1 focus:ring-[#00E5FF] transition-colors"
                     placeholder="Tu contraseña"
                     required
                     disabled={loading}
                   />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-500"
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-[#00E5FF] transition-colors"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
@@ -299,11 +305,11 @@ function LoginPageContent() {
             <button
               type="submit"
               disabled={loading}
-              className="flex w-full items-center justify-center rounded-lg bg-[#01257D] px-5 py-3 text-center text-base font-medium text-white hover:bg-[#013AAA] focus:ring-4 focus:ring-blue-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex w-full items-center justify-center rounded-xl bg-[#00E5FF] px-5 py-3 text-center text-base font-semibold text-[#0B1120] hover:bg-[#00B8D4] focus:ring-4 focus:ring-[#00E5FF]/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-[0_4px_20px_rgba(0,229,255,0.3)] hover:shadow-[0_6px_25px_rgba(0,229,255,0.4)]"
             >
               {loading ? (
                 <span className="flex items-center">
-                  <svg className="mr-2 h-4 w-4 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <svg className="mr-2 h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
@@ -318,10 +324,10 @@ function LoginPageContent() {
           {/* Divider */}
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
+              <div className="w-full border-t border-[#1F2840]"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400">O continúa con</span>
+              <span className="px-3 bg-[#0B1120] text-gray-500">O continúa con</span>
             </div>
           </div>
 
@@ -330,37 +336,37 @@ function LoginPageContent() {
             <button
               onClick={() => handleOAuthLogin('google')}
               disabled={loading}
-              className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center justify-center px-4 py-3 border border-[#1F2840] rounded-xl bg-[#151C2E] hover:bg-[#1F2840] hover:border-[#00E5FF]/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <FcGoogle className="w-5 h-5 mr-2" />
-              <span className="text-sm font-medium text-gray-700">Google</span>
+              <span className="text-sm font-medium text-gray-300">Google</span>
             </button>
 
             <button
               onClick={() => handleOAuthLogin('facebook')}
               disabled={loading}
-              className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center justify-center px-4 py-3 border border-[#1F2840] rounded-xl bg-[#151C2E] hover:bg-[#1F2840] hover:border-[#00E5FF]/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <FaFacebook className="w-5 h-5 mr-2 text-blue-600" />
-              <span className="text-sm font-medium text-gray-700">Facebook</span>
+              <FaFacebook className="w-5 h-5 mr-2 text-blue-500" />
+              <span className="text-sm font-medium text-gray-300">Facebook</span>
             </button>
 
             <button
               onClick={() => handleOAuthLogin('twitter')}
               disabled={loading}
-              className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center justify-center px-4 py-3 border border-[#1F2840] rounded-xl bg-[#151C2E] hover:bg-[#1F2840] hover:border-[#00E5FF]/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <FaTwitter className="w-5 h-5 mr-2 text-sky-500" />
-              <span className="text-sm font-medium text-gray-700">X</span>
+              <FaTwitter className="w-5 h-5 mr-2 text-gray-300" />
+              <span className="text-sm font-medium text-gray-300">X</span>
             </button>
           </div>
 
           {/* Link a registro */}
-          <div className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
+          <div className="mt-6 text-center text-sm text-gray-400">
             ¿No tienes cuenta?{' '}
             <Link
               href="/register"
-              className="font-medium text-[#01257D] hover:text-[#013AAA] dark:text-[#01257D]"
+              className="font-medium text-[#00E5FF] hover:text-[#00B8D4] transition-colors"
             >
               Regístrate
             </Link>
@@ -373,10 +379,10 @@ function LoginPageContent() {
 
 function LoginLoadingFallback() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
+    <div className="flex min-h-screen items-center justify-center bg-[#0B1120]">
       <div className="text-center">
-        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-[#01257D] border-t-transparent"></div>
-        <p className="mt-4 text-gray-600 dark:text-gray-400">Cargando...</p>
+        <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-[#00E5FF] border-t-transparent"></div>
+        <p className="mt-4 text-gray-400">Cargando...</p>
       </div>
     </div>
   )

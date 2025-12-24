@@ -355,10 +355,10 @@ export default function OnboardingPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen flex items-center justify-center bg-[#0B1120]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#01257D] mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-400">Cargando...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-[#00E5FF] border-t-transparent mx-auto"></div>
+          <p className="mt-4 text-gray-400">Cargando...</p>
         </div>
       </div>
     );
@@ -373,18 +373,18 @@ export default function OnboardingPage() {
   const canProceed = isStepValid(currentStep);
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-[#01257D]/5 via-white to-[#01257D]/10 dark:from-gray-900 dark:via-gray-800 dark:to-[#01257D]/20">
+    <div className="min-h-screen relative overflow-hidden bg-[#0B1120]">
       {/* Partículas flotantes de fondo */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="floating-particle absolute top-20 left-10 w-3 h-3 bg-[#01257D]/20 rounded-full blur-sm"></div>
-        <div className="floating-particle absolute top-40 right-20 w-2 h-2 bg-blue-400/30 rounded-full blur-sm"></div>
-        <div className="floating-particle absolute top-60 left-1/3 w-4 h-4 bg-[#01257D]/15 rounded-full blur-sm"></div>
-        <div className="floating-particle absolute bottom-40 right-10 w-3 h-3 bg-blue-300/25 rounded-full blur-sm"></div>
-        <div className="floating-particle absolute bottom-20 left-20 w-2 h-2 bg-[#01257D]/20 rounded-full blur-sm"></div>
+        <div className="floating-particle absolute top-20 left-10 w-3 h-3 bg-[#00E5FF]/20 rounded-full blur-sm"></div>
+        <div className="floating-particle absolute top-40 right-20 w-2 h-2 bg-[#00E5FF]/30 rounded-full blur-sm"></div>
+        <div className="floating-particle absolute top-60 left-1/3 w-4 h-4 bg-[#00E5FF]/15 rounded-full blur-sm"></div>
+        <div className="floating-particle absolute bottom-40 right-10 w-3 h-3 bg-[#00E5FF]/25 rounded-full blur-sm"></div>
+        <div className="floating-particle absolute bottom-20 left-20 w-2 h-2 bg-[#00E5FF]/20 rounded-full blur-sm"></div>
       </div>
-      
+
       {/* Gradiente decorativo */}
-      <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-[#01257D]/5 to-transparent pointer-events-none"></div>
+      <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-[#00E5FF]/5 to-transparent pointer-events-none"></div>
       
       <div ref={containerRef} className="mx-auto max-w-4xl px-4 py-8 relative z-10">
         {/* Header */}
@@ -395,7 +395,7 @@ export default function OnboardingPage() {
             transition={{ duration: 0.8, ease: "backOut" }}
             className="relative mb-6"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-[#01257D] to-blue-600 rounded-full w-20 h-20 mx-auto opacity-20 animate-pulse"></div>
+            <div className="absolute inset-0 bg-[#00E5FF] rounded-full w-20 h-20 mx-auto opacity-20 animate-pulse"></div>
             <img 
               src="/rol-logo.png" 
               alt="Reputación Online Logo" 
@@ -408,34 +408,34 @@ export default function OnboardingPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
           >
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-[#01257D] to-blue-600 bg-clip-text text-transparent mb-4">
+            <h1 className="text-4xl font-bold text-white mb-4">
               ¡Bienvenido a Reputación Online!
             </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-lg text-gray-400 max-w-2xl mx-auto leading-relaxed">
               Configura tu perfil en unos simples pasos para comenzar a monitorear tu reputación digital
             </p>
-            
+
             {/* Indicadores de beneficios */}
             <div className="flex justify-center items-center space-x-8 mt-6">
-              <motion.div 
-                className="flex items-center text-sm text-gray-500"
+              <motion.div
+                className="flex items-center text-sm text-gray-400"
                 whileHover={{ scale: 1.05 }}
               >
-                <Shield className="w-4 h-4 mr-2 text-[#01257D]" />
+                <Shield className="w-4 h-4 mr-2 text-[#00E5FF]" />
                 Seguro
               </motion.div>
-              <motion.div 
-                className="flex items-center text-sm text-gray-500"
+              <motion.div
+                className="flex items-center text-sm text-gray-400"
                 whileHover={{ scale: 1.05 }}
               >
-                <Zap className="w-4 h-4 mr-2 text-[#01257D]" />
+                <Zap className="w-4 h-4 mr-2 text-[#00E5FF]" />
                 Rápido
               </motion.div>
-              <motion.div 
-                className="flex items-center text-sm text-gray-500"
+              <motion.div
+                className="flex items-center text-sm text-gray-400"
                 whileHover={{ scale: 1.05 }}
               >
-                <Star className="w-4 h-4 mr-2 text-[#01257D]" />
+                <Star className="w-4 h-4 mr-2 text-[#00E5FF]" />
                 Profesional
               </motion.div>
             </div>
@@ -446,11 +446,11 @@ export default function OnboardingPage() {
         <div ref={progressRef} className="mb-12">
           <div className="relative">
             {/* Barra de progreso de fondo */}
-            <div className="absolute top-6 left-0 w-full h-1 bg-gray-200 rounded-full"></div>
-            
+            <div className="absolute top-6 left-0 w-full h-1 bg-[#1F2840] rounded-full"></div>
+
             {/* Barra de progreso activa */}
-            <motion.div 
-              className="absolute top-6 left-0 h-1 bg-gradient-to-r from-[#01257D] to-blue-500 rounded-full"
+            <motion.div
+              className="absolute top-6 left-0 h-1 bg-[#00E5FF] rounded-full"
               initial={{ width: '0%' }}
               animate={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
               transition={{ duration: 0.8, ease: "easeOut" }}
@@ -471,15 +471,15 @@ export default function OnboardingPage() {
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
                   >
-                    <motion.div 
-                      className={`relative flex items-center justify-center w-14 h-14 rounded-full border-3 transition-all duration-500 shadow-lg ${
+                    <motion.div
+                      className={`relative flex items-center justify-center w-14 h-14 rounded-full border-2 transition-all duration-500 shadow-lg ${
                         isCompleted
-                          ? 'bg-gradient-to-r from-[#01257D] to-blue-600 border-[#01257D] text-white shadow-[#01257D]/30'
+                          ? 'bg-[#00E5FF] border-[#00E5FF] text-[#0B1120] shadow-[#00E5FF]/30'
                           : isCurrent
-                          ? 'border-[#01257D] text-[#01257D] bg-white shadow-[#01257D]/20 ring-4 ring-[#01257D]/10'
+                          ? 'border-[#00E5FF] text-[#00E5FF] bg-[#151C2E] shadow-[#00E5FF]/20 ring-4 ring-[#00E5FF]/10'
                           : isAccessible
-                          ? 'border-gray-300 text-gray-400 bg-white shadow-gray-200'
-                          : 'border-gray-200 text-gray-300 bg-gray-50'
+                          ? 'border-[#1F2840] text-gray-500 bg-[#151C2E]'
+                          : 'border-[#1F2840] text-gray-600 bg-[#0B1120]'
                       }`}
                       whileHover={{ scale: 1.05 }}
                       animate={isCurrent ? { 
@@ -505,7 +505,7 @@ export default function OnboardingPage() {
                       {/* Brillos animados para el paso actual */}
                       {isCurrent && (
                         <motion.div
-                          className="absolute inset-0 rounded-full bg-gradient-to-r from-[#01257D] to-blue-500 opacity-20"
+                          className="absolute inset-0 rounded-full bg-gradient-to-r from-[#00E5FF] to-blue-500 opacity-20"
                           animate={{ 
                             scale: [1, 1.2, 1],
                             opacity: [0.2, 0.4, 0.2]
@@ -515,18 +515,18 @@ export default function OnboardingPage() {
                       )}
                     </motion.div>
                     
-                    <motion.div 
+                    <motion.div
                       className="mt-3 text-center"
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5, delay: index * 0.1 + 0.2 }}
                     >
                       <p className={`text-sm font-semibold transition-colors duration-300 ${
-                        isCurrent ? 'text-[#01257D]' : isCompleted ? 'text-green-600' : 'text-gray-500'
+                        isCurrent ? 'text-[#00E5FF]' : isCompleted ? 'text-[#00E5FF]' : 'text-gray-500'
                       }`}>
                         {step.title}
                       </p>
-                      <p className="text-xs text-gray-400 mt-1">{step.description}</p>
+                      <p className="text-xs text-gray-500 mt-1">{step.description}</p>
                     </motion.div>
                   </motion.div>
                 );
@@ -536,35 +536,35 @@ export default function OnboardingPage() {
         </div>
 
         {/* Main Content */}
-        <motion.div 
+        <motion.div
           ref={contentRef}
-          className="relative bg-white/80 backdrop-blur-sm dark:bg-gray-800/80 rounded-2xl shadow-2xl border border-white/20 p-8 mb-8 overflow-hidden"
+          className="relative bg-[#151C2E] rounded-2xl shadow-2xl border border-[#1F2840] p-8 mb-8 overflow-hidden"
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
           {/* Gradiente decorativo */}
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#01257D] via-blue-500 to-[#01257D]"></div>
-          
+          <div className="absolute top-0 left-0 w-full h-1 bg-[#00E5FF]"></div>
+
           {/* Icono del paso actual */}
-          <motion.div 
+          <motion.div
             className="flex items-center mb-8"
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <motion.div 
-              className="w-16 h-16 rounded-xl bg-gradient-to-r from-[#01257D] to-blue-600 flex items-center justify-center mr-4 shadow-lg"
+            <motion.div
+              className="w-16 h-16 rounded-xl bg-[#00E5FF]/20 flex items-center justify-center mr-4"
               whileHover={{ scale: 1.05, rotate: 5 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
-              {currentStepData?.icon && <currentStepData.icon className="w-8 h-8 text-white" />}
+              {currentStepData?.icon && <currentStepData.icon className="w-8 h-8 text-[#00E5FF]" />}
             </motion.div>
             <div>
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-[#01257D] to-blue-600 bg-clip-text text-transparent">
+              <h2 className="text-2xl font-bold text-white">
                 {currentStepData?.title}
               </h2>
-              <p className="text-gray-600 dark:text-gray-400 text-lg">
+              <p className="text-gray-400 text-lg">
                 {currentStepData?.description}
               </p>
             </div>
@@ -592,35 +592,35 @@ export default function OnboardingPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.1 }}
                   >
-                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-                      <User className="inline w-4 h-4 mr-2 text-[#01257D]" />
+                    <label className="block text-sm font-semibold text-gray-300 mb-3">
+                      <User className="inline w-4 h-4 mr-2 text-[#00E5FF]" />
                       Nombre completo *
                     </label>
                     <motion.input
                       type="text"
                       value={basicData.name}
                       onChange={(e) => handleBasicDataChange('name', e.target.value)}
-                      className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-[#01257D]/20 focus:border-[#01257D] dark:border-gray-600 dark:bg-gray-700 dark:text-white transition-all duration-300 text-lg shadow-sm hover:shadow-md"
+                      className="w-full px-4 py-4 border border-[#1F2840] bg-[#0B1120] rounded-xl focus:ring-2 focus:ring-[#00E5FF]/30 focus:border-[#00E5FF] text-white placeholder-gray-500 transition-all duration-300 text-lg"
                       placeholder="Tu nombre completo"
                       whileFocus={{ scale: 1.02 }}
                       transition={{ type: "spring", stiffness: 300 }}
                     />
                   </motion.div>
-                  
+
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
                   >
-                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-                      <Briefcase className="inline w-4 h-4 mr-2 text-[#01257D]" />
+                    <label className="block text-sm font-semibold text-gray-300 mb-3">
+                      <Briefcase className="inline w-4 h-4 mr-2 text-[#00E5FF]" />
                       Empresa u organización (opcional)
                     </label>
                     <motion.input
                       type="text"
                       value={basicData.company}
                       onChange={(e) => handleBasicDataChange('company', e.target.value)}
-                      className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-[#01257D]/20 focus:border-[#01257D] dark:border-gray-600 dark:bg-gray-700 dark:text-white transition-all duration-300 text-lg shadow-sm hover:shadow-md"
+                      className="w-full px-4 py-4 border border-[#1F2840] bg-[#0B1120] rounded-xl focus:ring-2 focus:ring-[#00E5FF]/30 focus:border-[#00E5FF] text-white placeholder-gray-500 transition-all duration-300 text-lg"
                       placeholder="Nombre de tu empresa u organización"
                       whileFocus={{ scale: 1.02 }}
                       transition={{ type: "spring", stiffness: 300 }}
@@ -632,15 +632,15 @@ export default function OnboardingPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.3 }}
                   >
-                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-                      <Globe className="inline w-4 h-4 mr-2 text-[#01257D]" />
+                    <label className="block text-sm font-semibold text-gray-300 mb-3">
+                      <Globe className="inline w-4 h-4 mr-2 text-[#00E5FF]" />
                       Teléfono (opcional)
                     </label>
                     <motion.input
                       type="tel"
                       value={basicData.phone}
                       onChange={(e) => handleBasicDataChange('phone', e.target.value)}
-                      className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-[#01257D]/20 focus:border-[#01257D] dark:border-gray-600 dark:bg-gray-700 dark:text-white transition-all duration-300 text-lg shadow-sm hover:shadow-md"
+                      className="w-full px-4 py-4 border border-[#1F2840] bg-[#0B1120] rounded-xl focus:ring-2 focus:ring-[#00E5FF]/30 focus:border-[#00E5FF] text-white placeholder-gray-500 transition-all duration-300 text-lg"
                       placeholder="Tu número de teléfono"
                       whileFocus={{ scale: 1.02 }}
                       transition={{ type: "spring", stiffness: 300 }}
@@ -652,15 +652,15 @@ export default function OnboardingPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.4 }}
                   >
-                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-                      <Sparkles className="inline w-4 h-4 mr-2 text-[#01257D]" />
+                    <label className="block text-sm font-semibold text-gray-300 mb-3">
+                      <Sparkles className="inline w-4 h-4 mr-2 text-[#00E5FF]" />
                       Biografía corta (opcional)
                     </label>
                     <motion.textarea
                       value={basicData.bio}
                       onChange={(e) => handleBasicDataChange('bio', e.target.value)}
                       rows={4}
-                      className="w-full px-4 py-4 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-[#01257D]/20 focus:border-[#01257D] dark:border-gray-600 dark:bg-gray-700 dark:text-white transition-all duration-300 text-lg shadow-sm hover:shadow-md resize-none"
+                      className="w-full px-4 py-4 border border-[#1F2840] bg-[#0B1120] rounded-xl focus:ring-2 focus:ring-[#00E5FF]/30 focus:border-[#00E5FF] text-white placeholder-gray-500 transition-all duration-300 text-lg resize-none"
                       placeholder="Cuéntanos brevemente sobre ti y tus objetivos..."
                       whileFocus={{ scale: 1.02 }}
                       transition={{ type: "spring", stiffness: 300 }}
@@ -715,15 +715,15 @@ export default function OnboardingPage() {
                   </motion.div>
                   
                   <motion.div
-                    className="mt-8 p-6 bg-gradient-to-r from-[#01257D]/5 to-blue-500/5 rounded-xl border border-[#01257D]/10"
+                    className="mt-8 p-6 bg-[#00E5FF]/5 rounded-xl border border-[#00E5FF]/20"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: 0.4 }}
                   >
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+                    <h3 className="text-lg font-semibold text-white mb-2">
                       ¡Casi listo!
                     </h3>
-                    <p className="text-gray-600 dark:text-gray-300">
+                    <p className="text-gray-400">
                       Tu foto de perfil ayudará a otros usuarios a identificarte y dará una imagen más profesional a tu cuenta.
                     </p>
                   </motion.div>
@@ -801,8 +801,8 @@ export default function OnboardingPage() {
             disabled={currentStep === 1}
             className={`flex items-center px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
               currentStep === 1
-                ? 'text-gray-400 cursor-not-allowed'
-                : 'text-gray-600 hover:text-[#01257D] hover:bg-gray-100/80 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700 shadow-md hover:shadow-lg'
+                ? 'text-gray-600 cursor-not-allowed'
+                : 'text-gray-400 hover:text-[#00E5FF] hover:bg-[#1F2840]'
             }`}
             whileHover={currentStep !== 1 ? { scale: 1.05, x: -5 } : {}}
             whileTap={currentStep !== 1 ? { scale: 0.95 } : {}}
@@ -812,16 +812,16 @@ export default function OnboardingPage() {
             Anterior
           </motion.button>
 
-          <motion.div 
+          <motion.div
             className="flex flex-col items-center"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.6 }}
           >
-            <div className="text-sm font-semibold text-gray-600 dark:text-gray-300">
+            <div className="text-sm font-semibold text-gray-300">
               Paso {currentStep} de {steps.length}
             </div>
-            <div className="text-xs text-gray-400 mt-1">
+            <div className="text-xs text-gray-500 mt-1">
               {Math.round((currentStep / steps.length) * 100)}% completado
             </div>
           </motion.div>
@@ -832,12 +832,12 @@ export default function OnboardingPage() {
               disabled={!canProceed || guardandoDatos}
               className={`relative flex items-center px-8 py-3 rounded-xl font-semibold transition-all duration-300 overflow-hidden ${
                 canProceed && !guardandoDatos
-                  ? 'bg-gradient-to-r from-[#01257D] to-blue-600 text-white shadow-lg hover:shadow-xl'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  ? 'bg-[#00E5FF] text-[#0B1120] shadow-[0_4px_20px_rgba(0,229,255,0.3)]'
+                  : 'bg-[#1F2840] text-gray-500 cursor-not-allowed'
               }`}
-              whileHover={canProceed && !guardandoDatos ? { 
+              whileHover={canProceed && !guardandoDatos ? {
                 scale: 1.05,
-                boxShadow: "0 10px 30px rgba(1, 37, 125, 0.3)"
+                boxShadow: "0 10px 30px rgba(0, 229, 255, 0.4)"
               } : {}}
               whileTap={canProceed && !guardandoDatos ? { scale: 0.95 } : {}}
               transition={{ type: "spring", stiffness: 300 }}
@@ -874,13 +874,13 @@ export default function OnboardingPage() {
               disabled={!canProceed}
               className={`relative flex items-center px-8 py-3 rounded-xl font-semibold transition-all duration-300 overflow-hidden ${
                 canProceed
-                  ? 'bg-gradient-to-r from-[#01257D] to-blue-600 text-white shadow-lg hover:shadow-xl'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  ? 'bg-[#00E5FF] text-[#0B1120] shadow-[0_4px_20px_rgba(0,229,255,0.3)]'
+                  : 'bg-[#1F2840] text-gray-500 cursor-not-allowed'
               }`}
-              whileHover={canProceed ? { 
-                scale: 1.05, 
+              whileHover={canProceed ? {
+                scale: 1.05,
                 x: 5,
-                boxShadow: "0 10px 30px rgba(1, 37, 125, 0.3)"
+                boxShadow: "0 10px 30px rgba(0, 229, 255, 0.4)"
               } : {}}
               whileTap={canProceed ? { scale: 0.95 } : {}}
               transition={{ type: "spring", stiffness: 300 }}
