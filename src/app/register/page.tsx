@@ -182,7 +182,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#0B1120]">
+    <div className="flex min-h-screen bg-gray-50">
       {/* Panel lateral - Solo visible en pantallas medianas y grandes */}
       <div className="relative hidden w-1/2 bg-gradient-to-br from-[#0B1120] to-[#151C2E] md:block">
         <AnimatedBackground
@@ -254,7 +254,7 @@ export default function RegisterPage() {
       </div>
       
       {/* Formulario de registro */}
-      <div className="flex w-full items-center justify-center px-4 md:w-1/2 md:px-0 bg-[#0B1120] overflow-y-auto">
+      <div className="flex w-full items-center justify-center px-4 md:w-1/2 md:px-0 bg-gray-50 overflow-y-auto">
         <div
           ref={formRef}
           className="w-full max-w-md space-y-6 p-8"
@@ -264,39 +264,39 @@ export default function RegisterPage() {
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[#00E5FF]/10">
               <span className="text-2xl font-bold text-[#00E5FF]">R</span>
             </div>
-            <h1 className="text-2xl font-bold text-white">Reputación Online</h1>
-            <p className="text-gray-400">Gestiona tu presencia digital</p>
+            <h1 className="text-2xl font-bold text-gray-900">Reputación Online</h1>
+            <p className="text-gray-600">Gestiona tu presencia digital</p>
           </div>
 
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-white">Crear una cuenta</h2>
-            <p className="mt-2 text-sm text-gray-400">
+            <h2 className="text-2xl font-bold text-gray-900">Crear una cuenta</h2>
+            <p className="mt-2 text-sm text-gray-600">
               {paso === 1 ? 'Comienza con tus datos personales' : `Un paso más para completar tu registro de ${tipoPerfil === 'political' ? 'perfil político' : 'persona natural'}`}
             </p>
           </div>
-          
+
           {/* Indicador de pasos */}
           <div className="relative mx-auto mt-4 w-full max-w-xs">
-            <div className="absolute left-0 top-1/2 h-0.5 w-full -translate-y-1/2 transform bg-[#1F2840]"></div>
+            <div className="absolute left-0 top-1/2 h-0.5 w-full -translate-y-1/2 transform bg-gray-200"></div>
             <div className="relative flex justify-between">
               <div className="flex flex-col items-center">
-                <div className={`z-10 flex h-8 w-8 items-center justify-center rounded-full transition-all ${paso >= 1 ? 'bg-[#00E5FF] text-[#0B1120]' : 'bg-[#1F2840] text-gray-500'}`}>
+                <div className={`z-10 flex h-8 w-8 items-center justify-center rounded-full transition-all ${paso >= 1 ? 'bg-[#00E5FF] text-[#0B1120]' : 'bg-gray-200 text-gray-500'}`}>
                   <span className="text-sm font-medium">1</span>
                 </div>
-                <span className="mt-2 text-xs font-medium text-gray-400">Cuenta</span>
+                <span className="mt-2 text-xs font-medium text-gray-500">Cuenta</span>
               </div>
               <div className="flex flex-col items-center">
-                <div className={`z-10 flex h-8 w-8 items-center justify-center rounded-full transition-all ${paso >= 2 ? 'bg-[#00E5FF] text-[#0B1120]' : 'bg-[#1F2840] text-gray-500'}`}>
+                <div className={`z-10 flex h-8 w-8 items-center justify-center rounded-full transition-all ${paso >= 2 ? 'bg-[#00E5FF] text-[#0B1120]' : 'bg-gray-200 text-gray-500'}`}>
                   <span className="text-sm font-medium">2</span>
                 </div>
-                <span className="mt-2 text-xs font-medium text-gray-400">Detalles</span>
+                <span className="mt-2 text-xs font-medium text-gray-500">Detalles</span>
               </div>
             </div>
           </div>
 
           {error && (
-            <div className="rounded-xl bg-red-500/10 border border-red-500/20 p-4">
-              <p className="text-sm text-red-400">{error}</p>
+            <div className="rounded-xl bg-red-50 border border-red-200 p-4">
+              <p className="text-sm text-red-600">{error}</p>
             </div>
           )}
           
@@ -305,19 +305,19 @@ export default function RegisterPage() {
               <div className="space-y-4">
                 {/* Selector de tipo de perfil */}
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Tipo de perfil <span className="text-red-400">*</span>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Tipo de perfil <span className="text-red-500">*</span>
                   </label>
                   <div className="grid grid-cols-2 gap-3">
                     <div
                       onClick={() => setTipoPerfil('personal')}
                       className={`cursor-pointer rounded-xl border-2 ${tipoPerfil === 'personal'
                         ? 'border-[#00E5FF] bg-[#00E5FF]/10'
-                        : 'border-[#1F2840] bg-[#151C2E]'}
+                        : 'border-gray-200 bg-white'}
                         p-4 flex flex-col items-center justify-center transition-all hover:border-[#00E5FF]/50`}
                     >
-                      <UserCheck className={`h-7 w-7 mb-2 ${tipoPerfil === 'personal' ? 'text-[#00E5FF]' : 'text-gray-500'}`} />
-                      <span className={`text-sm font-medium ${tipoPerfil === 'personal' ? 'text-[#00E5FF]' : 'text-gray-400'}`}>Persona Natural</span>
+                      <UserCheck className={`h-7 w-7 mb-2 ${tipoPerfil === 'personal' ? 'text-[#00E5FF]' : 'text-gray-400'}`} />
+                      <span className={`text-sm font-medium ${tipoPerfil === 'personal' ? 'text-[#00E5FF]' : 'text-gray-600'}`}>Persona Natural</span>
                       <p className="text-xs text-gray-500 text-center mt-1">Individuos y profesionales</p>
                     </div>
 
@@ -325,23 +325,23 @@ export default function RegisterPage() {
                       onClick={() => setTipoPerfil('political')}
                       className={`cursor-pointer rounded-xl border-2 ${tipoPerfil === 'political'
                         ? 'border-[#00E5FF] bg-[#00E5FF]/10'
-                        : 'border-[#1F2840] bg-[#151C2E]'}
+                        : 'border-gray-200 bg-white'}
                         p-4 flex flex-col items-center justify-center transition-all hover:border-[#00E5FF]/50`}
                     >
-                      <UserCog className={`h-7 w-7 mb-2 ${tipoPerfil === 'political' ? 'text-[#00E5FF]' : 'text-gray-500'}`} />
-                      <span className={`text-sm font-medium ${tipoPerfil === 'political' ? 'text-[#00E5FF]' : 'text-gray-400'}`}>Político</span>
+                      <UserCog className={`h-7 w-7 mb-2 ${tipoPerfil === 'political' ? 'text-[#00E5FF]' : 'text-gray-400'}`} />
+                      <span className={`text-sm font-medium ${tipoPerfil === 'political' ? 'text-[#00E5FF]' : 'text-gray-600'}`}>Político</span>
                       <p className="text-xs text-gray-500 text-center mt-1">Candidatos y figuras políticas</p>
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="nombre" className="block text-sm font-medium text-gray-300">
-                    Nombre completo <span className="text-red-400">*</span>
+                  <label htmlFor="nombre" className="block text-sm font-medium text-gray-700">
+                    Nombre completo <span className="text-red-500">*</span>
                   </label>
                   <div className="relative mt-1">
                     <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                      <User className="h-5 w-5 text-gray-500" />
+                      <User className="h-5 w-5 text-gray-400" />
                     </div>
                     <input
                       id="nombre"
@@ -351,19 +351,19 @@ export default function RegisterPage() {
                       required
                       value={nombre}
                       onChange={(e) => setNombre(e.target.value)}
-                      className="block w-full rounded-xl border border-[#1F2840] bg-[#151C2E] py-3 pl-10 text-white placeholder-gray-500 focus:border-[#00E5FF] focus:ring-1 focus:ring-[#00E5FF] transition-colors"
+                      className="block w-full rounded-xl border border-gray-300 bg-white py-3 pl-10 text-gray-900 placeholder-gray-400 focus:border-[#00E5FF] focus:ring-1 focus:ring-[#00E5FF] transition-colors"
                       placeholder="Juan Pérez"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-300">
-                    Correo electrónico <span className="text-red-400">*</span>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                    Correo electrónico <span className="text-red-500">*</span>
                   </label>
                   <div className="relative mt-1">
                     <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                      <Mail className="h-5 w-5 text-gray-500" />
+                      <Mail className="h-5 w-5 text-gray-400" />
                     </div>
                     <input
                       id="email"
@@ -373,19 +373,19 @@ export default function RegisterPage() {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="block w-full rounded-xl border border-[#1F2840] bg-[#151C2E] py-3 pl-10 text-white placeholder-gray-500 focus:border-[#00E5FF] focus:ring-1 focus:ring-[#00E5FF] transition-colors"
+                      className="block w-full rounded-xl border border-gray-300 bg-white py-3 pl-10 text-gray-900 placeholder-gray-400 focus:border-[#00E5FF] focus:ring-1 focus:ring-[#00E5FF] transition-colors"
                       placeholder="usuario@empresa.com"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-300">
-                    Contraseña <span className="text-red-400">*</span>
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                    Contraseña <span className="text-red-500">*</span>
                   </label>
                   <div className="relative mt-1">
                     <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                      <Lock className="h-5 w-5 text-gray-500" />
+                      <Lock className="h-5 w-5 text-gray-400" />
                     </div>
                     <input
                       id="password"
@@ -395,12 +395,12 @@ export default function RegisterPage() {
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="block w-full rounded-xl border border-[#1F2840] bg-[#151C2E] py-3 pl-10 pr-10 text-white placeholder-gray-500 focus:border-[#00E5FF] focus:ring-1 focus:ring-[#00E5FF] transition-colors"
+                      className="block w-full rounded-xl border border-gray-300 bg-white py-3 pl-10 pr-10 text-gray-900 placeholder-gray-400 focus:border-[#00E5FF] focus:ring-1 focus:ring-[#00E5FF] transition-colors"
                       placeholder="Mínimo 8 caracteres"
                     />
                     <button
                       type="button"
-                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-[#00E5FF] transition-colors"
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-[#00E5FF] transition-colors"
                       onClick={() => setMostrarPassword(!mostrarPassword)}
                     >
                       {mostrarPassword ? (
@@ -413,12 +413,12 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="confirmar-password" className="block text-sm font-medium text-gray-300">
-                    Confirmar contraseña <span className="text-red-400">*</span>
+                  <label htmlFor="confirmar-password" className="block text-sm font-medium text-gray-700">
+                    Confirmar contraseña <span className="text-red-500">*</span>
                   </label>
                   <div className="relative mt-1">
                     <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                      <Lock className="h-5 w-5 text-gray-500" />
+                      <Lock className="h-5 w-5 text-gray-400" />
                     </div>
                     <input
                       id="confirmar-password"
@@ -428,12 +428,12 @@ export default function RegisterPage() {
                       required
                       value={confirmarPassword}
                       onChange={(e) => setConfirmarPassword(e.target.value)}
-                      className="block w-full rounded-xl border border-[#1F2840] bg-[#151C2E] py-3 pl-10 pr-10 text-white placeholder-gray-500 focus:border-[#00E5FF] focus:ring-1 focus:ring-[#00E5FF] transition-colors"
+                      className="block w-full rounded-xl border border-gray-300 bg-white py-3 pl-10 pr-10 text-gray-900 placeholder-gray-400 focus:border-[#00E5FF] focus:ring-1 focus:ring-[#00E5FF] transition-colors"
                       placeholder="Confirma tu contraseña"
                     />
                     <button
                       type="button"
-                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-[#00E5FF] transition-colors"
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-[#00E5FF] transition-colors"
                       onClick={() => setMostrarConfirmarPassword(!mostrarConfirmarPassword)}
                     >
                       {mostrarConfirmarPassword ? (
@@ -460,12 +460,12 @@ export default function RegisterPage() {
             <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="empresa" className="block text-sm font-medium text-gray-300">
-                    {tipoPerfil === 'political' ? 'Partido político o movimiento' : 'Nombre de empresa o marca'} <span className="text-red-400">*</span>
+                  <label htmlFor="empresa" className="block text-sm font-medium text-gray-700">
+                    {tipoPerfil === 'political' ? 'Partido político o movimiento' : 'Nombre de empresa o marca'} <span className="text-red-500">*</span>
                   </label>
                   <div className="relative mt-1">
                     <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                      <Building className="h-5 w-5 text-gray-500" />
+                      <Building className="h-5 w-5 text-gray-400" />
                     </div>
                     <input
                       id="empresa"
@@ -473,67 +473,67 @@ export default function RegisterPage() {
                       type="text"
                       value={empresa}
                       onChange={(e) => setEmpresa(e.target.value)}
-                      className="block w-full rounded-xl border border-[#1F2840] bg-[#151C2E] py-3 pl-10 text-white placeholder-gray-500 focus:border-[#00E5FF] focus:ring-1 focus:ring-[#00E5FF] transition-colors"
+                      className="block w-full rounded-xl border border-gray-300 bg-white py-3 pl-10 text-gray-900 placeholder-gray-400 focus:border-[#00E5FF] focus:ring-1 focus:ring-[#00E5FF] transition-colors"
                       placeholder={tipoPerfil === 'political' ? 'Nombre del partido político o movimiento' : 'Nombre de tu empresa o marca'}
                     />
                   </div>
                 </div>
 
-                <div className="rounded-xl bg-[#151C2E] border border-[#1F2840] p-4">
-                  <h3 className="text-sm font-medium text-gray-300 mb-3">Selecciona tu plan inicial</h3>
+                <div className="rounded-xl bg-white border border-gray-200 p-4">
+                  <h3 className="text-sm font-medium text-gray-700 mb-3">Selecciona tu plan inicial</h3>
                   <div className="space-y-3">
                     {/* Plan Básico */}
-                    <label htmlFor="plan-basico" className={`flex items-start p-3 rounded-lg cursor-pointer transition-all ${plan === 'basic' ? 'bg-[#00E5FF]/10 border border-[#00E5FF]/30' : 'bg-[#0B1120] border border-[#1F2840] hover:border-[#00E5FF]/20'}`}>
+                    <label htmlFor="plan-basico" className={`flex items-start p-3 rounded-lg cursor-pointer transition-all ${plan === 'basic' ? 'bg-[#00E5FF]/10 border border-[#00E5FF]/30' : 'bg-gray-50 border border-gray-200 hover:border-[#00E5FF]/30'}`}>
                       <input
                         id="plan-basico"
                         name="plan"
                         type="radio"
                         value="basic"
                         checked={plan === 'basic'}
-                        className="h-4 w-4 border-[#1F2840] text-[#00E5FF] focus:ring-[#00E5FF] bg-[#0B1120] mt-0.5"
+                        className="h-4 w-4 border-gray-300 text-[#00E5FF] focus:ring-[#00E5FF] bg-white mt-0.5"
                         onChange={(e) => setPlan(e.target.value)}
                       />
                       <div className="ml-3 block">
-                        <span className="text-sm font-medium text-white">
-                          Plan Básico - <span className="font-bold text-green-400">Gratuito</span>
+                        <span className="text-sm font-medium text-gray-900">
+                          Plan Básico - <span className="font-bold text-green-600">Gratuito</span>
                         </span>
                         <p className="text-xs text-gray-500 mt-1">500 créditos • Monitoreo básico • Análisis de sentimiento</p>
                       </div>
                     </label>
 
                     {/* Plan Pro */}
-                    <label htmlFor="plan-pro" className={`flex items-start p-3 rounded-lg cursor-pointer transition-all ${plan === 'pro' ? 'bg-[#00E5FF]/10 border border-[#00E5FF]/30' : 'bg-[#0B1120] border border-[#1F2840] hover:border-[#00E5FF]/20'}`}>
+                    <label htmlFor="plan-pro" className={`flex items-start p-3 rounded-lg cursor-pointer transition-all ${plan === 'pro' ? 'bg-[#00E5FF]/10 border border-[#00E5FF]/30' : 'bg-gray-50 border border-gray-200 hover:border-[#00E5FF]/30'}`}>
                       <input
                         id="plan-pro"
                         name="plan"
                         type="radio"
                         value="pro"
                         checked={plan === 'pro'}
-                        className="h-4 w-4 border-[#1F2840] text-[#00E5FF] focus:ring-[#00E5FF] bg-[#0B1120] mt-0.5"
+                        className="h-4 w-4 border-gray-300 text-[#00E5FF] focus:ring-[#00E5FF] bg-white mt-0.5"
                         onChange={(e) => setPlan(e.target.value)}
                       />
                       <div className="ml-3 block">
-                        <span className="text-sm font-medium text-white">
-                          Plan Pro - <span className="font-bold text-[#00E5FF]">$49.99/mes</span>
+                        <span className="text-sm font-medium text-gray-900">
+                          Plan Pro - <span className="font-bold text-[#00B8D4]">$49.99/mes</span>
                         </span>
                         <p className="text-xs text-gray-500 mt-1">5,000 créditos • Monitoreo avanzado • Análisis IA • Reportes</p>
                       </div>
                     </label>
 
                     {/* Plan Enterprise */}
-                    <label htmlFor="plan-enterprise" className={`flex items-start p-3 rounded-lg cursor-pointer transition-all ${plan === 'enterprise' ? 'bg-[#00E5FF]/10 border border-[#00E5FF]/30' : 'bg-[#0B1120] border border-[#1F2840] hover:border-[#00E5FF]/20'}`}>
+                    <label htmlFor="plan-enterprise" className={`flex items-start p-3 rounded-lg cursor-pointer transition-all ${plan === 'enterprise' ? 'bg-[#00E5FF]/10 border border-[#00E5FF]/30' : 'bg-gray-50 border border-gray-200 hover:border-[#00E5FF]/30'}`}>
                       <input
                         id="plan-enterprise"
                         name="plan"
                         type="radio"
                         value="enterprise"
                         checked={plan === 'enterprise'}
-                        className="h-4 w-4 border-[#1F2840] text-[#00E5FF] focus:ring-[#00E5FF] bg-[#0B1120] mt-0.5"
+                        className="h-4 w-4 border-gray-300 text-[#00E5FF] focus:ring-[#00E5FF] bg-white mt-0.5"
                         onChange={(e) => setPlan(e.target.value)}
                       />
                       <div className="ml-3 block">
-                        <span className="text-sm font-medium text-white">
-                          Plan Enterprise - <span className="font-bold text-purple-400">$149.99/mes</span>
+                        <span className="text-sm font-medium text-gray-900">
+                          Plan Enterprise - <span className="font-bold text-purple-600">$149.99/mes</span>
                         </span>
                         <p className="text-xs text-gray-500 mt-1">Créditos ilimitados • API personalizada • Account manager</p>
                       </div>
@@ -549,12 +549,12 @@ export default function RegisterPage() {
                       type="checkbox"
                       checked={aceptarTerminos}
                       onChange={(e) => setAceptarTerminos(e.target.checked)}
-                      className="h-4 w-4 rounded border-[#1F2840] bg-[#0B1120] text-[#00E5FF] focus:ring-[#00E5FF]"
+                      className="h-4 w-4 rounded border-gray-300 bg-white text-[#00E5FF] focus:ring-[#00E5FF]"
                     />
                   </div>
                   <div className="ml-3 text-sm">
-                    <label htmlFor="terminos" className="font-medium text-gray-300">
-                      Acepto los <a href="#" className="text-[#00E5FF] hover:text-[#00B8D4]">Términos y Condiciones</a> y la <a href="#" className="text-[#00E5FF] hover:text-[#00B8D4]">Política de Privacidad</a> <span className="text-red-400">*</span>
+                    <label htmlFor="terminos" className="font-medium text-gray-700">
+                      Acepto los <a href="#" className="text-[#00E5FF] hover:text-[#00B8D4]">Términos y Condiciones</a> y la <a href="#" className="text-[#00E5FF] hover:text-[#00B8D4]">Política de Privacidad</a> <span className="text-red-500">*</span>
                     </label>
                     <p className="text-gray-500 text-xs mt-1">
                       Al registrarme, acepto recibir comunicaciones sobre el servicio.
@@ -571,7 +571,7 @@ export default function RegisterPage() {
                     e.stopPropagation();
                     setPaso(1);
                   }}
-                  className="flex w-full items-center justify-center rounded-xl bg-[#1F2840] px-5 py-3 text-center text-base font-medium text-gray-300 hover:bg-[#2D3A5E] focus:ring-4 focus:ring-[#1F2840] transition-all"
+                  className="flex w-full items-center justify-center rounded-xl bg-gray-100 px-5 py-3 text-center text-base font-medium text-gray-700 hover:bg-gray-200 focus:ring-4 focus:ring-gray-200 transition-all"
                 >
                   Volver
                 </button>
@@ -601,10 +601,10 @@ export default function RegisterPage() {
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-[#1F2840]"></div>
+                <div className="w-full border-t border-gray-200"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="bg-[#0B1120] px-3 text-gray-500">O regístrate con</span>
+                <span className="bg-gray-50 px-3 text-gray-500">O regístrate con</span>
               </div>
             </div>
           </div>
@@ -613,7 +613,7 @@ export default function RegisterPage() {
           <div className="mt-6 grid grid-cols-2 gap-3">
             <button
               type="button"
-              className="inline-flex w-full items-center justify-center rounded-xl border border-[#1F2840] bg-[#151C2E] hover:bg-[#1F2840] hover:border-[#00E5FF]/30 py-3 px-4 text-sm font-medium text-gray-300 transition-all"
+              className="inline-flex w-full items-center justify-center rounded-xl border border-gray-300 bg-white hover:bg-gray-50 hover:border-[#00E5FF]/50 py-3 px-4 text-sm font-medium text-gray-700 transition-all"
               onClick={() => {
                 alert('Registro con Google - Próximamente disponible');
               }}
@@ -629,7 +629,7 @@ export default function RegisterPage() {
 
             <button
               type="button"
-              className="inline-flex w-full items-center justify-center rounded-xl border border-[#1F2840] bg-[#151C2E] hover:bg-[#1F2840] hover:border-[#00E5FF]/30 py-3 px-4 text-sm font-medium text-gray-300 transition-all"
+              className="inline-flex w-full items-center justify-center rounded-xl border border-gray-300 bg-white hover:bg-gray-50 hover:border-[#00E5FF]/50 py-3 px-4 text-sm font-medium text-gray-700 transition-all"
               onClick={() => {
                 alert('Registro con Facebook - Próximamente disponible');
               }}
@@ -642,7 +642,7 @@ export default function RegisterPage() {
           </div>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-gray-600">
               ¿Ya tienes una cuenta?{' '}
               <Link href="/login" className="font-medium text-[#00E5FF] hover:text-[#00B8D4] transition-colors">
                 Iniciar sesión

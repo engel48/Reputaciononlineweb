@@ -355,10 +355,10 @@ export default function OnboardingPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0B1120]">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-4 border-[#00E5FF] border-t-transparent mx-auto"></div>
-          <p className="mt-4 text-gray-400">Cargando...</p>
+          <p className="mt-4 text-gray-600">Cargando...</p>
         </div>
       </div>
     );
@@ -373,18 +373,18 @@ export default function OnboardingPage() {
   const canProceed = isStepValid(currentStep);
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-[#0B1120]">
+    <div className="min-h-screen relative overflow-hidden bg-gray-50">
       {/* Partículas flotantes de fondo */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="floating-particle absolute top-20 left-10 w-3 h-3 bg-[#00E5FF]/20 rounded-full blur-sm"></div>
-        <div className="floating-particle absolute top-40 right-20 w-2 h-2 bg-[#00E5FF]/30 rounded-full blur-sm"></div>
-        <div className="floating-particle absolute top-60 left-1/3 w-4 h-4 bg-[#00E5FF]/15 rounded-full blur-sm"></div>
-        <div className="floating-particle absolute bottom-40 right-10 w-3 h-3 bg-[#00E5FF]/25 rounded-full blur-sm"></div>
-        <div className="floating-particle absolute bottom-20 left-20 w-2 h-2 bg-[#00E5FF]/20 rounded-full blur-sm"></div>
+        <div className="floating-particle absolute top-20 left-10 w-3 h-3 bg-[#00E5FF]/30 rounded-full blur-sm"></div>
+        <div className="floating-particle absolute top-40 right-20 w-2 h-2 bg-[#00E5FF]/40 rounded-full blur-sm"></div>
+        <div className="floating-particle absolute top-60 left-1/3 w-4 h-4 bg-[#00E5FF]/25 rounded-full blur-sm"></div>
+        <div className="floating-particle absolute bottom-40 right-10 w-3 h-3 bg-[#00E5FF]/35 rounded-full blur-sm"></div>
+        <div className="floating-particle absolute bottom-20 left-20 w-2 h-2 bg-[#00E5FF]/30 rounded-full blur-sm"></div>
       </div>
 
       {/* Gradiente decorativo */}
-      <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-[#00E5FF]/5 to-transparent pointer-events-none"></div>
+      <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-[#00E5FF]/10 to-transparent pointer-events-none"></div>
       
       <div ref={containerRef} className="mx-auto max-w-4xl px-4 py-8 relative z-10">
         {/* Header */}
@@ -408,31 +408,31 @@ export default function OnboardingPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
           >
-            <h1 className="text-4xl font-bold text-white mb-4">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">
               ¡Bienvenido a Reputación Online!
             </h1>
-            <p className="text-lg text-gray-400 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
               Configura tu perfil en unos simples pasos para comenzar a monitorear tu reputación digital
             </p>
 
             {/* Indicadores de beneficios */}
             <div className="flex justify-center items-center space-x-8 mt-6">
               <motion.div
-                className="flex items-center text-sm text-gray-400"
+                className="flex items-center text-sm text-gray-600"
                 whileHover={{ scale: 1.05 }}
               >
                 <Shield className="w-4 h-4 mr-2 text-[#00E5FF]" />
                 Seguro
               </motion.div>
               <motion.div
-                className="flex items-center text-sm text-gray-400"
+                className="flex items-center text-sm text-gray-600"
                 whileHover={{ scale: 1.05 }}
               >
                 <Zap className="w-4 h-4 mr-2 text-[#00E5FF]" />
                 Rápido
               </motion.div>
               <motion.div
-                className="flex items-center text-sm text-gray-400"
+                className="flex items-center text-sm text-gray-600"
                 whileHover={{ scale: 1.05 }}
               >
                 <Star className="w-4 h-4 mr-2 text-[#00E5FF]" />
@@ -446,7 +446,7 @@ export default function OnboardingPage() {
         <div ref={progressRef} className="mb-12">
           <div className="relative">
             {/* Barra de progreso de fondo */}
-            <div className="absolute top-6 left-0 w-full h-1 bg-[#1F2840] rounded-full"></div>
+            <div className="absolute top-6 left-0 w-full h-1 bg-gray-200 rounded-full"></div>
 
             {/* Barra de progreso activa */}
             <motion.div
@@ -474,12 +474,12 @@ export default function OnboardingPage() {
                     <motion.div
                       className={`relative flex items-center justify-center w-14 h-14 rounded-full border-2 transition-all duration-500 shadow-lg ${
                         isCompleted
-                          ? 'bg-[#00E5FF] border-[#00E5FF] text-[#0B1120] shadow-[#00E5FF]/30'
+                          ? 'bg-[#00E5FF] border-[#00E5FF] text-white shadow-[#00E5FF]/30'
                           : isCurrent
-                          ? 'border-[#00E5FF] text-[#00E5FF] bg-[#151C2E] shadow-[#00E5FF]/20 ring-4 ring-[#00E5FF]/10'
+                          ? 'border-[#00E5FF] text-[#00E5FF] bg-white shadow-[#00E5FF]/20 ring-4 ring-[#00E5FF]/10'
                           : isAccessible
-                          ? 'border-[#1F2840] text-gray-500 bg-[#151C2E]'
-                          : 'border-[#1F2840] text-gray-600 bg-[#0B1120]'
+                          ? 'border-gray-200 text-gray-400 bg-white'
+                          : 'border-gray-200 text-gray-400 bg-gray-50'
                       }`}
                       whileHover={{ scale: 1.05 }}
                       animate={isCurrent ? { 
@@ -522,7 +522,7 @@ export default function OnboardingPage() {
                       transition={{ duration: 0.5, delay: index * 0.1 + 0.2 }}
                     >
                       <p className={`text-sm font-semibold transition-colors duration-300 ${
-                        isCurrent ? 'text-[#00E5FF]' : isCompleted ? 'text-[#00E5FF]' : 'text-gray-500'
+                        isCurrent ? 'text-[#00B8D4]' : isCompleted ? 'text-[#00B8D4]' : 'text-gray-600'
                       }`}>
                         {step.title}
                       </p>
@@ -538,7 +538,7 @@ export default function OnboardingPage() {
         {/* Main Content */}
         <motion.div
           ref={contentRef}
-          className="relative bg-[#151C2E] rounded-2xl shadow-2xl border border-[#1F2840] p-8 mb-8 overflow-hidden"
+          className="relative bg-white rounded-2xl shadow-xl border border-gray-200 p-8 mb-8 overflow-hidden"
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -554,17 +554,17 @@ export default function OnboardingPage() {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <motion.div
-              className="w-16 h-16 rounded-xl bg-[#00E5FF]/20 flex items-center justify-center mr-4"
+              className="w-16 h-16 rounded-xl bg-[#00E5FF]/10 flex items-center justify-center mr-4"
               whileHover={{ scale: 1.05, rotate: 5 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
               {currentStepData?.icon && <currentStepData.icon className="w-8 h-8 text-[#00E5FF]" />}
             </motion.div>
             <div>
-              <h2 className="text-2xl font-bold text-white">
+              <h2 className="text-2xl font-bold text-gray-900">
                 {currentStepData?.title}
               </h2>
-              <p className="text-gray-400 text-lg">
+              <p className="text-gray-600 text-lg">
                 {currentStepData?.description}
               </p>
             </div>
@@ -581,7 +581,7 @@ export default function OnboardingPage() {
               transition={{ duration: 0.5 }}
             >
               {currentStep === 1 && (
-                <motion.div 
+                <motion.div
                   className="space-y-8"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -592,7 +592,7 @@ export default function OnboardingPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.1 }}
                   >
-                    <label className="block text-sm font-semibold text-gray-300 mb-3">
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
                       <User className="inline w-4 h-4 mr-2 text-[#00E5FF]" />
                       Nombre completo *
                     </label>
@@ -600,7 +600,7 @@ export default function OnboardingPage() {
                       type="text"
                       value={basicData.name}
                       onChange={(e) => handleBasicDataChange('name', e.target.value)}
-                      className="w-full px-4 py-4 border border-[#1F2840] bg-[#0B1120] rounded-xl focus:ring-2 focus:ring-[#00E5FF]/30 focus:border-[#00E5FF] text-white placeholder-gray-500 transition-all duration-300 text-lg"
+                      className="w-full px-4 py-4 border border-gray-300 bg-white rounded-xl focus:ring-2 focus:ring-[#00E5FF]/30 focus:border-[#00E5FF] text-gray-900 placeholder-gray-400 transition-all duration-300 text-lg"
                       placeholder="Tu nombre completo"
                       whileFocus={{ scale: 1.02 }}
                       transition={{ type: "spring", stiffness: 300 }}
@@ -612,7 +612,7 @@ export default function OnboardingPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
                   >
-                    <label className="block text-sm font-semibold text-gray-300 mb-3">
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
                       <Briefcase className="inline w-4 h-4 mr-2 text-[#00E5FF]" />
                       Empresa u organización (opcional)
                     </label>
@@ -620,7 +620,7 @@ export default function OnboardingPage() {
                       type="text"
                       value={basicData.company}
                       onChange={(e) => handleBasicDataChange('company', e.target.value)}
-                      className="w-full px-4 py-4 border border-[#1F2840] bg-[#0B1120] rounded-xl focus:ring-2 focus:ring-[#00E5FF]/30 focus:border-[#00E5FF] text-white placeholder-gray-500 transition-all duration-300 text-lg"
+                      className="w-full px-4 py-4 border border-gray-300 bg-white rounded-xl focus:ring-2 focus:ring-[#00E5FF]/30 focus:border-[#00E5FF] text-gray-900 placeholder-gray-400 transition-all duration-300 text-lg"
                       placeholder="Nombre de tu empresa u organización"
                       whileFocus={{ scale: 1.02 }}
                       transition={{ type: "spring", stiffness: 300 }}
@@ -632,7 +632,7 @@ export default function OnboardingPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.3 }}
                   >
-                    <label className="block text-sm font-semibold text-gray-300 mb-3">
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
                       <Globe className="inline w-4 h-4 mr-2 text-[#00E5FF]" />
                       Teléfono (opcional)
                     </label>
@@ -640,7 +640,7 @@ export default function OnboardingPage() {
                       type="tel"
                       value={basicData.phone}
                       onChange={(e) => handleBasicDataChange('phone', e.target.value)}
-                      className="w-full px-4 py-4 border border-[#1F2840] bg-[#0B1120] rounded-xl focus:ring-2 focus:ring-[#00E5FF]/30 focus:border-[#00E5FF] text-white placeholder-gray-500 transition-all duration-300 text-lg"
+                      className="w-full px-4 py-4 border border-gray-300 bg-white rounded-xl focus:ring-2 focus:ring-[#00E5FF]/30 focus:border-[#00E5FF] text-gray-900 placeholder-gray-400 transition-all duration-300 text-lg"
                       placeholder="Tu número de teléfono"
                       whileFocus={{ scale: 1.02 }}
                       transition={{ type: "spring", stiffness: 300 }}
@@ -652,7 +652,7 @@ export default function OnboardingPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.4 }}
                   >
-                    <label className="block text-sm font-semibold text-gray-300 mb-3">
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
                       <Sparkles className="inline w-4 h-4 mr-2 text-[#00E5FF]" />
                       Biografía corta (opcional)
                     </label>
@@ -660,7 +660,7 @@ export default function OnboardingPage() {
                       value={basicData.bio}
                       onChange={(e) => handleBasicDataChange('bio', e.target.value)}
                       rows={4}
-                      className="w-full px-4 py-4 border border-[#1F2840] bg-[#0B1120] rounded-xl focus:ring-2 focus:ring-[#00E5FF]/30 focus:border-[#00E5FF] text-white placeholder-gray-500 transition-all duration-300 text-lg resize-none"
+                      className="w-full px-4 py-4 border border-gray-300 bg-white rounded-xl focus:ring-2 focus:ring-[#00E5FF]/30 focus:border-[#00E5FF] text-gray-900 placeholder-gray-400 transition-all duration-300 text-lg resize-none"
                       placeholder="Cuéntanos brevemente sobre ti y tus objetivos..."
                       whileFocus={{ scale: 1.02 }}
                       transition={{ type: "spring", stiffness: 300 }}
@@ -720,10 +720,10 @@ export default function OnboardingPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: 0.4 }}
                   >
-                    <h3 className="text-lg font-semibold text-white mb-2">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
                       ¡Casi listo!
                     </h3>
-                    <p className="text-gray-400">
+                    <p className="text-gray-600">
                       Tu foto de perfil ayudará a otros usuarios a identificarte y dará una imagen más profesional a tu cuenta.
                     </p>
                   </motion.div>
@@ -801,8 +801,8 @@ export default function OnboardingPage() {
             disabled={currentStep === 1}
             className={`flex items-center px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
               currentStep === 1
-                ? 'text-gray-600 cursor-not-allowed'
-                : 'text-gray-400 hover:text-[#00E5FF] hover:bg-[#1F2840]'
+                ? 'text-gray-400 cursor-not-allowed'
+                : 'text-gray-600 hover:text-[#00E5FF] hover:bg-gray-100'
             }`}
             whileHover={currentStep !== 1 ? { scale: 1.05, x: -5 } : {}}
             whileTap={currentStep !== 1 ? { scale: 0.95 } : {}}
@@ -818,7 +818,7 @@ export default function OnboardingPage() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.6 }}
           >
-            <div className="text-sm font-semibold text-gray-300">
+            <div className="text-sm font-semibold text-gray-700">
               Paso {currentStep} de {steps.length}
             </div>
             <div className="text-xs text-gray-500 mt-1">
@@ -832,8 +832,8 @@ export default function OnboardingPage() {
               disabled={!canProceed || guardandoDatos}
               className={`relative flex items-center px-8 py-3 rounded-xl font-semibold transition-all duration-300 overflow-hidden ${
                 canProceed && !guardandoDatos
-                  ? 'bg-[#00E5FF] text-[#0B1120] shadow-[0_4px_20px_rgba(0,229,255,0.3)]'
-                  : 'bg-[#1F2840] text-gray-500 cursor-not-allowed'
+                  ? 'bg-[#00E5FF] text-white shadow-[0_4px_20px_rgba(0,229,255,0.3)]'
+                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
               }`}
               whileHover={canProceed && !guardandoDatos ? {
                 scale: 1.05,
@@ -874,8 +874,8 @@ export default function OnboardingPage() {
               disabled={!canProceed}
               className={`relative flex items-center px-8 py-3 rounded-xl font-semibold transition-all duration-300 overflow-hidden ${
                 canProceed
-                  ? 'bg-[#00E5FF] text-[#0B1120] shadow-[0_4px_20px_rgba(0,229,255,0.3)]'
-                  : 'bg-[#1F2840] text-gray-500 cursor-not-allowed'
+                  ? 'bg-[#00E5FF] text-white shadow-[0_4px_20px_rgba(0,229,255,0.3)]'
+                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
               }`}
               whileHover={canProceed ? {
                 scale: 1.05,
