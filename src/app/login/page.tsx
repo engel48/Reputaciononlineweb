@@ -135,7 +135,7 @@ function LoginPageContent() {
   }, [])
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-[#0B1120]">
       {/* Panel lateral - Solo visible en pantallas medianas y grandes */}
       <div className="relative hidden w-1/2 bg-gradient-to-br from-[#0B1120] to-[#151C2E] md:block">
         <AnimatedBackground
@@ -212,7 +212,7 @@ function LoginPageContent() {
       </div>
 
       {/* Formulario de login */}
-      <div className="flex w-full items-center justify-center px-4 md:w-1/2 md:px-0 bg-gray-50">
+      <div className="flex w-full items-center justify-center px-4 md:w-1/2 md:px-0 bg-[#0B1120]">
         <div
           ref={formRef}
           className="w-full max-w-md space-y-8 p-8"
@@ -222,21 +222,21 @@ function LoginPageContent() {
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[#00E5FF]/10">
               <span className="text-2xl font-bold text-[#00E5FF]">R</span>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">Reputación Online</h1>
-            <p className="text-gray-600">Gestiona tu presencia digital</p>
+            <h1 className="text-2xl font-bold text-white">Reputación Online</h1>
+            <p className="text-gray-400">Gestiona tu presencia digital</p>
           </div>
 
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-900">Iniciar Sesión</h2>
-            <p className="mt-2 text-sm text-gray-600">
+            <h2 className="text-2xl font-bold text-white">Iniciar Sesión</h2>
+            <p className="mt-2 text-sm text-gray-400">
               Ingresa tus credenciales para acceder a tu cuenta
             </p>
           </div>
 
           {/* Error message */}
           {error && (
-            <div className="rounded-xl bg-red-50 border border-red-200 p-4">
-              <p className="text-sm text-red-600">{error}</p>
+            <div className="rounded-xl bg-red-500/10 border border-red-500/20 p-4">
+              <p className="text-sm text-red-400">{error}</p>
             </div>
           )}
 
@@ -245,12 +245,12 @@ function LoginPageContent() {
             <div className="space-y-4">
               {/* Email */}
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                  Correo electrónico <span className="text-red-500">*</span>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-300">
+                  Correo electrónico <span className="text-red-400">*</span>
                 </label>
                 <div className="relative mt-1">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                    <Mail className="h-5 w-5 text-gray-400" />
+                    <Mail className="h-5 w-5 text-gray-500" />
                   </div>
                   <input
                     id="email"
@@ -258,7 +258,7 @@ function LoginPageContent() {
                     autoComplete="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="block w-full rounded-xl border border-gray-300 bg-white py-3 pl-10 text-gray-900 placeholder-gray-400 shadow-sm focus:border-[#00E5FF] focus:ring-1 focus:ring-[#00E5FF] transition-colors"
+                    className="block w-full rounded-xl border border-[#1F2840] bg-[#151C2E] py-3 pl-10 text-white placeholder-gray-500 shadow-sm focus:border-[#00E5FF] focus:ring-1 focus:ring-[#00E5FF] transition-colors"
                     placeholder="usuario@empresa.com"
                     required
                     disabled={loading}
@@ -268,12 +268,12 @@ function LoginPageContent() {
 
               {/* Contraseña */}
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  Contraseña <span className="text-red-500">*</span>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-300">
+                  Contraseña <span className="text-red-400">*</span>
                 </label>
                 <div className="relative mt-1">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                    <Lock className="h-5 w-5 text-gray-400" />
+                    <Lock className="h-5 w-5 text-gray-500" />
                   </div>
                   <input
                     id="password"
@@ -281,14 +281,14 @@ function LoginPageContent() {
                     autoComplete="current-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="block w-full rounded-xl border border-gray-300 bg-white py-3 pl-10 pr-10 text-gray-900 placeholder-gray-400 shadow-sm focus:border-[#00E5FF] focus:ring-1 focus:ring-[#00E5FF] transition-colors"
+                    className="block w-full rounded-xl border border-[#1F2840] bg-[#151C2E] py-3 pl-10 pr-10 text-white placeholder-gray-500 shadow-sm focus:border-[#00E5FF] focus:ring-1 focus:ring-[#00E5FF] transition-colors"
                     placeholder="Tu contraseña"
                     required
                     disabled={loading}
                   />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-[#00E5FF] transition-colors"
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-[#00E5FF] transition-colors"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
@@ -324,10 +324,10 @@ function LoginPageContent() {
           {/* Divider */}
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200"></div>
+              <div className="w-full border-t border-[#1F2840]"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-3 bg-gray-50 text-gray-500">O continúa con</span>
+              <span className="px-3 bg-[#0B1120] text-gray-500">O continúa con</span>
             </div>
           </div>
 
@@ -336,33 +336,33 @@ function LoginPageContent() {
             <button
               onClick={() => handleOAuthLogin('google')}
               disabled={loading}
-              className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-xl bg-white hover:bg-gray-50 hover:border-[#00E5FF]/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center justify-center px-4 py-3 border border-[#1F2840] rounded-xl bg-[#151C2E] hover:bg-[#1F2840] hover:border-[#00E5FF]/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <FcGoogle className="w-5 h-5 mr-2" />
-              <span className="text-sm font-medium text-gray-700">Google</span>
+              <span className="text-sm font-medium text-gray-300">Google</span>
             </button>
 
             <button
               onClick={() => handleOAuthLogin('facebook')}
               disabled={loading}
-              className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-xl bg-white hover:bg-gray-50 hover:border-[#00E5FF]/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center justify-center px-4 py-3 border border-[#1F2840] rounded-xl bg-[#151C2E] hover:bg-[#1F2840] hover:border-[#00E5FF]/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <FaFacebook className="w-5 h-5 mr-2 text-blue-600" />
-              <span className="text-sm font-medium text-gray-700">Facebook</span>
+              <FaFacebook className="w-5 h-5 mr-2 text-blue-500" />
+              <span className="text-sm font-medium text-gray-300">Facebook</span>
             </button>
 
             <button
               onClick={() => handleOAuthLogin('twitter')}
               disabled={loading}
-              className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-xl bg-white hover:bg-gray-50 hover:border-[#00E5FF]/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center justify-center px-4 py-3 border border-[#1F2840] rounded-xl bg-[#151C2E] hover:bg-[#1F2840] hover:border-[#00E5FF]/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <FaTwitter className="w-5 h-5 mr-2 text-gray-700" />
-              <span className="text-sm font-medium text-gray-700">X</span>
+              <FaTwitter className="w-5 h-5 mr-2 text-gray-300" />
+              <span className="text-sm font-medium text-gray-300">X</span>
             </button>
           </div>
 
           {/* Link a registro */}
-          <div className="mt-6 text-center text-sm text-gray-600">
+          <div className="mt-6 text-center text-sm text-gray-400">
             ¿No tienes cuenta?{' '}
             <Link
               href="/register"
@@ -379,10 +379,10 @@ function LoginPageContent() {
 
 function LoginLoadingFallback() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
+    <div className="flex min-h-screen items-center justify-center bg-[#0B1120]">
       <div className="text-center">
         <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-[#00E5FF] border-t-transparent"></div>
-        <p className="mt-4 text-gray-600">Cargando...</p>
+        <p className="mt-4 text-gray-400">Cargando...</p>
       </div>
     </div>
   )

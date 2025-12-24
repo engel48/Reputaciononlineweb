@@ -85,6 +85,16 @@ export default function MonitoreoPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [userKeywords, setUserKeywords] = useState<string[]>([]);
+  const [readItems, setReadItems] = useState<Set<string>>(new Set());
+
+  // Marcar item como leído (persistido en el estado del padre)
+  const handleMarkAsRead = useCallback((id: string) => {
+    setReadItems(prev => {
+      const newSet = new Set(prev);
+      newSet.add(id);
+      return newSet;
+    });
+  }, []);
 
   // Función de búsqueda
   const performSearch = useCallback(async (query: string, type: string) => {
@@ -144,12 +154,22 @@ export default function MonitoreoPage() {
     window.history.pushState({}, '', url.toString());
   };
 
-  // Filtrar resultados según la pestaña activa
+  // Filtrar resultados según la pestaña activa y palabras clave
   const filteredResults = results.filter(r => {
-    if (activeTab === 'all') return true;
-    if (activeTab === 'news') return r.type === 'news';
-    if (activeTab === 'social') return r.type === 'social';
-    if (activeTab === 'hashtags') return r.type === 'hashtag';
+    // Filtrar por tipo/pestaña
+    if (activeTab === 'news' && r.type !== 'news') return false;
+    if (activeTab === 'social' && r.type !== 'social') return false;
+    if (activeTab === 'hashtags' && r.type !== 'hashtag') return false;
+
+    // Filtrar por palabras clave del usuario (si hay keywords configurados)
+    if (userKeywords.length > 0) {
+      const searchText = `${r.title || ''} ${r.content} ${r.author || ''}`.toLowerCase();
+      const matchesKeyword = userKeywords.some(kw =>
+        searchText.includes(kw.toLowerCase())
+      );
+      if (!matchesKeyword) return false;
+    }
+
     return true;
   });
 
@@ -373,7 +393,12 @@ export default function MonitoreoPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredResults.map((result) => (
-                <UnifiedMentionCard key={result.id} {...result} />
+                <UnifiedMentionCard
+                  key={result.id}
+                  {...result}
+                  isRead={readItems.has(result.id)}
+                  onMarkAsRead={handleMarkAsRead}
+                />
               ))}
             </div>
           )}

@@ -26,6 +26,7 @@ interface UnifiedMentionCardProps {
   };
   createdAt: string;
   source?: string;
+  isRead?: boolean;
   onMarkAsRead?: (id: string) => void;
 }
 
@@ -143,10 +144,10 @@ export default function UnifiedMentionCard({
   engagement,
   createdAt,
   source,
+  isRead = false,
   onMarkAsRead
 }: UnifiedMentionCardProps) {
   const [expanded, setExpanded] = useState(false);
-  const [isRead, setIsRead] = useState(false);
 
   // Formatear fecha relativa
   const formatRelativeTime = (dateStr: string) => {
@@ -187,10 +188,11 @@ export default function UnifiedMentionCard({
   // Calcular engagement total
   const totalEngagement = (engagement?.likes || 0) + (engagement?.shares || 0) + (engagement?.comments || 0);
 
-  // Marcar como leído
+  // Marcar como leído - llama al handler del padre
   const handleMarkAsRead = () => {
-    setIsRead(true);
-    onMarkAsRead?.(id);
+    if (!isRead && onMarkAsRead) {
+      onMarkAsRead(id);
+    }
   };
 
   return (
