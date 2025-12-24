@@ -45,6 +45,7 @@ export default function MonitoreoNoticiasSection() {
   const [sentimentFilter, setSentimentFilter] = useState<SentimentFilter>('all');
   const [siteFilter, setSiteFilter] = useState<string | null>(null);
   const [dateFilter, setDateFilter] = useState<DateFilter>('all');
+  const [hideGeneralNews, setHideGeneralNews] = useState<boolean>(true); // Ocultar noticias generales por defecto
 
   // Cargar datos iniciales
   useEffect(() => {
@@ -295,9 +296,13 @@ export default function MonitoreoNoticiasSection() {
 
   const handleMarkAsRead = async (mentionId: string) => {
     try {
-      const response = await fetch(`/api/news-monitoring/mark-read/${mentionId}`, {
-        method: 'PUT',
-        credentials: 'include', // Envía cookies automáticamente
+      const response = await fetch('/api/news-monitoring/mentions', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ mentionId, isRead: true }),
       });
 
       const data = await response.json();
@@ -312,6 +317,30 @@ export default function MonitoreoNoticiasSection() {
     }
   };
 
+  // Eliminar/ocultar una mención de la lista
+  const handleDeleteMention = async (mentionId: string) => {
+    try {
+      const response = await fetch('/api/news-monitoring/mentions', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ mentionId }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setMencionesRecientes((prev) =>
+          prev.filter((m) => m.id !== mentionId)
+        );
+      }
+    } catch (error) {
+      console.error('Error al eliminar mención:', error);
+    }
+  };
+
   const handleExportMentions = () => {
     // TODO: Implementar exportación a CSV/PDF
     alert('Función de exportación en desarrollo');
@@ -319,6 +348,14 @@ export default function MonitoreoNoticiasSection() {
 
   // Filtrar menciones
   const filteredMentions = mencionesRecientes.filter((mention) => {
+    // Filtrar noticias generales (que no coinciden con keywords específicos)
+    if (hideGeneralNews) {
+      const isGeneralNews = mention.matchedTerm === '[noticia general]' ||
+                           mention.matchedTerm === '' ||
+                           !mention.matchedTerm;
+      if (isGeneralNews) return false;
+    }
+
     if (sentimentFilter !== 'all' && mention.sentiment !== sentimentFilter) return false;
     if (siteFilter && mention.monitoredSiteId !== siteFilter) return false;
 
@@ -336,6 +373,13 @@ export default function MonitoreoNoticiasSection() {
 
     return true;
   });
+
+  // Contar noticias generales ocultas
+  const generalNewsCount = mencionesRecientes.filter(m =>
+    m.matchedTerm === '[noticia general]' ||
+    m.matchedTerm === '' ||
+    !m.matchedTerm
+  ).length;
 
   // Calcular estadísticas
   const stats = {
@@ -545,6 +589,31 @@ export default function MonitoreoNoticiasSection() {
             </div>
           </div>
 
+          {/* Toggle para mostrar/ocultar noticias generales */}
+          {generalNewsCount > 0 && (
+            <div className="flex items-center justify-between bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg px-4 py-3 mb-4">
+              <div className="flex items-center space-x-2">
+                <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                <span className="text-sm text-amber-800 dark:text-amber-200">
+                  {hideGeneralNews
+                    ? `${generalNewsCount} noticias generales ocultas (sin términos específicos)`
+                    : `Mostrando ${generalNewsCount} noticias generales`
+                  }
+                </span>
+              </div>
+              <button
+                onClick={() => setHideGeneralNews(!hideGeneralNews)}
+                className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                  hideGeneralNews
+                    ? 'bg-amber-600 text-white hover:bg-amber-700'
+                    : 'bg-white dark:bg-gray-800 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-700 hover:bg-amber-100 dark:hover:bg-amber-900/30'
+                }`}
+              >
+                {hideGeneralNews ? 'Mostrar' : 'Ocultar'}
+              </button>
+            </div>
+          )}
+
           {filteredMentions.length === 0 ? (
             <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-8 text-center">
               <p className="text-gray-500 dark:text-gray-400">
@@ -559,6 +628,7 @@ export default function MonitoreoNoticiasSection() {
                     key={mencion.id}
                     mencion={mencion}
                     onMarkAsRead={handleMarkAsRead}
+                    onDelete={handleDeleteMention}
                   />
                 ))}
               </AnimatePresence>

@@ -2,16 +2,17 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ExternalLink, Eye, Calendar, User, MapPin } from 'lucide-react';
+import { ExternalLink, Eye, Calendar, User, Trash2 } from 'lucide-react';
 import type { Mention } from '@/types/news-monitoring';
 
 interface MencionCardProps {
   mencion: Mention;
   onMarkAsRead?: (id: string) => void;
+  onDelete?: (id: string) => void;
   onOpenArticle?: (url: string) => void;
 }
 
-export default function MencionCard({ mencion, onMarkAsRead, onOpenArticle }: MencionCardProps) {
+export default function MencionCard({ mencion, onMarkAsRead, onDelete, onOpenArticle }: MencionCardProps) {
   const getSentimentBadge = () => {
     switch (mencion.sentiment) {
       case 'positive':
@@ -92,6 +93,13 @@ export default function MencionCard({ mencion, onMarkAsRead, onOpenArticle }: Me
     e.stopPropagation();
     if (onMarkAsRead) {
       onMarkAsRead(mencion.id);
+    }
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onDelete) {
+      onDelete(mencion.id);
     }
   };
 
@@ -176,6 +184,18 @@ export default function MencionCard({ mencion, onMarkAsRead, onOpenArticle }: Me
         </div>
 
         <div className="flex items-center space-x-2">
+          {/* Botón eliminar */}
+          {onDelete && (
+            <button
+              onClick={handleDelete}
+              className="flex items-center space-x-1 px-3 py-1 text-xs font-medium text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-md transition-colors"
+              title="Eliminar mención"
+            >
+              <Trash2 className="w-3 h-3" />
+              <span>Eliminar</span>
+            </button>
+          )}
+
           {/* Botón marcar como leído */}
           {!mencion.isRead && onMarkAsRead && (
             <button

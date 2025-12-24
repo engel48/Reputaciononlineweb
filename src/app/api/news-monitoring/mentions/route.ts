@@ -280,3 +280,100 @@ export async function PATCH(request: NextRequest) {
     );
   }
 }
+
+/**
+ * DELETE /api/news-monitoring/mentions
+ * Elimina una mención del usuario
+ */
+export async function DELETE(request: NextRequest) {
+  try {
+    // Obtener token de autenticación desde cookie
+    const authToken = request.cookies.get('auth-token')?.value;
+
+    if (!authToken) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'UNAUTHORIZED',
+            message: 'No autorizado. Token de autenticación requerido.',
+          },
+          timestamp: new Date().toISOString(),
+        },
+        { status: 401 }
+      );
+    }
+
+    // Verificar token JWT
+    let userId: string;
+    try {
+      const decoded = jwt.verify(authToken, JWT_SECRET) as { userId: string; email: string };
+      userId = decoded.userId;
+    } catch (error) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'UNAUTHORIZED',
+            message: 'Token inválido o expirado',
+          },
+          timestamp: new Date().toISOString(),
+        },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json();
+    const { mentionId } = body;
+
+    if (!mentionId) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'INVALID_REQUEST',
+            message: 'mentionId es requerido',
+          },
+          timestamp: new Date().toISOString(),
+        },
+        { status: 400 }
+      );
+    }
+
+    // Eliminar mención (solo si pertenece al usuario)
+    const { error: deleteError } = await supabase
+      .from('news_mentions')
+      .delete()
+      .eq('id', mentionId)
+      .eq('user_id', userId);
+
+    if (deleteError) {
+      throw new Error(`Delete error: ${deleteError.message}`);
+    }
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: 'Mención eliminada exitosamente',
+        timestamp: new Date().toISOString(),
+      },
+      { status: 200 }
+    );
+
+  } catch (error: any) {
+    console.error('[NEWS-MONITORING] Error deleting mention:', error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'DELETE_MENTION_ERROR',
+          message: 'Error al eliminar mención',
+          details: error.message,
+        },
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 }
+    );
+  }
+}
