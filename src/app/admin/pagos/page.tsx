@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { AdminPageWrapper } from '@/components/admin';
 import {
   CreditCard, Search, Filter, RefreshCw, Eye, CheckCircle,
   XCircle, Clock, AlertCircle, DollarSign, TrendingUp, Users
@@ -126,22 +127,19 @@ export default function AdminPagosPage() {
   });
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-[#0B1120] dark:text-white">Pagos y Transacciones</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">Gestiona todos los pagos de la plataforma</p>
+    <AdminPageWrapper title="Pagos y Transacciones" subtitle="Gestiona todos los pagos de la plataforma">
+      <div className="space-y-6">
+        {/* Header Actions */}
+        <div className="flex justify-end">
+          <button
+            onClick={fetchPayments}
+            disabled={loading}
+            className="inline-flex items-center px-4 py-2.5 rounded-xl bg-[#00E5FF] hover:bg-[#00B8D4] text-[#0B1120] font-semibold transition-all shadow-[0_4px_20px_rgba(0,229,255,0.15)] hover:-translate-y-0.5"
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Actualizar
+          </button>
         </div>
-        <button
-          onClick={fetchPayments}
-          disabled={loading}
-          className="inline-flex items-center px-4 py-2.5 rounded-xl bg-[#00E5FF] hover:bg-[#00B8D4] text-[#0B1120] font-semibold transition-all shadow-[0_4px_20px_rgba(0,229,255,0.15)] hover:-translate-y-0.5"
-        >
-          <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-          Actualizar
-        </button>
-      </div>
 
       {/* Stats Cards */}
       {stats && (
@@ -412,6 +410,7 @@ export default function AdminPagosPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </AdminPageWrapper>
   );
 }

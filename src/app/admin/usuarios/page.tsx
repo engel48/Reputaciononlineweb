@@ -6,6 +6,7 @@ import {
   Users, Edit, Trash2, Plus, Search, Filter, RefreshCw, X, Check, Eye, Crown,
   UserPlus, UserX, UserCheck, Key, Copy, CheckCircle, XCircle, Loader2, Mail
 } from 'lucide-react';
+import { AdminPageWrapper } from '@/components/admin';
 
 interface User {
   id: string;
@@ -340,42 +341,19 @@ export default function UsuariosPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
-      <div className="bg-white dark:bg-gray-800 shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div className="flex items-center">
-              <Users className="h-8 w-8 text-[#00E5FF] mr-3" />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Gestión de Usuarios
-                </h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Administra todos los usuarios de la plataforma
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="inline-flex items-center px-4 py-2 bg-[#00E5FF] text-white rounded-lg hover:bg-[#00B8D4] text-sm font-medium transition-colors"
-              >
-                <UserPlus className="h-4 w-4 mr-2" />
-                Crear Usuario
-              </button>
-              <button
-                onClick={() => router.push('/admin')}
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-[#00E5FF] transition-colors"
-              >
-                ← Volver al Panel
-              </button>
-            </div>
-          </div>
+    <AdminPageWrapper title="Gestión de Usuarios" subtitle="Administra todos los usuarios de la plataforma">
+      <div className="space-y-6">
+        {/* Action Button */}
+        <div className="flex justify-end">
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="inline-flex items-center px-4 py-2 bg-[#00E5FF] text-[#0B1120] rounded-lg hover:bg-[#00D4ED] text-sm font-semibold transition-colors"
+          >
+            <UserPlus className="h-4 w-4 mr-2" />
+            Crear Usuario
+          </button>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Overview */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.05)] rounded-xl">
@@ -1154,6 +1132,6 @@ export default function UsuariosPage() {
           </div>
         )}
       </div>
-    </div>
+    </AdminPageWrapper>
   );
 }

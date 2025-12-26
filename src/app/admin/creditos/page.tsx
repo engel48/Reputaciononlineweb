@@ -6,6 +6,7 @@ import ConsumosPorCanalChart from '@/components/admin/ConsumosPorCanalChart';
 import TendenciaUsoChart from '@/components/admin/TendenciaUsoChart';
 import CreditosPorUsuarioChart from '@/components/admin/CreditosPorUsuarioChart';
 import PrediccionUsoChart from '@/components/admin/PrediccionUsoChart';
+import { AdminPageWrapper } from '@/components/admin';
 import {
   Search, Download, Filter, Users, CreditCard, Plus, X,
   CheckCircle, XCircle, Loader2, AlertCircle, Gift, RefreshCw,
@@ -263,19 +264,13 @@ export default function AdminCreditosPage() {
   ];
 
   return (
-    <motion.div
-      className="space-y-6"
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-    >
-      {/* Título de la página */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Gestión de Créditos</h1>
-        <p className="mt-1 text-gray-500 dark:text-gray-400">
-          Administra los créditos de todos los usuarios, asigna en lote y genera reportes.
-        </p>
-      </div>
+    <AdminPageWrapper title="Gestión de Créditos" subtitle="Administra los créditos de todos los usuarios">
+      <motion.div
+        className="space-y-6"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
 
       {/* Estadísticas resumen */}
       <motion.div
@@ -694,6 +689,7 @@ export default function AdminCreditosPage() {
           </motion.div>
         </div>
       )}
-    </motion.div>
+      </motion.div>
+    </AdminPageWrapper>
   );
 }

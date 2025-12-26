@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { PlusCircle, Edit, Trash2, CheckCircle, XCircle, Users, CreditCard, Calendar, DollarSign } from 'lucide-react';
+import { AdminPageWrapper } from '@/components/admin';
 import axios from 'axios';
 
 interface Plan {
@@ -264,28 +265,23 @@ export default function PlanesPage() {
   };
 
   return (
-    <motion.div
-      className="space-y-6"
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-    >
-      {/* Encabezado de la página */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Gestión de Planes</h1>
-          <p className="mt-1 text-gray-500 dark:text-gray-400">
-            Administre los planes disponibles en la plataforma Reputación Online.
-          </p>
+    <AdminPageWrapper title="Gestión de Planes" subtitle="Administre los planes disponibles en la plataforma">
+      <motion.div
+        className="space-y-6"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        {/* Action Button */}
+        <div className="flex justify-end">
+          <button
+            onClick={abrirModalCrear}
+            className="flex items-center rounded-xl bg-[#00E5FF] px-4 py-2.5 text-[#0B1120] font-semibold hover:bg-[#00D4ED] transition-colors"
+          >
+            <PlusCircle className="mr-2 h-5 w-5" />
+            Nuevo Plan
+          </button>
         </div>
-        <button
-          onClick={abrirModalCrear}
-          className="flex items-center rounded-md bg-primary px-4 py-2 text-white hover:bg-primary-600"
-        >
-          <PlusCircle className="mr-2 h-5 w-5" />
-          Nuevo Plan
-        </button>
-      </div>
 
       {/* Alerta de error */}
       {error && (
@@ -591,6 +587,7 @@ export default function PlanesPage() {
           </motion.div>
         </div>
       )}
-    </motion.div>
+      </motion.div>
+    </AdminPageWrapper>
   );
 }
