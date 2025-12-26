@@ -88,23 +88,33 @@ export async function DELETE(
       );
     }
 
-    // Desactivar el sitio (soft delete)
-    const { error: updateError } = await supabase
-      .from('monitored_news_sites')
-      .update({
-        is_active: false,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', id);
+    // Primero eliminar las menciones asociadas a este sitio
+    const { error: deleteMentionsError } = await supabase
+      .from('news_mentions')
+      .delete()
+      .eq('monitored_site_id', id)
+      .eq('user_id', userId);
 
-    if (updateError) {
-      throw new Error(`Update error: ${updateError.message}`);
+    if (deleteMentionsError) {
+      console.error('[NEWS-MONITORING] Error deleting mentions:', deleteMentionsError);
+      // Continuar aunque falle - las menciones huérfanas no son críticas
+    }
+
+    // Eliminar el sitio de la base de datos (DELETE real, no soft delete)
+    const { error: deleteError } = await supabase
+      .from('monitored_news_sites')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', userId);
+
+    if (deleteError) {
+      throw new Error(`Delete error: ${deleteError.message}`);
     }
 
     return NextResponse.json(
       {
         success: true,
-        message: 'Monitoreo desactivado exitosamente',
+        message: 'Sitio eliminado exitosamente',
         timestamp: new Date().toISOString(),
       },
       { status: 200 }
