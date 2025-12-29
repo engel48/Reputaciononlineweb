@@ -159,7 +159,7 @@ export async function POST(request: NextRequest) {
       console.log(`  📰 Buscando noticias para: "${kw.keyword}"`);
 
       // Dividir keyword en palabras para busqueda mas flexible
-      const words = kw.keyword.trim().toLowerCase().split(/\s+/).filter(w => w.length >= 2);
+      const words = kw.keyword.trim().toLowerCase().split(/\s+/).filter((w: string) => w.length >= 2);
 
       let newsMatches: any[] = [];
       let newsError: any = null;
