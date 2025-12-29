@@ -120,8 +120,20 @@ export async function POST(request: Request) {
     const body = await request.json().catch(() => ({}));
     const { siteId, searchTerms = [], limit = 10 } = body;
 
+    // Si no hay searchTerms, obtener keywords activas de todos los usuarios
+    let finalSearchTerms = searchTerms;
+    if (searchTerms.length === 0) {
+      const { data: allKeywords } = await supabase
+        .from('monitored_keywords')
+        .select('keyword')
+        .eq('is_active', true);
+
+      finalSearchTerms = [...new Set(allKeywords?.map(k => k.keyword) || [])];
+      console.log(`📋 Keywords de usuarios activas: ${finalSearchTerms.length > 0 ? finalSearchTerms.join(', ') : '[ninguna - scrapeando todas]'}`);
+    }
+
     console.log('🚀 Iniciando scraping de noticias...');
-    console.log(`📋 Términos de búsqueda: ${searchTerms.length > 0 ? searchTerms.join(', ') : '[todas las noticias]'}`);
+    console.log(`📋 Términos de búsqueda: ${finalSearchTerms.length > 0 ? finalSearchTerms.join(', ') : '[todas las noticias]'}`);
 
     const stats: ScrapingStats = {
       sitesProcessed: 0,
@@ -136,7 +148,7 @@ export async function POST(request: Request) {
     // Si se especifica un sitio, solo scrapear ese
     if (siteId) {
       console.log(`🎯 Scraping sitio específico: ${siteId}`);
-      const { result, saved } = await scrapeSingleSite(siteId, searchTerms);
+      const { result, saved } = await scrapeSingleSite(siteId, finalSearchTerms);
 
       stats.sitesProcessed = 1;
       if (result.success) {
@@ -159,7 +171,7 @@ export async function POST(request: Request) {
         console.log(`\n🔍 Scraping: ${site.name}...`);
 
         try {
-          const { result, saved } = await scrapeSingleSite(site.id, searchTerms);
+          const { result, saved } = await scrapeSingleSite(site.id, finalSearchTerms);
           stats.sitesProcessed++;
 
           if (result.success) {

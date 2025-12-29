@@ -523,31 +523,79 @@ export default function MonitoreoNoticiasSection() {
                 </div>
               </div>
 
-              {/* Stats de sentimiento */}
+              {/* Stats de sentimiento - Diseño mejorado */}
               {mentionStats && mentionStats.total > 0 && (
-                <div className="grid grid-cols-4 gap-3">
-                  <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
-                    <div className="text-xl font-bold text-gray-900 dark:text-white">
-                      {mentionStats.total}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-4 text-white shadow-lg shadow-blue-500/20"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-blue-100 text-xs font-medium uppercase tracking-wide">Total</p>
+                        <p className="text-3xl font-bold mt-1">{mentionStats.total}</p>
+                      </div>
+                      <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                        <Newspaper className="w-6 h-6" />
+                      </div>
                     </div>
-                    <div className="text-xs text-gray-500">Total</div>
-                  </div>
-                  <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 border border-green-200">
-                    <div className="text-xl font-bold text-green-600">{mentionStats.positive}</div>
-                    <div className="text-xs text-green-700">Positivas</div>
-                  </div>
-                  <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-3 border border-red-200">
-                    <div className="text-xl font-bold text-red-600">{mentionStats.negative}</div>
-                    <div className="text-xs text-red-700">Negativas</div>
-                  </div>
-                  <div className="bg-gray-50 dark:bg-gray-700/20 rounded-lg p-3 border border-gray-200">
-                    <div className="text-xl font-bold text-gray-600">{mentionStats.neutral}</div>
-                    <div className="text-xs text-gray-500">Neutrales</div>
-                  </div>
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.1 }}
+                    className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl p-4 text-white shadow-lg shadow-green-500/20"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-green-100 text-xs font-medium uppercase tracking-wide">Positivas</p>
+                        <p className="text-3xl font-bold mt-1">{mentionStats.positive}</p>
+                      </div>
+                      <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                        <TrendingUp className="w-6 h-6" />
+                      </div>
+                    </div>
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.2 }}
+                    className="bg-gradient-to-br from-red-500 to-rose-600 rounded-2xl p-4 text-white shadow-lg shadow-red-500/20"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-red-100 text-xs font-medium uppercase tracking-wide">Negativas</p>
+                        <p className="text-3xl font-bold mt-1">{mentionStats.negative}</p>
+                      </div>
+                      <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                        <TrendingDown className="w-6 h-6" />
+                      </div>
+                    </div>
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.3 }}
+                    className="bg-gradient-to-br from-gray-500 to-gray-600 rounded-2xl p-4 text-white shadow-lg shadow-gray-500/20"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-gray-200 text-xs font-medium uppercase tracking-wide">Neutrales</p>
+                        <p className="text-3xl font-bold mt-1">{mentionStats.neutral}</p>
+                      </div>
+                      <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                        <Minus className="w-6 h-6" />
+                      </div>
+                    </div>
+                  </motion.div>
                 </div>
               )}
 
-              {/* Lista de menciones */}
+              {/* Lista de menciones - Diseño mejorado */}
               {isLoadingMentions ? (
                 <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
                   <Loader2 className="w-10 h-10 animate-spin mx-auto text-blue-500" />
@@ -572,62 +620,123 @@ export default function MonitoreoNoticiasSection() {
                   </button>
                 </div>
               ) : (
-                <div className="space-y-3 max-h-[600px] overflow-y-auto">
-                  {mentions.map((mention) => (
-                    <motion.div
+                <div className="space-y-4 max-h-[700px] overflow-y-auto pr-2 custom-scrollbar">
+                  {mentions.map((mention, index) => (
+                    <motion.article
                       key={mention.id}
-                      initial={{ opacity: 0, y: 10 }}
+                      initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className={`bg-white dark:bg-gray-800 rounded-xl border-2 p-4 transition-all ${
-                        mention.is_read
-                          ? 'border-gray-200 dark:border-gray-700'
-                          : 'border-blue-300 dark:border-blue-700 bg-blue-50/50 dark:bg-blue-900/10'
+                      transition={{ delay: index * 0.05 }}
+                      className={`group relative bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 ${
+                        !mention.is_read ? 'ring-2 ring-blue-400 ring-offset-2' : ''
                       }`}
                     >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1 text-sm">
-                            <span className="font-medium text-blue-600">{mention.source}</span>
-                            <span className="text-gray-400">•</span>
-                            <span className="text-gray-500 flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              {new Date(mention.published_at).toLocaleDateString('es-CO')}
-                            </span>
-                          </div>
-                          <h4 className="font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
-                            {mention.article_title}
-                          </h4>
-                          {mention.article_content && (
-                            <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 mb-3">
-                              {mention.article_content}
-                            </p>
-                          )}
+                      {/* Barra de sentimiento superior */}
+                      <div className={`h-1.5 w-full ${
+                        mention.sentiment === 'positive' ? 'bg-gradient-to-r from-green-400 to-emerald-500' :
+                        mention.sentiment === 'negative' ? 'bg-gradient-to-r from-red-400 to-rose-500' :
+                        'bg-gradient-to-r from-gray-300 to-gray-400'
+                      }`} />
+
+                      <div className="p-5">
+                        {/* Header con fuente y fecha */}
+                        <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-3">
-                            <a
-                              href={mention.article_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-                            >
-                              Ver articulo completo →
-                            </a>
+                            {/* Logo de la fuente */}
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-lg ${
+                              mention.source.includes('Tiempo') ? 'bg-gradient-to-br from-blue-600 to-blue-800' :
+                              mention.source.includes('Semana') ? 'bg-gradient-to-br from-red-600 to-red-800' :
+                              mention.source.includes('Espectador') ? 'bg-gradient-to-br from-yellow-500 to-orange-600' :
+                              mention.source.includes('Heraldo') ? 'bg-gradient-to-br from-green-600 to-green-800' :
+                              mention.source.includes('Colombiano') ? 'bg-gradient-to-br from-purple-600 to-purple-800' :
+                              'bg-gradient-to-br from-gray-600 to-gray-800'
+                            }`}>
+                              {mention.source.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase()}
+                            </div>
+                            <div>
+                              <p className="font-semibold text-gray-900 dark:text-white text-sm">
+                                {mention.source}
+                              </p>
+                              <p className="text-xs text-gray-500 flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                {new Date(mention.published_at).toLocaleDateString('es-CO', {
+                                  day: 'numeric',
+                                  month: 'short',
+                                  year: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Badge de sentimiento */}
+                          <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${
+                            mention.sentiment === 'positive' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+                            mention.sentiment === 'negative' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                            'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
+                          }`}>
+                            {mention.sentiment === 'positive' && <TrendingUp className="w-3.5 h-3.5" />}
+                            {mention.sentiment === 'negative' && <TrendingDown className="w-3.5 h-3.5" />}
+                            {mention.sentiment === 'neutral' && <Minus className="w-3.5 h-3.5" />}
+                            <span>{mention.sentiment === 'positive' ? 'Positivo' : mention.sentiment === 'negative' ? 'Negativo' : 'Neutral'}</span>
+                          </div>
+                        </div>
+
+                        {/* Título */}
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 leading-tight group-hover:text-blue-600 transition-colors line-clamp-2">
+                          {mention.article_title}
+                        </h3>
+
+                        {/* Contenido preview */}
+                        {mention.article_content && (
+                          <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed line-clamp-3 mb-4">
+                            {mention.article_content}
+                          </p>
+                        )}
+
+                        {/* Footer con acciones */}
+                        <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700">
+                          <a
+                            href={mention.article_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm hover:shadow-md"
+                          >
+                            <Newspaper className="w-4 h-4" />
+                            Leer Artículo
+                          </a>
+
+                          <div className="flex items-center gap-2">
                             {!mention.is_read && (
                               <button
                                 onClick={() => handleMarkAsRead(mention.id)}
-                                className="text-gray-500 hover:text-gray-700 text-sm flex items-center gap-1"
+                                className="inline-flex items-center gap-1.5 px-3 py-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-sm rounded-lg transition-colors"
                               >
                                 <Eye className="w-4 h-4" />
-                                Marcar como leido
+                                <span>Marcar leído</span>
                               </button>
+                            )}
+                            {mention.is_read && (
+                              <span className="inline-flex items-center gap-1.5 px-3 py-2 text-green-600 text-sm">
+                                <CheckCircle className="w-4 h-4" />
+                                <span>Leído</span>
+                              </span>
                             )}
                           </div>
                         </div>
-                        <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-700">
-                          {getSentimentIcon(mention.sentiment)}
-                          <span className="text-xs capitalize">{mention.sentiment === 'positive' ? 'Positivo' : mention.sentiment === 'negative' ? 'Negativo' : 'Neutral'}</span>
-                        </div>
                       </div>
-                    </motion.div>
+
+                      {/* Indicador de no leído */}
+                      {!mention.is_read && (
+                        <div className="absolute top-4 right-4">
+                          <span className="flex h-3 w-3">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+                          </span>
+                        </div>
+                      )}
+                    </motion.article>
                   ))}
                 </div>
               )}
