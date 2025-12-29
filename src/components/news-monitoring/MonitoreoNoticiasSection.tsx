@@ -1,448 +1,233 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Plus,
+  Search,
   RefreshCw,
   Download,
-  Filter,
-  TrendingUp,
-  AlertCircle,
-  CheckCircle,
   Newspaper,
+  AlertCircle,
+  Loader2,
 } from 'lucide-react';
-import MencionCard from './MencionCard';
-import SitioMonitorCard from './SitioMonitorCard';
-import AgregarSitioModal from './AgregarSitioModal';
-import ConfigurarSitioModal from './ConfigurarSitioModal';
-import type {
-  MonitoredSite,
-  Mention,
-  ScanFrequency,
-  SentimentFilter,
-  DateFilter,
-} from '@/types/news-monitoring';
-import { MAX_MONITORED_SITES } from '@/types/news-monitoring';
-import { useUser } from '@/context/UserContext';
+import NewsResultCard, { NewsResult } from './NewsResultCard';
+import type { SentimentFilter, DateFilter } from '@/types/news-monitoring';
+
+interface SentimentSummary {
+  positive: number;
+  negative: number;
+  neutral: number;
+  averageScore: number;
+}
 
 export default function MonitoreoNoticiasSection() {
-  const { user } = useUser();
-
-  // Estados
-  const [sitiosMonitoreados, setSitiosMonitoreados] = useState<MonitoredSite[]>([]);
-  const [mencionesRecientes, setMencionesRecientes] = useState<Mention[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isScanning, setIsScanning] = useState(false);
-  const [scanningSiteId, setScanningSiteId] = useState<string | null>(null);
-
-  // Modales
-  const [showAgregarModal, setShowAgregarModal] = useState(false);
-  const [showConfigModal, setShowConfigModal] = useState(false);
-  const [selectedSitio, setSelectedSitio] = useState<MonitoredSite | null>(null);
+  // Estados de busqueda
+  const [keyword, setKeyword] = useState('');
+  const [searchResults, setSearchResults] = useState<NewsResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [totalResults, setTotalResults] = useState(0);
+  const [sentimentSummary, setSentimentSummary] = useState<SentimentSummary | null>(null);
 
   // Filtros
   const [sentimentFilter, setSentimentFilter] = useState<SentimentFilter>('all');
-  const [siteFilter, setSiteFilter] = useState<string | null>(null);
   const [dateFilter, setDateFilter] = useState<DateFilter>('all');
-  const [hideGeneralNews, setHideGeneralNews] = useState<boolean>(true); // Ocultar noticias generales por defecto
 
-  // Cargar datos iniciales
+  // Estadisticas de la BD
+  const [dbStats, setDbStats] = useState<{
+    totalNews: number;
+    lastScraped: string | null;
+    lastSource: string | null;
+  } | null>(null);
+
+  // Cargar estadisticas al montar
   useEffect(() => {
-    loadMonitoredSites();
-    loadMentions();
+    loadDatabaseStats();
   }, []);
 
-  const loadMonitoredSites = async () => {
+  const loadDatabaseStats = async () => {
     try {
-      setLoading(true);
-
-      // Cookie-based auth - no need for Authorization header
-      const response = await fetch('/api/news-monitoring/user-sites', {
-        credentials: 'include', // Enviar cookies automáticamente
+      const response = await fetch('/api/scraping/run', {
+        method: 'GET',
       });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
       const data = await response.json();
-
-      if (data.success && Array.isArray(data.data?.sites)) {
-        setSitiosMonitoreados(
-          data.data.sites.map((site: any) => ({
-            id: site.id,
-            userId: user?.id || '',
-            siteId: site.siteId,
-            siteName: site.siteName,
-            siteLogo: '📰', // Logo por defecto
-            siteUrl: site.siteUrl || '',
-            searchTerms: site.searchTerms || [],
-            scanFrequency: (site.checkFrequencyMinutes === 15 ? 'every15min' :
-                           site.checkFrequencyMinutes === 60 ? 'hourly' :
-                           site.checkFrequencyMinutes === 360 ? 'every6hours' : 'daily') as ScanFrequency,
-            isActive: site.isActive,
-            totalMentions: 0, // TODO: Obtener de stats
-            newMentions: 0,
-            lastChecked: site.lastCheckedAt ? new Date(site.lastCheckedAt) : null,
-            activatedAt: new Date(site.createdAt),
-            createdAt: new Date(site.createdAt),
-            updatedAt: new Date(site.createdAt),
-          }))
-        );
+      if (data.success) {
+        setDbStats(data.database);
       }
     } catch (error) {
-      console.error('Error cargando sitios monitoreados:', error);
-    } finally {
-      setLoading(false);
+      console.error('Error cargando stats:', error);
     }
   };
 
-  const loadMentions = async () => {
-    try {
-      // Cookie-based auth - no need for Authorization header
-      const response = await fetch('/api/news-monitoring/mentions?limit=20', {
-        credentials: 'include', // Enviar cookies automáticamente
-      });
+  const handleSearch = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-
-      if (data.success && Array.isArray(data.data?.mentions)) {
-        setMencionesRecientes(
-          data.data.mentions.map((mention: any) => ({
-            id: mention.id,
-            monitoredSiteId: mention.monitored_site_id,
-            siteId: mention.site?.id || '',
-            siteName: mention.site?.name || 'Sitio desconocido',
-            siteLogo: mention.site?.logoUrl || '📰',
-            articleTitle: mention.article_title || 'Sin título',
-            articleUrl: mention.article_url || '',
-            articleContent: mention.full_content || '',
-            mentionContext: mention.mention_context || '',
-            sentiment: (mention.sentiment as 'positive' | 'negative' | 'neutral') || 'neutral',
-            sentimentScore: mention.sentiment_score || 0,
-            publishedDate: mention.published_date ? new Date(mention.published_date) : null,
-            discoveredAt: mention.discovered_at ? new Date(mention.discovered_at) : new Date(),
-            isRead: mention.is_read || false,
-            matchedTerm: Array.isArray(mention.matched_terms) ? mention.matched_terms[0] : (mention.matched_terms || ''),
-            author: mention.article_author,
-            imageUrl: mention.site?.logoUrl,
-          }))
-        );
-      }
-    } catch (error) {
-      console.error('Error cargando menciones:', error);
+    if (!keyword.trim()) {
+      return;
     }
-  };
 
-  const handleAgregarSitio = async (
-    siteId: string,
-    searchTerms: string[],
-    scanFrequency: ScanFrequency
-  ) => {
+    setIsSearching(true);
+    setHasSearched(true);
+
     try {
-      // Convertir frecuencia a minutos
-      const checkFrequencyMinutes =
-        scanFrequency === 'every15min' ? 15 :
-        scanFrequency === 'hourly' ? 60 :
-        scanFrequency === 'every6hours' ? 360 : 1440;
-
-      const response = await fetch('/api/news-monitoring/activate-site', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include', // Envía cookies automáticamente
-        body: JSON.stringify({
-          siteId,
-          searchTerms,
-          checkFrequencyMinutes,
-        }),
+      // Construir parametros de busqueda
+      const params = new URLSearchParams({
+        keyword: keyword.trim(),
+        limit: '50',
       });
 
+      if (sentimentFilter !== 'all') {
+        params.append('sentiment', sentimentFilter);
+      }
+
+      // Calcular fechas segun filtro
+      if (dateFilter !== 'all') {
+        const now = new Date();
+        let dateFrom: Date;
+
+        switch (dateFilter) {
+          case 'today':
+            dateFrom = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            break;
+          case 'week':
+            dateFrom = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            break;
+          case 'month':
+            dateFrom = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+            break;
+          default:
+            dateFrom = new Date(0);
+        }
+
+        params.append('dateFrom', dateFrom.toISOString());
+      }
+
+      const response = await fetch(`/api/news-monitoring/search?${params.toString()}`);
       const data = await response.json();
 
       if (data.success) {
-        await loadMonitoredSites();
-        setShowAgregarModal(false);
+        setSearchResults(data.results || []);
+        setTotalResults(data.total || 0);
+        setSentimentSummary(data.sentimentSummary || null);
       } else {
-        throw new Error(data.error?.message || 'Error al activar sitio');
-      }
-    } catch (error: any) {
-      console.error('Error:', error);
-      alert(error.message || 'Error al agregar sitio');
-      throw error;
-    }
-  };
-
-  const handleConfigureSitio = (sitio: MonitoredSite) => {
-    setSelectedSitio(sitio);
-    setShowConfigModal(true);
-  };
-
-  const handleSaveConfig = async (
-    siteId: string,
-    searchTerms: string[],
-    scanFrequency: ScanFrequency
-  ) => {
-    try {
-      const checkFrequencyMinutes =
-        scanFrequency === 'every15min' ? 15 :
-        scanFrequency === 'hourly' ? 60 :
-        scanFrequency === 'every6hours' ? 360 : 1440;
-
-      const response = await fetch(`/api/news-monitoring/update-site/${siteId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include', // Envía cookies automáticamente
-        body: JSON.stringify({ searchTerms, checkFrequencyMinutes }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        await loadMonitoredSites();
-        setShowConfigModal(false);
-        setSelectedSitio(null);
-      } else {
-        throw new Error(data.error?.message || 'Error al actualizar');
-      }
-    } catch (error: any) {
-      console.error('Error:', error);
-      alert(error.message || 'Error al guardar configuración');
-      throw error;
-    }
-  };
-
-  const handleToggleActive = async (siteId: string, isActive: boolean) => {
-    try {
-      const response = await fetch(`/api/news-monitoring/toggle-active/${siteId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include', // Envía cookies automáticamente
-        body: JSON.stringify({ isActive }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        await loadMonitoredSites();
+        setSearchResults([]);
+        setTotalResults(0);
+        setSentimentSummary(null);
       }
     } catch (error) {
-      console.error('Error al cambiar estado:', error);
-      alert('Error al cambiar el estado del sitio');
-    }
-  };
-
-  const handleDeleteSitio = async (siteId: string) => {
-    try {
-      const response = await fetch(`/api/news-monitoring/deactivate-site/${siteId}`, {
-        method: 'DELETE',
-        credentials: 'include', // Envía cookies automáticamente
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        await loadMonitoredSites();
-        await loadMentions();
-      }
-    } catch (error) {
-      console.error('Error al eliminar sitio:', error);
-      alert('Error al eliminar el sitio');
-    }
-  };
-
-  const handleScanNow = async (siteId: string) => {
-    try {
-      setIsScanning(true);
-      setScanningSiteId(siteId);
-
-      const response = await fetch('/api/news-monitoring/scan-now', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include', // Envía cookies automáticamente
-        body: JSON.stringify({ monitoredSiteId: siteId }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        await loadMonitoredSites();
-        await loadMentions();
-      }
-    } catch (error) {
-      console.error('Error al escanear:', error);
-      alert('Error al realizar el escaneo');
+      console.error('Error en busqueda:', error);
+      setSearchResults([]);
+      setTotalResults(0);
     } finally {
-      setIsScanning(false);
-      setScanningSiteId(null);
+      setIsSearching(false);
     }
   };
 
-  const handleViewMentions = (siteId: string) => {
-    setSiteFilter(siteFilter === siteId ? null : siteId);
-  };
-
-  const handleMarkAsRead = async (mentionId: string) => {
-    try {
-      const response = await fetch('/api/news-monitoring/mentions', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ mentionId, isRead: true }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setMencionesRecientes((prev) =>
-          prev.map((m) => (m.id === mentionId ? { ...m, isRead: true } : m))
-        );
-      }
-    } catch (error) {
-      console.error('Error al marcar como leído:', error);
+  // Re-ejecutar busqueda cuando cambian los filtros
+  useEffect(() => {
+    if (hasSearched && keyword.trim()) {
+      handleSearch();
     }
+  }, [sentimentFilter, dateFilter]);
+
+  const handleExport = () => {
+    if (searchResults.length === 0) return;
+
+    // Crear CSV
+    const headers = ['Titulo', 'Fuente', 'Fecha', 'Sentimiento', 'URL'];
+    const rows = searchResults.map(news => [
+      `"${news.title.replace(/"/g, '""')}"`,
+      news.source,
+      new Date(news.publishedAt).toLocaleDateString('es-CO'),
+      news.sentiment,
+      news.articleUrl,
+    ]);
+
+    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `noticias-${keyword}-${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
-  // Eliminar/ocultar una mención de la lista
-  const handleDeleteMention = async (mentionId: string) => {
-    try {
-      const response = await fetch('/api/news-monitoring/mentions', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ mentionId }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setMencionesRecientes((prev) =>
-          prev.filter((m) => m.id !== mentionId)
-        );
-      }
-    } catch (error) {
-      console.error('Error al eliminar mención:', error);
-    }
-  };
-
-  const handleExportMentions = () => {
-    // TODO: Implementar exportación a CSV/PDF
-    alert('Función de exportación en desarrollo');
-  };
-
-  // Filtrar menciones
-  const filteredMentions = mencionesRecientes.filter((mention) => {
-    // Filtrar noticias generales (que no coinciden con keywords específicos)
-    if (hideGeneralNews) {
-      const isGeneralNews = mention.matchedTerm === '[noticia general]' ||
-                           mention.matchedTerm === '' ||
-                           !mention.matchedTerm;
-      if (isGeneralNews) return false;
-    }
-
-    if (sentimentFilter !== 'all' && mention.sentiment !== sentimentFilter) return false;
-    if (siteFilter && mention.monitoredSiteId !== siteFilter) return false;
-
-    if (dateFilter !== 'all') {
-      const now = new Date();
-      const mentionDate = new Date(mention.discoveredAt);
-      const diffInDays = Math.floor(
-        (now.getTime() - mentionDate.getTime()) / (1000 * 60 * 60 * 24)
-      );
-
-      if (dateFilter === 'today' && diffInDays > 0) return false;
-      if (dateFilter === 'week' && diffInDays > 7) return false;
-      if (dateFilter === 'month' && diffInDays > 30) return false;
-    }
-
-    return true;
-  });
-
-  // Contar noticias generales ocultas
-  const generalNewsCount = mencionesRecientes.filter(m =>
-    m.matchedTerm === '[noticia general]' ||
-    m.matchedTerm === '' ||
-    !m.matchedTerm
-  ).length;
-
-  // Calcular estadísticas
-  const stats = {
-    totalMentions: mencionesRecientes.length,
-    positive: mencionesRecientes.filter((m) => m.sentiment === 'positive').length,
-    negative: mencionesRecientes.filter((m) => m.sentiment === 'negative').length,
-    neutral: mencionesRecientes.filter((m) => m.sentiment === 'neutral').length,
-    unread: mencionesRecientes.filter((m) => !m.isRead).length,
-  };
-
-  const canAddMoreSites = sitiosMonitoreados.length < MAX_MONITORED_SITES;
+  // Filtrar resultados localmente (ya vienen filtrados del servidor, pero por si acaso)
+  const filteredResults = searchResults;
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Header con buscador */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-6 text-white shadow-lg"
       >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="p-3 bg-white bg-opacity-20 rounded-lg">
-              <Newspaper className="w-8 h-8" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold">Monitoreo de Noticias - Colombia</h2>
-              <p className="text-blue-100 mt-1">
-                Selecciona de nuestro catálogo de 50 sitios de noticias colombianos verificados
-              </p>
-            </div>
+        <div className="flex items-center space-x-4 mb-4">
+          <div className="p-3 bg-white bg-opacity-20 rounded-lg">
+            <Newspaper className="w-8 h-8" />
           </div>
+          <div>
+            <h2 className="text-2xl font-bold">Monitoreo de Noticias - Colombia</h2>
+            <p className="text-blue-100 mt-1">
+              Busca noticias en medios colombianos por palabra clave
+            </p>
+          </div>
+        </div>
 
+        {/* Barra de busqueda */}
+        <form onSubmit={handleSearch} className="flex gap-3">
+          <div className="flex-1 relative">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              placeholder="Escribe una palabra clave (ej: corrupcion, economia, elecciones...)"
+              className="w-full pl-12 pr-4 py-3 rounded-lg text-gray-900 bg-white placeholder-gray-400 focus:ring-2 focus:ring-blue-300 focus:outline-none"
+            />
+          </div>
           <button
-            onClick={() => setShowAgregarModal(true)}
-            disabled={!canAddMoreSites}
-            className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all ${
-              canAddMoreSites
-                ? 'bg-white text-blue-700 hover:bg-blue-50 shadow-lg hover:shadow-xl'
-                : 'bg-gray-400 text-gray-700 cursor-not-allowed opacity-50'
+            type="submit"
+            disabled={isSearching || !keyword.trim()}
+            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
+              isSearching || !keyword.trim()
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-white text-blue-700 hover:bg-blue-50 shadow-lg hover:shadow-xl'
             }`}
           >
-            <Plus className="w-5 h-5" />
-            <span>Activar Sitios</span>
+            {isSearching ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span>Buscando...</span>
+              </>
+            ) : (
+              <>
+                <Search className="w-5 h-5" />
+                <span>Buscar</span>
+              </>
+            )}
           </button>
-        </div>
+        </form>
 
-        {/* Contador de sitios */}
-        <div className="mt-4 flex items-center space-x-2 text-sm">
-          <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full">
-            {sitiosMonitoreados.length}/{MAX_MONITORED_SITES} Sitios Activos
-          </span>
-          {!canAddMoreSites && (
-            <span className="flex items-center space-x-1 text-amber-200">
-              <AlertCircle className="w-4 h-4" />
-              <span>Límite alcanzado - Desactiva sitios para activar otros</span>
+        {/* Info de la BD */}
+        {dbStats && (
+          <div className="mt-4 flex items-center gap-4 text-sm text-blue-100">
+            <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full">
+              {dbStats.totalNews.toLocaleString()} noticias en base de datos
             </span>
-          )}
-        </div>
+            {dbStats.lastScraped && (
+              <span>
+                Ultima actualizacion: {new Date(dbStats.lastScraped).toLocaleString('es-CO')}
+              </span>
+            )}
+          </div>
+        )}
       </motion.div>
 
-      {/* Estadísticas */}
-      {stats.totalMentions > 0 && (
+      {/* Estadisticas de resultados */}
+      {sentimentSummary && searchResults.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -450,109 +235,48 @@ export default function MonitoreoNoticiasSection() {
         >
           <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-md border border-gray-200 dark:border-gray-700">
             <div className="text-2xl font-bold text-gray-900 dark:text-white">
-              {stats.totalMentions}
+              {totalResults}
             </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Total</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Total Resultados</div>
           </div>
           <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 shadow-md border border-green-200 dark:border-green-800">
             <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-              {stats.positive}
+              {sentimentSummary.positive}
             </div>
             <div className="text-xs text-green-700 dark:text-green-300 mt-1">Positivas</div>
           </div>
           <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 shadow-md border border-red-200 dark:border-red-800">
             <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-              {stats.negative}
+              {sentimentSummary.negative}
             </div>
             <div className="text-xs text-red-700 dark:text-red-300 mt-1">Negativas</div>
           </div>
           <div className="bg-gray-50 dark:bg-gray-700/20 rounded-lg p-4 shadow-md border border-gray-200 dark:border-gray-700">
             <div className="text-2xl font-bold text-gray-600 dark:text-gray-400">
-              {stats.neutral}
+              {sentimentSummary.neutral}
             </div>
             <div className="text-xs text-gray-700 dark:text-gray-300 mt-1">Neutrales</div>
           </div>
           <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 shadow-md border border-blue-200 dark:border-blue-800">
             <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-              {stats.unread}
+              {(sentimentSummary.averageScore * 100).toFixed(0)}%
             </div>
-            <div className="text-xs text-blue-700 dark:text-blue-300 mt-1">Sin leer</div>
+            <div className="text-xs text-blue-700 dark:text-blue-300 mt-1">Score Promedio</div>
           </div>
         </motion.div>
       )}
 
-      {/* Sitios Monitoreados */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center">
-            📰 Mis Sitios Monitoreados
-            {sitiosMonitoreados.length > 0 && (
-              <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
-                ({sitiosMonitoreados.length})
-              </span>
-            )}
-          </h3>
-        </div>
-
-        {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div
-                key={i}
-                className="bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 p-5 animate-pulse"
-              >
-                <div className="h-20 bg-gray-200 dark:bg-gray-700 rounded mb-3"></div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
-              </div>
-            ))}
-          </div>
-        ) : sitiosMonitoreados.length === 0 ? (
-          <div className="bg-white dark:bg-gray-800 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700 p-12 text-center">
-            <Newspaper className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-              No tienes sitios activos
-            </h3>
-            <p className="text-gray-500 dark:text-gray-400 mb-6">
-              Selecciona sitios de nuestro catálogo verificado de medios colombianos para comenzar a monitorear menciones en tiempo real
-            </p>
-            <button
-              onClick={() => setShowAgregarModal(true)}
-              className="inline-flex items-center space-x-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
-            >
-              <Plus className="w-5 h-5" />
-              <span>Seleccionar Sitios del Catálogo</span>
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <AnimatePresence>
-              {sitiosMonitoreados.map((sitio) => (
-                <SitioMonitorCard
-                  key={sitio.id}
-                  sitio={sitio}
-                  onViewMentions={handleViewMentions}
-                  onConfigure={handleConfigureSitio}
-                  onToggleActive={handleToggleActive}
-                  onDelete={handleDeleteSitio}
-                  onScanNow={handleScanNow}
-                  isScanning={isScanning && scanningSiteId === sitio.id}
-                />
-              ))}
-            </AnimatePresence>
-          </div>
-        )}
-      </div>
-
-      {/* Menciones Recientes */}
-      {mencionesRecientes.length > 0 && (
+      {/* Resultados de busqueda */}
+      {hasSearched && (
         <div>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center">
-              🔔 Menciones Recientes
-              <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
-                ({filteredMentions.length})
-              </span>
+              Resultados de Busqueda
+              {searchResults.length > 0 && (
+                <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
+                  ({searchResults.length} de {totalResults})
+                </span>
+              )}
             </h3>
 
             <div className="flex items-center space-x-3">
@@ -575,60 +299,54 @@ export default function MonitoreoNoticiasSection() {
               >
                 <option value="all">Todas las fechas</option>
                 <option value="today">Hoy</option>
-                <option value="week">Última semana</option>
-                <option value="month">Último mes</option>
+                <option value="week">Ultima semana</option>
+                <option value="month">Ultimo mes</option>
               </select>
 
               <button
-                onClick={handleExportMentions}
-                className="flex items-center space-x-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg text-sm font-medium transition-colors"
+                onClick={handleExport}
+                disabled={searchResults.length === 0}
+                className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  searchResults.length === 0
+                    ? 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'
+                    : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }`}
               >
                 <Download className="w-4 h-4" />
-                <span>Exportar</span>
+                <span>Exportar CSV</span>
               </button>
             </div>
           </div>
 
-          {/* Toggle para mostrar/ocultar noticias generales */}
-          {generalNewsCount > 0 && (
-            <div className="flex items-center justify-between bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg px-4 py-3 mb-4">
-              <div className="flex items-center space-x-2">
-                <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                <span className="text-sm text-amber-800 dark:text-amber-200">
-                  {hideGeneralNews
-                    ? `${generalNewsCount} noticias generales ocultas (sin términos específicos)`
-                    : `Mostrando ${generalNewsCount} noticias generales`
-                  }
-                </span>
-              </div>
-              <button
-                onClick={() => setHideGeneralNews(!hideGeneralNews)}
-                className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                  hideGeneralNews
-                    ? 'bg-amber-600 text-white hover:bg-amber-700'
-                    : 'bg-white dark:bg-gray-800 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-700 hover:bg-amber-100 dark:hover:bg-amber-900/30'
-                }`}
-              >
-                {hideGeneralNews ? 'Mostrar' : 'Ocultar'}
-              </button>
+          {/* Estado de carga */}
+          {isSearching ? (
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
+              <Loader2 className="w-12 h-12 text-blue-500 mx-auto mb-4 animate-spin" />
+              <p className="text-gray-600 dark:text-gray-300">
+                Buscando noticias con "{keyword}"...
+              </p>
             </div>
-          )}
-
-          {filteredMentions.length === 0 ? (
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-8 text-center">
-              <p className="text-gray-500 dark:text-gray-400">
-                No hay menciones con los filtros seleccionados
+          ) : searchResults.length === 0 ? (
+            <div className="bg-white dark:bg-gray-800 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700 p-12 text-center">
+              <AlertCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                No se encontraron noticias
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400 mb-4">
+                No hay noticias que coincidan con "{keyword}" en la base de datos.
+              </p>
+              <p className="text-sm text-gray-400">
+                Intenta con otros terminos de busqueda o ejecuta el scraping para actualizar la base de datos.
               </p>
             </div>
           ) : (
             <div className="space-y-4">
               <AnimatePresence>
-                {filteredMentions.map((mencion) => (
-                  <MencionCard
-                    key={mencion.id}
-                    mencion={mencion}
-                    onMarkAsRead={handleMarkAsRead}
-                    onDelete={handleDeleteMention}
+                {filteredResults.map((news, index) => (
+                  <NewsResultCard
+                    key={news.id}
+                    news={news}
+                    index={index}
                   />
                 ))}
               </AnimatePresence>
@@ -637,23 +355,19 @@ export default function MonitoreoNoticiasSection() {
         </div>
       )}
 
-      {/* Modales */}
-      <AgregarSitioModal
-        isOpen={showAgregarModal}
-        onClose={() => setShowAgregarModal(false)}
-        onSubmit={handleAgregarSitio}
-        currentMonitoredSiteIds={sitiosMonitoreados.map((s) => s.siteId)}
-      />
-
-      <ConfigurarSitioModal
-        isOpen={showConfigModal}
-        sitio={selectedSitio}
-        onClose={() => {
-          setShowConfigModal(false);
-          setSelectedSitio(null);
-        }}
-        onSave={handleSaveConfig}
-      />
+      {/* Estado inicial - sin busqueda */}
+      {!hasSearched && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700 p-12 text-center">
+          <Search className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            Busca noticias por palabra clave
+          </h3>
+          <p className="text-gray-500 dark:text-gray-400">
+            Escribe un termino de busqueda arriba para encontrar noticias relacionadas
+            en medios colombianos como El Tiempo, Semana, El Heraldo y mas.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

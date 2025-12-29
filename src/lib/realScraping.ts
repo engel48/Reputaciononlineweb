@@ -117,13 +117,20 @@ async function simulateSocialMediaScraping(query: string): Promise<ScrapingResul
 // function generateRealisticSocialContent() ya no es necesaria
 
 // Función para analizar sentimientos con Julia IA
+// ⚠️ SOLO se usa si hay contenido REAL para analizar
 async function analyzeSentimentWithGPT(contents: string[], personalityName: string): Promise<{
   overall_sentiment: { positive: number; negative: number; neutral: number };
   insights: string[];
-}> {
+} | null> {
+  // Si no hay contenido, retornar null (NO hardcodear valores)
+  if (!contents || contents.length === 0) {
+    console.warn('analyzeSentimentWithGPT: No hay contenido para analizar');
+    return null;
+  }
+
   try {
-    const combinedContent = contents.slice(0, 20).join('\n\n'); // Limitar contenido
-    
+    const combinedContent = contents.slice(0, 20).join('\n\n');
+
     // Usar el servicio de IA centralizado
     const aiService = await import('./ai-service');
     const aiAnalysis = await aiService.aiService.chat([
@@ -138,86 +145,57 @@ async function analyzeSentimentWithGPT(contents: string[], personalityName: stri
     ], { temperature: 0.3 });
 
     try {
-      const parsed = JSON.parse(aiAnalysis);
-      return {
-        overall_sentiment: parsed.sentiment || { positive: 45, negative: 25, neutral: 30 },
-        insights: parsed.insights || [`Análisis de sentimiento completado para ${personalityName}`, 'Tendencias generales positivas observadas']
-      };
+      // Limpiar respuesta de markdown
+      let cleanResponse = aiAnalysis.trim();
+      if (cleanResponse.startsWith('```json')) {
+        cleanResponse = cleanResponse.replace(/```json\s*/, '').replace(/```\s*$/, '');
+      } else if (cleanResponse.startsWith('```')) {
+        cleanResponse = cleanResponse.replace(/```\s*/, '').replace(/```\s*$/, '');
+      }
+
+      const parsed = JSON.parse(cleanResponse);
+      if (parsed.sentiment && typeof parsed.sentiment.positive === 'number') {
+        return {
+          overall_sentiment: parsed.sentiment,
+          insights: parsed.insights || [`Análisis completado para ${personalityName}`]
+        };
+      }
+      // Si el parse no tiene la estructura correcta, retornar null
+      console.warn('analyzeSentimentWithGPT: Respuesta de IA no tiene estructura válida');
+      return null;
     } catch (parseError) {
-      return {
-        overall_sentiment: { positive: 45, negative: 25, neutral: 30 },
-        insights: [`Análisis de sentimiento completado para ${personalityName}`, 'Tendencias generales positivas observadas']
-      };
+      console.error('Error parseando análisis de IA:', parseError);
+      return null; // NO hardcodear valores
     }
   } catch (error) {
     console.error('Error with GPT sentiment analysis:', error);
-    return {
-      overall_sentiment: { positive: 45, negative: 25, neutral: 30 },
-      insights: [`Análisis de sentimiento completado para ${personalityName}`, 'Tendencias generales positivas observadas']
-    };
+    return null; // NO hardcodear valores
   }
 }
 
 // Función principal para búsqueda y análisis real
-export async function searchAndAnalyzePersonality(name: string): Promise<PersonalityAnalysis> {
+// ⚠️ IMPORTANTE: Esta función ya NO genera datos inventados
+// Si no hay datos reales, retorna null para que el sistema use scraped_news
+export async function searchAndAnalyzePersonality(name: string): Promise<PersonalityAnalysis | null> {
   try {
-    console.log(`Iniciando búsqueda real para: ${name}`);
-    
-    // 1. Búsqueda de noticias con IA
-    const newsResults = await searchNewsWithAI(name);
-    console.log(`Generadas ${newsResults.length} noticias con IA`);
-    
-    // 2. Simulación de redes sociales (en producción sería scraping real)
-    const socialResults = await simulateSocialMediaScraping(name);
-    console.log(`Encontradas ${socialResults.length} menciones sociales`);
-    
-    // 3. Combinar todos los contenidos
-    const allContents = [...newsResults, ...socialResults];
-    const contentTexts = allContents.map(item => `${item.title} ${item.content}`);
-    
-    // 4. Análisis de sentimientos con Julia IA
-    const sentimentAnalysis = await analyzeSentimentWithGPT(contentTexts, name);
-    
-    // 5. Agrupar por fuentes
-    const sourceGroups = allContents.reduce((acc, item) => {
-      if (!acc[item.source]) {
-        acc[item.source] = [];
-      }
-      acc[item.source].push(item);
-      return acc;
-    }, {} as Record<string, ScrapingResult[]>);
-    
-    // 6. Crear análisis final
-    const sources = Object.entries(sourceGroups).map(([sourceName, items]) => ({
-      source: sourceName,
-      mentions: items.length,
-      sentiment: sentimentAnalysis.overall_sentiment, // ✅ Usar sentimiento real del análisis de IA
-      recent_mentions: items.slice(0, 3)
-    }));
-    
-    const reputationScore = Math.floor(
-      (sentimentAnalysis.overall_sentiment.positive - sentimentAnalysis.overall_sentiment.negative + 50) * 2
-    );
-    
-    // ✅ Calcular tendencia basada en datos reales (comparar sentimiento actual vs promedio)
-    const avgPositive = sentimentAnalysis.overall_sentiment.positive;
-    const trend = avgPositive > 50 ? 'up' : 'down'; // Si más del 50% es positivo, tendencia arriba
+    console.log(`Iniciando búsqueda para: ${name}`);
 
-    return {
-      name,
-      overall_sentiment: sentimentAnalysis.overall_sentiment,
-      total_mentions: allContents.length,
-      sources,
-      reputation_score: Math.max(0, Math.min(100, reputationScore)),
-      trend, // ✅ Tendencia basada en sentimiento real
-      key_insights: sentimentAnalysis.insights,
-      news_analysis: newsResults,
-      social_analysis: socialResults
-    };
-    
+    // ❌ NO usar searchNewsWithAI - genera noticias INVENTADAS por IA
+    // ❌ NO usar simulateSocialMediaScraping - retorna vacío
+    // ✅ Los datos reales vienen de scraped_news (RSS scraping)
+
+    // Esta función ahora solo intenta analizar si hay contenido real
+    // El contenido real debe venir del servicio newsSearchService
+
+    console.warn('searchAndAnalyzePersonality: Use /api/search que busca en scraped_news primero');
+
+    // Retornar null para indicar que no hay datos
+    // El endpoint /api/search usará el newsSearchService como fuente principal
+    return null;
+
   } catch (error) {
     console.error('Error in searchAndAnalyzePersonality:', error);
-    throw new Error('Error en el análisis de personalidad');
+    return null;
   }
 }
 

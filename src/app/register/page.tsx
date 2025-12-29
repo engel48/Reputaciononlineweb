@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Eye, EyeOff, Mail, Lock, User, Check, Building, UserCheck, UserCog } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Check, Building } from 'lucide-react';
 import gsap from 'gsap';
 import { fadeInUp, staggerFadeIn, createTimeline } from '../../lib/gsap-animations';
 import { aiPatternLearning, aiDataAnalysis, aiDecisionMaking, aiAdaptiveInterface } from '../../lib/ai-animations';
@@ -21,7 +21,7 @@ export default function RegisterPage() {
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState('');
   const [paso, setPaso] = useState(1); // Para el proceso de registro en 2 pasos
-  const [tipoPerfil, setTipoPerfil] = useState<'personal'|'political'>('personal'); // Tipo de perfil: personal o político
+  const [tipoPerfil, setTipoPerfil] = useState<'personal'>('personal'); // Tipo de perfil: personal
   const [plan, setPlan] = useState('basic'); // Plan seleccionado
   
   // Referencias para animaciones
@@ -271,7 +271,7 @@ export default function RegisterPage() {
           <div className="text-center">
             <h2 className="text-2xl font-bold text-gray-900">Crear una cuenta</h2>
             <p className="mt-2 text-sm text-gray-600">
-              {paso === 1 ? 'Comienza con tus datos personales' : `Un paso más para completar tu registro de ${tipoPerfil === 'political' ? 'perfil político' : 'persona natural'}`}
+              {paso === 1 ? 'Comienza con tus datos personales' : 'Un paso más para completar tu registro'}
             </p>
           </div>
 
@@ -303,38 +303,6 @@ export default function RegisterPage() {
           {paso === 1 ? (
             <form className="mt-6 space-y-5" onSubmit={handlePaso1}>
               <div className="space-y-4">
-                {/* Selector de tipo de perfil */}
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Tipo de perfil <span className="text-red-500">*</span>
-                  </label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div
-                      onClick={() => setTipoPerfil('personal')}
-                      className={`cursor-pointer rounded-xl border-2 ${tipoPerfil === 'personal'
-                        ? 'border-[#00E5FF] bg-[#00E5FF]/10'
-                        : 'border-gray-200 bg-white'}
-                        p-4 flex flex-col items-center justify-center transition-all hover:border-[#00E5FF]/50`}
-                    >
-                      <UserCheck className={`h-7 w-7 mb-2 ${tipoPerfil === 'personal' ? 'text-[#00E5FF]' : 'text-gray-400'}`} />
-                      <span className={`text-sm font-medium ${tipoPerfil === 'personal' ? 'text-[#00E5FF]' : 'text-gray-600'}`}>Persona Natural</span>
-                      <p className="text-xs text-gray-500 text-center mt-1">Individuos y profesionales</p>
-                    </div>
-
-                    <div
-                      onClick={() => setTipoPerfil('political')}
-                      className={`cursor-pointer rounded-xl border-2 ${tipoPerfil === 'political'
-                        ? 'border-[#00E5FF] bg-[#00E5FF]/10'
-                        : 'border-gray-200 bg-white'}
-                        p-4 flex flex-col items-center justify-center transition-all hover:border-[#00E5FF]/50`}
-                    >
-                      <UserCog className={`h-7 w-7 mb-2 ${tipoPerfil === 'political' ? 'text-[#00E5FF]' : 'text-gray-400'}`} />
-                      <span className={`text-sm font-medium ${tipoPerfil === 'political' ? 'text-[#00E5FF]' : 'text-gray-600'}`}>Político</span>
-                      <p className="text-xs text-gray-500 text-center mt-1">Candidatos y figuras políticas</p>
-                    </div>
-                  </div>
-                </div>
-
                 <div>
                   <label htmlFor="nombre" className="block text-sm font-medium text-gray-700">
                     Nombre completo <span className="text-red-500">*</span>
@@ -461,7 +429,7 @@ export default function RegisterPage() {
               <div className="space-y-4">
                 <div>
                   <label htmlFor="empresa" className="block text-sm font-medium text-gray-700">
-                    {tipoPerfil === 'political' ? 'Partido político o movimiento' : 'Nombre de empresa o marca'} <span className="text-red-500">*</span>
+                    Nombre de empresa o marca <span className="text-red-500">*</span>
                   </label>
                   <div className="relative mt-1">
                     <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -474,7 +442,7 @@ export default function RegisterPage() {
                       value={empresa}
                       onChange={(e) => setEmpresa(e.target.value)}
                       className="block w-full rounded-xl border border-gray-300 bg-white py-3 pl-10 text-gray-900 placeholder-gray-400 focus:border-[#00E5FF] focus:ring-1 focus:ring-[#00E5FF] transition-colors"
-                      placeholder={tipoPerfil === 'political' ? 'Nombre del partido político o movimiento' : 'Nombre de tu empresa o marca'}
+                      placeholder="Nombre de tu empresa o marca"
                     />
                   </div>
                 </div>
