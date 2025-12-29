@@ -2,9 +2,10 @@
 
 import React, { useState } from 'react';
 import SimpleBuscador from '@/components/dashboard/SimpleBuscador';
+import AdvancedSearch from '@/components/dashboard/AdvancedSearch';
 import NoticiasColombia from '@/components/dashboard/NoticiasColombia';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Globe, Clock, RefreshCw, ArrowUpRight, X as CloseIcon } from 'lucide-react';
+import { Search, Globe, Clock, RefreshCw, ArrowUpRight, X as CloseIcon, Users, Building, Crown } from 'lucide-react';
 import { useRealTimeNews } from '@/hooks/useRealTimeNews';
 import dynamic from 'next/dynamic';
 
@@ -76,33 +77,40 @@ export default function BusquedaNoticiasPage() {
         </p>
       </div>
 
-      {/* SECCIÓN: BÚSQUEDA AVANZADA DE PERSONALIDADES */}
+      {/* SECCIÓN: BUSCADOR DE PERSONAS Y EMPRESAS - COMPLETO */}
       <motion.div
         custom={0}
         initial="hidden"
         animate="visible"
         variants={statsVariants}
-        whileHover={{ scale: 1.01, transition: { duration: 0.2 } }}
-        className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 sm:p-6 border border-gray-200 dark:border-gray-700"
       >
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-gradient-to-r from-[#01257D] to-blue-600 rounded-lg">
-              <Search className="w-5 h-5 text-white" />
-            </div>
+        {/* Información de tipos de búsqueda */}
+        <div className="mb-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="flex items-center space-x-3 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+            <Crown className="w-5 h-5 text-purple-600" />
             <div>
-              <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
-                🔍 Búsqueda Avanzada de Personalidades
-              </h2>
-              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                Utiliza el buscador de la barra superior para búsquedas rápidas o explora aquí con filtros avanzados
-              </p>
+              <p className="text-sm font-medium text-purple-900 dark:text-purple-100">Políticos</p>
+              <p className="text-xs text-purple-600 dark:text-purple-300">Candidatos, funcionarios</p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-3 p-3 bg-pink-50 dark:bg-pink-900/20 rounded-lg border border-pink-200 dark:border-pink-800">
+            <Users className="w-5 h-5 text-pink-600" />
+            <div>
+              <p className="text-sm font-medium text-pink-900 dark:text-pink-100">Influencers</p>
+              <p className="text-xs text-pink-600 dark:text-pink-300">Creadores de contenido</p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <Building className="w-5 h-5 text-blue-600" />
+            <div>
+              <p className="text-sm font-medium text-blue-900 dark:text-blue-100">Empresas</p>
+              <p className="text-xs text-blue-600 dark:text-blue-300">Marcas, corporaciones</p>
             </div>
           </div>
         </div>
 
-        {/* Buscador avanzado con filtros */}
-        <SimpleBuscador />
+        {/* Buscador avanzado completo con análisis de sentimientos */}
+        <AdvancedSearch />
       </motion.div>
 
       {/* SECCIÓN: NOTICIAS DE COLOMBIA EN TIEMPO REAL - 50 SITIOS VERIFICADOS */}
