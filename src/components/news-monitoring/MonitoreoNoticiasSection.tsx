@@ -163,24 +163,37 @@ export default function MonitoreoNoticiasSection() {
       if (data.success) {
         const addedKeyword = newKeyword.trim();
         setNewKeyword('');
-        setSuccessMessage(`"${addedKeyword}" agregada. Buscando noticias...`);
+        setSuccessMessage(`"${addedKeyword}" agregada. Buscando en internet...`);
 
-        // Ejecutar monitoreo inicial para esta keyword
+        // NUEVO: Buscar en Google News (scraping real de internet)
+        const searchResponse = await fetch('/api/news-monitoring/search', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            keyword: addedKeyword,
+            keywordId: data.keyword.id,
+          }),
+        });
+        const searchData = await searchResponse.json();
+
+        // También buscar en noticias existentes de la BD
         await handleMonitorKeyword(data.keyword.id);
 
         // Recargar lista de keywords
         await loadKeywords();
 
-        // Seleccionar automáticamente la keyword recién agregada para mostrar resultados
+        // Seleccionar automáticamente la keyword recién agregada
         setSelectedKeyword({
           ...data.keyword,
           unread_mentions: 0,
         });
 
-        // Cargar menciones de la keyword recién agregada
+        // Cargar menciones encontradas
         await loadMentions(data.keyword.id);
 
-        setSuccessMessage(`"${addedKeyword}" agregada. ${data.keyword.total_mentions || 0} menciones encontradas.`);
+        const totalFound = searchData.stats?.mentions || 0;
+        setSuccessMessage(`"${addedKeyword}" agregada. ${totalFound} noticias encontradas en internet.`);
         setTimeout(() => setSuccessMessage(null), 5000);
       } else {
         setError(data.error);
