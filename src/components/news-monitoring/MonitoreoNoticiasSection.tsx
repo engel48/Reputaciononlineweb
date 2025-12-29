@@ -161,14 +161,27 @@ export default function MonitoreoNoticiasSection() {
       const data = await response.json();
 
       if (data.success) {
+        const addedKeyword = newKeyword.trim();
         setNewKeyword('');
-        setSuccessMessage(`"${newKeyword}" agregada. Buscando noticias...`);
-        await loadKeywords();
+        setSuccessMessage(`"${addedKeyword}" agregada. Buscando noticias...`);
 
         // Ejecutar monitoreo inicial para esta keyword
         await handleMonitorKeyword(data.keyword.id);
 
-        setTimeout(() => setSuccessMessage(null), 3000);
+        // Recargar lista de keywords
+        await loadKeywords();
+
+        // Seleccionar automáticamente la keyword recién agregada para mostrar resultados
+        setSelectedKeyword({
+          ...data.keyword,
+          unread_mentions: 0,
+        });
+
+        // Cargar menciones de la keyword recién agregada
+        await loadMentions(data.keyword.id);
+
+        setSuccessMessage(`"${addedKeyword}" agregada. ${data.keyword.total_mentions || 0} menciones encontradas.`);
+        setTimeout(() => setSuccessMessage(null), 5000);
       } else {
         setError(data.error);
       }
