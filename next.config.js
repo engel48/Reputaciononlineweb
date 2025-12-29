@@ -7,26 +7,10 @@ const nextConfig = {
   images: {
     domains: ['localhost', 'graph.facebook.com', 'pbs.twimg.com', 'media.licdn.com', 'yt3.ggpht.com'],
   },
-  // Redirects para páginas de monitoreo antiguas
-  async redirects() {
-    return [
-      {
-        source: '/dashboard/busqueda-noticias',
-        destination: '/dashboard/monitoreo?tab=news',
-        permanent: false,
-      },
-      {
-        source: '/dashboard/social-listening',
-        destination: '/dashboard/monitoreo?tab=social',
-        permanent: false,
-      },
-      {
-        source: '/dashboard/hashtags',
-        destination: '/dashboard/monitoreo?tab=hashtags',
-        permanent: false,
-      },
-    ];
-  },
+  // Redirects deshabilitados - cada página tiene su funcionalidad propia
+  // async redirects() {
+  //   return [];
+  // },
   // Transpile problematic server-only packages
   experimental: {
     serverComponentsExternalPackages: ['cheerio', 'undici'],
