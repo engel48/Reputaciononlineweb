@@ -158,14 +158,48 @@ export async function POST(request: NextRequest) {
     for (const kw of keywords) {
       console.log(`  📰 Buscando noticias para: "${kw.keyword}"`);
 
-      // Buscar noticias en scraped_news que coincidan con la keyword
-      const { data: newsMatches, error: newsError } = await supabase
-        .from('scraped_news')
-        .select('*')
-        .or(`title.ilike.%${kw.keyword}%,content.ilike.%${kw.keyword}%`)
-        .gte('published_at', oneMonthAgo.toISOString())
-        .order('published_at', { ascending: false })
-        .limit(100);
+      // Dividir keyword en palabras para busqueda mas flexible
+      const words = kw.keyword.trim().toLowerCase().split(/\s+/).filter(w => w.length >= 2);
+
+      let newsMatches: any[] = [];
+      let newsError: any = null;
+
+      if (words.length === 1) {
+        // Palabra simple: buscar directamente
+        const result = await supabase
+          .from('scraped_news')
+          .select('*')
+          .or(`title.ilike.%${words[0]}%,content.ilike.%${words[0]}%`)
+          .gte('published_at', oneMonthAgo.toISOString())
+          .order('published_at', { ascending: false })
+          .limit(100);
+        newsMatches = result.data || [];
+        newsError = result.error;
+      } else {
+        // Multiples palabras: buscar articulos que contengan TODAS las palabras
+        // Primero buscar con la primera palabra, luego filtrar
+        const result = await supabase
+          .from('scraped_news')
+          .select('*')
+          .or(`title.ilike.%${words[0]}%,content.ilike.%${words[0]}%`)
+          .gte('published_at', oneMonthAgo.toISOString())
+          .order('published_at', { ascending: false })
+          .limit(200);
+
+        if (result.error) {
+          newsError = result.error;
+        } else {
+          // Filtrar los que contengan TODAS las palabras
+          newsMatches = (result.data || []).filter(news => {
+            const titleLower = (news.title || '').toLowerCase();
+            const contentLower = (news.content || '').toLowerCase();
+            const fullText = `${titleLower} ${contentLower}`;
+            return words.every(word => fullText.includes(word));
+          }).slice(0, 100);
+        }
+
+        console.log(`    🔎 Busqueda multi-palabra: ${words.join(' + ')} → ${newsMatches.length} resultados`);
+      }
 
       if (newsError) {
         console.error(`  ❌ Error buscando noticias para "${kw.keyword}":`, newsError);
