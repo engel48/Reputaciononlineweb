@@ -1,8 +1,12 @@
 {
   "crons": [
     {
-      "path": "/api/news-monitoring/cron",
-      "schedule": "*/5 * * * *"
+      "path": "/api/cron/monitor-keywords",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/scraping/run",
+      "schedule": "30 */2 * * *"
     }
   ]
 }
