@@ -5,7 +5,7 @@ import { Activity, Radio, Users, Hash } from 'lucide-react';
 import HashtagMonitoring from '@/components/hashtags/HashtagMonitoring';
 import AudienceIntelligence from '@/components/social-listening/AudienceIntelligence';
 import MediaMonitoring from '@/components/social-listening/MediaMonitoring';
-import SocialListeningCard from '@/components/dashboard/SocialListeningCard';
+import { SocialListeningCard } from '@/components/dashboard/SocialListeningCard';
 
 export default function MonitoreoPage() {
   return (
