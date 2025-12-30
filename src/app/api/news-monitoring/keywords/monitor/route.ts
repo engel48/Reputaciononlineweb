@@ -194,7 +194,7 @@ export async function POST(request: NextRequest) {
             const titleLower = (news.title || '').toLowerCase();
             const contentLower = (news.content || '').toLowerCase();
             const fullText = `${titleLower} ${contentLower}`;
-            return words.every(word => fullText.includes(word));
+            return words.every((word: string) => fullText.includes(word));
           }).slice(0, 100);
         }
 
