@@ -6,8 +6,18 @@ import HashtagMonitoring from '@/components/hashtags/HashtagMonitoring';
 import AudienceIntelligence from '@/components/social-listening/AudienceIntelligence';
 import MediaMonitoring from '@/components/social-listening/MediaMonitoring';
 import { SocialListeningCard } from '@/components/dashboard/SocialListeningCard';
+import { useUser } from '@/context/UserContext';
 
 export default function MonitoreoPage() {
+  const { user } = useUser();
+
+  // Profile para AudienceIntelligence
+  const userProfile = {
+    type: user?.profileType || 'business',
+    specialization: user?.industry || 'general',
+    region: 'Colombia'
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -58,7 +68,7 @@ export default function MonitoreoPage() {
                 Análisis de Audiencia
               </h2>
             </div>
-            <AudienceIntelligence />
+            <AudienceIntelligence userProfile={userProfile} />
           </section>
         </div>
 
