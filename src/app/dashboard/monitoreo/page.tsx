@@ -74,7 +74,7 @@ export default function MonitoreoPage() {
 
         {/* Media Monitoring - Full Width */}
         <section>
-          <MediaMonitoring />
+          <MediaMonitoring userProfile={userProfile} />
         </section>
       </div>
     </div>
