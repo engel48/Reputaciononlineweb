@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import CreditosSummary from '@/components/creditos/CreditosSummary';
+// import CreditosSummary from '@/components/creditos/CreditosSummary'; // Comentado - sección de créditos deshabilitada
 import AdvancedSearch from '@/components/dashboard/AdvancedSearch';
 import JuliaChat from '@/components/dashboard/JuliaChat';
 import SimpleChat from '@/components/dashboard/SimpleChat';
@@ -20,7 +20,7 @@ import JuliaThinkingAnimation from '@/components/dashboard/JuliaThinkingAnimatio
 import LoadingAnimation from '@/components/ui/LoadingAnimation';
 import { useUser } from '@/context/UserContext';
 import { usePlan } from '@/context/PlanContext';
-import FeatureGate, { UsageLimit, PlanBadge } from '@/components/plan/FeatureGate';
+import FeatureGate, { PlanBadge } from '@/components/plan/FeatureGate';
 
 // Interfaces
 interface MentionEngagement {
@@ -406,33 +406,8 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Resumen de créditos - RESPONSIVE CON ANIMACIONES MEJORADAS */}
-      <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-4">
-        <motion.div 
-          className="col-span-1 lg:col-span-2"
-          custom={0}
-          initial="hidden"
-          animate="visible"
-          variants={statsVariants}
-        >
-          <CreditosSummary showDetails={true} />
-          
-          {/* Mostrar límites de uso del plan */}
-          <div className="mt-4 space-y-3">
-            <UsageLimit
-              feature="maxSocialAccounts"
-              currentUsage={3}
-              label="Cuentas sociales conectadas"
-              className="bg-white dark:bg-[#151C2E] p-3 rounded-xl border border-gray-100 dark:border-[#1A202C]"
-            />
-            <UsageLimit
-              feature="maxSearchQueries"
-              currentUsage={27}
-              label="Búsquedas este mes"
-              className="bg-white dark:bg-[#151C2E] p-3 rounded-xl border border-gray-100 dark:border-[#1A202C]"
-            />
-          </div>
-        </motion.div>
+      {/* Estadísticas principales - RESPONSIVE CON ANIMACIONES MEJORADAS */}
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
         
         {/* Estadísticas rápidas MEJORADAS CON ANIMACIONES AVANZADAS */}
         <motion.div
