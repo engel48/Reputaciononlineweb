@@ -77,16 +77,17 @@ export async function GET(request: NextRequest) {
 
       if (realResults && realResults.name) {
         console.log(`✅ Encontrado resultado real para: ${realResults.name}`);
+        const data = realResults as any;
         return NextResponse.json({
           success: true,
           results: [{
             id: `real-${Date.now()}`,
             name: realResults.name,
-            type: realResults.type || 'político',
-            country: realResults.country || 'Colombia',
-            category: realResults.category || 'General',
-            followers: realResults.followers || 0,
-            platforms: realResults.platforms || []
+            type: data.type || 'político',
+            country: data.country || 'Colombia',
+            category: data.category || 'General',
+            followers: data.followers || 0,
+            platforms: data.platforms || []
           }],
           source: 'real_scraping',
           query: query,
