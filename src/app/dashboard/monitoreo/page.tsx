@@ -14,7 +14,7 @@ export default function MonitoreoPage() {
   // Profile para AudienceIntelligence
   const userProfile = {
     type: user?.profileType || 'business',
-    specialization: user?.industry || 'general',
+    specialization: 'general',
     region: 'Colombia'
   };
 
