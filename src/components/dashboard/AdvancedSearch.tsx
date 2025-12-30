@@ -796,7 +796,7 @@ export default function AdvancedSearch() {
                             </span>
                           </div>
                           <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-                            {news.content.substring(0, 200)}...
+                            {(news.content || '').substring(0, 200)}...
                           </p>
                           <div className="flex justify-between items-center">
                             <span className="text-xs text-gray-500">
@@ -865,7 +865,7 @@ export default function AdvancedSearch() {
                             {source.title}
                           </h5>
                           <p className="text-xs text-gray-600 dark:text-gray-300 mb-2">
-                            {source.snippet.substring(0, 100)}...
+                            {(source.snippet || '').substring(0, 100)}...
                           </p>
                           <div className="flex justify-between items-center">
                             <span className="text-xs text-gray-500">{source.source}</span>
