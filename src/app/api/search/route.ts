@@ -1,16 +1,80 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { aiService } from '@/lib/ai-service';
-import { searchPersonalitiesOnline, searchAndAnalyzePersonality } from '@/lib/realScraping';
-import { performRealAnalysis } from '@/lib/realNewsAPI';
-import { performWebSearch, identifyPersonalities } from '@/lib/realWebSearch';
-import { searchPersonOrCompany, searchNews } from '@/lib/services/newsSearchService';
+import { searchPersonalitiesOnline } from '@/lib/realScraping';
+import { performWebSearch, searchWikipedia } from '@/lib/realWebSearch';
+import { searchPersonOrCompany } from '@/lib/services/newsSearchService';
 import { createClient } from '@supabase/supabase-js';
 
-// Búsqueda REAL en base de datos + scraping
+// Búsqueda REAL en internet + base de datos
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Buscar en Google News RSS (TIEMPO REAL)
+async function searchGoogleNewsRSS(query: string): Promise<any[]> {
+  const articles: any[] = [];
+  try {
+    const searchQuery = encodeURIComponent(`${query} Colombia`);
+    const url = `https://news.google.com/rss/search?q=${searchQuery}&hl=es-419&gl=CO&ceid=CO:es-419`;
+
+    console.log(`🔍 Buscando en Google News RSS: "${query}"`);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+    });
+    clearTimeout(timeoutId);
+
+    if (!response.ok) return [];
+
+    const xml = await response.text();
+    const itemRegex = /<item>([\s\S]*?)<\/item>/gi;
+    let match;
+
+    while ((match = itemRegex.exec(xml)) !== null && articles.length < 15) {
+      const item = match[1];
+      const title = item.match(/<title>([^<]+)<\/title>/)?.[1];
+      const link = item.match(/<link>([^<]+)<\/link>/)?.[1];
+      const pubDate = item.match(/<pubDate>([^<]+)<\/pubDate>/)?.[1];
+      const desc = item.match(/<description>([\s\S]*?)<\/description>/)?.[1];
+      const source = item.match(/<source[^>]*>([^<]+)<\/source>/)?.[1];
+
+      if (title && link) {
+        // Limpiar HTML
+        const cleanDesc = (desc || '').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').trim();
+
+        // Analizar sentimiento básico
+        const lowerText = `${title} ${cleanDesc}`.toLowerCase();
+        const positiveWords = ['éxito', 'logro', 'avance', 'mejora', 'positivo', 'gana', 'victoria'];
+        const negativeWords = ['crisis', 'escándalo', 'corrupción', 'muerte', 'violencia', 'fracaso', 'denuncia'];
+
+        let sentiment: 'positive' | 'negative' | 'neutral' = 'neutral';
+        const posCount = positiveWords.filter(w => lowerText.includes(w)).length;
+        const negCount = negativeWords.filter(w => lowerText.includes(w)).length;
+        if (posCount > negCount) sentiment = 'positive';
+        else if (negCount > posCount) sentiment = 'negative';
+
+        articles.push({
+          id: `gnews-${Date.now()}-${articles.length}`,
+          title: title.replace(/<[^>]+>/g, ''),
+          content: cleanDesc,
+          url: link.trim(),
+          source: source || 'Google News',
+          publishedAt: pubDate ? new Date(pubDate).toISOString() : new Date().toISOString(),
+          sentiment,
+        });
+      }
+    }
+    console.log(`✅ Google News RSS: ${articles.length} noticias encontradas`);
+  } catch (error: any) {
+    console.error(`❌ Error Google News RSS:`, error.message);
+  }
+  return articles;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -19,154 +83,85 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get('type');
 
     if (!query) {
-      return NextResponse.json({ error: 'Parámetro de búsqueda requerido' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'Parámetro de búsqueda requerido' }, { status: 400 });
     }
 
-    console.log(`🔍 Búsqueda para: "${query}" (tipo: ${type || 'todos'})`);
+    console.log(`🔍 Búsqueda REAL para: "${query}" (tipo: ${type || 'todos'})`);
 
-    // 1. PRIMERO: Buscar en scraped_news (noticias reales scrapeadas)
-    try {
-      console.log('📰 Buscando en noticias scrapeadas...');
-      const newsResults = await searchPersonOrCompany(query, { limit: 20 });
+    // Ejecutar todas las búsquedas en PARALELO para máxima velocidad
+    const [googleNews, wikiResults, webResults, aiPersonalities] = await Promise.all([
+      searchGoogleNewsRSS(query),
+      searchWikipedia(query).catch(() => []),
+      performWebSearch(query).catch(() => ({ webResults: [], newsResults: [], totalResults: 0 })),
+      searchPersonalitiesOnline(query).catch(() => [])
+    ]);
 
-      if (newsResults && newsResults.news.length > 0) {
-        console.log(`✅ Encontradas ${newsResults.news.length} noticias reales para: "${query}"`);
+    console.log(`📊 Resultados: Google News=${googleNews.length}, Wikipedia=${wikiResults.length}, Web=${webResults.totalResults}, AI=${aiPersonalities.length}`);
 
-        // Crear un resultado de personalidad basado en las noticias encontradas
-        const personality = {
-          id: `search-${Date.now()}`,
-          name: query,
-          type: type as 'político' | 'influencer' | 'empresa' || 'político',
-          country: 'Colombia',
-          category: 'Búsqueda',
-          followers: newsResults.news.length * 1000,
-          platforms: ['Noticias', 'Medios']
-        };
+    // Combinar todos los resultados
+    const allNews = [...googleNews];
+    const allWebSources = [...wikiResults, ...webResults.webResults];
 
-        return NextResponse.json({
-          success: true,
-          results: [personality],
-          news: newsResults.news.map(n => ({
-            id: n.id,
-            title: n.title,
-            description: n.summary,
-            url: n.articleUrl,
-            source: n.source,
-            sourceUrl: n.sourceUrl,
-            publishedAt: n.publishedAt,
-            author: n.author,
-            sentiment: n.sentiment,
-            sentimentScore: n.sentimentScore,
-            imageUrl: n.imageUrl,
-            type: 'news'
-          })),
-          analysis: newsResults.analysis,
-          source: 'scraped_news',
-          query: query,
-          timestamp: new Date().toISOString()
-        });
-      }
-    } catch (error) {
-      console.error('Error buscando en noticias scrapeadas:', error);
+    // Crear personalidad basada en la búsqueda
+    let personality: any = null;
+
+    // Si la IA encontró personalidades, usar la primera
+    if (aiPersonalities.length > 0) {
+      const aiP = aiPersonalities[0];
+      personality = {
+        id: aiP.id,
+        name: aiP.name,
+        type: aiP.type || type || 'político',
+        country: aiP.country || 'Colombia',
+        category: aiP.category || aiP.description || 'General',
+        followers: allNews.length * 1000,
+        platforms: ['Google News', 'Wikipedia', 'Web']
+      };
+    } else if (allNews.length > 0 || allWebSources.length > 0) {
+      // Crear personalidad genérica si hay resultados
+      personality = {
+        id: `search-${Date.now()}`,
+        name: query,
+        type: type || 'político',
+        country: 'Colombia',
+        category: 'Búsqueda en Internet',
+        followers: (allNews.length + allWebSources.length) * 500,
+        platforms: ['Google News', 'Wikipedia', 'Web']
+      };
     }
 
-    // 2. SEGUNDO: Intentar búsqueda real con scraping en tiempo real
-    try {
-      console.log('🔄 Intentando scraping en tiempo real...');
-      const realResults = await searchAndAnalyzePersonality(query);
+    // Si hay resultados, devolver
+    if (personality || allNews.length > 0 || allWebSources.length > 0) {
+      // Calcular sentimiento
+      const positive = allNews.filter(n => n.sentiment === 'positive').length;
+      const negative = allNews.filter(n => n.sentiment === 'negative').length;
+      const neutral = allNews.length - positive - negative;
 
-      if (realResults && realResults.name) {
-        console.log(`✅ Encontrado resultado real para: ${realResults.name}`);
-        const data = realResults as any;
-        return NextResponse.json({
-          success: true,
-          results: [{
-            id: `real-${Date.now()}`,
-            name: realResults.name,
-            type: data.type || 'político',
-            country: data.country || 'Colombia',
-            category: data.category || 'General',
-            followers: data.followers || 0,
-            platforms: data.platforms || []
-          }],
-          source: 'real_scraping',
-          query: query,
-          timestamp: new Date().toISOString()
-        });
-      }
-    } catch (error) {
-      console.error('Error en scraping en tiempo real:', error);
+      return NextResponse.json({
+        success: true,
+        results: personality ? [personality] : [],
+        news: allNews,
+        webSources: allWebSources,
+        sentimentSummary: {
+          positive: allNews.length > 0 ? Math.round((positive / allNews.length) * 100) : 0,
+          negative: allNews.length > 0 ? Math.round((negative / allNews.length) * 100) : 0,
+          neutral: allNews.length > 0 ? Math.round((neutral / allNews.length) * 100) : 0,
+          total: allNews.length
+        },
+        source: 'internet_realtime',
+        query: query,
+        timestamp: new Date().toISOString()
+      });
     }
 
-    // 3. TERCERO: Intentar búsqueda web externa
-    try {
-      console.log('🌐 Intentando búsqueda web...');
-      const webResults = await performWebSearch(query);
-
-      if (webResults && webResults.totalResults > 0) {
-        console.log(`✅ Encontrados ${webResults.totalResults} resultados de búsqueda web`);
-
-        // Crear personalidad basada en búsqueda web
-        const personality = {
-          id: `web-${Date.now()}`,
-          name: query,
-          type: type as 'político' | 'influencer' | 'empresa' || 'político',
-          country: 'Colombia',
-          category: 'Búsqueda Web',
-          followers: webResults.totalResults * 100,
-          platforms: ['Web', 'Noticias']
-        };
-
-        return NextResponse.json({
-          success: true,
-          results: [personality],
-          webResults: [...webResults.webResults, ...webResults.newsResults],
-          source: 'web_search',
-          query: query,
-          timestamp: new Date().toISOString()
-        });
-      }
-    } catch (error) {
-      console.error('Error en búsqueda web:', error);
-    }
-
-    // 4. CUARTO: Consultar base de datos de usuarios monitoreados
-    try {
-      const { data: monitoredPersons, error } = await supabase
-        .from('users')
-        .select('id, name, email, profileType, category')
-        .ilike('name', `%${query}%`)
-        .limit(10);
-
-      if (!error && monitoredPersons && monitoredPersons.length > 0) {
-        console.log(`✅ Encontrados ${monitoredPersons.length} usuarios monitoreados`);
-        return NextResponse.json({
-          success: true,
-          results: monitoredPersons.map(person => ({
-            id: person.id,
-            name: person.name,
-            type: person.profileType || 'político',
-            country: 'Colombia',
-            category: person.category || 'Usuario',
-            followers: 0,
-            platforms: [],
-            monitored: true
-          })),
-          source: 'database',
-          query: query,
-          timestamp: new Date().toISOString()
-        });
-      }
-    } catch (error) {
-      console.error('Error consultando base de datos:', error);
-    }
-
-    // Sin resultados - sugerir ejecutar scraping
+    // Sin resultados
     console.log('⚠️ No se encontraron resultados para la búsqueda');
     return NextResponse.json({
       success: true,
       results: [],
-      suggestions: `No se encontraron resultados para "${query}". Intenta con otro término o ejecuta el scraping de noticias.`,
+      news: [],
+      webSources: [],
+      suggestions: `No se encontraron resultados para "${query}". Intenta con otro nombre o término.`,
       source: 'none',
       query: query,
       timestamp: new Date().toISOString()
@@ -197,7 +192,7 @@ export async function POST(request: NextRequest) {
     console.log(`🔍 Análisis profundo para: "${searchQuery}"`);
 
     // Generar análisis de sentimientos
-    const generateAnalysis = (newsData: any[] = []) => {
+    const generateAnalysis = (newsData: any[] = []): any => {
       const positive = newsData.filter(n => n.sentiment === 'positive').length;
       const negative = newsData.filter(n => n.sentiment === 'negative').length;
       const neutral = newsData.length - positive - negative;
@@ -212,95 +207,98 @@ export async function POST(request: NextRequest) {
         total_mentions: newsData.length || 0,
         platforms: [
           {
-            platform: 'Noticias',
+            platform: 'Google News',
             mentions: newsData.length,
-            sentiment: { positive: 45, negative: 25, neutral: 30 },
-            engagement: 1500,
+            sentiment: {
+              positive: Math.round((positive / total) * 100) || 45,
+              negative: Math.round((negative / total) * 100) || 25,
+              neutral: Math.round((neutral / total) * 100) || 30
+            },
+            engagement: newsData.length * 100,
             trending_topics: [searchQuery]
           },
           {
-            platform: 'Redes Sociales',
-            mentions: Math.floor(newsData.length * 1.5),
-            sentiment: { positive: 50, negative: 20, neutral: 30 },
-            engagement: 3000,
+            platform: 'Wikipedia',
+            mentions: 1,
+            sentiment: { positive: 50, negative: 10, neutral: 40 },
+            engagement: 500,
             trending_topics: [searchQuery, 'Colombia']
           }
         ],
-        reputation_score: Math.min(85, 50 + positive * 2),
-        trend: positive >= negative ? 'up' : 'down',
+        reputation_score: Math.min(85, 50 + positive * 3),
+        trend: positive >= negative ? 'up' as const : 'down' as const,
         key_insights: [
-          `Se encontraron ${newsData.length} menciones de "${searchQuery}"`,
-          newsData.length > 0 ? `La mayoría provienen de medios colombianos` : 'No se encontraron noticias recientes',
+          `Se encontraron ${newsData.length} noticias recientes sobre "${searchQuery}"`,
+          newsData.length > 0 ? `Fuentes: ${[...new Set(newsData.map(n => n.source))].slice(0, 3).join(', ')}` : 'No se encontraron noticias recientes',
           `Sentimiento predominante: ${positive > negative ? 'positivo' : negative > positive ? 'negativo' : 'neutral'}`
         ],
         recent_mentions: newsData.slice(0, 5).map((n: any) => ({
           author: n.source || 'Medio',
-          content: n.title || n.summary || 'Mención encontrada',
+          content: n.title || 'Mención encontrada',
           sentiment: n.sentiment || 'neutral',
-          platform: 'Noticias',
+          platform: 'Google News',
           timestamp: n.publishedAt || new Date().toISOString()
-        }))
+        })),
+        // Campos adicionales para datos reales
+        real_news: [] as any[],
+        web_sources: [] as any[],
+        sources_analyzed: 0
       };
     };
 
-    // 1. PRIMERO: Buscar en noticias scrapeadas con análisis completo
-    try {
-      const newsResults = await searchPersonOrCompany(searchQuery, { limit: 50 });
+    // 1. Buscar en Google News RSS EN TIEMPO REAL
+    console.log('📰 Buscando en Google News RSS...');
+    const googleNews = await searchGoogleNewsRSS(searchQuery);
 
-      if (newsResults && newsResults.news.length > 0) {
-        console.log(`✅ Análisis basado en ${newsResults.news.length} noticias reales`);
+    // 2. También buscar en Wikipedia para información adicional
+    const wikiResults = await searchWikipedia(searchQuery).catch(() => []);
 
-        const analysis = generateAnalysis(newsResults.news);
+    // 3. Combinar resultados
+    const allNews = googleNews;
 
-        return NextResponse.json({
-          success: true,
-          query: searchQuery,
-          analysis: analysis,
-          news: newsResults.news.map(n => ({
-            id: n.id,
-            title: n.title,
-            description: n.summary,
-            url: n.articleUrl,
-            source: n.source,
-            publishedAt: n.publishedAt,
-            sentiment: n.sentiment,
-            sentimentScore: n.sentimentScore,
-            type: 'news'
-          })),
-          source: 'scraped_news',
-          timestamp: new Date().toISOString()
-        });
-      }
-    } catch (error) {
-      console.error('Error buscando en noticias scrapeadas:', error);
+    if (allNews.length > 0) {
+      console.log(`✅ Análisis basado en ${allNews.length} noticias de Google News`);
+
+      const analysis = generateAnalysis(allNews);
+
+      // Agregar noticias reales al análisis
+      analysis.real_news = allNews.slice(0, 10).map((n: any) => ({
+        title: n.title,
+        content: n.content || '',
+        url: n.url,
+        source: n.source,
+        date: n.publishedAt
+      }));
+
+      // Agregar fuentes web
+      analysis.web_sources = wikiResults.map((w: any) => ({
+        title: w.title,
+        snippet: w.snippet,
+        url: w.url,
+        source: w.source
+      }));
+
+      analysis.sources_analyzed = allNews.length + wikiResults.length;
+
+      return NextResponse.json({
+        success: true,
+        query: searchQuery,
+        analysis: analysis,
+        news: allNews,
+        source: 'google_news_realtime',
+        timestamp: new Date().toISOString()
+      });
     }
 
-    // 2. Fallback: análisis con scraping en tiempo real
-    try {
-      const realAnalysis = await searchAndAnalyzePersonality(searchQuery);
-
-      if (realAnalysis && realAnalysis.name) {
-        return NextResponse.json({
-          success: true,
-          query: searchQuery,
-          analysis: generateAnalysis([]),
-          results: [realAnalysis],
-          source: 'real_analysis',
-          timestamp: new Date().toISOString()
-        });
-      }
-    } catch (error) {
-      console.error('Error en análisis en tiempo real:', error);
-    }
-
-    // Sin resultados - devolver análisis vacío pero válido
+    // Sin resultados de Google News - devolver análisis básico
+    console.log('⚠️ No se encontraron noticias en Google News');
     return NextResponse.json({
       success: true,
       query: searchQuery,
       analysis: generateAnalysis([]),
       results: [],
-      suggestions: `No se encontraron noticias para "${searchQuery}". El análisis se basa en datos limitados.`,
-      source: 'generated',
+      suggestions: `No se encontraron noticias recientes para "${searchQuery}". Intenta con otro término.`,
+      source: 'no_results',
       timestamp: new Date().toISOString()
     });
 
