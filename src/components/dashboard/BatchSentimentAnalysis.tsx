@@ -287,7 +287,7 @@ export default function BatchSentimentAnalysis({ userId, onComplete }: BatchSent
           <h3 className="text-sm font-medium text-gray-900">Análisis de Sentimiento Automático</h3>
           <p className="text-sm text-gray-600 mt-1">
             {pendingCount > 0
-              ? `Hay ${pendingCount} menciones sin analizar. El análisis usa Gemini AI para detectar el sentimiento de cada mención.`
+              ? `Hay ${pendingCount} menciones sin analizar. El análisis usa IA para detectar el sentimiento de cada mención.`
               : 'No hay menciones pendientes de análisis. ¡Todas están actualizadas!'}
           </p>
 

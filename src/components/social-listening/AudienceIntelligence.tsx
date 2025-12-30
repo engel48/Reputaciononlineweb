@@ -220,7 +220,7 @@ export default function AudienceIntelligence({ userProfile }: AudienceIntelligen
   const LoadingState = () => (
     <div className="flex flex-col items-center justify-center p-12">
       <Loader2 className="w-12 h-12 text-[#01257D] animate-spin mb-4" />
-      <p className="text-gray-600">Analizando datos de audiencia con Gemini AI...</p>
+      <p className="text-gray-600">Analizando datos de audiencia...</p>
     </div>
   );
 
@@ -543,7 +543,7 @@ export default function AudienceIntelligence({ userProfile }: AudienceIntelligen
           </p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg">
-          <EmptyState message="Conecta tus redes sociales para comenzar el análisis de audiencia con Gemini AI." />
+          <EmptyState message="Conecta tus redes sociales para comenzar el análisis de audiencia." />
         </div>
       </div>
     );
@@ -559,7 +559,7 @@ export default function AudienceIntelligence({ userProfile }: AudienceIntelligen
               Audience Intelligence
             </h2>
             <p className="text-gray-600 dark:text-gray-400">
-              Análisis impulsado por Gemini AI desde datos reales de tus redes sociales
+              Análisis impulsado por IA desde datos reales de tus redes sociales
             </p>
           </div>
 

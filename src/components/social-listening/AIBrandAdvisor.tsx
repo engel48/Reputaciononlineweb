@@ -362,14 +362,14 @@ export default function AIBrandAdvisor({ userProfile }: AIBrandAdvisorProps) {
   const LoadingState = () => (
     <div className="flex flex-col items-center justify-center p-12">
       <Loader2 className="w-12 h-12 text-purple-500 animate-spin mb-4" />
-      <p className="text-gray-600">Generando recomendaciones con Gemini AI...</p>
+      <p className="text-gray-600">Generando recomendaciones...</p>
     </div>
   );
 
   const renderDashboard = () => {
     if (isLoading) return <LoadingState />;
     if (recommendations.length === 0) {
-      return <EmptyState message="Gemini AI está analizando tus datos para generar recomendaciones personalizadas." />;
+      return <EmptyState message="Analizando tus datos para generar recomendaciones personalizadas..." />;
     }
 
     return (
@@ -380,7 +380,7 @@ export default function AIBrandAdvisor({ userProfile }: AIBrandAdvisorProps) {
             <div>
               <h3 className="text-xl font-semibold mb-2 flex items-center">
                 <Brain className="w-6 h-6 mr-2" />
-                Gemini AI - Tu Asesora Personal de Marca
+                Julia IA - Tu Asesora Personal de Marca
               </h3>
               <p className="text-blue-100">
                 Análisis continuo de tu reputación digital y recomendaciones personalizadas en tiempo real
@@ -891,7 +891,7 @@ export default function AIBrandAdvisor({ userProfile }: AIBrandAdvisorProps) {
               AI Personal Brand Advisor
             </h2>
             <p className="text-gray-600 dark:text-gray-400">
-              Recomendaciones inteligentes impulsadas por Gemini AI para optimizar tu presencia digital
+              Recomendaciones inteligentes impulsadas por IA para optimizar tu presencia digital
             </p>
           </div>
 
