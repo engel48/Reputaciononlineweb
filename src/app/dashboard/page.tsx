@@ -332,12 +332,15 @@ export default function Dashboard() {
   const estadisticasCalculadas = useMemo(() => {
     const total = datosEnTiempoReal?.mentions?.total ?? 0;
     const positive = datosEnTiempoReal?.mentions?.positive ?? 0;
+    const negative = datosEnTiempoReal?.mentions?.negative ?? 0;
     const porcentajePositivo = total > 0 ? ((positive / total) * 100).toFixed(1) : '0.0';
+    const porcentajeNegativo = total > 0 ? ((negative / total) * 100).toFixed(1) : '0.0';
     const crecimientoSemanal = '+12.5%'; // En producción vendría del backend
-    
+
     return {
       totalMenciones: total.toLocaleString(),
       porcentajePositivo,
+      porcentajeNegativo,
       crecimientoSemanal,
       nuevasMenciones: Math.floor(total * 0.34)
     };
@@ -407,7 +410,7 @@ export default function Dashboard() {
       </div>
 
       {/* Estadísticas principales - RESPONSIVE CON ANIMACIONES MEJORADAS */}
-      <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
         
         {/* Estadísticas rápidas MEJORADAS CON ANIMACIONES AVANZADAS */}
         <motion.div
@@ -499,9 +502,55 @@ export default function Dashboard() {
               ></motion.div>
             </div>
           </div>
-          <div className="mt-2 flex justify-between text-xs text-gray-600 dark:text-gray-300">
-            <span>Negativo: <span className="font-medium">18.3%</span></span>
-            <span>Neutral: <span className="font-medium">13.5%</span></span>
+          <div className="mt-2 text-xs text-gray-600 dark:text-gray-300">
+            <span>Del total de menciones analizadas</span>
+          </div>
+        </motion.div>
+
+        <motion.div
+          custom={3}
+          initial="hidden"
+          animate="visible"
+          whileHover="hover"
+          variants={cardVariants}
+          className="rounded-xl p-4 sm:p-5 bg-gradient-to-br from-rose-50 to-rose-100 dark:from-rose-900/20 dark:to-rose-800/30 cursor-pointer relative overflow-hidden border border-rose-200 dark:border-rose-700/50"
+          style={{ boxShadow: '0 4px 20px rgba(244, 63, 94, 0.1)' }}
+        >
+          {/* Indicador de actualización en tiempo real */}
+          <div className="absolute top-2 right-2">
+            <div className={`h-2 w-2 rounded-full ${errorConexion ? 'bg-red-400' : 'bg-green-400'} animate-pulse`}></div>
+          </div>
+
+          <h3 className="mb-2 text-sm font-semibold text-gray-800 dark:text-gray-200">Sentimiento Negativo</h3>
+          <div className="flex items-end justify-between">
+            <AnimatePresence mode="wait">
+              <motion.p
+                key={estadisticasCalculadas.porcentajeNegativo}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="text-3xl font-bold text-gray-900 dark:text-white"
+              >
+                {estadisticasCalculadas.porcentajeNegativo}%
+              </motion.p>
+            </AnimatePresence>
+            <div className="flex items-center text-rose-600 dark:text-rose-400">
+              <TrendingDown className="mr-1 h-4 w-4" />
+              <span className="text-sm font-medium">-1.2%</span>
+            </div>
+          </div>
+          <div className="mt-4">
+            <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+              <motion.div
+                className="h-2 rounded-full bg-rose-500"
+                initial={{ width: '0%' }}
+                animate={{ width: `${estadisticasCalculadas.porcentajeNegativo}%` }}
+                transition={{ duration: 1, delay: 0.9 }}
+              ></motion.div>
+            </div>
+          </div>
+          <div className="mt-2 text-xs text-gray-600 dark:text-gray-300">
+            <span>Del total de menciones analizadas</span>
           </div>
         </motion.div>
       </div>

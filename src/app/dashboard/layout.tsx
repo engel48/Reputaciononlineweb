@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/context/UserContext';
-import { Home, BarChart3, Hash, Users, Menu, Search, FileText, Headphones, Share2, Brain, Radio } from 'lucide-react';
+import { Home, BarChart3, Users, Menu, Search, FileText, Headphones, Share2, Brain, Radio, Target } from 'lucide-react';
 import NotificationCenter from '@/components/notifications/NotificationCenter';
 import UserProfile from '@/components/user/UserProfile';
 import HeaderSearch from '@/components/dashboard/HeaderSearch';
@@ -176,11 +176,6 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
               {(menuOpen || menuHovered || isMobile) && 'Monitoreo'}
             </Link>
 
-            <Link href="/dashboard/hashtags" className={`group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${pathname === '/dashboard/hashtags' ? 'bg-[#00E5FF]/15 text-[#00E5FF]' : 'text-gray-400 hover:bg-[#00E5FF]/10 hover:text-[#00E5FF]'}`}>
-              <Hash className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 transition-colors ${pathname === '/dashboard/hashtags' ? 'text-[#00E5FF]' : 'text-gray-500 group-hover:text-[#00E5FF]'}`} />
-              {(menuOpen || menuHovered || isMobile) && 'Hashtags'}
-            </Link>
-
             <Link href="/dashboard/audiencia" className={`group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${pathname === '/dashboard/audiencia' ? 'bg-[#00E5FF]/15 text-[#00E5FF]' : 'text-gray-400 hover:bg-[#00E5FF]/10 hover:text-[#00E5FF]'}`}>
               <Users className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 transition-colors ${pathname === '/dashboard/audiencia' ? 'text-[#00E5FF]' : 'text-gray-500 group-hover:text-[#00E5FF]'}`} />
               {(menuOpen || menuHovered || isMobile) && 'Análisis de Audiencia'}
@@ -204,6 +199,11 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
             <Link href="/dashboard/busqueda-noticias" className={`group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${pathname === '/dashboard/busqueda-noticias' ? 'bg-[#00E5FF]/15 text-[#00E5FF]' : 'text-gray-400 hover:bg-[#00E5FF]/10 hover:text-[#00E5FF]'}`}>
               <Search className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 transition-colors ${pathname === '/dashboard/busqueda-noticias' ? 'text-[#00E5FF]' : 'text-gray-500 group-hover:text-[#00E5FF]'}`} />
               {(menuOpen || menuHovered || isMobile) && 'Búsqueda y Noticias'}
+            </Link>
+
+            <Link href="/dashboard/busqueda-personas" className={`group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${pathname === '/dashboard/busqueda-personas' ? 'bg-[#00E5FF]/15 text-[#00E5FF]' : 'text-gray-400 hover:bg-[#00E5FF]/10 hover:text-[#00E5FF]'}`}>
+              <Target className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 transition-colors ${pathname === '/dashboard/busqueda-personas' ? 'text-[#00E5FF]' : 'text-gray-500 group-hover:text-[#00E5FF]'}`} />
+              {(menuOpen || menuHovered || isMobile) && 'Búsqueda de Personas'}
             </Link>
 
             <Link href="/dashboard/creditos/reportes" className={`group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${pathname === '/dashboard/creditos/reportes' ? 'bg-[#00E5FF]/15 text-[#00E5FF]' : 'text-gray-400 hover:bg-[#00E5FF]/10 hover:text-[#00E5FF]'}`}>

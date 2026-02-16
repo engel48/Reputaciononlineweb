@@ -73,17 +73,6 @@ export default function ReportesCreditosPage() {
       borderColor: 'border-purple-200 dark:border-purple-700',
       stats: '+18% crecimiento',
       emoji: '📈'
-    },
-    {
-      id: 'reporte-personalizado',
-      titulo: 'Reporte Personalizado',
-      descripcion: 'Genera un reporte específico con tus datos únicos',
-      icono: <User className="h-6 w-6" />,
-      color: '#F59E0B',
-      bgGradient: 'from-amber-50 to-orange-100 dark:from-amber-900/20 dark:to-orange-900/20',
-      borderColor: 'border-amber-200 dark:border-amber-700',
-      stats: 'Configuración flexible',
-      emoji: '⚙️'
     }
   ];
 

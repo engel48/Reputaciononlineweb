@@ -116,9 +116,25 @@ export default function ProfilePhotoUploader({ onPhotoChange, initialPhoto = nul
         </div>
 
         {photo && (
-          <div className="flex items-center justify-center space-x-2 text-[#01257D]">
-            <UserCheck className="h-5 w-5" />
-            <span className="text-sm font-medium">Foto cargada correctamente</span>
+          <div className="flex flex-col items-center space-y-2">
+            <div className="flex items-center justify-center space-x-2 text-[#01257D]">
+              <UserCheck className="h-5 w-5" />
+              <span className="text-sm font-medium">Foto cargada correctamente</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="text-sm text-[#00E5FF] hover:text-[#00B8D4] font-medium transition-colors"
+            >
+              Cambiar foto
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg, image/png, image/gif"
+              className="hidden"
+              onChange={handlePhotoChange}
+            />
           </div>
         )}
 

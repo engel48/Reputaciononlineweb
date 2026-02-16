@@ -72,7 +72,7 @@ const PlatformIcon: React.FC<PlatformIconProps> = ({ platform }) => {
 };
 
 export default function AnalisisPage() {
-  const [activeTab, setActiveTab] = useState('resumen');
+  const [activeTab, setActiveTab] = useState('ia-analysis');
   const [socialData, setSocialData] = useState<any>(null);
   const [analysisData, setAnalysisData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -174,339 +174,275 @@ export default function AnalisisPage() {
       {/* Pestañas de navegación */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="mb-6 bg-white/50 backdrop-blur-sm border border-gray-200 dark:border-gray-700 p-1 rounded-xl">
-          <TabsTrigger value="resumen" className="data-[state=active]:bg-[#01257D] data-[state=active]:text-white text-gray-600 font-medium px-6 py-2 rounded-lg transition-all">
-            📊 Resumen
-          </TabsTrigger>
-          <TabsTrigger value="sentimiento" className="data-[state=active]:bg-[#01257D] data-[state=active]:text-white text-gray-600 font-medium px-6 py-2 rounded-lg transition-all">
-            💭 Sentimiento
-          </TabsTrigger>
-          <TabsTrigger value="menciones" className="data-[state=active]:bg-[#01257D] data-[state=active]:text-white text-gray-600 font-medium px-6 py-2 rounded-lg transition-all">
-            📝 Menciones
-          </TabsTrigger>
-          <TabsTrigger value="plataformas" className="data-[state=active]:bg-[#01257D] data-[state=active]:text-white text-gray-600 font-medium px-6 py-2 rounded-lg transition-all">
-            🌐 Plataformas
-          </TabsTrigger>
           <TabsTrigger value="ia-analysis" className="data-[state=active]:bg-[#01257D] data-[state=active]:text-white text-gray-600 font-medium px-6 py-2 rounded-lg transition-all">
             <div className="flex items-center">
               <Brain className="mr-1 h-4 w-4" />
-              🤖 Julia IA
+              Julia IA
             </div>
+          </TabsTrigger>
+          <TabsTrigger value="sentimiento" className="data-[state=active]:bg-[#01257D] data-[state=active]:text-white text-gray-600 font-medium px-6 py-2 rounded-lg transition-all">
+            Sentimiento
+          </TabsTrigger>
+          <TabsTrigger value="menciones" className="data-[state=active]:bg-[#01257D] data-[state=active]:text-white text-gray-600 font-medium px-6 py-2 rounded-lg transition-all">
+            Menciones
+          </TabsTrigger>
+          <TabsTrigger value="plataformas" className="data-[state=active]:bg-[#01257D] data-[state=active]:text-white text-gray-600 font-medium px-6 py-2 rounded-lg transition-all">
+            Plataformas
           </TabsTrigger>
         </TabsList>
         
-        {/* Pestaña de Resumen */}
-        <TabsContent value="resumen" className="space-y-6">
-          {/* Tarjetas de métricas mejoradas */}
-          <motion.div 
-            className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4"
-            variants={itemVariants}
-          >
-            <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 hover:shadow-xl transition-all duration-300">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-[#01257D] dark:text-blue-300 flex items-center">
-                  <MessageSquare className="mr-2 h-4 w-4" />
-                  Menciones Totales
+        {/* Pestaña de Julia IA (primera) */}
+        <TabsContent value="ia-analysis" className="space-y-8">
+          <motion.div variants={itemVariants}>
+            <Card className="border-0 shadow-2xl bg-gradient-to-br from-indigo-50 via-white to-cyan-50 dark:from-indigo-900/20 dark:via-gray-900 dark:to-cyan-900/20">
+              <CardHeader className="bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 text-white rounded-t-lg pb-8">
+                <CardTitle className="flex items-center text-2xl">
+                  <Brain className="mr-3 h-8 w-8" />
+                  Analisis de Sentimiento con Julia IA
                 </CardTitle>
+                <CardDescription className="text-indigo-100 text-lg mt-3">
+                  Julia IA es nuestra asistente de inteligencia artificial especializada en analisis de reputacion online. Utiliza procesamiento de lenguaje natural avanzado para detectar emociones, sentimientos y tendencias en las menciones de tu marca o perfil.
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                {socialData?.data?.mentions?.total ? (
-                  <>
-                    <div className="text-3xl font-bold text-[#01257D] dark:text-white">{socialData.data.mentions.total}</div>
-                    <div className="mt-2 flex items-center text-xs">
-                      <TrendIndicator value={parseFloat(socialData.data.mentions.trend) || 0} />
-                      <span className="ml-2 text-gray-600 dark:text-gray-300">vs. mes anterior</span>
+                {isLoading ? (
+                  <div className="flex flex-col items-center justify-center h-80 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl">
+                    <div className="relative">
+                      <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-200 border-t-indigo-600"></div>
+                      <Brain className="absolute inset-0 m-auto h-8 w-8 text-indigo-600 animate-pulse" />
                     </div>
-                  </>
+                    <span className="mt-6 text-lg font-semibold text-indigo-700 dark:text-indigo-300">Julia IA analizando datos...</span>
+                    <span className="mt-2 text-sm text-indigo-600 dark:text-indigo-400">Procesando sentimientos y emociones</span>
+                  </div>
                 ) : (
-                  <div className="text-sm text-gray-500">Sin datos disponibles</div>
-                )}
-              </CardContent>
-            </Card>
+                  <div className="grid gap-6 md:grid-cols-2">
+                    {/* Metricas de Sentimiento */}
+                    <div className="space-y-6">
+                      <h3 className="text-xl font-bold text-[#01257D] dark:text-white flex items-center">
+                        <BarChart3 className="mr-3 h-6 w-6 text-indigo-600" />
+                        Distribucion de Sentimientos
+                      </h3>
 
-            <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-900/20 dark:to-emerald-800/20 hover:shadow-xl transition-all duration-300">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-emerald-700 dark:text-emerald-300 flex items-center">
-                  <CheckCircle className="mr-2 h-4 w-4" />
-                  Sentimiento Positivo
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {socialData?.data?.mentions ? (
-                  <>
-                    <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
-                      {Math.round((socialData.data.mentions.positive / socialData.data.mentions.total) * 100)}%
-                    </div>
-                    <div className="mt-2 flex items-center text-xs">
-                      <TrendIndicator value={5} />
-                      <span className="ml-2 text-gray-600 dark:text-gray-300">vs. mes anterior</span>
-                    </div>
-                  </>
-                ) : (
-                  <div className="text-sm text-gray-500">Sin datos disponibles</div>
-                )}
-              </CardContent>
-            </Card>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between p-5 bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 rounded-xl border-l-4 border-green-500 hover:shadow-lg transition-all duration-300">
+                          <div className="flex items-center">
+                            <div className="w-4 h-4 bg-green-500 rounded-full mr-4 shadow-lg"></div>
+                            <span className="font-semibold text-green-800 dark:text-green-200">Positivo</span>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                              {analysisData?.sentimentDistribution?.positive || 68}%
+                            </div>
+                            <div className="text-sm text-green-700 dark:text-green-300">
+                              {Math.round((analysisData?.sentimentDistribution?.positive || 68) * 12.48)} menciones
+                            </div>
+                          </div>
+                        </div>
 
-            <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-violet-100 dark:from-purple-900/20 dark:to-violet-800/20 hover:shadow-xl transition-all duration-300">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-violet-700 dark:text-violet-300 flex items-center">
-                  <Globe className="mr-2 h-4 w-4" />
-                  Plataforma Principal
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {socialData?.data?.mentions?.byPlatform ? (
-                  <>
-                    <div className="flex items-center">
-                      <XLogo className="h-6 w-6 mr-3" />
-                      <span className="text-3xl font-bold text-violet-600 dark:text-violet-400">X</span>
-                    </div>
-                    <div className="mt-2 flex items-center text-xs">
-                      <span className="text-gray-600 dark:text-gray-300">
-                        {Math.round((socialData.data.mentions.byPlatform.x / socialData.data.mentions.total) * 100)}% del total
-                      </span>
-                    </div>
-                  </>
-                ) : (
-                  <div className="text-sm text-gray-500">Sin datos disponibles</div>
-                )}
-              </CardContent>
-            </Card>
+                        <div className="flex items-center justify-between p-5 bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-xl border-l-4 border-[#01257D] hover:shadow-lg transition-all duration-300">
+                          <div className="flex items-center">
+                            <div className="w-4 h-4 bg-[#01257D] rounded-full mr-4 shadow-lg"></div>
+                            <span className="font-semibold text-[#01257D] dark:text-blue-200">Neutral</span>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-[#01257D] dark:text-blue-400">
+                              {analysisData?.sentimentDistribution?.neutral || 22}%
+                            </div>
+                            <div className="text-sm text-blue-700 dark:text-blue-300">
+                              {Math.round((analysisData?.sentimentDistribution?.neutral || 22) * 12.48)} menciones
+                            </div>
+                          </div>
+                        </div>
 
-            <Card className="border-0 shadow-lg bg-gradient-to-br from-amber-50 to-orange-100 dark:from-amber-900/20 dark:to-orange-800/20 hover:shadow-xl transition-all duration-300">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-orange-700 dark:text-orange-300 flex items-center">
-                  <Users className="mr-2 h-4 w-4" />
-                  Alcance Estimado
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {socialData?.data?.mentions?.total ? (
-                  <>
-                    <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">
-                      {(socialData.data.mentions.total * 100).toLocaleString()}
+                        <div className="flex items-center justify-between p-5 bg-gradient-to-r from-red-100 to-rose-100 dark:from-red-900/30 dark:to-rose-900/30 rounded-xl border-l-4 border-red-500 hover:shadow-lg transition-all duration-300">
+                          <div className="flex items-center">
+                            <div className="w-4 h-4 bg-red-500 rounded-full mr-4 shadow-lg"></div>
+                            <span className="font-semibold text-red-800 dark:text-red-200">Negativo</span>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+                              {analysisData?.sentimentDistribution?.negative || 10}%
+                            </div>
+                            <div className="text-sm text-red-700 dark:text-red-300">
+                              {Math.round((analysisData?.sentimentDistribution?.negative || 10) * 12.48)} menciones
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="mt-2 flex items-center text-xs">
-                      <TrendIndicator value={8} />
-                      <span className="ml-2 text-gray-600 dark:text-gray-300">vs. mes anterior</span>
+
+                    {/* Score de Sentimiento */}
+                    <div className="space-y-6">
+                      <h3 className="text-xl font-bold text-[#01257D] dark:text-white flex items-center">
+                        <Brain className="mr-3 h-6 w-6 text-purple-600" />
+                        Score de Sentimiento Julia IA
+                      </h3>
+
+                      <div className="relative text-center p-8 bg-gradient-to-br from-purple-100 via-blue-50 to-indigo-100 dark:from-purple-900/30 dark:via-blue-900/30 dark:to-indigo-900/30 rounded-2xl border-2 border-purple-200 dark:border-purple-700 overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-200 to-blue-200 dark:from-purple-800 dark:to-blue-800 rounded-full -translate-y-16 translate-x-16 opacity-50"></div>
+                        <div className="relative z-10">
+                          <div className="text-6xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-4">
+                            {analysisData?.averageScore || 7.2}/10
+                          </div>
+                          <div className="text-lg text-purple-700 dark:text-purple-300 mb-6 font-semibold">
+                            Score promedio de sentimiento
+                          </div>
+                          <Badge className="bg-gradient-to-r from-purple-500 to-blue-500 text-white text-lg px-6 py-2 shadow-lg">
+                            {(analysisData?.averageScore || 7.2) >= 7 ? 'Excelente' :
+                             (analysisData?.averageScore || 7.2) >= 5 ? 'Bueno' : 'Necesita atencion'}
+                          </Badge>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4 bg-white/50 dark:bg-gray-800/50 rounded-xl p-6 backdrop-blur-sm">
+                        <div className="flex justify-between items-center">
+                          <span className="text-lg font-semibold text-[#01257D] dark:text-white">Tendencia del mes</span>
+                          <span className="flex items-center text-green-600 font-bold text-lg">
+                            <TrendingUp className="h-5 w-5 mr-2" />
+                            +0.8 puntos
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4 shadow-inner">
+                          <div
+                            className="bg-gradient-to-r from-purple-500 to-blue-500 h-4 rounded-full shadow-lg transition-all duration-1000 ease-out"
+                            style={{ width: `${(analysisData?.averageScore || 7.2) * 10}%` }}
+                          ></div>
+                        </div>
+                        <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+                          <span>0</span>
+                          <span>5</span>
+                          <span>10</span>
+                        </div>
+                      </div>
                     </div>
-                  </>
-                ) : (
-                  <div className="text-sm text-gray-500">Sin datos disponibles</div>
+                  </div>
                 )}
               </CardContent>
             </Card>
           </motion.div>
-          
-          {/* Gráficos principales mejorados */}
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-            <motion.div variants={itemVariants}>
-              <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm dark:bg-gray-900/80 hover:shadow-2xl transition-all duration-300">
-                <CardHeader className="bg-gradient-to-r from-emerald-500 to-blue-600 text-white rounded-t-lg">
-                  <CardTitle className="flex items-center text-lg">
-                    <CheckCircle className="mr-2 h-5 w-5" />
-                    Análisis de Sentimiento
-                  </CardTitle>
-                  <CardDescription className="text-emerald-100">
-                    Distribución de menciones por sentimiento con Julia IA
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pt-6">
-                  <div className="h-72 w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={datosSentimiento}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          outerRadius={90}
-                          fill="#8884d8"
-                          dataKey="value"
-                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                          stroke="#ffffff"
-                          strokeWidth={3}
-                        >
-                          {datosSentimiento.map((entry: any, index: number) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <Tooltip 
-                          contentStyle={{
-                            backgroundColor: '#01257D',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '8px',
-                            boxShadow: '0 10px 25px rgba(0,0,0,0.2)'
-                          }}
-                        />
-                        <Legend 
-                          wrapperStyle={{
-                            paddingTop: '20px',
-                            fontSize: '14px',
-                            fontWeight: '500'
-                          }}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-            
-            <motion.div variants={itemVariants}>
-              <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm dark:bg-gray-900/80 hover:shadow-2xl transition-all duration-300">
-                <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-t-lg">
-                  <CardTitle className="flex items-center text-lg">
-                    <Globe className="mr-2 h-5 w-5" />
-                    Distribución por Plataformas
-                  </CardTitle>
-                  <CardDescription className="text-purple-100">
-                    Menciones por red social y engagement
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="pt-6">
-                  <div className="h-72 w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={datosPlataformas}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          outerRadius={90}
-                          fill="#8884d8"
-                          dataKey="value"
-                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                          stroke="#ffffff"
-                          strokeWidth={3}
-                        >
-                          {datosPlataformas.map((entry: any, index: number) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <Tooltip 
-                          contentStyle={{
-                            backgroundColor: '#01257D',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '8px',
-                            boxShadow: '0 10px 25px rgba(0,0,0,0.2)'
-                          }}
-                        />
-                        <Legend 
-                          wrapperStyle={{
-                            paddingTop: '20px',
-                            fontSize: '14px',
-                            fontWeight: '500'
-                          }}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </div>
-          
-          {/* Evolución temporal mejorada */}
+
+          {/* Palabras Clave y Emociones */}
           <motion.div variants={itemVariants}>
-            <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm dark:bg-gray-900/80 hover:shadow-2xl transition-all duration-300">
-              <CardHeader className="bg-gradient-to-r from-[#01257D] to-[#013AAA] text-white rounded-t-lg">
-                <CardTitle className="flex items-center text-xl">
-                  <BarChart3 className="mr-3 h-6 w-6" />
-                  Evolución de Menciones
+            <Card className="border-0 shadow-2xl bg-gradient-to-br from-violet-50 via-white to-purple-50 dark:from-violet-900/20 dark:via-gray-900 dark:to-purple-900/20">
+              <CardHeader className="bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 text-white rounded-t-lg pb-6">
+                <CardTitle className="flex items-center text-2xl">
+                  <MessageSquare className="mr-3 h-7 w-7" />
+                  Analisis de Contenido
                 </CardTitle>
-                <CardDescription className="text-blue-100 mt-2">
-                  📈 Menciones por plataforma en los últimos 7 meses - Análisis temporal
+                <CardDescription className="text-violet-100 text-lg mt-2">
+                  Palabras clave y emociones mas frecuentes detectadas por Julia IA
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-6 md:grid-cols-2">
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6">
+                    <h3 className="text-xl font-bold text-[#01257D] dark:text-white mb-6 flex items-center">
+                      <Sparkles className="mr-2 h-6 w-6 text-blue-500" />
+                      Palabras Clave Principales
+                    </h3>
+                    <div className="flex flex-wrap gap-3">
+                      {(analysisData?.topKeywords || ['excelente', 'calidad', 'servicio', 'recomendado', 'profesional', 'rapido']).map((keyword: string, index: number) => (
+                        <Badge key={index} className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-2 text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                          {keyword}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-purple-50 to-pink-100 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl p-6">
+                    <h3 className="text-xl font-bold text-[#01257D] dark:text-white mb-6 flex items-center">
+                      <Brain className="mr-2 h-6 w-6 text-purple-500" />
+                      Emociones Detectadas
+                    </h3>
+                    <div className="space-y-4">
+                      {(analysisData?.topEmotions || [
+                        { emotion: 'Satisfaccion', percentage: 45 },
+                        { emotion: 'Confianza', percentage: 32 },
+                        { emotion: 'Entusiasmo', percentage: 23 },
+                        { emotion: 'Preocupacion', percentage: 12 }
+                      ]).map((item: any, index: number) => (
+                        <div key={index} className="bg-white/70 dark:bg-gray-800/70 rounded-lg p-4 hover:shadow-lg transition-all duration-300">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-lg font-semibold text-purple-700 dark:text-purple-300">
+                              {item.emotion}
+                            </span>
+                            <span className="text-xl font-bold text-purple-600 dark:text-purple-400">{item.percentage}%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 shadow-inner">
+                            <div
+                              className="bg-gradient-to-r from-purple-500 to-pink-500 h-3 rounded-full shadow-lg transition-all duration-1000 ease-out"
+                              style={{ width: `${item.percentage}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Metricas de Engagement */}
+          <motion.div variants={itemVariants}>
+            <Card className="border-0 shadow-2xl bg-gradient-to-br from-rose-50 via-white to-orange-50 dark:from-rose-900/20 dark:via-gray-900 dark:to-orange-900/20">
+              <CardHeader className="bg-gradient-to-r from-rose-500 via-pink-500 to-orange-500 text-white rounded-t-lg pb-6">
+                <CardTitle className="flex items-center text-2xl">
+                  <Heart className="mr-3 h-7 w-7" />
+                  Metricas de Engagement
+                </CardTitle>
+                <CardDescription className="text-rose-100 text-lg mt-2">
+                  Analisis de interacciones y engagement por plataforma
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-8">
-                <div className="h-96 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={datosMenciones}
-                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                    >
-                      <CartesianGrid 
-                        strokeDasharray="3 3" 
-                        stroke="#e5e7eb" 
-                        opacity={0.5}
-                      />
-                      <XAxis 
-                        dataKey="fecha" 
-                        tick={{ fontSize: 12, fill: '#6b7280' }}
-                        axisLine={{ stroke: '#01257D', strokeWidth: 2 }}
-                      />
-                      <YAxis 
-                        tick={{ fontSize: 12, fill: '#6b7280' }}
-                        axisLine={{ stroke: '#01257D', strokeWidth: 2 }}
-                      />
-                      <Tooltip 
-                        contentStyle={{
-                          backgroundColor: '#01257D',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '12px',
-                          boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
-                          fontSize: '14px'
-                        }}
-                        cursor={{ fill: 'rgba(1, 37, 125, 0.1)' }}
-                      />
-                      <Legend 
-                        wrapperStyle={{
-                          paddingTop: '30px',
-                          fontSize: '14px',
-                          fontWeight: '600'
-                        }}
-                      />
-                      <Bar 
-                        dataKey="X" 
-                        stackId="a" 
-                        fill="#1F2937" 
-                        radius={[0, 0, 4, 4]}
-                        name="X (Twitter)"
-                      />
-                      <Bar 
-                        dataKey="Facebook" 
-                        stackId="a" 
-                        fill="#1877F2" 
-                        radius={[0, 0, 0, 0]}
-                        name="Facebook"
-                      />
-                      <Bar 
-                        dataKey="Instagram" 
-                        stackId="a" 
-                        fill="#E4405F" 
-                        radius={[0, 0, 0, 0]}
-                        name="Instagram"
-                      />
-                      <Bar
-                        dataKey="YouTube"
-                        stackId="a"
-                        fill="#FF0000"
-                        radius={[4, 4, 0, 0]}
-                        name="YouTube"
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
+                <div className="grid gap-8 md:grid-cols-3">
+                  <div className="text-center p-8 bg-gradient-to-br from-pink-100 to-rose-200 dark:from-pink-900/30 dark:to-rose-800/30 rounded-2xl border-2 border-pink-200 dark:border-pink-700 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                    <Heart className="h-12 w-12 text-pink-500 mx-auto mb-4" />
+                    <div className="text-4xl font-bold text-pink-600 dark:text-pink-400 mb-2">
+                      {socialData?.totalLikes || 1847}
+                    </div>
+                    <div className="text-lg font-semibold text-pink-700 dark:text-pink-300">
+                      Total Likes
+                    </div>
+                  </div>
+
+                  <div className="text-center p-8 bg-gradient-to-br from-blue-100 to-indigo-200 dark:from-blue-900/30 dark:to-indigo-800/30 rounded-2xl border-2 border-blue-200 dark:border-blue-700 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                    <Share2 className="h-12 w-12 text-blue-500 mx-auto mb-4" />
+                    <div className="text-4xl font-bold text-blue-600 dark:text-blue-400 mb-2">
+                      {socialData?.totalShares || 523}
+                    </div>
+                    <div className="text-lg font-semibold text-blue-700 dark:text-blue-300">
+                      Total Shares
+                    </div>
+                  </div>
+
+                  <div className="text-center p-8 bg-gradient-to-br from-green-100 to-emerald-200 dark:from-green-900/30 dark:to-emerald-800/30 rounded-2xl border-2 border-green-200 dark:border-green-700 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                    <MessageSquare className="h-12 w-12 text-green-500 mx-auto mb-4" />
+                    <div className="text-4xl font-bold text-green-600 dark:text-green-400 mb-2">
+                      {socialData?.totalComments || 314}
+                    </div>
+                    <div className="text-lg font-semibold text-green-700 dark:text-green-300">
+                      Total Comments
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           </motion.div>
         </TabsContent>
-        
-        {/* Pestaña de Sentimiento mejorada */}
+
+        {/* Pestana de Sentimiento */}
         <TabsContent value="sentimiento" className="space-y-8">
           <motion.div variants={itemVariants}>
             <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
               <CardHeader className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-t-lg pb-6">
                 <CardTitle className="flex items-center text-2xl">
                   <Brain className="mr-3 h-7 w-7" />
-                  Análisis de Sentimiento con Julia IA
+                  Analisis de Sentimiento con Julia IA
                 </CardTitle>
                 <CardDescription className="text-emerald-100 text-lg mt-2">
-                  🤖 Distribución detallada del sentimiento en las menciones procesadas por IA
+                  Distribucion detallada del sentimiento en las menciones procesadas por IA
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-8">
@@ -522,7 +458,7 @@ export default function AnalisisPage() {
                       <TrendIndicator value={5} />
                     </div>
                   </div>
-                  
+
                   <div className="relative overflow-hidden flex flex-col items-center justify-center p-6 bg-gradient-to-br from-blue-100 to-indigo-200 dark:from-blue-900/30 dark:to-indigo-800/30 rounded-2xl border-2 border-blue-200 dark:border-blue-700 hover:shadow-xl transition-all duration-300">
                     <div className="absolute top-2 right-2">
                       <Activity className="h-5 w-5 text-blue-400" />
@@ -534,7 +470,7 @@ export default function AnalisisPage() {
                       <TrendIndicator value={-3} />
                     </div>
                   </div>
-                  
+
                   <div className="relative overflow-hidden flex flex-col items-center justify-center p-6 bg-gradient-to-br from-red-100 to-rose-200 dark:from-red-900/30 dark:to-rose-800/30 rounded-2xl border-2 border-red-200 dark:border-red-700 hover:shadow-xl transition-all duration-300">
                     <div className="absolute top-2 right-2">
                       <AlertTriangle className="h-5 w-5 text-red-400" />
@@ -547,11 +483,11 @@ export default function AnalisisPage() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="mt-12">
                   <h3 className="text-xl font-bold text-[#01257D] dark:text-white mb-6 flex items-center">
                     <TrendingUp className="mr-2 h-6 w-6" />
-                    Evolución Temporal del Sentimiento
+                    Evolucion Temporal del Sentimiento
                   </h3>
                   <div className="h-80 bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
                     <ResponsiveContainer width="100%" height="100%">
@@ -559,21 +495,21 @@ export default function AnalisisPage() {
                         data={datosEvolucionSentimiento}
                         margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
                       >
-                        <CartesianGrid 
-                          strokeDasharray="3 3" 
-                          stroke="#e5e7eb" 
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          stroke="#e5e7eb"
                           opacity={0.6}
                         />
-                        <XAxis 
-                          dataKey="mes" 
+                        <XAxis
+                          dataKey="mes"
                           tick={{ fontSize: 12, fill: '#6b7280' }}
                           axisLine={{ stroke: '#01257D', strokeWidth: 2 }}
                         />
-                        <YAxis 
+                        <YAxis
                           tick={{ fontSize: 12, fill: '#6b7280' }}
                           axisLine={{ stroke: '#01257D', strokeWidth: 2 }}
                         />
-                        <Tooltip 
+                        <Tooltip
                           contentStyle={{
                             backgroundColor: '#01257D',
                             color: 'white',
@@ -582,36 +518,36 @@ export default function AnalisisPage() {
                             boxShadow: '0 20px 40px rgba(0,0,0,0.1)'
                           }}
                         />
-                        <Legend 
+                        <Legend
                           wrapperStyle={{
                             paddingTop: '20px',
                             fontSize: '14px',
                             fontWeight: '600'
                           }}
                         />
-                        <Line 
-                          type="monotone" 
-                          dataKey="positivo" 
-                          stroke="#059669" 
-                          strokeWidth={4} 
+                        <Line
+                          type="monotone"
+                          dataKey="positivo"
+                          stroke="#059669"
+                          strokeWidth={4}
                           dot={{ fill: '#059669', strokeWidth: 2, r: 6 }}
                           activeDot={{ r: 8, stroke: '#059669', strokeWidth: 2 }}
                           name="Positivo"
                         />
-                        <Line 
-                          type="monotone" 
-                          dataKey="neutro" 
-                          stroke="#01257D" 
-                          strokeWidth={4} 
+                        <Line
+                          type="monotone"
+                          dataKey="neutro"
+                          stroke="#01257D"
+                          strokeWidth={4}
                           dot={{ fill: '#01257D', strokeWidth: 2, r: 6 }}
                           activeDot={{ r: 8, stroke: '#01257D', strokeWidth: 2 }}
                           name="Neutro"
                         />
-                        <Line 
-                          type="monotone" 
-                          dataKey="negativo" 
-                          stroke="#DC2626" 
-                          strokeWidth={4} 
+                        <Line
+                          type="monotone"
+                          dataKey="negativo"
+                          stroke="#DC2626"
+                          strokeWidth={4}
                           dot={{ fill: '#DC2626', strokeWidth: 2, r: 6 }}
                           activeDot={{ r: 8, stroke: '#DC2626', strokeWidth: 2 }}
                           name="Negativo"
@@ -624,14 +560,14 @@ export default function AnalisisPage() {
             </Card>
           </motion.div>
         </TabsContent>
-        
-        {/* Pestaña de Menciones */}
+
+        {/* Pestana de Menciones */}
         <TabsContent value="menciones" className="space-y-6">
           <motion.div variants={itemVariants}>
             <Card>
               <CardHeader>
-                <CardTitle>Evolución de Menciones</CardTitle>
-                <CardDescription>Menciones por plataforma en los últimos 7 meses</CardDescription>
+                <CardTitle>Evolucion de Menciones</CardTitle>
+                <CardDescription>Menciones por plataforma en los ultimos 7 meses</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="h-80 w-full">
@@ -666,14 +602,14 @@ export default function AnalisisPage() {
             </Card>
           </motion.div>
         </TabsContent>
-        
-        {/* Pestaña de Plataformas */}
+
+        {/* Pestana de Plataformas */}
         <TabsContent value="plataformas" className="space-y-6">
           <motion.div variants={itemVariants}>
             <Card>
               <CardHeader>
-                <CardTitle>Distribución por Plataformas</CardTitle>
-                <CardDescription>Análisis detallado por red social</CardDescription>
+                <CardTitle>Distribucion por Plataformas</CardTitle>
+                <CardDescription>Analisis detallado por red social</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-6 md:grid-cols-2">
@@ -698,7 +634,7 @@ export default function AnalisisPage() {
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
-                  
+
                   <div className="space-y-4">
                     {datosPlataformas.map((platform: any) => (
                       <div key={platform.name} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
@@ -720,250 +656,14 @@ export default function AnalisisPage() {
             </Card>
           </motion.div>
         </TabsContent>
-        
-        {/* Pestaña de Análisis de Julia IA */}
-        <TabsContent value="ia-analysis" className="space-y-8">
-          <motion.div variants={itemVariants}>
-            <Card className="border-0 shadow-2xl bg-gradient-to-br from-indigo-50 via-white to-cyan-50 dark:from-indigo-900/20 dark:via-gray-900 dark:to-cyan-900/20">
-              <CardHeader className="bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 text-white rounded-t-lg pb-8">
-                <CardTitle className="flex items-center text-2xl">
-                  <Brain className="mr-3 h-8 w-8" />
-                  🤖 Análisis de Sentimiento con Julia IA
-                </CardTitle>
-                <CardDescription className="text-indigo-100 text-lg mt-3">
-                  ✨ Análisis avanzado utilizando inteligencia artificial para detectar emociones y sentimientos en menciones
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <div className="flex flex-col items-center justify-center h-80 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl">
-                    <div className="relative">
-                      <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-200 border-t-indigo-600"></div>
-                      <Brain className="absolute inset-0 m-auto h-8 w-8 text-indigo-600 animate-pulse" />
-                    </div>
-                    <span className="mt-6 text-lg font-semibold text-indigo-700 dark:text-indigo-300">🤖 Julia IA analizando datos...</span>
-                    <span className="mt-2 text-sm text-indigo-600 dark:text-indigo-400">Procesando sentimientos y emociones</span>
-                  </div>
-                ) : (
-                  <div className="grid gap-6 md:grid-cols-2">
-                    {/* Métricas de Sentimiento mejoradas */}
-                    <div className="space-y-6">
-                      <h3 className="text-xl font-bold text-[#01257D] dark:text-white flex items-center">
-                        <BarChart3 className="mr-3 h-6 w-6 text-indigo-600" />
-                        📊 Distribución de Sentimientos
-                      </h3>
-                      
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between p-5 bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 rounded-xl border-l-4 border-green-500 hover:shadow-lg transition-all duration-300">
-                          <div className="flex items-center">
-                            <div className="w-4 h-4 bg-green-500 rounded-full mr-4 shadow-lg"></div>
-                            <span className="font-semibold text-green-800 dark:text-green-200">Positivo</span>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                              {analysisData?.sentimentDistribution?.positive || 68}%
-                            </div>
-                            <div className="text-sm text-green-700 dark:text-green-300">
-                              {Math.round((analysisData?.sentimentDistribution?.positive || 68) * 12.48)} menciones
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center justify-between p-5 bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-xl border-l-4 border-[#01257D] hover:shadow-lg transition-all duration-300">
-                          <div className="flex items-center">
-                            <div className="w-4 h-4 bg-[#01257D] rounded-full mr-4 shadow-lg"></div>
-                            <span className="font-semibold text-[#01257D] dark:text-blue-200">Neutral</span>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-2xl font-bold text-[#01257D] dark:text-blue-400">
-                              {analysisData?.sentimentDistribution?.neutral || 22}%
-                            </div>
-                            <div className="text-sm text-blue-700 dark:text-blue-300">
-                              {Math.round((analysisData?.sentimentDistribution?.neutral || 22) * 12.48)} menciones
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center justify-between p-5 bg-gradient-to-r from-red-100 to-rose-100 dark:from-red-900/30 dark:to-rose-900/30 rounded-xl border-l-4 border-red-500 hover:shadow-lg transition-all duration-300">
-                          <div className="flex items-center">
-                            <div className="w-4 h-4 bg-red-500 rounded-full mr-4 shadow-lg"></div>
-                            <span className="font-semibold text-red-800 dark:text-red-200">Negativo</span>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-                              {analysisData?.sentimentDistribution?.negative || 10}%
-                            </div>
-                            <div className="text-sm text-red-700 dark:text-red-300">
-                              {Math.round((analysisData?.sentimentDistribution?.negative || 10) * 12.48)} menciones
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Score de Sentimiento mejorado */}
-                    <div className="space-y-6">
-                      <h3 className="text-xl font-bold text-[#01257D] dark:text-white flex items-center">
-                        <Brain className="mr-3 h-6 w-6 text-purple-600" />
-                        📏 Score de Sentimiento Julia IA
-                      </h3>
-                      
-                      <div className="relative text-center p-8 bg-gradient-to-br from-purple-100 via-blue-50 to-indigo-100 dark:from-purple-900/30 dark:via-blue-900/30 dark:to-indigo-900/30 rounded-2xl border-2 border-purple-200 dark:border-purple-700 overflow-hidden">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-200 to-blue-200 dark:from-purple-800 dark:to-blue-800 rounded-full -translate-y-16 translate-x-16 opacity-50"></div>
-                        <div className="relative z-10">
-                          <div className="text-6xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-4">
-                            {analysisData?.averageScore || 7.2}/10
-                          </div>
-                          <div className="text-lg text-purple-700 dark:text-purple-300 mb-6 font-semibold">
-                            Score promedio de sentimiento
-                          </div>
-                          <Badge className="bg-gradient-to-r from-purple-500 to-blue-500 text-white text-lg px-6 py-2 shadow-lg">
-                            ✨ {(analysisData?.averageScore || 7.2) >= 7 ? 'Excelente' : 
-                             (analysisData?.averageScore || 7.2) >= 5 ? 'Bueno' : 'Necesita atención'}
-                          </Badge>
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-4 bg-white/50 dark:bg-gray-800/50 rounded-xl p-6 backdrop-blur-sm">
-                        <div className="flex justify-between items-center">
-                          <span className="text-lg font-semibold text-[#01257D] dark:text-white">Tendencia del mes</span>
-                          <span className="flex items-center text-green-600 font-bold text-lg">
-                            <TrendingUp className="h-5 w-5 mr-2" />
-                            +0.8 puntos
-                          </span>
-                        </div>
-                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4 shadow-inner">
-                          <div 
-                            className="bg-gradient-to-r from-purple-500 to-blue-500 h-4 rounded-full shadow-lg transition-all duration-1000 ease-out" 
-                            style={{ width: `${(analysisData?.averageScore || 7.2) * 10}%` }}
-                          ></div>
-                        </div>
-                        <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
-                          <span>0</span>
-                          <span>5</span>
-                          <span>10</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
-          
-          {/* Palabras Clave y Emociones mejoradas */}
-          <motion.div variants={itemVariants}>
-            <Card className="border-0 shadow-2xl bg-gradient-to-br from-violet-50 via-white to-purple-50 dark:from-violet-900/20 dark:via-gray-900 dark:to-purple-900/20">
-              <CardHeader className="bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 text-white rounded-t-lg pb-6">
-                <CardTitle className="flex items-center text-2xl">
-                  <MessageSquare className="mr-3 h-7 w-7" />
-                  📝 Análisis de Contenido
-                </CardTitle>
-                <CardDescription className="text-violet-100 text-lg mt-2">
-                  🤖 Palabras clave y emociones más frecuentes detectadas por Julia IA
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-6 md:grid-cols-2">
-                  {/* Palabras Clave mejoradas */}
-                  <div className="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6">
-                    <h3 className="text-xl font-bold text-[#01257D] dark:text-white mb-6 flex items-center">
-                      <Sparkles className="mr-2 h-6 w-6 text-blue-500" />
-                      Palabras Clave Principales
-                    </h3>
-                    <div className="flex flex-wrap gap-3">
-                      {(analysisData?.topKeywords || ['excelente', 'calidad', 'servicio', 'recomendado', 'profesional', 'rápido']).map((keyword: string, index: number) => (
-                        <Badge key={index} className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-2 text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-                          🏷️ {keyword}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  {/* Emociones mejoradas */}
-                  <div className="bg-gradient-to-br from-purple-50 to-pink-100 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl p-6">
-                    <h3 className="text-xl font-bold text-[#01257D] dark:text-white mb-6 flex items-center">
-                      <Brain className="mr-2 h-6 w-6 text-purple-500" />
-                      Emociones Detectadas
-                    </h3>
-                    <div className="space-y-4">
-                      {(analysisData?.topEmotions || [
-                        { emotion: 'Satisfacción', percentage: 45 },
-                        { emotion: 'Confianza', percentage: 32 },
-                        { emotion: 'Entusiasmo', percentage: 23 },
-                        { emotion: 'Preocupación', percentage: 12 }
-                      ]).map((item: any, index: number) => (
-                        <div key={index} className="bg-white/70 dark:bg-gray-800/70 rounded-lg p-4 hover:shadow-lg transition-all duration-300">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-lg font-semibold text-purple-700 dark:text-purple-300">
-                              💭 {item.emotion}
-                            </span>
-                            <span className="text-xl font-bold text-purple-600 dark:text-purple-400">{item.percentage}%</span>
-                          </div>
-                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 shadow-inner">
-                            <div 
-                              className="bg-gradient-to-r from-purple-500 to-pink-500 h-3 rounded-full shadow-lg transition-all duration-1000 ease-out" 
-                              style={{ width: `${item.percentage}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Análisis de Engagement mejorado */}
-          <motion.div variants={itemVariants}>
-            <Card className="border-0 shadow-2xl bg-gradient-to-br from-rose-50 via-white to-orange-50 dark:from-rose-900/20 dark:via-gray-900 dark:to-orange-900/20">
-              <CardHeader className="bg-gradient-to-r from-rose-500 via-pink-500 to-orange-500 text-white rounded-t-lg pb-6">
-                <CardTitle className="flex items-center text-2xl">
-                  <Heart className="mr-3 h-7 w-7" />
-                  📱 Métricas de Engagement
-                </CardTitle>
-                <CardDescription className="text-rose-100 text-lg mt-2">
-                  📈 Análisis de interacciones y engagement por plataforma
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-8">
-                <div className="grid gap-8 md:grid-cols-3">
-                  <div className="text-center p-8 bg-gradient-to-br from-pink-100 to-rose-200 dark:from-pink-900/30 dark:to-rose-800/30 rounded-2xl border-2 border-pink-200 dark:border-pink-700 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-                    <Heart className="h-12 w-12 text-pink-500 mx-auto mb-4" />
-                    <div className="text-4xl font-bold text-pink-600 dark:text-pink-400 mb-2">
-                      {socialData?.totalLikes || 1847}
-                    </div>
-                    <div className="text-lg font-semibold text-pink-700 dark:text-pink-300">
-                      💖 Total Likes
-                    </div>
-                  </div>
-                  
-                  <div className="text-center p-8 bg-gradient-to-br from-blue-100 to-indigo-200 dark:from-blue-900/30 dark:to-indigo-800/30 rounded-2xl border-2 border-blue-200 dark:border-blue-700 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-                    <Share2 className="h-12 w-12 text-blue-500 mx-auto mb-4" />
-                    <div className="text-4xl font-bold text-blue-600 dark:text-blue-400 mb-2">
-                      {socialData?.totalShares || 523}
-                    </div>
-                    <div className="text-lg font-semibold text-blue-700 dark:text-blue-300">
-                      🔄 Total Shares
-                    </div>
-                  </div>
-                  
-                  <div className="text-center p-8 bg-gradient-to-br from-green-100 to-emerald-200 dark:from-green-900/30 dark:to-emerald-800/30 rounded-2xl border-2 border-green-200 dark:border-green-700 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-                    <MessageSquare className="h-12 w-12 text-green-500 mx-auto mb-4" />
-                    <div className="text-4xl font-bold text-green-600 dark:text-green-400 mb-2">
-                      {socialData?.totalComments || 314}
-                    </div>
-                    <div className="text-lg font-semibold text-green-700 dark:text-green-300">
-                      💬 Total Comments
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </TabsContent>
       </Tabs>
+
+      {/* Disclaimer */}
+      <div className="mt-8 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700">
+        <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed text-center">
+          Las estadisticas presentadas se generan a partir de datos recopilados de fuentes publicas y APIs de redes sociales. Los analisis de sentimiento son procesados por Julia IA, nuestra asistente de inteligencia artificial entrenada en procesamiento de lenguaje natural, analisis linguistico y comprension textual. Para obtener resultados mas precisos y personalizados, cada usuario debe alimentar a Julia IA con sus propios datos e informacion contextual.
+        </p>
+      </div>
     </motion.div>
   );
 }

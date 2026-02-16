@@ -2,13 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Mic, Video, Brain, AlertTriangle, TrendingUp, TrendingDown, 
-  MapPin, Users, MessageSquare, Clock, Eye, Zap, Target, 
+import {
+  Mic, Video, Brain, AlertTriangle, TrendingUp, TrendingDown,
+  MapPin, Users, MessageSquare, Clock, Eye, Zap, Target,
   HeadphonesIcon, Radio, Tv, Smartphone, Globe, BarChart3,
   Shield, Bell, Settings, RefreshCw, Filter, Calendar,
-  CheckCircle, XCircle, AlertCircle, Activity, Sparkles
+  CheckCircle, XCircle, AlertCircle, Activity, Sparkles, Hash
 } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 import { useUser } from '@/context/UserContext';
 import { usePlan } from '@/context/PlanContext';
 import FeatureGate, { UsageLimit, PlanBadge } from '@/components/plan/FeatureGate';
@@ -18,6 +19,8 @@ import AudienceIntelligence from '@/components/social-listening/AudienceIntellig
 import CrisisManagement from '@/components/social-listening/CrisisManagement';
 import MediaMonitoring from '@/components/social-listening/MediaMonitoring';
 import AIBrandAdvisor from '@/components/social-listening/AIBrandAdvisor';
+import HashtagMonitoring from '@/components/hashtags/HashtagMonitoring';
+import HashtagGeoMap from '@/components/hashtags/HashtagGeoMap';
 
 interface ListeningMetrics {
   totalMentions: number;
@@ -41,8 +44,9 @@ interface UserProfile {
 export default function SocialListeningPage() {
   const { user } = useUser();
   const { hasFeature, currentPlan } = usePlan();
-  
-  const [activeTab, setActiveTab] = useState<string>('overview');
+  const searchParams = useSearchParams();
+
+  const [activeTab, setActiveTab] = useState<string>(searchParams.get('tab') || 'overview');
   const [isLoading, setIsLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState(new Date());
   const [autoRefresh, setAutoRefresh] = useState(true);
@@ -87,6 +91,7 @@ export default function SocialListeningPage() {
   const getTabs = () => {
     const baseTabs = [
       { id: 'overview', label: 'Resumen', icon: BarChart3, premium: false },
+      { id: 'hashtags', label: 'Hashtags', icon: Hash, premium: false },
       { id: 'crisis', label: 'Crisis Alert', icon: AlertTriangle, premium: true }
     ];
 
@@ -155,6 +160,8 @@ export default function SocialListeningPage() {
     switch (activeTab) {
       case 'overview':
         return userProfile ? <OverviewTab metrics={metrics} userProfile={userProfile} /> : null;
+      case 'hashtags':
+        return <HashtagsTab />;
       case 'political':
         return hasFeature('hasAdvancedAnalytics') && userProfile ?
           <PoliticalPulse userProfile={userProfile} /> :
@@ -460,6 +467,15 @@ function SentimentBar({ label, percentage, color }: {
           style={{ width: `${percentage}%` }}
         ></div>
       </div>
+    </div>
+  );
+}
+
+function HashtagsTab() {
+  return (
+    <div className="space-y-6">
+      <HashtagMonitoring />
+      <HashtagGeoMap />
     </div>
   );
 }

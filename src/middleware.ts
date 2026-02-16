@@ -41,6 +41,12 @@ const publicPaths = [
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+  // Redirigir dashboard-politico al dashboard unificado
+  if (pathname.startsWith('/dashboard-politico')) {
+    const newPath = pathname.replace('/dashboard-politico', '/dashboard')
+    return NextResponse.redirect(new URL(newPath || '/dashboard', request.url))
+  }
+
   // Verificar si la ruta requiere autenticación
   const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path))
   const isAdminPath = adminPaths.some(path => pathname.startsWith(path))

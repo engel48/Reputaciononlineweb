@@ -69,7 +69,7 @@ export default function OnboardingPage() {
   });
   
   const [connectedNetworks, setConnectedNetworks] = useState<SocialConnectionsState | null>(null);
-  const [profilePhoto, setProfilePhoto] = useState<string | null>(user?.avatarUrl || null);
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [erroresValidacion, setErroresValidacion] = useState<{[key: string]: string}>({});
   const [guardandoDatos, setGuardandoDatos] = useState(false);
   const [error, setError] = useState('');
@@ -77,12 +77,7 @@ export default function OnboardingPage() {
   // Redirigir si el usuario ya completó el onboarding
   useEffect(() => {
     if (!isLoading && user && user.onboardingCompleted) {
-      // Redireccionar según el tipo de perfil
-      if (user.profileType === 'political') {
-        router.push('/dashboard-politico');
-      } else {
-        router.push('/dashboard');
-      }
+      router.push('/dashboard');
     }
   }, [user, isLoading, router]);
 
@@ -203,9 +198,7 @@ export default function OnboardingPage() {
         break;
         
       case 4:
-        if (!profilePhoto) {
-          errores.photo = 'La foto de perfil es obligatoria';
-        }
+        // Foto de perfil es opcional
         break;
     }
     
@@ -225,7 +218,7 @@ export default function OnboardingPage() {
       case 3:
         return true; // Las redes sociales son opcionales
       case 4:
-        return profilePhoto !== null;
+        return true; // Foto de perfil es opcional
       default:
         return false;
     }
@@ -325,14 +318,10 @@ export default function OnboardingPage() {
       console.log('✅ ONBOARDING: Actualización completada exitosamente');
       console.log('🔍 ONBOARDING: Estado del usuario después de actualización:', user.onboardingCompleted);
 
-      // Mostrar mensaje de éxito brevemente antes de redirigir según el tipo de perfil
+      // Mostrar mensaje de éxito brevemente antes de redirigir
       setTimeout(() => {
         console.log('🔄 ONBOARDING: Redirigiendo a dashboard...');
-        if (finalProfileType === 'political') {
-          router.push('/dashboard-politico');
-        } else {
-          router.push('/dashboard');
-        }
+        router.push('/dashboard');
       }, 1000);
       
     } catch (error: any) {
@@ -373,7 +362,7 @@ export default function OnboardingPage() {
   const canProceed = isStepValid(currentStep);
 
   return (
-    <div className="min-h-screen relative overflow-y-auto bg-gray-50">
+    <div className="h-screen relative flex flex-col bg-gray-50">
       {/* Partículas flotantes de fondo */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="floating-particle absolute top-20 left-10 w-3 h-3 bg-[#00E5FF]/30 rounded-full blur-sm"></div>
@@ -386,7 +375,8 @@ export default function OnboardingPage() {
       {/* Gradiente decorativo */}
       <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-[#00E5FF]/10 to-transparent pointer-events-none"></div>
       
-      <div ref={containerRef} className="mx-auto max-w-4xl px-4 py-8 pb-16 relative z-10">
+      <div className="flex-1 overflow-y-auto relative z-10">
+      <div ref={containerRef} className="mx-auto max-w-4xl px-4 py-8 pb-8">
         {/* Header */}
         <div ref={headerRef} className="text-center mb-12">
           <motion.div
@@ -788,10 +778,13 @@ export default function OnboardingPage() {
           </AnimatePresence>
         </motion.div>
 
-        {/* Navigation Buttons */}
-        <motion.div 
+      </div>
+      </div>
+
+        {/* Navigation Buttons - Fixed at bottom */}
+        <motion.div
           ref={buttonsRef}
-          className="flex justify-between items-center"
+          className="flex-shrink-0 flex justify-between items-center mx-auto max-w-4xl w-full px-4 py-4 bg-gray-50 border-t border-gray-200 relative z-10"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
@@ -900,7 +893,6 @@ export default function OnboardingPage() {
             </motion.button>
           )}
         </motion.div>
-      </div>
     </div>
   );
 }
