@@ -3,8 +3,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useUser } from '@/context/UserContext';
-import GeneradorReportes from '@/components/creditos/GeneradorReportes';
-import { FileText, ChevronRight, Download, BarChart2, User, Calendar, CreditCard, RefreshCw, TrendingUp, Activity } from 'lucide-react';
+import { FileText, ChevronRight, Download, BarChart2, User, Calendar, CreditCard, RefreshCw, TrendingUp, Activity, Newspaper } from 'lucide-react';
 import { ReportGenerator, ReportData } from '@/lib/reportGenerator';
 import Image from 'next/image';
 
@@ -66,13 +65,25 @@ export default function ReportesCreditosPage() {
     {
       id: 'tendencias-trimestre',
       titulo: 'Tendencias Trimestrales',
-      descripcion: 'Análisis comparativo de los últimos 3 meses',
+      descripcion: 'Analisis comparativo de los ultimos 3 meses',
       icono: <BarChart2 className="h-6 w-6" />,
       color: '#8B5CF6',
       bgGradient: 'from-purple-50 to-violet-100 dark:from-purple-900/20 dark:to-violet-900/20',
       borderColor: 'border-purple-200 dark:border-purple-700',
       stats: '+18% crecimiento',
       emoji: '📈'
+    },
+    {
+      id: 'noticias-tiempo-real',
+      titulo: 'Noticias en Tiempo Real',
+      descripcion: 'Resumen de noticias recientes monitoreadas en los ultimos 7 dias',
+      icono: <Newspaper className="h-6 w-6" />,
+      color: '#0891B2',
+      bgGradient: 'from-cyan-50 to-sky-100 dark:from-cyan-900/20 dark:to-sky-900/20',
+      borderColor: 'border-cyan-200 dark:border-cyan-700',
+      stats: 'Ultimos 7 dias',
+      emoji: '📰',
+      isNew: true
     }
   ];
 
@@ -219,9 +230,20 @@ export default function ReportesCreditosPage() {
                   transition={{ delay: index * 0.1 }}
                   onClick={() => generatePersonalizedReport(reporte.id)}
                 >
+                  {/* Badge NUEVO */}
+                  {(reporte as any).isNew && (
+                    <motion.div
+                      className="absolute top-2 right-2 bg-cyan-500 text-white text-xs font-bold px-2 py-0.5 rounded-full"
+                      animate={{ scale: [1, 1.1, 1] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    >
+                      NUEVO
+                    </motion.div>
+                  )}
+
                   {/* Header del reporte */}
                   <div className="flex items-center mb-4">
-                    <div 
+                    <div
                       className="h-12 w-12 rounded-full flex items-center justify-center text-white shadow-lg"
                       style={{ backgroundColor: reporte.color }}
                     >
@@ -358,10 +380,6 @@ export default function ReportesCreditosPage() {
         </div>
       </motion.div>
 
-      {/* Generador de reportes personalizados */}
-      <motion.div variants={itemVariants}>
-        <GeneradorReportes />
-      </motion.div>
     </motion.div>
   );
 }

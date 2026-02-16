@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import CreditosSummary from '@/components/creditos/CreditosSummary';
 import AdvancedSearch from '@/components/dashboard/AdvancedSearch';
 import JuliaChat from '@/components/dashboard/JuliaChat';
 import SimpleChat from '@/components/dashboard/SimpleChat';
@@ -367,8 +366,22 @@ export default function Dashboard() {
           <div className="flex items-center space-x-3">
             <h1 className="text-3xl font-bold text-[#0B1120] dark:text-white">Dashboard</h1>
             <PlanBadge />
+            {/* Badge de Menciones Totales - compacto e inline */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={estadisticasCalculadas.totalMenciones}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                className="flex items-center space-x-1.5 bg-[#00E5FF]/10 text-[#00E5FF] px-3 py-1 rounded-full"
+              >
+                <Activity className="h-4 w-4" />
+                <span className="text-sm font-bold">{estadisticasCalculadas.totalMenciones}</span>
+                <span className="text-xs opacity-75">menciones</span>
+              </motion.div>
+            </AnimatePresence>
           </div>
-          <p className="mt-1 text-gray-500 dark:text-gray-400">Bienvenido a tu centro de monitoreo de reputación online</p>
+          <p className="mt-1 text-gray-500 dark:text-gray-400">Bienvenido a tu centro de monitoreo de reputacion online</p>
         </div>
         <div className="flex items-center space-x-3">
           {/* Indicador de conexión */}
@@ -409,149 +422,143 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Estadísticas principales - RESPONSIVE CON ANIMACIONES MEJORADAS */}
-      <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
-        
-        {/* Estadísticas rápidas MEJORADAS CON ANIMACIONES AVANZADAS */}
+      {/* Sentimiento - TARJETAS PROMINENTES */}
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
+
+        {/* Sentimiento Positivo - Tarjeta grande */}
         <motion.div
           custom={1}
           initial="hidden"
           animate="visible"
-          whileHover="hover"
+          whileHover={{ y: -6, scale: 1.02, boxShadow: '0 12px 40px rgba(16, 185, 129, 0.25)' }}
           variants={cardVariants}
-          className="rounded-xl p-4 sm:p-5 bg-gradient-to-br from-[#00E5FF]/5 to-[#00E5FF]/15 dark:from-[#00E5FF]/10 dark:to-[#00E5FF]/20 cursor-pointer relative overflow-hidden border border-[#00E5FF]/20"
-          style={{ boxShadow: '0 4px 20px rgba(0, 229, 255, 0.1)' }}
+          className="rounded-2xl p-6 sm:p-8 bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-100 dark:from-emerald-900/20 dark:via-green-900/15 dark:to-emerald-800/30 cursor-pointer relative overflow-hidden border border-emerald-200 dark:border-emerald-700/50"
+          style={{ boxShadow: '0 4px 25px rgba(16, 185, 129, 0.12)' }}
         >
-          {/* Indicador de actualización en tiempo real */}
-          <div className="absolute top-2 right-2">
-            <div className={`h-2 w-2 rounded-full ${errorConexion ? 'bg-red-400' : 'bg-green-400'} animate-pulse`}></div>
+          {/* EN VIVO indicator */}
+          <div className="absolute top-3 right-3 flex items-center space-x-1.5">
+            <div className={`h-2.5 w-2.5 rounded-full ${errorConexion ? 'bg-red-400' : 'bg-green-500'} animate-pulse`}></div>
+            <span className="text-xs font-semibold text-green-600 dark:text-green-400">EN VIVO</span>
           </div>
-          
-          <h3 className="mb-2 text-sm font-semibold text-gray-800 dark:text-gray-200">Menciones Totales</h3>
-          <div className="flex items-end justify-between">
+
+          {/* Icono decorativo */}
+          <div className="absolute -bottom-4 -right-4 opacity-5">
+            <TrendingUp className="h-32 w-32 text-emerald-600" />
+          </div>
+
+          <div className="flex items-center space-x-3 mb-4">
+            <motion.div
+              className="p-3 rounded-xl bg-emerald-500/15"
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <TrendingUp className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+            </motion.div>
+            <h3 className="text-lg font-bold text-emerald-800 dark:text-emerald-200">Sentimiento Positivo</h3>
+          </div>
+
+          <div className="flex items-end justify-between mb-4">
             <AnimatePresence mode="wait">
-              <motion.p 
-                key={estadisticasCalculadas.totalMenciones}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="text-3xl font-bold text-gray-900 dark:text-white"
-              >
-                {estadisticasCalculadas.totalMenciones}
-              </motion.p>
-            </AnimatePresence>
-            <div className="flex items-center text-green-600 dark:text-green-400">
-              <TrendingUp className="mr-1 h-4 w-4" />
-              <span className="text-sm font-medium">{estadisticasCalculadas.crecimientoSemanal}</span>
-            </div>
-          </div>
-          <div className="mt-4">
-            <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-              <motion.div
-                className="h-2 rounded-full bg-[#00E5FF]"
-                initial={{ width: '0%' }}
-                animate={{ width: '70%' }}
-                transition={{ duration: 1, delay: 0.5 }}
-              ></motion.div>
-            </div>
-          </div>
-          <div className="mt-2 text-xs text-gray-600 dark:text-gray-300">
-            <span className="font-medium">{estadisticasCalculadas.nuevasMenciones}</span> nuevas menciones esta semana
-          </div>
-        </motion.div>
-        
-        <motion.div
-          custom={2}
-          initial="hidden"
-          animate="visible"
-          whileHover="hover"
-          variants={cardVariants}
-          className="rounded-xl p-4 sm:p-5 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/30 cursor-pointer relative overflow-hidden border border-emerald-200 dark:border-emerald-700/50"
-          style={{ boxShadow: '0 4px 20px rgba(16, 185, 129, 0.1)' }}
-        >
-          {/* Indicador de actualización en tiempo real */}
-          <div className="absolute top-2 right-2">
-            <div className={`h-2 w-2 rounded-full ${errorConexion ? 'bg-red-400' : 'bg-green-400'} animate-pulse`}></div>
-          </div>
-          
-          <h3 className="mb-2 text-sm font-semibold text-gray-800 dark:text-gray-200">Sentimiento Positivo</h3>
-          <div className="flex items-end justify-between">
-            <AnimatePresence mode="wait">
-              <motion.p 
+              <motion.p
                 key={estadisticasCalculadas.porcentajePositivo}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="text-3xl font-bold text-gray-900 dark:text-white"
+                initial={{ opacity: 0, y: 15, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                className="text-5xl font-extrabold text-emerald-700 dark:text-emerald-300"
               >
                 {estadisticasCalculadas.porcentajePositivo}%
               </motion.p>
             </AnimatePresence>
-            <div className="flex items-center text-red-600 dark:text-red-400">
-              <TrendingDown className="mr-1 h-4 w-4" />
-              <span className="text-sm font-medium">-3.1%</span>
+            <div className="text-right">
+              <div className="flex items-center text-emerald-600 dark:text-emerald-400">
+                <TrendingUp className="mr-1 h-5 w-5" />
+                <span className="text-lg font-bold">{estadisticasCalculadas.crecimientoSemanal}</span>
+              </div>
+              <span className="text-xs text-emerald-600/70 dark:text-emerald-400/70">vs semana anterior</span>
             </div>
           </div>
-          <div className="mt-4">
-            <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-              <motion.div 
-                className="h-2 rounded-full bg-green-500"
-                initial={{ width: '0%' }}
-                animate={{ width: `${estadisticasCalculadas.porcentajePositivo}%` }}
-                transition={{ duration: 1, delay: 0.7 }}
-              ></motion.div>
-            </div>
+
+          {/* Barra de progreso animada */}
+          <div className="h-3 w-full overflow-hidden rounded-full bg-emerald-200/50 dark:bg-emerald-900/30">
+            <motion.div
+              className="h-3 rounded-full bg-gradient-to-r from-emerald-400 to-green-500"
+              initial={{ width: '0%' }}
+              animate={{ width: `${estadisticasCalculadas.porcentajePositivo}%` }}
+              transition={{ duration: 1.2, delay: 0.5, type: "spring", stiffness: 50 }}
+            />
           </div>
-          <div className="mt-2 text-xs text-gray-600 dark:text-gray-300">
-            <span>Del total de menciones analizadas</span>
-          </div>
+          <p className="mt-3 text-sm text-emerald-700/80 dark:text-emerald-300/80 font-medium">
+            Del total de menciones analizadas
+          </p>
         </motion.div>
 
+        {/* Sentimiento Negativo - Tarjeta grande */}
         <motion.div
-          custom={3}
+          custom={2}
           initial="hidden"
           animate="visible"
-          whileHover="hover"
+          whileHover={{ y: -6, scale: 1.02, boxShadow: '0 12px 40px rgba(244, 63, 94, 0.25)' }}
           variants={cardVariants}
-          className="rounded-xl p-4 sm:p-5 bg-gradient-to-br from-rose-50 to-rose-100 dark:from-rose-900/20 dark:to-rose-800/30 cursor-pointer relative overflow-hidden border border-rose-200 dark:border-rose-700/50"
-          style={{ boxShadow: '0 4px 20px rgba(244, 63, 94, 0.1)' }}
+          className="rounded-2xl p-6 sm:p-8 bg-gradient-to-br from-rose-50 via-red-50 to-rose-100 dark:from-rose-900/20 dark:via-red-900/15 dark:to-rose-800/30 cursor-pointer relative overflow-hidden border border-rose-200 dark:border-rose-700/50"
+          style={{ boxShadow: '0 4px 25px rgba(244, 63, 94, 0.12)' }}
         >
-          {/* Indicador de actualización en tiempo real */}
-          <div className="absolute top-2 right-2">
-            <div className={`h-2 w-2 rounded-full ${errorConexion ? 'bg-red-400' : 'bg-green-400'} animate-pulse`}></div>
+          {/* EN VIVO indicator */}
+          <div className="absolute top-3 right-3 flex items-center space-x-1.5">
+            <div className={`h-2.5 w-2.5 rounded-full ${errorConexion ? 'bg-red-400' : 'bg-green-500'} animate-pulse`}></div>
+            <span className="text-xs font-semibold text-rose-600 dark:text-rose-400">EN VIVO</span>
           </div>
 
-          <h3 className="mb-2 text-sm font-semibold text-gray-800 dark:text-gray-200">Sentimiento Negativo</h3>
-          <div className="flex items-end justify-between">
+          {/* Icono decorativo */}
+          <div className="absolute -bottom-4 -right-4 opacity-5">
+            <AlertTriangle className="h-32 w-32 text-rose-600" />
+          </div>
+
+          <div className="flex items-center space-x-3 mb-4">
+            <motion.div
+              className="p-3 rounded-xl bg-rose-500/15"
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+            >
+              <TrendingDown className="h-6 w-6 text-rose-600 dark:text-rose-400" />
+            </motion.div>
+            <h3 className="text-lg font-bold text-rose-800 dark:text-rose-200">Sentimiento Negativo</h3>
+          </div>
+
+          <div className="flex items-end justify-between mb-4">
             <AnimatePresence mode="wait">
               <motion.p
                 key={estadisticasCalculadas.porcentajeNegativo}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="text-3xl font-bold text-gray-900 dark:text-white"
+                initial={{ opacity: 0, y: 15, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                className="text-5xl font-extrabold text-rose-700 dark:text-rose-300"
               >
                 {estadisticasCalculadas.porcentajeNegativo}%
               </motion.p>
             </AnimatePresence>
-            <div className="flex items-center text-rose-600 dark:text-rose-400">
-              <TrendingDown className="mr-1 h-4 w-4" />
-              <span className="text-sm font-medium">-1.2%</span>
+            <div className="text-right">
+              <div className="flex items-center text-rose-600 dark:text-rose-400">
+                <TrendingDown className="mr-1 h-5 w-5" />
+                <span className="text-lg font-bold">-1.2%</span>
+              </div>
+              <span className="text-xs text-rose-600/70 dark:text-rose-400/70">vs semana anterior</span>
             </div>
           </div>
-          <div className="mt-4">
-            <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-              <motion.div
-                className="h-2 rounded-full bg-rose-500"
-                initial={{ width: '0%' }}
-                animate={{ width: `${estadisticasCalculadas.porcentajeNegativo}%` }}
-                transition={{ duration: 1, delay: 0.9 }}
-              ></motion.div>
-            </div>
+
+          {/* Barra de progreso animada */}
+          <div className="h-3 w-full overflow-hidden rounded-full bg-rose-200/50 dark:bg-rose-900/30">
+            <motion.div
+              className="h-3 rounded-full bg-gradient-to-r from-rose-400 to-red-500"
+              initial={{ width: '0%' }}
+              animate={{ width: `${estadisticasCalculadas.porcentajeNegativo}%` }}
+              transition={{ duration: 1.2, delay: 0.7, type: "spring", stiffness: 50 }}
+            />
           </div>
-          <div className="mt-2 text-xs text-gray-600 dark:text-gray-300">
-            <span>Del total de menciones analizadas</span>
-          </div>
+          <p className="mt-3 text-sm text-rose-700/80 dark:text-rose-300/80 font-medium">
+            Del total de menciones analizadas
+          </p>
         </motion.div>
       </div>
 
@@ -1119,17 +1126,6 @@ export default function Dashboard() {
           <PoliticalDashboard />
         </motion.div>
       )}
-
-      {/* Widget de Créditos - Resumen compacto */}
-      <motion.div
-        custom={8}
-        initial="hidden"
-        animate="visible"
-        variants={statsVariants}
-        className="mb-4 sm:mb-6"
-      >
-        <CreditosSummary variant="dashboard" showDetails={false} />
-      </motion.div>
 
       {/* Julia IA - Chat flotante */}
       <JuliaChat />

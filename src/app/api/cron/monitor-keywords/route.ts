@@ -189,7 +189,7 @@ export async function GET(request: NextRequest) {
 
         totalNewMentions += savedCount;
 
-        // === DETECCION DE CRISIS AL 50% ===
+        // === DETECCION DE PICOS AL 50% (POSITIVOS Y NEGATIVOS) ===
         const previousTotal = kw.total_mentions || 0;
         const currentTotal = totalMentions || 0;
 
@@ -204,11 +204,25 @@ export async function GET(request: NextRequest) {
               : increasePercent >= 100 ? 'high'
               : 'medium';
 
+            // Determinar si el pico es positivo o negativo analizando el sentimiento
+            // de las menciones nuevas (si hay mas positivas que negativas = positive_spike)
+            const allMatches = [...newsMatches, ...newsMentionMatches];
+            const positiveCount = allMatches.filter((m: any) =>
+              m.sentiment === 'positive'
+            ).length;
+            const negativeCount = allMatches.filter((m: any) =>
+              m.sentiment === 'negative'
+            ).length;
+            const spikeType = positiveCount > negativeCount ? 'positive_spike' : 'negative_spike';
+            const timePeriod = (kw.check_frequency_minutes || 60) <= 60 ? 'ultima hora' : 'ultimas 24 horas';
+
             const alertData = {
               user_id: kw.user_id,
-              type: 'negative_spike',
+              type: spikeType,
               severity,
-              description: `Menciones de "${kw.keyword}" aumentaron ${increasePercent}% (${savedCount} nuevas vs promedio esperado de ${Math.round(expectedNewPerCycle)})`,
+              description: spikeType === 'positive_spike'
+                ? `Tendencia positiva: Menciones de "${kw.keyword}" aumentaron ${increasePercent}% en las ${timePeriod} (${savedCount} nuevas vs promedio de ${Math.round(expectedNewPerCycle)})`
+                : `Alerta de crisis: Menciones de "${kw.keyword}" aumentaron ${increasePercent}% en las ${timePeriod} (${savedCount} nuevas vs promedio de ${Math.round(expectedNewPerCycle)})`,
               trigger_data: {
                 keyword: kw.keyword,
                 keyword_id: kw.id,
@@ -216,6 +230,10 @@ export async function GET(request: NextRequest) {
                 expected: Math.round(expectedNewPerCycle),
                 increase_percent: increasePercent,
                 period_minutes: kw.check_frequency_minutes,
+                time_period: timePeriod,
+                positive_count: positiveCount,
+                negative_count: negativeCount,
+                spike_type: spikeType,
               },
               status: 'active',
             };
@@ -226,7 +244,8 @@ export async function GET(request: NextRequest) {
 
             if (!alertError) {
               crisisAlerts.push(alertData);
-              console.log(`  ALERTA DE CRISIS: "${kw.keyword}" +${increasePercent}% (${severity})`);
+              const label = spikeType === 'positive_spike' ? 'TENDENCIA POSITIVA' : 'ALERTA DE CRISIS';
+              console.log(`  ${label}: "${kw.keyword}" +${increasePercent}% (${severity})`);
             }
           }
         }

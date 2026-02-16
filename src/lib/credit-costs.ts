@@ -5,8 +5,8 @@
 
 export const CREDIT_COSTS = {
   // Busquedas
-  search_basic: 2,           // Por resultado (dentro de 30 dias)
-  search_extended: 5,        // Por resultado (>30 dias de antiguedad)
+  search_basic: 1,           // Por resultado (dentro de 30 dias)
+  search_extended: 1,        // Por resultado (>30 dias de antiguedad)
 
   // Monitoreo
   monitoring_hourly: 3,      // Por keyword por ciclo horario

@@ -161,15 +161,18 @@ export async function GET(request: NextRequest) {
       const negative = allNews.filter(n => n.sentiment === 'negative').length;
       const neutral = allNews.length - positive - negative;
 
-      // Deducir creditos por resultados
+      // Deducir creditos por resultados (1 credito por resultado)
       let creditInfo: { cost: number; newBalance?: number } = { cost: 0 };
       const authToken = request.cookies.get('auth-token')?.value;
       const userId = authToken ? extractUserIdFromToken(authToken) : null;
       if (userId) {
         const totalResults = allNews.length + allWebSources.length;
-        const creditCost = getSearchCost(30, totalResults); // Busquedas en tiempo real = dentro de 30 dias
+        // Calcular dias segun dateRange del request
+        const daysMap: Record<string, number> = { '7d': 7, '30d': 30, '90d': 90, 'all': 90 };
+        const daysBack = daysMap[dateRange || '30d'] || 30;
+        const actionType = daysBack > 30 ? 'search_extended' : 'search_basic';
         if (totalResults > 0) {
-          const result = await deductCreditsForAction(userId, 'search_basic', totalResults, `Busqueda: "${query}" (${totalResults} resultados)`);
+          const result = await deductCreditsForAction(userId, actionType, totalResults, `Busqueda: "${query}" (${totalResults} resultados, ${dateRange || '30d'})`);
           creditInfo = { cost: result.cost || 0, newBalance: result.newBalance };
         }
       }

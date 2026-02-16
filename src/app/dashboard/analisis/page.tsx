@@ -13,7 +13,7 @@ import {
 import {
   TrendingUp, TrendingDown, Minus, AlertCircle, CheckCircle,
   Facebook, Instagram, Youtube, Download, Filter, Sparkles, Brain,
-  MessageSquare, Heart, Share2, Users, Eye, BarChart3, Globe, Activity, AlertTriangle
+  MessageSquare, Heart, Share2, Users, Eye, BarChart3, Globe, Activity, AlertTriangle, BookOpen, Info
 } from 'lucide-react';
 import XLogo from '@/components/icons/XLogo';
 import { formatDistanceToNow } from 'date-fns';
@@ -658,12 +658,55 @@ export default function AnalisisPage() {
         </TabsContent>
       </Tabs>
 
-      {/* Disclaimer */}
-      <div className="mt-8 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700">
-        <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed text-center">
-          Las estadisticas presentadas se generan a partir de datos recopilados de fuentes publicas y APIs de redes sociales. Los analisis de sentimiento son procesados por Julia IA, nuestra asistente de inteligencia artificial entrenada en procesamiento de lenguaje natural, analisis linguistico y comprension textual. Para obtener resultados mas precisos y personalizados, cada usuario debe alimentar a Julia IA con sus propios datos e informacion contextual.
+      {/* Disclaimer - Sobre Julia IA y las estadisticas */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.8, duration: 0.5 }}
+        className="mt-8 p-6 bg-gradient-to-r from-indigo-50 via-blue-50 to-cyan-50 dark:from-indigo-900/10 dark:via-blue-900/10 dark:to-cyan-900/10 rounded-xl border-l-4 border-indigo-500 shadow-sm"
+      >
+        {/* Header */}
+        <div className="flex items-center space-x-2 mb-4">
+          <motion.div
+            animate={{ scale: [1, 1.05, 1] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <Brain className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+          </motion.div>
+          <h3 className="text-sm font-bold text-indigo-800 dark:text-indigo-300">
+            Sobre Julia IA y las estadisticas
+          </h3>
+        </div>
+
+        {/* Secciones informativas */}
+        <div className="space-y-3">
+          <div className="flex items-start space-x-3">
+            <Sparkles className="h-4 w-4 text-indigo-500 mt-0.5 flex-shrink-0" />
+            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+              <span className="font-semibold text-indigo-700 dark:text-indigo-300">Como analiza Julia IA:</span> Utiliza procesamiento de lenguaje natural (PLN) avanzado, analisis linguistico profundo y modelos de inteligencia artificial entrenados en comprension textual para detectar emociones, sentimientos y tendencias en las menciones.
+            </p>
+          </div>
+
+          <div className="flex items-start space-x-3">
+            <BookOpen className="h-4 w-4 text-indigo-500 mt-0.5 flex-shrink-0" />
+            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+              <span className="font-semibold text-indigo-700 dark:text-indigo-300">Entrenamiento:</span> Julia IA ha sido entrenada en analisis de lenguaje, lectura comprensiva de textos y manejo del lenguaje en contextos de reputacion digital, comunicacion y medios colombianos.
+            </p>
+          </div>
+
+          <div className="flex items-start space-x-3">
+            <Users className="h-4 w-4 text-indigo-500 mt-0.5 flex-shrink-0" />
+            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+              <span className="font-semibold text-indigo-700 dark:text-indigo-300">Personalizacion:</span> Para obtener resultados precisos y adaptados a tu contexto, cada usuario debe alimentar a Julia IA con sus propios datos e informacion. Las estadisticas se basan en fuentes publicas y APIs de redes sociales.
+            </p>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <p className="mt-4 text-xs text-gray-500 dark:text-gray-400 italic border-t border-indigo-200 dark:border-indigo-800 pt-3">
+          Los resultados presentados son orientativos y no constituyen asesoria profesional. Los datos provienen de fuentes publicas disponibles al momento de la consulta.
         </p>
-      </div>
+      </motion.div>
     </motion.div>
   );
 }

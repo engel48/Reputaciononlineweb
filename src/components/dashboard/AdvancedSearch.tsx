@@ -410,6 +410,19 @@ export default function AdvancedSearch() {
               )}
             </motion.button>
           </div>
+
+          {/* Info de consumo de creditos */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="flex items-center space-x-2 mt-3 px-4 py-2.5 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-700 rounded-lg"
+          >
+            <Coins className="h-4 w-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+            <p className="text-sm text-amber-700 dark:text-amber-300">
+              Cada resultado de busqueda consume <span className="font-bold">1 credito</span>.
+            </p>
+          </motion.div>
         </div>
 
         {/* Filtros */}
