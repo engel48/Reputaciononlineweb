@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { requireRole } from '@/lib/auth-helper';
 
 // Crear cliente Supabase admin
 const supabaseAdmin = createClient(
@@ -9,6 +10,10 @@ const supabaseAdmin = createClient(
 
 export async function GET(request: NextRequest) {
   try {
+    // Verificar autenticación y rol admin
+    const admin = await requireRole(request, 'admin');
+    if (admin instanceof NextResponse) return admin;
+
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
     const type = searchParams.get('type');

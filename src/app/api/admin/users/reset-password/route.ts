@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { requireRole } from '@/lib/auth-helper';
 import bcrypt from 'bcryptjs';
 
 // Crear cliente Supabase admin
@@ -20,6 +21,10 @@ function generateTempPassword(length: number = 10): string {
 
 export async function POST(request: NextRequest) {
   try {
+    // Verificar autenticación y rol admin
+    const admin = await requireRole(request, 'admin');
+    if (admin instanceof NextResponse) return admin;
+
     const body = await request.json();
     const { userId, customPassword } = body;
 

@@ -367,18 +367,3 @@ export const aiRealTimeProcessing = (
   return tl;
 };
 
-// Función para la búsqueda del valor en la matriz 3D
-function findValueIn3DMatrix(matrix: number[][][], value: number, activeAxis: number = 0): { x: number, y: number, z: number } | null {
-  for (let z = 0; z < matrix.length; z++) {
-    for (let y = 0; y < matrix[z].length; y++) {
-      for (let x = 0; x < matrix[z][y].length; x++) {
-        const axisIndex = [x, y, z][activeAxis];
-        const index = matrix[z][y][x];
-        if (axisIndex === activeAxis && Number(value) === Number(index)) {
-          return { x, y, z };
-        }
-      }
-    }
-  }
-  return null;
-};

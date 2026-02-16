@@ -1,10 +1,9 @@
 /**
- * Página de Login con Supabase Auth
+ * Pagina de Login
  *
  * Soporta:
- * - Autenticación con email/password
- * - OAuth con Google, Facebook, X (Twitter)
- * - Redirección automática después del login
+ * - Autenticacion con email/password
+ * - Redireccion automatica despues del login
  */
 
 'use client'
@@ -13,8 +12,6 @@ import { useState, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useSupabase } from '@/components/providers/SupabaseProvider'
 import { Eye, EyeOff, Mail, Lock, Check } from 'lucide-react'
-import { FcGoogle } from 'react-icons/fc'
-import { FaFacebook, FaTwitter } from 'react-icons/fa'
 import Link from 'next/link'
 import gsap from 'gsap'
 import { createTimeline, staggerFadeIn } from '@/lib/gsap-animations'
@@ -67,21 +64,6 @@ function LoginPageContent() {
       console.error('Error en login:', error)
       setError('Error de conexión. Por favor, intenta de nuevo.')
       setLoading(false)
-    }
-  }
-
-  async function handleOAuthLogin(provider: 'google' | 'facebook' | 'twitter') {
-    setError('')
-
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback?redirect=${redirectTo}`
-      }
-    })
-
-    if (error) {
-      setError(error.message)
     }
   }
 
@@ -258,7 +240,7 @@ function LoginPageContent() {
                     autoComplete="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="block w-full rounded-xl border border-gray-300 bg-white py-3 pl-10 text-gray-900 placeholder-gray-400 shadow-sm focus:border-[#00E5FF] focus:ring-1 focus:ring-[#00E5FF] transition-colors"
+                    className="block w-full rounded-xl border border-gray-300 bg-white py-3 pl-10 text-base text-gray-900 placeholder-gray-400 shadow-sm focus:border-[#00E5FF] focus:ring-1 focus:ring-[#00E5FF] transition-colors"
                     placeholder="usuario@empresa.com"
                     required
                     disabled={loading}
@@ -281,7 +263,7 @@ function LoginPageContent() {
                     autoComplete="current-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="block w-full rounded-xl border border-gray-300 bg-white py-3 pl-10 pr-10 text-gray-900 placeholder-gray-400 shadow-sm focus:border-[#00E5FF] focus:ring-1 focus:ring-[#00E5FF] transition-colors"
+                    className="block w-full rounded-xl border border-gray-300 bg-white py-3 pl-10 pr-10 text-base text-gray-900 placeholder-gray-400 shadow-sm focus:border-[#00E5FF] focus:ring-1 focus:ring-[#00E5FF] transition-colors"
                     placeholder="Tu contraseña"
                     required
                     disabled={loading}
@@ -320,46 +302,6 @@ function LoginPageContent() {
               )}
             </button>
           </form>
-
-          {/* Divider */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-3 bg-gray-50 text-gray-500">O continúa con</span>
-            </div>
-          </div>
-
-          {/* OAuth Buttons */}
-          <div className="grid grid-cols-3 gap-3">
-            <button
-              onClick={() => handleOAuthLogin('google')}
-              disabled={loading}
-              className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-xl bg-white hover:bg-gray-50 hover:border-[#00E5FF]/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-            >
-              <FcGoogle className="w-5 h-5 mr-2" />
-              <span className="text-sm font-medium text-gray-700">Google</span>
-            </button>
-
-            <button
-              onClick={() => handleOAuthLogin('facebook')}
-              disabled={loading}
-              className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-xl bg-white hover:bg-gray-50 hover:border-[#00E5FF]/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-            >
-              <FaFacebook className="w-5 h-5 mr-2 text-blue-600" />
-              <span className="text-sm font-medium text-gray-700">Facebook</span>
-            </button>
-
-            <button
-              onClick={() => handleOAuthLogin('twitter')}
-              disabled={loading}
-              className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-xl bg-white hover:bg-gray-50 hover:border-[#00E5FF]/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-            >
-              <FaTwitter className="w-5 h-5 mr-2 text-gray-800" />
-              <span className="text-sm font-medium text-gray-700">X</span>
-            </button>
-          </div>
 
           {/* Link a registro */}
           <div className="mt-6 text-center text-sm text-gray-600">

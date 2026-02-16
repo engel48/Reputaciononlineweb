@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { userService } from '@/lib/database-adapter';
+import { requireRole } from '@/lib/auth-helper';
 
 export async function GET(request: NextRequest) {
   try {
+    // Verificar autenticación y rol admin
+    const admin = await requireRole(request, 'admin');
+    if (admin instanceof NextResponse) return admin;
+
     console.log('🔍 ADMIN API: Iniciando búsqueda de usuarios...');
     console.log('🔍 ADMIN API: NODE_ENV:', process.env.NODE_ENV);
     console.log('🔍 ADMIN API: DATABASE_URL configurada:', process.env.DATABASE_URL ? 'Sí' : 'No');

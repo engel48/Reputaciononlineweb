@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/context/UserContext';
-import { CreditProvider } from '@/context/CreditosContext';
 import { Home, BarChart3, Hash, Users, Menu, Search, FileText, Headphones, Share2, Brain, Radio } from 'lucide-react';
 import NotificationCenter from '@/components/notifications/NotificationCenter';
 import UserProfile from '@/components/user/UserProfile';
@@ -260,10 +259,8 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <CreditProvider>
-      <DashboardContent>
-        {children}
-      </DashboardContent>
-    </CreditProvider>
+    <DashboardContent>
+      {children}
+    </DashboardContent>
   );
 }

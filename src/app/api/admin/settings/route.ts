@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { systemSettingsService } from '@/lib/database-adapter';
+import { requireRole } from '@/lib/auth-helper';
 
 export async function GET(request: NextRequest) {
   try {
+    // Verificar autenticación y rol admin
+    const admin = await requireRole(request, 'admin');
+    if (admin instanceof NextResponse) return admin;
+
     console.log('🔍 ADMIN SETTINGS API: Iniciando obtención de configuraciones...');
     console.log('🔍 ADMIN SETTINGS API: NODE_ENV:', process.env.NODE_ENV);
     console.log('🔍 ADMIN SETTINGS API: DATABASE_URL configurada:', process.env.DATABASE_URL ? 'Sí' : 'No');
@@ -62,6 +67,10 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Verificar autenticación y rol admin
+    const admin = await requireRole(request, 'admin');
+    if (admin instanceof NextResponse) return admin;
+
     console.log('🔍 ADMIN SETTINGS POST: Guardando configuración...');
     const body = await request.json();
     const { key, value, description } = body;
@@ -96,6 +105,10 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    // Verificar autenticación y rol admin
+    const admin = await requireRole(request, 'admin');
+    if (admin instanceof NextResponse) return admin;
+
     const { searchParams } = new URL(request.url);
     const key = searchParams.get('key');
 

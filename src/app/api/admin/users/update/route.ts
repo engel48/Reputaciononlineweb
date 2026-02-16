@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { userService } from '@/lib/database-adapter';
+import { requireRole } from '@/lib/auth-helper';
 
 export async function PUT(request: NextRequest) {
   try {
+    // Verificar autenticación y rol admin
+    const admin = await requireRole(request, 'admin');
+    if (admin instanceof NextResponse) return admin;
+
     const body = await request.json();
     const { userId, plan, credits, profileType } = body;
 

@@ -1,27 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { socialOAuthManager, SocialPlatform } from '@/lib/oauth/manager';
-import jwt from 'jsonwebtoken';
-import { cookies } from 'next/headers';
+import { requireAuth } from '@/lib/auth-helper';
 
 export async function POST(request: NextRequest) {
   try {
-    // Verificar autenticación con JWT custom
-    const cookieStore = await cookies();
-    const authToken = cookieStore.get('auth-token')?.value;
+    // Verificar autenticación con JWT (verify, no decode)
+    const user = await requireAuth(request);
+    if (user instanceof NextResponse) return user;
 
-    if (!authToken) {
-      console.error('❌ SOCIAL-CONNECT POST: No auth token found');
-      return NextResponse.json({ error: 'No autorizado - No hay token' }, { status: 401 });
-    }
-
-    // Decodificar JWT para obtener userId
-    const decoded = jwt.decode(authToken) as { userId: string } | null;
-    if (!decoded || !decoded.userId) {
-      console.error('❌ SOCIAL-CONNECT POST: Invalid token');
-      return NextResponse.json({ error: 'No autorizado - Token inválido' }, { status: 401 });
-    }
-
-    const userId = decoded.userId;
+    const userId = user.userId;
     console.log(`✅ SOCIAL-CONNECT POST: Usuario autenticado: ${userId}`);
 
     const { platform, action, accessToken, refreshToken, expiresAt } = await request.json();
@@ -115,23 +102,11 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    // Verificar autenticación con JWT custom
-    const cookieStore = await cookies();
-    const authToken = cookieStore.get('auth-token')?.value;
+    // Verificar autenticación con JWT (verify, no decode)
+    const user = await requireAuth(request);
+    if (user instanceof NextResponse) return user;
 
-    if (!authToken) {
-      console.error('❌ SOCIAL-CONNECT GET: No auth token found');
-      return NextResponse.json({ error: 'No autorizado - No hay token' }, { status: 401 });
-    }
-
-    // Decodificar JWT para obtener userId
-    const decoded = jwt.decode(authToken) as { userId: string } | null;
-    if (!decoded || !decoded.userId) {
-      console.error('❌ SOCIAL-CONNECT GET: Invalid token');
-      return NextResponse.json({ error: 'No autorizado - Token inválido' }, { status: 401 });
-    }
-
-    const userId = decoded.userId;
+    const userId = user.userId;
     console.log(`✅ SOCIAL-CONNECT GET: Usuario autenticado: ${userId}`);
 
     const url = new URL(request.url);

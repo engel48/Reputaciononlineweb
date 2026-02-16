@@ -7,7 +7,7 @@
 
 import { useState } from 'react'
 import { useSupabase } from '@/components/providers/SupabaseProvider'
-import { useUser } from '@/contexts/UserContext'
+import { useUser } from '@/context/UserContext'
 
 interface Message {
   role: 'user' | 'assistant'

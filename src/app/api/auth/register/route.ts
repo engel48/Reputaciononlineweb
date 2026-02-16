@@ -10,6 +10,13 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { register } from '@/services/authServiceReal';
+import { createClient } from '@supabase/supabase-js';
+import { sendVerificationEmail, generateVerificationCode } from '@/lib/email-service';
+
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+);
 
 export async function POST(request: NextRequest) {
   try {
@@ -62,19 +69,40 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ REGISTER: Usuario creado:', result.user?.email);
 
-    // ✅ NUEVA ARQUITECTURA: Retornar token en JSON
+    // Send verification email (non-blocking)
+    if (result.user?.id && process.env.RESEND_API_KEY) {
+      try {
+        const code = generateVerificationCode();
+        const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+
+        await supabaseAdmin
+          .from('email_verification_codes')
+          .insert({
+            user_id: result.user.id,
+            code,
+            email: email.toLowerCase().trim(),
+            expires_at: expiresAt,
+          });
+
+        await sendVerificationEmail(email, code, name);
+      } catch (emailError) {
+        console.error('Error sending verification email:', emailError);
+        // Don't fail registration if email fails
+      }
+    }
+
     const response = NextResponse.json({
       success: true,
       user: result.user,
-      token: result.token, // ✅ Token JWT para usar en Authorization header
-      expiresIn: 7 * 24 * 60 * 60, // 7 días en segundos
+      token: result.token,
+      expiresIn: 7 * 24 * 60 * 60,
+      requiresEmailVerification: !!process.env.RESEND_API_KEY,
       message: 'Usuario registrado exitosamente'
     });
 
-    // ⚠️ TEMPORAL: Establecer cookie también para backward compatibility
-    // TODO: Eliminar después de migrar completamente el frontend
+    // Establecer cookie httpOnly para backward compatibility con middleware
     response.cookies.set('auth-token', result.token, {
-      httpOnly: false, // Permitir acceso desde JavaScript para migración
+      httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',

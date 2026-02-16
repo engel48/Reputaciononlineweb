@@ -373,7 +373,7 @@ export default function OnboardingPage() {
   const canProceed = isStepValid(currentStep);
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gray-50">
+    <div className="min-h-screen relative overflow-y-auto bg-gray-50">
       {/* Partículas flotantes de fondo */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="floating-particle absolute top-20 left-10 w-3 h-3 bg-[#00E5FF]/30 rounded-full blur-sm"></div>
@@ -386,7 +386,7 @@ export default function OnboardingPage() {
       {/* Gradiente decorativo */}
       <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-[#00E5FF]/10 to-transparent pointer-events-none"></div>
       
-      <div ref={containerRef} className="mx-auto max-w-4xl px-4 py-8 relative z-10">
+      <div ref={containerRef} className="mx-auto max-w-4xl px-4 py-8 pb-16 relative z-10">
         {/* Header */}
         <div ref={headerRef} className="text-center mb-12">
           <motion.div
@@ -538,7 +538,7 @@ export default function OnboardingPage() {
         {/* Main Content */}
         <motion.div
           ref={contentRef}
-          className="relative bg-white rounded-2xl shadow-xl border border-gray-200 p-8 mb-8 overflow-hidden"
+          className="relative bg-white rounded-2xl shadow-xl border border-gray-200 p-8 mb-8 overflow-visible"
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -574,7 +574,7 @@ export default function OnboardingPage() {
           <AnimatePresence mode="wait">
             <motion.div 
               key={currentStep}
-              className="min-h-[400px]"
+              className="min-h-[200px]"
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -50 }}

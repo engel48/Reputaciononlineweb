@@ -61,10 +61,9 @@ export async function POST(request: NextRequest) {
       message: 'Login exitoso'
     });
 
-    // ⚠️ TEMPORAL: Establecer cookie también para backward compatibility
-    // TODO: Eliminar después de migrar completamente el frontend
+    // Establecer cookie httpOnly para backward compatibility con middleware
     response.cookies.set('auth-token', result.token, {
-      httpOnly: false, // Permitir acceso desde JavaScript para migración
+      httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',

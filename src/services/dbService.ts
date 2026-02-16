@@ -1,5 +1,4 @@
-// @ts-nocheck
-// Servicio de base de datos SQLite local
+// Servicio de base de datos - wrapper sobre database-adapter
 import { userService, socialMediaService, statsService, systemSettingsService } from '@/lib/database-adapter';
 
 // ===== USUARIOS =====
@@ -107,42 +106,6 @@ export const updateUserStats = (userId: string, stats: any) => {
   } catch (error) {
     console.error('❌ Error actualizando estadísticas:', error);
     throw error;
-  }
-};
-
-// ===== NOTIFICACIONES =====
-
-export const createNotification = (data: {
-  userId: string;
-  title: string;
-  message: string;
-  type: string;
-  priority?: string;
-  metadata?: any;
-}) => {
-  try {
-    return notificationService.create(data);
-  } catch (error) {
-    console.error('❌ Error creando notificación:', error);
-    throw error;
-  }
-};
-
-export const getUserNotifications = (userId: string, limit = 50) => {
-  try {
-    return notificationService.getByUserId(userId, limit);
-  } catch (error) {
-    console.error('❌ Error obteniendo notificaciones:', error);
-    return [];
-  }
-};
-
-export const markNotificationAsRead = (notificationId: string) => {
-  try {
-    return notificationService.markAsRead(notificationId);
-  } catch (error) {
-    console.error('❌ Error marcando notificación como leída:', error);
-    return false;
   }
 };
 

@@ -134,7 +134,7 @@ function OAuthLoginContent() {
           if (!fbClientId) {
             throw new Error('Facebook OAuth no está configurado. Contacta al administrador.');
           }
-          authUrl = `${config.authUrl}?client_id=${fbClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=email,public_profile,pages_read_engagement,pages_show_list&response_type=code&state=${state}`;
+          authUrl = `${config.authUrl}?client_id=${fbClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=email,public_profile,pages_read_engagement,pages_show_list&response_type=code&state=${state}&display=popup`;
           break;
 
         case 'twitter':

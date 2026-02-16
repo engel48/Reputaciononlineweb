@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { requireRole } from '@/lib/auth-helper';
 
 // Crear cliente Supabase admin
 const supabaseAdmin = createClient(
@@ -9,6 +10,10 @@ const supabaseAdmin = createClient(
 
 export async function GET(request: NextRequest) {
   try {
+    // Verificar autenticación y rol admin
+    const admin = await requireRole(request, 'admin');
+    if (admin instanceof NextResponse) return admin;
+
     // Obtener parámetros de filtrado
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
@@ -119,6 +124,10 @@ export async function GET(request: NextRequest) {
 // POST - Actualizar estado de pago (para casos especiales)
 export async function POST(request: NextRequest) {
   try {
+    // Verificar autenticación y rol admin
+    const admin = await requireRole(request, 'admin');
+    if (admin instanceof NextResponse) return admin;
+
     const body = await request.json();
     const { paymentId, status, notes } = body;
 

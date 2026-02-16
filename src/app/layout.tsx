@@ -3,15 +3,13 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import ClientWrapper from './ClientWrapper';
 import { SupabaseProvider } from '@/components/providers/SupabaseProvider';
-import { UserProvider } from '@/contexts/UserContext';
-import { CreditsProvider } from '@/contexts/CreditsContext';
 import { SWRProvider } from '@/lib/swr-config';
 
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Reputación Online',
-  description: 'Plataforma de monitoreo de redes sociales y gestión de reputación',
+  title: 'Reputacion Online',
+  description: 'Plataforma de monitoreo de redes sociales y gestion de reputacion',
 };
 
 export default function RootLayout({
@@ -24,13 +22,9 @@ export default function RootLayout({
       <body className={inter.className}>
         <SWRProvider>
           <SupabaseProvider>
-            <UserProvider>
-              <CreditsProvider>
-                <ClientWrapper>
-                  {children}
-                </ClientWrapper>
-              </CreditsProvider>
-            </UserProvider>
+            <ClientWrapper>
+              {children}
+            </ClientWrapper>
           </SupabaseProvider>
         </SWRProvider>
       </body>

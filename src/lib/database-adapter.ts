@@ -28,40 +28,9 @@ function extractCredentialsFromEnv(): DatabaseConfig | null {
 
 // Configuración de PostgreSQL para Coolify (con fallback automático)
 const extractedConfig = extractCredentialsFromEnv();
-if (extractedConfig) {
-  console.log('🔧 DATABASE-ADAPTER: Usando credenciales extraídas de DATABASE_URL');
-  console.log(`   Usuario: ${extractedConfig.username}`);
-  console.log(`   Host: ${extractedConfig.internal.match(/@([^:]+):/)?.[1] || 'N/A'}`);
-  console.log(`   Contraseña: ${extractedConfig.password.length} caracteres`);
-} else {
-  console.log('⚠️ DATABASE-ADAPTER: No se pudo extraer DATABASE_URL, usando credenciales configuradas');
-}
 
-// Usar configuración de objeto directa para evitar problemas de parsing
-const postgresConfig: DatabaseConfig = extractedConfig || {
-  internal: 'postgres://postgres:ghxdiIxvNX8kjwafpuvS03B6e7M0ECSoZdEqPtLJsEW3WxBxn1f6USpp4vb42HIc@aswcsw80wsoskcskkscwscoo:5432/postgres',
-  external: 'postgres://thor3:thor44@31.97.138.249:5437/postgres',
-  username: 'postgres',
-  password: 'ghxdiIxvNX8kjwafpuvS03B6e7M0ECSoZdEqPtLJsEW3WxBxn1f6USpp4vb42HIc'
-};
-
-// Configuración de objeto directa para evitar problemas de URL parsing
-const directConfig = {
-  production: {
-    host: 'aswcsw80wsoskcskkscwscoo',
-    port: 5432,
-    user: 'postgres',
-    password: 'ghxdiIxvNX8kjwafpuvS03B6e7M0ECSoZdEqPtLJsEW3WxBxn1f6USpp4vb42HIc',
-    database: 'postgres'
-  },
-  development: {
-    host: '31.97.138.249',
-    port: 5437,
-    user: 'thor3',
-    password: 'thor44',
-    database: 'thor'
-  }
-};
+// Usar configuración extraída de DATABASE_URL (sin credenciales hardcodeadas)
+const postgresConfig: DatabaseConfig | null = extractedConfig;
 
 // Función para verificar si una URL es accesible
 async function isUrlAccessible(url: string): Promise<boolean> {
@@ -104,63 +73,14 @@ function detectEnvironment() {
   };
 }
 
-// Configurar DATABASE_URL automáticamente si no existe
+// Verificar que DATABASE_URL está configurada
 async function ensureDatabaseUrl() {
   if (!process.env.DATABASE_URL) {
-    const env = detectEnvironment();
-
-    console.log('🔍 DATABASE ADAPTER: Detectando configuración de PostgreSQL...');
-    console.log('⚠️  DATABASE ADAPTER: DATABASE_URL no está configurada en el entorno');
-    console.log('💡 DATABASE ADAPTER: Por favor, configura DATABASE_URL en .env.local');
-
-    if (env.isCoolify || env.isProduction) {
-      console.log('🔍 DATABASE ADAPTER: Entorno de producción detectado, probando conexión interna...');
-
-      if (await isUrlAccessible(postgresConfig.internal)) {
-        console.log('✅ DATABASE ADAPTER: Conexión interna exitosa');
-        process.env.DATABASE_URL = postgresConfig.internal;
-      } else {
-        console.log('❌ DATABASE ADAPTER: Conexión interna falló, probando externa...');
-        if (await isUrlAccessible(postgresConfig.external)) {
-          console.log('✅ DATABASE ADAPTER: Conexión externa exitosa');
-          process.env.DATABASE_URL = postgresConfig.external;
-        } else {
-          console.log('❌ DATABASE ADAPTER: Ambas conexiones fallaron');
-          throw new Error('No se pudo conectar a PostgreSQL en ninguna configuración');
-        }
-      }
-    } else if (env.isLocal) {
-      console.log('🔍 DATABASE ADAPTER: Entorno local detectado, probando conexión externa...');
-
-      if (await isUrlAccessible(postgresConfig.external)) {
-        console.log('✅ DATABASE ADAPTER: Conexión externa exitosa');
-        process.env.DATABASE_URL = postgresConfig.external;
-      } else {
-        console.log('❌ DATABASE ADAPTER: Conexión externa falló, probando interna...');
-        if (await isUrlAccessible(postgresConfig.internal)) {
-          console.log('✅ DATABASE ADAPTER: Conexión interna exitosa');
-          process.env.DATABASE_URL = postgresConfig.internal;
-        } else {
-          console.log('❌ DATABASE ADAPTER: Ambas conexiones fallaron');
-          throw new Error('No se pudo conectar a PostgreSQL en ninguna configuración');
-        }
-      }
-    } else {
-      console.log('🔍 DATABASE ADAPTER: Entorno desconocido, probando todas las configuraciones...');
-
-      if (await isUrlAccessible(postgresConfig.internal)) {
-        console.log('✅ DATABASE ADAPTER: Conexión interna exitosa');
-        process.env.DATABASE_URL = postgresConfig.internal;
-      } else if (await isUrlAccessible(postgresConfig.external)) {
-        console.log('✅ DATABASE ADAPTER: Conexión externa exitosa');
-        process.env.DATABASE_URL = postgresConfig.external;
-      } else {
-        console.log('❌ DATABASE ADAPTER: Ambas conexiones fallaron');
-        throw new Error('No se pudo conectar a PostgreSQL en ninguna configuración');
-      }
-    }
+    console.error('❌ DATABASE ADAPTER: DATABASE_URL no está configurada.');
+    console.error('💡 Configura DATABASE_URL en .env.local o en las variables de entorno del servidor.');
+    throw new Error('DATABASE_URL es requerida. Configúrala en las variables de entorno.');
   } else {
-    console.log('✅ DATABASE ADAPTER: DATABASE_URL ya está configurada:', process.env.DATABASE_URL.substring(0, 50) + '...');
+    console.log('✅ DATABASE ADAPTER: DATABASE_URL configurada');
   }
 }
 

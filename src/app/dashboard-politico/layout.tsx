@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/context/UserContext';
-import { CreditProvider } from '@/context/CreditosContext';
 import { Home, BarChart3, Hash, Users, Menu, Search, FileText, Vote, TrendingUp, Target, Award } from 'lucide-react';
 import NotificationCenter from '@/components/notifications/NotificationCenter';
 import UserProfile from '@/components/user/UserProfile';
@@ -265,10 +264,8 @@ function PoliticalDashboardContent({ children }: { children: React.ReactNode }) 
 
 export default function PoliticalDashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <CreditProvider>
-      <PoliticalDashboardContent>
-        {children}
-      </PoliticalDashboardContent>
-    </CreditProvider>
+    <PoliticalDashboardContent>
+      {children}
+    </PoliticalDashboardContent>
   );
 }
