@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { User, Camera, Save, X, UserCog, Shield, Megaphone, Award, Facebook, Instagram, Share2, Youtube, Globe, Settings, Bell, Lock, CreditCard, Crown, Check, Star, Zap, ArrowUpRight, AlertCircle, CheckCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { User, Camera, Save, X, UserCog, Shield, Megaphone, Award, Facebook, Instagram, Share2, Youtube, Globe, Settings, Bell, Lock, CreditCard, Crown, Check, Star, Zap, ArrowUpRight, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 import XLogo from '@/components/icons/XLogo';
 import { useUser } from '@/context/UserContext';
 import { usePlan } from '@/context/PlanContext';
@@ -45,6 +46,16 @@ export default function ProfilePage() {
     confirmPassword: '',
     twoFactorEnabled: false
   });
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  // Auto-dismiss toast
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
   const [formData, setFormData] = useState<ProfileFormData>({
     nombre: '',
     email: '',
@@ -135,10 +146,10 @@ export default function ProfilePage() {
       };
       
       await updateUser(updateData);
-      alert('Perfil actualizado correctamente');
+      setToast({ type: 'success', message: 'Perfil actualizado correctamente' });
     } catch (error) {
       console.error('Error al actualizar perfil:', error);
-      alert('Error al actualizar el perfil');
+      setToast({ type: 'error', message: 'Error al actualizar el perfil' });
     } finally {
       setIsSaving(false);
     }
@@ -169,14 +180,14 @@ export default function ProfilePage() {
       });
       
       if (response.ok) {
-        alert('Contraseña actualizada correctamente');
+        setToast({ type: 'success', message: 'Contrasena actualizada correctamente' });
         setSecurity({ currentPassword: '', newPassword: '', confirmPassword: '', twoFactorEnabled: false });
       } else {
-        alert('Error al actualizar la contraseña');
+        setToast({ type: 'error', message: 'Error al actualizar la contrasena' });
       }
     } catch (error) {
       console.error('Error al actualizar seguridad:', error);
-      alert('Error al actualizar la seguridad');
+      setToast({ type: 'error', message: 'Error al actualizar la seguridad' });
     }
   };
 
@@ -190,12 +201,46 @@ export default function ProfilePage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="mb-6">
+      {/* Toast notification */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, x: 20 }}
+            animate={{ opacity: 1, y: 0, x: 0 }}
+            exit={{ opacity: 0, x: 100 }}
+            className={`fixed top-20 right-6 z-50 flex items-center gap-3 px-5 py-3 rounded-xl shadow-lg border ${
+              toast.type === 'success'
+                ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-800'
+                : 'bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-800'
+            }`}
+          >
+            {toast.type === 'success'
+              ? <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+              : <XCircle className="h-5 w-5 text-red-500 flex-shrink-0" />
+            }
+            <span className={`text-sm font-medium ${
+              toast.type === 'success' ? 'text-green-800 dark:text-green-200' : 'text-red-800 dark:text-red-200'
+            }`}>
+              {toast.message}
+            </span>
+            <button onClick={() => setToast(null)} className="text-gray-400 hover:text-gray-600 ml-2">
+              <X className="h-4 w-4" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="mb-6"
+      >
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Mi Perfil</h1>
         <p className="text-gray-500 dark:text-gray-400">
-          Gestiona tu información personal y configuración de cuenta
+          Gestiona tu informacion personal y configuracion de cuenta
         </p>
-      </div>
+      </motion.div>
 
       {/* Pestañas de navegación */}
       <div className="mb-6 border-b border-gray-200 dark:border-gray-700">

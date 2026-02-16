@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import SocialNetworkConnectorFixed from '@/components/user/SocialNetworkConnectorFixed';
 import { useUser } from '@/context/UserContext';
+import { Radio, BarChart3, Zap, FileText, Share2 } from 'lucide-react';
 
 interface SocialConnection {
   connected: boolean;
@@ -27,48 +28,95 @@ interface SocialConnectionsState {
   youtube: SocialConnection;
 }
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } }
+};
+
+const benefits = [
+  {
+    icon: Radio,
+    title: 'Monitoreo en tiempo real',
+    desc: 'Detecta menciones y comentarios sobre ti o tu marca en tiempo real',
+    color: 'text-[#00E5FF]',
+    bg: 'bg-[#00E5FF]/10',
+    border: 'border-l-[#00E5FF]'
+  },
+  {
+    icon: BarChart3,
+    title: 'Analisis de sentimiento',
+    desc: 'Comprende la percepcion del publico hacia tu marca o persona',
+    color: 'text-emerald-500',
+    bg: 'bg-emerald-50 dark:bg-emerald-900/20',
+    border: 'border-l-emerald-500'
+  },
+  {
+    icon: Zap,
+    title: 'Respuesta rapida',
+    desc: 'Responde a comentarios y gestiona crisis de reputacion rapidamente',
+    color: 'text-amber-500',
+    bg: 'bg-amber-50 dark:bg-amber-900/20',
+    border: 'border-l-amber-500'
+  },
+  {
+    icon: FileText,
+    title: 'Informes detallados',
+    desc: 'Obten reportes completos sobre tu presencia en redes sociales',
+    color: 'text-indigo-500',
+    bg: 'bg-indigo-50 dark:bg-indigo-900/20',
+    border: 'border-l-indigo-500'
+  },
+];
+
 export default function RedesSocialesPage() {
   const { user } = useUser();
 
   const handleSocialConnectionComplete = (networks: SocialConnectionsState) => {
     console.log('Redes sociales conectadas:', networks);
-    // Aquí podrías mostrar una notificación de éxito o realizar otras acciones
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <motion.div
+      className="min-h-screen bg-gray-50 dark:bg-gray-900"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-8"
-        >
-          <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">
-            Redes Sociales
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Conecta y gestiona tus cuentas de redes sociales para monitorear tu reputación online
+        <motion.div variants={itemVariants} className="mb-8">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-gradient-to-br from-[#00E5FF] to-[#00B8D4] rounded-xl">
+              <Share2 className="h-6 w-6 text-white" />
+            </div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Redes Sociales
+            </h1>
+          </div>
+          <p className="text-gray-600 dark:text-gray-400 ml-14">
+            Conecta y gestiona tus cuentas de redes sociales para monitorear tu reputacion online
           </p>
         </motion.div>
 
-        {/* Información del usuario */}
+        {/* Info del usuario */}
         {user && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="mb-6"
-          >
+          <motion.div variants={itemVariants} className="mb-6">
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Estado de tu cuenta</CardTitle>
                 <CardDescription>
-                  Usuario: {user.name} • Plan: {user.plan.toUpperCase()}
+                  Usuario: {user.name} &bull; Plan: {user.plan.toUpperCase()}
                   {user.socialMedia && user.socialMedia.length > 0 && (
                     <span className="ml-2 text-green-600">
-                      • {user.socialMedia.filter(sm => sm.connected).length} redes conectadas
+                      &bull; {user.socialMedia.filter((sm: any) => sm.connected).length} redes conectadas
                     </span>
                   )}
                 </CardDescription>
@@ -77,18 +125,14 @@ export default function RedesSocialesPage() {
           </motion.div>
         )}
 
-        {/* Connector de redes sociales */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
+        {/* Connector */}
+        <motion.div variants={itemVariants}>
           <Card>
             <CardHeader>
               <CardTitle>Conectar Redes Sociales</CardTitle>
               <CardDescription>
-                Conecta tus cuentas de redes sociales para comenzar a monitorear menciones, 
-                analizar sentimiento y gestionar tu reputación online de manera integral.
+                Conecta tus cuentas de redes sociales para comenzar a monitorear menciones,
+                analizar sentimiento y gestionar tu reputacion online de manera integral.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -101,64 +145,37 @@ export default function RedesSocialesPage() {
           </Card>
         </motion.div>
 
-        {/* Información adicional */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="mt-6"
-        >
+        {/* Beneficios mejorados */}
+        <motion.div variants={itemVariants} className="mt-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">¿Por qué conectar redes sociales?</CardTitle>
+              <CardTitle className="text-lg">Por que conectar redes sociales?</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-3">
-                  <div className="flex items-start space-x-3">
-                    <div className="w-2 h-2 bg-[#01257D] rounded-full mt-2 flex-shrink-0"></div>
-                    <div>
-                      <h4 className="font-medium text-gray-900 dark:text-white">Monitoreo en tiempo real</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Detecta menciones y comentarios sobre ti o tu marca en tiempo real
-                      </p>
+                {benefits.map((benefit, i) => (
+                  <motion.div
+                    key={benefit.title}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3 + i * 0.1, duration: 0.4 }}
+                    whileHover={{ y: -3, boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}
+                    className={`flex items-start space-x-3 p-4 rounded-xl border-l-4 ${benefit.border} bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 transition-shadow`}
+                  >
+                    <div className={`flex-shrink-0 p-2 rounded-lg ${benefit.bg}`}>
+                      <benefit.icon className={`h-5 w-5 ${benefit.color}`} />
                     </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <div className="w-2 h-2 bg-[#01257D] rounded-full mt-2 flex-shrink-0"></div>
                     <div>
-                      <h4 className="font-medium text-gray-900 dark:text-white">Análisis de sentimiento</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Comprende la percepción del público hacia tu marca o persona
-                      </p>
+                      <h4 className="font-medium text-gray-900 dark:text-white text-sm">{benefit.title}</h4>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">{benefit.desc}</p>
                     </div>
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <div className="flex items-start space-x-3">
-                    <div className="w-2 h-2 bg-[#01257D] rounded-full mt-2 flex-shrink-0"></div>
-                    <div>
-                      <h4 className="font-medium text-gray-900 dark:text-white">Respuesta rápida</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Responde a comentarios y gestiona crisis de reputación rápidamente
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <div className="w-2 h-2 bg-[#01257D] rounded-full mt-2 flex-shrink-0"></div>
-                    <div>
-                      <h4 className="font-medium text-gray-900 dark:text-white">Informes detallados</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Obtén reportes completos sobre tu presencia en redes sociales
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                  </motion.div>
+                ))}
               </div>
             </CardContent>
           </Card>
         </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }

@@ -2,30 +2,33 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Users, Target, TrendingUp, BarChart3, Eye, UserCheck } from 'lucide-react';
+import { Users, Target, TrendingUp, Eye, UserCheck } from 'lucide-react';
 import AudienceAnalysis from '@/components/audience/AudienceAnalysis';
 
-export default function AudienciaPage() {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  }
+};
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.5
-      }
-    }
-  };
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5 }
+  }
+};
+
+export default function AudienciaPage() {
+  const capabilities = [
+    { icon: Target, label: 'Segmentacion', desc: 'Demografia y perfiles' },
+    { icon: TrendingUp, label: 'Tendencias', desc: 'Patrones de engagement' },
+    { icon: Eye, label: 'Alcance', desc: 'Impacto y visibilidad' },
+    { icon: UserCheck, label: 'Influencers', desc: 'Deteccion automatica' },
+  ];
 
   return (
     <motion.div
@@ -34,51 +37,43 @@ export default function AudienciaPage() {
       initial="hidden"
       animate="visible"
     >
-      {/* Encabezado heroico */}
-      <motion.div 
+      {/* Hero con gradiente - sin datos hardcoded */}
+      <motion.div
         className="bg-gradient-to-r from-[#01257D] via-purple-600 to-indigo-600 rounded-2xl p-8 mb-8"
         variants={itemVariants}
       >
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           <div className="flex-1">
-            <h1 className="text-4xl font-bold text-white mb-3 flex items-center">
-              <Users className="mr-4 h-10 w-10" />
-              Análisis de Audiencia
+            <h1 className="text-3xl font-bold text-white mb-3 flex items-center">
+              <Users className="mr-4 h-9 w-9" />
+              Analisis de Audiencia
             </h1>
-            <p className="text-blue-100 text-lg mb-6 lg:mb-0">
-              👥 Conoce a fondo tu audiencia: demografía, comportamiento e influencers clave
+            <p className="text-blue-100 text-base max-w-lg">
+              Analiza demografias, comportamiento y detecta influencers clave en tu audiencia. Los datos se actualizan en base a tus redes sociales conectadas.
             </p>
           </div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-4">
-            <div className="text-center">
-              <Target className="h-8 w-8 mx-auto text-white mb-2" />
-              <div className="text-2xl font-bold text-white">87%</div>
-              <div className="text-sm text-blue-200">Precisión</div>
-            </div>
-            <div className="text-center">
-              <TrendingUp className="h-8 w-8 mx-auto text-white mb-2" />
-              <div className="text-2xl font-bold text-white">+24%</div>
-              <div className="text-sm text-blue-200">Crecimiento</div>
-            </div>
-            <div className="text-center">
-              <Eye className="h-8 w-8 mx-auto text-white mb-2" />
-              <div className="text-2xl font-bold text-white">1.2M</div>
-              <div className="text-sm text-blue-200">Alcance</div>
-            </div>
-            <div className="text-center">
-              <UserCheck className="h-8 w-8 mx-auto text-white mb-2" />
-              <div className="text-2xl font-bold text-white">156</div>
-              <div className="text-sm text-blue-200">Influencers</div>
-            </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {capabilities.map((cap, i) => (
+              <motion.div
+                key={cap.label}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.3 + i * 0.1, duration: 0.4 }}
+                className="text-center bg-white/10 backdrop-blur-sm rounded-xl p-3"
+              >
+                <cap.icon className="h-6 w-6 mx-auto text-white mb-1.5" />
+                <div className="text-sm font-semibold text-white">{cap.label}</div>
+                <div className="text-xs text-blue-200">{cap.desc}</div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </motion.div>
-      
-      <motion.div 
+
+      <motion.div
         className="grid grid-cols-1 gap-8"
         variants={itemVariants}
       >
-        {/* Componente de análisis de audiencia mejorado */}
         <AudienceAnalysis />
       </motion.div>
     </motion.div>

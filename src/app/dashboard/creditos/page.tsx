@@ -119,15 +119,32 @@ export default function CreditosPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Gestión de Créditos
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Administra tu balance, revisa el historial y compra más créditos
-          </p>
-        </div>
+        {/* Header con gradiente */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="bg-gradient-to-r from-[#01257D] to-indigo-600 rounded-2xl p-6 mb-8"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <motion.div
+                animate={{ rotate: [0, -10, 10, 0] }}
+                transition={{ duration: 3, repeat: Infinity, repeatDelay: 4 }}
+              >
+                <CreditCard className="h-8 w-8 text-white" />
+              </motion.div>
+              <div>
+                <h1 className="text-2xl font-bold text-white">Gestion de Creditos</h1>
+                <p className="text-blue-200 text-sm">Administra tu balance, historial y compra mas creditos</p>
+              </div>
+            </div>
+            <div className="hidden sm:flex items-center gap-2 bg-white/15 backdrop-blur-sm rounded-xl px-4 py-2">
+              <span className="text-blue-200 text-sm">Saldo:</span>
+              <span className="text-white text-xl font-bold">{isLoading ? '...' : currentBalance.toLocaleString('es-CO')}</span>
+            </div>
+          </div>
+        </motion.div>
 
         {/* Tabs Navigation */}
         <div className="mb-8">
@@ -180,7 +197,7 @@ export default function CreditosPage() {
                           {Math.round(totalUsed / 3).toLocaleString('es-CO')}
                         </p>
                       </div>
-                      <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                      <div className="p-3 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/20 rounded-xl">
                         <Calendar className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                       </div>
                     </div>
@@ -196,7 +213,7 @@ export default function CreditosPage() {
                           {totalPurchased > 0 ? Math.round(((totalPurchased - currentBalance) / totalPurchased) * 100) : 0}%
                         </p>
                       </div>
-                      <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                      <div className="p-3 bg-gradient-to-br from-green-100 to-emerald-200 dark:from-green-900/30 dark:to-emerald-800/20 rounded-xl">
                         <TrendingUp className="h-6 w-6 text-green-600 dark:text-green-400" />
                       </div>
                     </div>
@@ -212,7 +229,7 @@ export default function CreditosPage() {
                           {totalUsed > 0 ? Math.max(1, Math.round(currentBalance / (totalUsed / 30))) : '∞'}
                         </p>
                       </div>
-                      <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                      <div className="p-3 bg-gradient-to-br from-purple-100 to-violet-200 dark:from-purple-900/30 dark:to-violet-800/20 rounded-xl">
                         <AlertCircle className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                       </div>
                     </div>
@@ -351,10 +368,11 @@ export default function CreditosPage() {
                   {availablePlans.map((plan) => (
                     <motion.div
                       key={plan.id}
-                      whileHover={{ scale: 1.02 }}
-                      className={`relative bg-white dark:bg-gray-800 rounded-lg border-2 p-6 ${
-                        plan.popular 
-                          ? 'border-[#01257D] shadow-lg' 
+                      whileHover={{ y: -8, boxShadow: plan.popular ? '0 20px 40px rgba(0, 229, 255, 0.2)' : '0 20px 40px rgba(0,0,0,0.08)' }}
+                      transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                      className={`relative bg-white dark:bg-gray-800 rounded-xl border-2 p-6 ${
+                        plan.popular
+                          ? 'border-[#00E5FF] shadow-[0_4px_20px_rgba(0,229,255,0.15)]'
                           : 'border-gray-200 dark:border-gray-700'
                       }`}
                     >

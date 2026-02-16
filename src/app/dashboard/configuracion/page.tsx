@@ -1,9 +1,40 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Settings, Bell, Shield, Globe, User, Save } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Settings, Bell, Shield, Globe, User, Save, Check } from 'lucide-react';
+import { useUser } from '@/context/UserContext';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } }
+};
+
+function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <label className="relative inline-flex items-center cursor-pointer">
+      <input
+        type="checkbox"
+        className="sr-only peer"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+      />
+      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#01257D]/25 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#01257D]" />
+    </label>
+  );
+}
 
 export default function ConfiguracionPage() {
+  const { user } = useUser();
+  const [saved, setSaved] = useState(false);
   const [notificaciones, setNotificaciones] = useState({
     email: true,
     push: false,
@@ -21,221 +52,217 @@ export default function ConfiguracionPage() {
   const [tema, setTema] = useState('light');
 
   const handleGuardar = () => {
-    // Aquí se guardarían las configuraciones
-    console.log('Configuraciones guardadas:', {
-      notificaciones,
-      privacidad,
-      idioma,
-      tema
-    });
+    console.log('Configuraciones guardadas:', { notificaciones, privacidad, idioma, tema });
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
   };
 
+  // Calcular datos reales del usuario
+  const planLabel = user?.plan?.toUpperCase() || 'Sin plan';
+  const memberSince = user?.createdAt
+    ? new Date(user.createdAt).toLocaleDateString('es-CO', { month: 'long', year: 'numeric' })
+    : 'No disponible';
+
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-          <Settings className="w-8 h-8 text-[#01257D]" />
-          Configuración
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">
-          Personaliza tu experiencia en la plataforma
-        </p>
-      </div>
+    <motion.div
+      className="p-6 space-y-6"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      {/* Header con gradiente */}
+      <motion.div
+        variants={itemVariants}
+        className="bg-gradient-to-r from-[#01257D] to-indigo-600 rounded-2xl p-6"
+      >
+        <div className="flex items-center gap-3">
+          <motion.div
+            animate={{ rotate: [0, 90, 0] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <Settings className="h-8 w-8 text-white" />
+          </motion.div>
+          <div>
+            <h1 className="text-2xl font-bold text-white">Configuracion</h1>
+            <p className="text-blue-200 text-sm">Personaliza tu experiencia en la plataforma</p>
+          </div>
+        </div>
+      </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Notificaciones */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-            <Bell className="w-5 h-5 text-[#01257D]" />
+        <motion.div
+          variants={itemVariants}
+          whileHover={{ y: -2, boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}
+          className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 transition-shadow"
+        >
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-5 flex items-center gap-2">
+            <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+              <Bell className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            </div>
             Notificaciones
           </h2>
-          
+
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Notificaciones por email
-              </label>
-              <input
-                type="checkbox"
-                checked={notificaciones.email}
-                onChange={(e) => setNotificaciones({...notificaciones, email: e.target.checked})}
-                className="w-4 h-4 text-[#01257D] bg-gray-100 border-gray-300 rounded focus:ring-[#01257D] focus:ring-2"
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Notificaciones push
-              </label>
-              <input
-                type="checkbox"
-                checked={notificaciones.push}
-                onChange={(e) => setNotificaciones({...notificaciones, push: e.target.checked})}
-                className="w-4 h-4 text-[#01257D] bg-gray-100 border-gray-300 rounded focus:ring-[#01257D] focus:ring-2"
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Reportes semanales
-              </label>
-              <input
-                type="checkbox"
-                checked={notificaciones.reportes}
-                onChange={(e) => setNotificaciones({...notificaciones, reportes: e.target.checked})}
-                className="w-4 h-4 text-[#01257D] bg-gray-100 border-gray-300 rounded focus:ring-[#01257D] focus:ring-2"
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Alertas de menciones
-              </label>
-              <input
-                type="checkbox"
-                checked={notificaciones.menciones}
-                onChange={(e) => setNotificaciones({...notificaciones, menciones: e.target.checked})}
-                className="w-4 h-4 text-[#01257D] bg-gray-100 border-gray-300 rounded focus:ring-[#01257D] focus:ring-2"
-              />
-            </div>
+            {[
+              { key: 'email', label: 'Notificaciones por email', desc: 'Alertas y resumen por correo' },
+              { key: 'push', label: 'Notificaciones push', desc: 'Alertas en tiempo real en el navegador' },
+              { key: 'reportes', label: 'Reportes semanales', desc: 'Resumen semanal de actividad' },
+              { key: 'menciones', label: 'Alertas de menciones', desc: 'Notificacion cuando te mencionan' },
+            ].map((item) => (
+              <div key={item.key} className="flex items-center justify-between py-1">
+                <div>
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{item.label}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-500">{item.desc}</p>
+                </div>
+                <Toggle
+                  checked={notificaciones[item.key as keyof typeof notificaciones]}
+                  onChange={(v) => setNotificaciones({ ...notificaciones, [item.key]: v })}
+                />
+              </div>
+            ))}
           </div>
-        </div>
+        </motion.div>
 
         {/* Privacidad */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-            <Shield className="w-5 h-5 text-[#01257D]" />
+        <motion.div
+          variants={itemVariants}
+          whileHover={{ y: -2, boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}
+          className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 transition-shadow"
+        >
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-5 flex items-center gap-2">
+            <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
+              <Shield className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            </div>
             Privacidad
           </h2>
-          
+
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Perfil público
-              </label>
-              <input
-                type="checkbox"
-                checked={privacidad.perfilPublico}
-                onChange={(e) => setPrivacidad({...privacidad, perfilPublico: e.target.checked})}
-                className="w-4 h-4 text-[#01257D] bg-gray-100 border-gray-300 rounded focus:ring-[#01257D] focus:ring-2"
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Mostrar email públicamente
-              </label>
-              <input
-                type="checkbox"
-                checked={privacidad.mostrarEmail}
-                onChange={(e) => setPrivacidad({...privacidad, mostrarEmail: e.target.checked})}
-                className="w-4 h-4 text-[#01257D] bg-gray-100 border-gray-300 rounded focus:ring-[#01257D] focus:ring-2"
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Analíticas públicas
-              </label>
-              <input
-                type="checkbox"
-                checked={privacidad.analiticasPublicas}
-                onChange={(e) => setPrivacidad({...privacidad, analiticasPublicas: e.target.checked})}
-                className="w-4 h-4 text-[#01257D] bg-gray-100 border-gray-300 rounded focus:ring-[#01257D] focus:ring-2"
-              />
-            </div>
+            {[
+              { key: 'perfilPublico', label: 'Perfil publico', desc: 'Permite que otros vean tu perfil' },
+              { key: 'mostrarEmail', label: 'Mostrar email publicamente', desc: 'Tu email sera visible para otros' },
+              { key: 'analiticasPublicas', label: 'Analiticas publicas', desc: 'Comparte tus metricas de reputacion' },
+            ].map((item) => (
+              <div key={item.key} className="flex items-center justify-between py-1">
+                <div>
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{item.label}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-500">{item.desc}</p>
+                </div>
+                <Toggle
+                  checked={privacidad[item.key as keyof typeof privacidad]}
+                  onChange={(v) => setPrivacidad({ ...privacidad, [item.key]: v })}
+                />
+              </div>
+            ))}
           </div>
-        </div>
+        </motion.div>
 
         {/* Preferencias generales */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-            <Globe className="w-5 h-5 text-[#01257D]" />
+        <motion.div
+          variants={itemVariants}
+          whileHover={{ y: -2, boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}
+          className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 transition-shadow"
+        >
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-5 flex items-center gap-2">
+            <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
+              <Globe className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+            </div>
             Preferencias
           </h2>
-          
+
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Idioma
-              </label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Idioma</label>
               <select
                 value={idioma}
                 onChange={(e) => setIdioma(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-[#01257D] focus:border-transparent dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#01257D] focus:border-transparent dark:bg-gray-700 dark:text-white text-sm"
               >
-                <option value="es">Español</option>
+                <option value="es">Espanol</option>
                 <option value="en">English</option>
-                <option value="pt">Português</option>
+                <option value="pt">Portugues</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Tema
-              </label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tema</label>
               <select
                 value={tema}
                 onChange={(e) => setTema(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-[#01257D] focus:border-transparent dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#01257D] focus:border-transparent dark:bg-gray-700 dark:text-white text-sm"
               >
                 <option value="light">Claro</option>
                 <option value="dark">Oscuro</option>
-                <option value="auto">Automático</option>
+                <option value="auto">Automatico</option>
               </select>
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Información de cuenta */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-            <User className="w-5 h-5 text-[#01257D]" />
-            Información de cuenta
+        {/* Informacion de cuenta - DATOS REALES */}
+        <motion.div
+          variants={itemVariants}
+          whileHover={{ y: -2, boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}
+          className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 transition-shadow"
+        >
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-5 flex items-center gap-2">
+            <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
+              <User className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+            </div>
+            Informacion de cuenta
           </h2>
-          
+
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Tipo de cuenta
-              </label>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Usuario Premium
-              </p>
+            <div className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700">
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Tipo de cuenta</span>
+              <span className="text-sm font-semibold text-gray-900 dark:text-white px-2.5 py-1 bg-[#01257D]/10 text-[#01257D] dark:text-[#00E5FF] rounded-lg">
+                {planLabel}
+              </span>
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Miembro desde
-              </label>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Enero 2024
-              </p>
+            <div className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700">
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Nombre</span>
+              <span className="text-sm text-gray-900 dark:text-white">{user?.name || 'No disponible'}</span>
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Última actividad
-              </label>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Hace 2 horas
-              </p>
+            <div className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700">
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Email</span>
+              <span className="text-sm text-gray-900 dark:text-white">{user?.email || 'No disponible'}</span>
+            </div>
+            <div className="flex items-center justify-between py-2">
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Miembro desde</span>
+              <span className="text-sm text-gray-900 dark:text-white capitalize">{memberSince}</span>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
 
-      {/* Botón guardar */}
-      <div className="flex justify-end pt-6">
-        <button
+      {/* Boton guardar */}
+      <motion.div
+        variants={itemVariants}
+        className="flex justify-end pt-2"
+      >
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
           onClick={handleGuardar}
-          className="inline-flex items-center px-6 py-3 bg-[#01257D] text-white font-medium rounded-lg hover:bg-[#013AAA] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#01257D] focus:ring-opacity-50"
+          className={`inline-flex items-center px-6 py-3 font-medium rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+            saved
+              ? 'bg-green-500 text-white focus:ring-green-500'
+              : 'bg-[#01257D] text-white hover:bg-[#013AAA] focus:ring-[#01257D]'
+          }`}
         >
-          <Save className="w-4 h-4 mr-2" />
-          Guardar configuración
-        </button>
-      </div>
-    </div>
+          {saved ? (
+            <>
+              <Check className="w-4 h-4 mr-2" />
+              Guardado
+            </>
+          ) : (
+            <>
+              <Save className="w-4 h-4 mr-2" />
+              Guardar configuracion
+            </>
+          )}
+        </motion.button>
+      </motion.div>
+    </motion.div>
   );
 }
