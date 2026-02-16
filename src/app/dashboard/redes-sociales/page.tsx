@@ -99,7 +99,12 @@ export default function RedesSocialesPage() {
               whileHover={{ scale: 1.1, rotate: 5 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
-              <Share2 className="h-7 w-7 text-white" />
+              <motion.div
+                animate={{ rotate: [0, -10, 10, 0] }}
+                transition={{ duration: 3, repeat: Infinity, repeatDelay: 4 }}
+              >
+                <Share2 className="h-7 w-7 text-white" />
+              </motion.div>
             </motion.div>
             <div>
               <h1 className="text-2xl font-bold text-white">
@@ -165,7 +170,7 @@ export default function RedesSocialesPage() {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.3 + i * 0.1, duration: 0.4 }}
-                    whileHover={{ y: -3, boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}
+                    whileHover={{ y: -4, boxShadow: '0 8px 30px rgba(0,0,0,0.08)' }}
                     className={`flex items-start space-x-3 p-4 rounded-xl border-l-4 ${benefit.border} bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 transition-shadow`}
                   >
                     <div className={`flex-shrink-0 p-2 rounded-lg ${benefit.bg}`}>

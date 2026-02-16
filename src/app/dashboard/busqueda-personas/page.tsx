@@ -233,7 +233,9 @@ export default function BusquedaPersonas() {
               whileHover={{ scale: 1.1, rotate: 5 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
-              <Target className="h-7 w-7 text-white" />
+              <motion.div animate={{ rotate: [0, -10, 10, 0] }} transition={{ duration: 3, repeat: Infinity, repeatDelay: 4 }}>
+                <Target className="h-7 w-7 text-white" />
+              </motion.div>
             </motion.div>
             <div>
               <h1 className="text-2xl font-bold text-white">Busqueda de Personas</h1>

@@ -115,7 +115,9 @@ export default function CampanaPage() {
                 whileHover={{ scale: 1.1, rotate: 5 }}
                 transition={{ type: "spring", stiffness: 300 }}
               >
-                <Target className="h-7 w-7 text-white" />
+                <motion.div animate={{ rotate: [0, -10, 10, 0] }} transition={{ duration: 3, repeat: Infinity, repeatDelay: 4 }}>
+                  <Target className="h-7 w-7 text-white" />
+                </motion.div>
               </motion.div>
               <div>
                 <h1 className="text-2xl font-bold text-white">Gestion de Campana</h1>
@@ -219,7 +221,9 @@ export default function CampanaPage() {
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.5 }}
               >
-                <Calendar className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}>
+                  <Calendar className="h-14 w-14 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                </motion.div>
                 <p className="text-gray-500 dark:text-gray-400 font-medium">No hay eventos programados</p>
                 <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">Crea tu primer evento de campana</p>
               </motion.div>
@@ -282,7 +286,9 @@ export default function CampanaPage() {
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.5 }}
               >
-                <FileText className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}>
+                  <FileText className="h-14 w-14 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                </motion.div>
                 <p className="text-gray-500 dark:text-gray-400 font-medium">No hay propuestas registradas</p>
                 <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">Registra tu primera propuesta politica</p>
               </motion.div>

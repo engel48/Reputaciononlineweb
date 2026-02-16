@@ -251,7 +251,9 @@ const MediosComunicacionPage = () => {
               whileHover={{ scale: 1.1, rotate: 5 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
-              <Radio className="h-7 w-7 text-white" />
+              <motion.div animate={{ rotate: [0, -10, 10, 0] }} transition={{ duration: 3, repeat: Infinity, repeatDelay: 4 }}>
+                <Radio className="h-7 w-7 text-white" />
+              </motion.div>
             </motion.div>
             <div>
               <h1 className="text-2xl font-bold text-white">
@@ -495,7 +497,7 @@ const MediosComunicacionPage = () => {
         
         <div className="divide-y divide-gray-200 dark:divide-gray-700">
           {mediaSources.map((media) => (
-            <div key={media.id} className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+            <motion.div key={media.id} className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors" whileHover={{ x: 4 }} transition={{ duration: 0.2 }}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                   <div className={`p-2 rounded-lg ${
@@ -701,7 +703,7 @@ const MediosComunicacionPage = () => {
                   </motion.div>
                 )}
               </AnimatePresence>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>

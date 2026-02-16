@@ -49,7 +49,6 @@ export default function ReportesCreditosPage() {
       bgGradient: 'from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20',
       borderColor: 'border-blue-200 dark:border-blue-700',
       stats: 'Ver detalle',
-      emoji: '📊'
     },
     {
       id: 'canales-sociales',
@@ -60,7 +59,6 @@ export default function ReportesCreditosPage() {
       bgGradient: 'from-emerald-50 to-green-100 dark:from-emerald-900/20 dark:to-green-900/20',
       borderColor: 'border-emerald-200 dark:border-emerald-700',
       stats: 'Ver detalle',
-      emoji: '📱'
     },
     {
       id: 'tendencias-trimestre',
@@ -71,7 +69,6 @@ export default function ReportesCreditosPage() {
       bgGradient: 'from-purple-50 to-violet-100 dark:from-purple-900/20 dark:to-violet-900/20',
       borderColor: 'border-purple-200 dark:border-purple-700',
       stats: 'Ver detalle',
-      emoji: '📈'
     },
     {
       id: 'noticias-tiempo-real',
@@ -82,7 +79,6 @@ export default function ReportesCreditosPage() {
       bgGradient: 'from-cyan-50 to-sky-100 dark:from-cyan-900/20 dark:to-sky-900/20',
       borderColor: 'border-cyan-200 dark:border-cyan-700',
       stats: 'Ultimos 7 dias',
-      emoji: '📰',
       isNew: true
     }
   ];
@@ -141,12 +137,17 @@ export default function ReportesCreditosPage() {
       >
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
           <div className="flex-1">
-            <h1 className="text-4xl font-bold text-white mb-3 flex items-center">
-              <FileText className="mr-4 h-10 w-10" />
-              📄 Reportes de Créditos
+            <h1 className="text-3xl font-bold text-white mb-3 flex items-center">
+              <motion.div
+                animate={{ rotate: [0, -10, 10, 0] }}
+                transition={{ duration: 3, repeat: Infinity, repeatDelay: 4 }}
+              >
+                <FileText className="mr-4 h-9 w-9" />
+              </motion.div>
+              Reportes de Creditos
             </h1>
-            <p className="text-blue-100 text-lg mb-6 lg:mb-0">
-              📊 Genera reportes personalizados con análisis detallado de consumo
+            <p className="text-blue-100 text-base mb-6 lg:mb-0">
+              Genera reportes personalizados con analisis detallado de consumo
             </p>
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-4">
@@ -178,15 +179,15 @@ export default function ReportesCreditosPage() {
       <motion.div variants={itemVariants} className="mb-8">
         <nav className="flex items-center text-sm text-gray-500 dark:text-gray-400 bg-white/70 dark:bg-gray-800/70 rounded-xl p-4 backdrop-blur-sm border border-gray-200 dark:border-gray-700">
           <a href="/dashboard" className="hover:text-[#01257D] dark:hover:text-blue-400 font-medium transition-colors duration-200">
-            🏠 Dashboard
+            Dashboard
           </a>
           <ChevronRight className="mx-2 h-4 w-4" />
           <a href="/dashboard/creditos" className="hover:text-[#01257D] dark:hover:text-blue-400 font-medium transition-colors duration-200">
-            💳 Créditos
+            Creditos
           </a>
           <ChevronRight className="mx-2 h-4 w-4" />
           <span className="text-[#01257D] dark:text-white font-semibold">
-            📄 Reportes
+            Reportes
           </span>
         </nav>
       </motion.div>
@@ -202,9 +203,9 @@ export default function ReportesCreditosPage() {
         >
           <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white p-8">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-3xl font-bold flex items-center">
-                <FileText className="mr-3 h-8 w-8" />
-                📄 Reportes Predefinidos
+              <h2 className="text-2xl font-bold flex items-center">
+                <FileText className="mr-3 h-7 w-7" />
+                Reportes Predefinidos
               </h2>
               {isGenerating && (
                 <div className="relative">
@@ -213,8 +214,8 @@ export default function ReportesCreditosPage() {
                 </div>
               )}
             </div>
-            <p className="text-emerald-100 text-lg">
-              🎯 Selecciona el tipo de reporte que necesitas generar
+            <p className="text-emerald-100 text-base">
+              Selecciona el tipo de reporte que necesitas generar
             </p>
           </div>
           
@@ -224,7 +225,7 @@ export default function ReportesCreditosPage() {
                 <motion.div 
                   key={reporte.id}
                   className={`relative overflow-hidden bg-gradient-to-br ${reporte.bgGradient} rounded-2xl p-6 border-2 ${reporte.borderColor} hover:shadow-xl transition-all duration-300 cursor-pointer`}
-                  whileHover={{ scale: 1.05, rotate: 1 }}
+                  whileHover={{ y: -4, boxShadow: '0 8px 30px rgba(0,0,0,0.08)' }}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
@@ -244,10 +245,10 @@ export default function ReportesCreditosPage() {
                   {/* Header del reporte */}
                   <div className="flex items-center mb-4">
                     <div
-                      className="h-12 w-12 rounded-full flex items-center justify-center text-white shadow-lg"
+                      className="h-12 w-12 rounded-xl flex items-center justify-center text-white shadow-lg"
                       style={{ backgroundColor: reporte.color }}
                     >
-                      <span className="text-xl">{reporte.emoji}</span>
+                      {reporte.icono}
                     </div>
                     <div className="ml-3 flex-1">
                       <h3 className="font-bold text-[#01257D] dark:text-white text-lg">
@@ -303,24 +304,31 @@ export default function ReportesCreditosPage() {
       </motion.div>
 
       {/* Historial de reportes */}
-      <motion.div variants={itemVariants}>
-        <div className="card p-6">
+      <motion.div variants={itemVariants} className="mt-8">
+        <motion.div
+          className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm"
+          whileHover={{ y: -2, boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}
+        >
           <div className="mb-6 flex items-center justify-between">
             <div className="flex items-center">
-              <FileText className="mr-3 h-6 w-6 text-primary-600 dark:text-primary-400" />
-              <h2 className="heading-secondary">Historial de Reportes</h2>
+              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30 mr-3">
+                <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Historial de Reportes</h2>
             </div>
-            <a href="#" className="text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
-              Ver todos
-            </a>
           </div>
 
           <div className="text-center py-10">
-            <FileText className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+            <motion.div
+              animate={{ y: [0, -8, 0] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <FileText className="h-14 w-14 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+            </motion.div>
             <p className="text-gray-500 dark:text-gray-400 font-medium">No hay reportes generados aun</p>
             <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">Genera tu primer reporte desde las opciones de arriba</p>
           </div>
-        </div>
+        </motion.div>
       </motion.div>
 
     </motion.div>

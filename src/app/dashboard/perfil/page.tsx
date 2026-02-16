@@ -234,12 +234,28 @@ export default function ProfilePage() {
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="mb-6"
+        className="bg-gradient-to-r from-[#01257D] to-indigo-600 rounded-2xl p-6 mb-6"
       >
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Mi Perfil</h1>
-        <p className="text-gray-500 dark:text-gray-400">
-          Gestiona tu informacion personal y configuracion de cuenta
-        </p>
+        <div className="flex items-center gap-3">
+          <motion.div
+            className="p-3 bg-white/20 rounded-xl"
+            whileHover={{ scale: 1.1, rotate: 5 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            <motion.div
+              animate={{ rotate: [0, -10, 10, 0] }}
+              transition={{ duration: 3, repeat: Infinity, repeatDelay: 4 }}
+            >
+              <User className="h-7 w-7 text-white" />
+            </motion.div>
+          </motion.div>
+          <div>
+            <h1 className="text-2xl font-bold text-white">Mi Perfil</h1>
+            <p className="text-white/70 text-sm">
+              Gestiona tu informacion personal y configuracion de cuenta
+            </p>
+          </div>
+        </div>
       </motion.div>
 
       {/* Pestañas de navegación */}
@@ -319,7 +335,7 @@ export default function ProfilePage() {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Información del perfil */}
           <div className="col-span-1">
-            <div className="rounded-lg bg-white p-6 shadow-md dark:bg-gray-800">
+            <div className="rounded-xl bg-white dark:bg-gray-800 p-6 shadow-sm border border-gray-200 dark:border-gray-700">
               <div className="mb-6 flex flex-col items-center">
                 <div className="relative mb-4">
                   {avatar ? (
@@ -362,7 +378,7 @@ export default function ProfilePage() {
 
           {/* Formulario principal */}
           <div className="col-span-1 lg:col-span-2">
-            <form onSubmit={handleSubmit} className="rounded-lg bg-white p-6 shadow-md dark:bg-gray-800">
+            <form onSubmit={handleSubmit} className="rounded-xl bg-white dark:bg-gray-800 p-6 shadow-sm border border-gray-200 dark:border-gray-700">
               <h2 className="mb-6 border-b border-gray-200 pb-3 text-xl font-medium text-gray-900 dark:border-gray-700 dark:text-white">
                 Información Personal
               </h2>
@@ -518,7 +534,7 @@ export default function ProfilePage() {
 
       {/* Pestaña simplificada - Redes Sociales */}
       {activeTab === 'cuentas' && (
-        <div className="rounded-lg bg-white p-6 shadow-md dark:bg-gray-800">
+        <div className="rounded-xl bg-white dark:bg-gray-800 p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           <h2 className="mb-6 text-xl font-bold text-gray-900 dark:text-white">Conectar Redes Sociales</h2>
           <p className="mb-4 text-gray-600 dark:text-gray-400">
             Conecta tus redes sociales para monitorear tu reputación online.
@@ -552,7 +568,7 @@ export default function ProfilePage() {
 
       {/* Pestaña de Preferencias */}
       {activeTab === 'preferencias' && (
-        <div className="rounded-lg bg-white p-6 shadow-md dark:bg-gray-800">
+        <div className="rounded-xl bg-white dark:bg-gray-800 p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           <h2 className="mb-6 text-xl font-bold text-gray-900 dark:text-white">Preferencias</h2>
           
           <div className="space-y-6">
@@ -620,7 +636,7 @@ export default function ProfilePage() {
 
       {/* Pestaña de Notificaciones */}
       {activeTab === 'notificaciones' && (
-        <div className="rounded-lg bg-white p-6 shadow-md dark:bg-gray-800">
+        <div className="rounded-xl bg-white dark:bg-gray-800 p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           <h2 className="mb-6 text-xl font-bold text-gray-900 dark:text-white">Configuración de Notificaciones</h2>
           
           <div className="space-y-6">
@@ -677,7 +693,7 @@ export default function ProfilePage() {
 
       {/* Pestaña de Seguridad */}
       {activeTab === 'seguridad' && (
-        <div className="rounded-lg bg-white p-6 shadow-md dark:bg-gray-800">
+        <div className="rounded-xl bg-white dark:bg-gray-800 p-6 shadow-sm border border-gray-200 dark:border-gray-700">
           <h2 className="mb-6 text-xl font-bold text-gray-900 dark:text-white">Configuración de Seguridad</h2>
           
           <form onSubmit={(e) => { e.preventDefault(); handleSecurityUpdate(security); }} className="space-y-6">
@@ -764,7 +780,7 @@ export default function ProfilePage() {
           )}
           
           {/* Plan Actual */}
-          <div className="rounded-lg bg-white p-6 shadow-md dark:bg-gray-800">
+          <div className="rounded-xl bg-white dark:bg-gray-800 p-6 shadow-sm border border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">Plan Actual</h2>
               <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
@@ -831,7 +847,7 @@ export default function ProfilePage() {
           </div>
           
           {/* Cambiar Plan */}
-          <div className="rounded-lg bg-white p-6 shadow-md dark:bg-gray-800">
+          <div className="rounded-xl bg-white dark:bg-gray-800 p-6 shadow-sm border border-gray-200 dark:border-gray-700">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Cambiar Plan</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

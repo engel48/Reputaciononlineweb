@@ -67,7 +67,12 @@ export default function AnalisisCreditosPage() {
             whileHover={{ scale: 1.1, rotate: 5 }}
             transition={{ type: "spring", stiffness: 300 }}
           >
-            <TrendingUp className="h-7 w-7 text-white" />
+            <motion.div
+              animate={{ rotate: [0, -10, 10, 0] }}
+              transition={{ duration: 3, repeat: Infinity, repeatDelay: 4 }}
+            >
+              <TrendingUp className="h-7 w-7 text-white" />
+            </motion.div>
           </motion.div>
           <div>
             <h1 className="text-2xl font-bold text-white">Analisis de Uso de Creditos</h1>
@@ -79,12 +84,14 @@ export default function AnalisisCreditosPage() {
       </motion.div>
 
       {/* Migas de pan */}
-      <motion.div variants={itemVariants} className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-        <a href="/dashboard" className="hover:text-primary-600 dark:hover:text-primary-400">Dashboard</a>
-        <ChevronRight className="mx-2 h-4 w-4" />
-        <a href="/dashboard/creditos" className="hover:text-primary-600 dark:hover:text-primary-400">Créditos</a>
-        <ChevronRight className="mx-2 h-4 w-4" />
-        <span className="text-gray-700 dark:text-gray-300">Análisis</span>
+      <motion.div variants={itemVariants}>
+        <nav className="flex items-center text-sm text-gray-500 dark:text-gray-400 bg-white/70 dark:bg-gray-800/70 rounded-xl p-4 backdrop-blur-sm border border-gray-200 dark:border-gray-700">
+          <a href="/dashboard" className="hover:text-[#01257D] dark:hover:text-blue-400 font-medium transition-colors duration-200">Dashboard</a>
+          <ChevronRight className="mx-2 h-4 w-4" />
+          <a href="/dashboard/creditos" className="hover:text-[#01257D] dark:hover:text-blue-400 font-medium transition-colors duration-200">Creditos</a>
+          <ChevronRight className="mx-2 h-4 w-4" />
+          <span className="text-[#01257D] dark:text-white font-semibold">Analisis</span>
+        </nav>
       </motion.div>
 
       {/* Gráfico de uso de créditos */}
@@ -94,7 +101,7 @@ export default function AnalisisCreditosPage() {
 
       {/* Consumo por canal */}
       <motion.div variants={itemVariants}>
-        <div className="card p-6">
+        <motion.div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm" whileHover={{ y: -2, boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}>
           <div className="mb-6 flex items-center">
             <BarChart3 className="mr-3 h-6 w-6 text-primary-600 dark:text-primary-400" />
             <h2 className="heading-secondary">Consumo por Canal</h2>
@@ -123,7 +130,7 @@ export default function AnalisisCreditosPage() {
                     </div>
                     <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
                       <motion.div
-                        className="h-full bg-primary-600 dark:bg-primary-500"
+                        className="h-full bg-gradient-to-r from-[#01257D] to-indigo-500 rounded-full"
                         style={{ width: `${item.porcentaje}%` }}
                         initial={{ width: 0 }}
                         animate={{ width: `${item.porcentaje}%` }}
@@ -141,18 +148,20 @@ export default function AnalisisCreditosPage() {
               </div>
             </>
           ) : (
-            <div className="text-center py-8">
-              <BarChart3 className="h-10 w-10 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
-              <p className="text-gray-500 dark:text-gray-400 text-sm">Sin datos de consumo por canal disponibles</p>
+            <div className="text-center py-10">
+              <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}>
+                <BarChart3 className="h-14 w-14 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+              </motion.div>
+              <p className="text-gray-500 dark:text-gray-400 font-medium">Sin datos de consumo por canal</p>
               <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">Los datos apareceran cuando uses creditos</p>
             </div>
           )}
-        </div>
+        </motion.div>
       </motion.div>
 
       {/* Consumo por acción */}
       <motion.div variants={itemVariants}>
-        <div className="card p-6">
+        <motion.div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm" whileHover={{ y: -2, boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}>
           <div className="mb-6 flex items-center">
             <PieChart className="mr-3 h-6 w-6 text-primary-600 dark:text-primary-400" />
             <h2 className="heading-secondary">Consumo por Tipo de Acción</h2>
@@ -180,7 +189,7 @@ export default function AnalisisCreditosPage() {
                   </div>
                   <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
                     <motion.div
-                      className="h-full bg-blue-600 dark:bg-blue-500"
+                      className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"
                       style={{ width: `${item.porcentaje}%` }}
                       initial={{ width: 0 }}
                       animate={{ width: `${item.porcentaje}%` }}
@@ -191,13 +200,15 @@ export default function AnalisisCreditosPage() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-8">
-              <PieChart className="h-10 w-10 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
-              <p className="text-gray-500 dark:text-gray-400 text-sm">Sin datos de consumo por accion disponibles</p>
+            <div className="text-center py-10">
+              <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}>
+                <PieChart className="h-14 w-14 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+              </motion.div>
+              <p className="text-gray-500 dark:text-gray-400 font-medium">Sin datos de consumo por accion</p>
               <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">Los datos apareceran cuando uses creditos</p>
             </div>
           )}
-        </div>
+        </motion.div>
       </motion.div>
 
       {/* Recomendaciones */}
@@ -207,12 +218,20 @@ export default function AnalisisCreditosPage() {
 
       {/* Botones de acción */}
       <motion.div variants={itemVariants} className="flex justify-end space-x-4">
-        <button className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
-          Exportar Análisis
-        </button>
-        <button className="inline-flex items-center rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-primary-500 dark:hover:bg-primary-400">
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="inline-flex items-center rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+        >
+          Exportar Analisis
+        </motion.button>
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="inline-flex items-center rounded-xl bg-[#01257D] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#013AAA] transition-colors"
+        >
           Aplicar Recomendaciones
-        </button>
+        </motion.button>
       </motion.div>
     </motion.div>
   );

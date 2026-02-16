@@ -46,7 +46,12 @@ export default function BusquedaNoticiasPage() {
             whileHover={{ scale: 1.1, rotate: 5 }}
             transition={{ type: "spring", stiffness: 300 }}
           >
-            <Search className="h-7 w-7 text-white" />
+            <motion.div
+              animate={{ rotate: [0, -10, 10, 0] }}
+              transition={{ duration: 3, repeat: Infinity, repeatDelay: 4 }}
+            >
+              <Search className="h-7 w-7 text-white" />
+            </motion.div>
           </motion.div>
           <div>
             <h1 className="text-2xl font-bold text-white">
@@ -68,27 +73,26 @@ export default function BusquedaNoticiasPage() {
       >
         {/* Información de tipos de búsqueda */}
         <div className="mb-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="flex items-center space-x-3 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
-            <Crown className="w-5 h-5 text-purple-600" />
-            <div>
-              <p className="text-sm font-medium text-purple-900 dark:text-purple-100">Políticos</p>
-              <p className="text-xs text-purple-600 dark:text-purple-300">Candidatos, funcionarios</p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-3 p-3 bg-pink-50 dark:bg-pink-900/20 rounded-lg border border-pink-200 dark:border-pink-800">
-            <Users className="w-5 h-5 text-pink-600" />
-            <div>
-              <p className="text-sm font-medium text-pink-900 dark:text-pink-100">Influencers</p>
-              <p className="text-xs text-pink-600 dark:text-pink-300">Creadores de contenido</p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-            <Building className="w-5 h-5 text-blue-600" />
-            <div>
-              <p className="text-sm font-medium text-blue-900 dark:text-blue-100">Empresas</p>
-              <p className="text-xs text-blue-600 dark:text-blue-300">Marcas, corporaciones</p>
-            </div>
-          </div>
+          {[
+            { icon: Crown, label: 'Politicos', desc: 'Candidatos, funcionarios', bg: 'bg-purple-50 dark:bg-purple-900/20', border: 'border-purple-200 dark:border-purple-800', color: 'text-purple-600', textMain: 'text-purple-900 dark:text-purple-100', textSub: 'text-purple-600 dark:text-purple-300' },
+            { icon: Users, label: 'Influencers', desc: 'Creadores de contenido', bg: 'bg-pink-50 dark:bg-pink-900/20', border: 'border-pink-200 dark:border-pink-800', color: 'text-pink-600', textMain: 'text-pink-900 dark:text-pink-100', textSub: 'text-pink-600 dark:text-pink-300' },
+            { icon: Building, label: 'Empresas', desc: 'Marcas, corporaciones', bg: 'bg-blue-50 dark:bg-blue-900/20', border: 'border-blue-200 dark:border-blue-800', color: 'text-blue-600', textMain: 'text-blue-900 dark:text-blue-100', textSub: 'text-blue-600 dark:text-blue-300' },
+          ].map((item, i) => (
+            <motion.div
+              key={item.label}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 + i * 0.1, duration: 0.4 }}
+              whileHover={{ y: -3, boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}
+              className={`flex items-center space-x-3 p-3 ${item.bg} rounded-xl border ${item.border} cursor-pointer transition-shadow`}
+            >
+              <item.icon className={`w-5 h-5 ${item.color}`} />
+              <div>
+                <p className={`text-sm font-medium ${item.textMain}`}>{item.label}</p>
+                <p className={`text-xs ${item.textSub}`}>{item.desc}</p>
+              </div>
+            </motion.div>
+          ))}
         </div>
 
         {/* Buscador avanzado completo con análisis de sentimientos */}

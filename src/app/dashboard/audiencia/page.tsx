@@ -45,7 +45,12 @@ export default function AudienciaPage() {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           <div className="flex-1">
             <h1 className="text-3xl font-bold text-white mb-3 flex items-center">
-              <Users className="mr-4 h-9 w-9" />
+              <motion.div
+                animate={{ rotate: [0, -10, 10, 0] }}
+                transition={{ duration: 3, repeat: Infinity, repeatDelay: 4 }}
+              >
+                <Users className="mr-4 h-9 w-9" />
+              </motion.div>
               Analisis de Audiencia
             </h1>
             <p className="text-blue-100 text-base max-w-lg">
@@ -59,7 +64,8 @@ export default function AudienciaPage() {
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.3 + i * 0.1, duration: 0.4 }}
-                className="text-center bg-white/10 backdrop-blur-sm rounded-xl p-3"
+                whileHover={{ y: -4, scale: 1.05, boxShadow: '0 8px 30px rgba(0,0,0,0.15)' }}
+                className="text-center bg-white/10 backdrop-blur-sm rounded-xl p-3 cursor-pointer border border-white/10 hover:border-white/30 transition-colors"
               >
                 <cap.icon className="h-6 w-6 mx-auto text-white mb-1.5" />
                 <div className="text-sm font-semibold text-white">{cap.label}</div>

@@ -228,7 +228,12 @@ export default function PrivacidadPage() {
             whileHover={{ scale: 1.1, rotate: 5 }}
             transition={{ type: "spring", stiffness: 300 }}
           >
-            <Shield className="h-7 w-7 text-white" />
+            <motion.div
+                animate={{ rotate: [0, -10, 10, 0] }}
+                transition={{ duration: 3, repeat: Infinity, repeatDelay: 4 }}
+              >
+                <Shield className="h-7 w-7 text-white" />
+              </motion.div>
           </motion.div>
           <div>
             <h1 className="text-2xl font-bold text-white">
@@ -267,8 +272,8 @@ export default function PrivacidadPage() {
       {/* Configuraciones */}
       <div className="space-y-6">
         {configuraciones.map((seccion, index) => (
-          <motion.div key={index} variants={itemVariants}>
-            <Card>
+          <motion.div key={index} variants={itemVariants} whileHover={{ y: -2, boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}>
+            <Card className="transition-shadow">
               <CardHeader>
                 <div className="flex items-center space-x-3">
                   <div className={`p-2 rounded-full ${seccion.bgColor}`}>
@@ -287,7 +292,7 @@ export default function PrivacidadPage() {
               <CardContent>
                 <div className="space-y-4">
                   {seccion.opciones.map((opcion, opcionIndex) => (
-                    <div key={opcionIndex} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div key={opcionIndex} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700/70 transition-colors duration-200">
                       <div className="flex-1">
                         <div className="flex items-center space-x-2">
                           <h4 className="font-medium text-gray-900 dark:text-white">
@@ -320,10 +325,11 @@ export default function PrivacidadPage() {
 
       {/* Botón de guardar */}
       <motion.div variants={itemVariants} className="flex justify-center">
+        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
         <Button
           onClick={guardarConfiguracion}
           disabled={guardando}
-          className="bg-[#01257D] hover:bg-[#013AAA] text-white px-8 py-3 text-lg"
+          className="bg-[#01257D] hover:bg-[#013AAA] text-white px-8 py-3 text-lg rounded-xl"
         >
           {guardando ? (
             <>
@@ -337,6 +343,7 @@ export default function PrivacidadPage() {
             </>
           )}
         </Button>
+        </motion.div>
       </motion.div>
 
       {/* Acciones adicionales */}
