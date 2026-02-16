@@ -5,7 +5,14 @@
 
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let _resend: Resend | null = null;
+
+function getResend(): Resend {
+  if (!_resend) {
+    _resend = new Resend(process.env.RESEND_API_KEY || '');
+  }
+  return _resend;
+}
 
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'noreply@reputaciononline.com';
 const APP_NAME = 'Reputacion Online';
@@ -77,7 +84,7 @@ export async function sendVerificationEmail(email: string, code: string, name: s
       <p>Si no creaste una cuenta, puedes ignorar este mensaje.</p>
     `);
 
-    const { error } = await resend.emails.send({
+    const { error } = await getResend().emails.send({
       from: FROM_EMAIL,
       to: email,
       subject: `${code} - Codigo de verificacion | ${APP_NAME}`,
@@ -115,7 +122,7 @@ export async function sendPasswordResetEmail(email: string, token: string, name:
       <p>Si no solicitaste este cambio, puedes ignorar este mensaje. Tu contrasena no sera modificada.</p>
     `);
 
-    const { error } = await resend.emails.send({
+    const { error } = await getResend().emails.send({
       from: FROM_EMAIL,
       to: email,
       subject: `Recupera tu contrasena | ${APP_NAME}`,
@@ -148,7 +155,7 @@ export async function sendPlanChangeEmail(email: string, name: string, oldPlan: 
       <p>Si tienes alguna pregunta, no dudes en contactarnos.</p>
     `);
 
-    const { error } = await resend.emails.send({
+    const { error } = await getResend().emails.send({
       from: FROM_EMAIL,
       to: email,
       subject: `Plan actualizado a ${newPlan} | ${APP_NAME}`,
@@ -188,7 +195,7 @@ export async function sendPurchaseConfirmationEmail(
       <p>Puedes ver el detalle de tus creditos en tu <a href="${APP_URL}/dashboard/credito" style="color: #0ea5e9;">panel de control</a>.</p>
     `);
 
-    const { error } = await resend.emails.send({
+    const { error } = await getResend().emails.send({
       from: FROM_EMAIL,
       to: email,
       subject: `Confirmacion de compra - ${details.plan} | ${APP_NAME}`,
