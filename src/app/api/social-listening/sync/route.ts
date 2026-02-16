@@ -140,7 +140,7 @@ export async function GET(request: NextRequest) {
       data: {
         userId: user.id,
         connectedPlatforms: user.socialMedia.length,
-        lastSync: user.socialMedia.reduce((latest, sm) => {
+        lastSync: user.socialMedia.reduce((latest: Date | null, sm: any) => {
           return !latest || (sm.lastSync && sm.lastSync > latest) ? sm.lastSync : latest
         }, null as Date | null),
         platforms: user.socialMedia
