@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-// import CreditosSummary from '@/components/creditos/CreditosSummary'; // Comentado - sección de créditos deshabilitada
+import CreditosSummary from '@/components/creditos/CreditosSummary';
 import AdvancedSearch from '@/components/dashboard/AdvancedSearch';
 import JuliaChat from '@/components/dashboard/JuliaChat';
 import SimpleChat from '@/components/dashboard/SimpleChat';
@@ -1120,6 +1120,19 @@ export default function Dashboard() {
         </motion.div>
       )}
 
+      {/* Widget de Créditos - Resumen compacto */}
+      <motion.div
+        custom={8}
+        initial="hidden"
+        animate="visible"
+        variants={statsVariants}
+        className="mb-4 sm:mb-6"
+      >
+        <CreditosSummary variant="dashboard" showDetails={false} />
+      </motion.div>
+
+      {/* Julia IA - Chat flotante */}
+      <JuliaChat />
     </div>
   );
 }

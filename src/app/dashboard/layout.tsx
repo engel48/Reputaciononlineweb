@@ -5,16 +5,18 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/context/UserContext';
-import { Home, BarChart3, Users, Menu, Search, FileText, Headphones, Share2, Brain, Radio, Target } from 'lucide-react';
+import { Home, BarChart3, Users, Menu, Search, FileText, Headphones, Share2, Brain, Radio, Target, Coins } from 'lucide-react';
 import NotificationCenter from '@/components/notifications/NotificationCenter';
 import UserProfile from '@/components/user/UserProfile';
 import HeaderSearch from '@/components/dashboard/HeaderSearch';
+import { useCredits } from '@/context/CreditosContext';
 import { gsap } from 'gsap';
 
 // Componente interno que maneja la verificación de onboarding
 function DashboardContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { user, isLoading } = useUser();
+  const { currentBalance, isLoading: creditsLoading } = useCredits();
   const [menuOpen, setMenuOpen] = useState(false); // Cambiado a false por defecto
   const [isMobile, setIsMobile] = useState(false);
   const [menuHovered, setMenuHovered] = useState(false);
@@ -212,6 +214,24 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
             </Link>
           </nav>
         </div>
+
+        {/* Botón Recargar Créditos - fijo en el fondo del sidebar */}
+        <div className="flex-shrink-0 px-3 pb-4 pt-2 border-t border-[#1A202C]">
+          <Link
+            href="/dashboard/creditos/comprar"
+            className="group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 bg-[#00E5FF]/10 text-[#00E5FF] hover:bg-[#00E5FF]/20"
+          >
+            <Coins className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5`} />
+            {(menuOpen || menuHovered || isMobile) && (
+              <span className="flex items-center justify-between w-full">
+                <span>Recargar</span>
+                <span className="text-xs bg-[#00E5FF]/20 px-1.5 py-0.5 rounded">
+                  {creditsLoading ? '...' : currentBalance.toLocaleString('es-CO')}
+                </span>
+              </span>
+            )}
+          </Link>
+        </div>
       </aside>
 
       {/* Contenido principal */}
@@ -235,6 +255,22 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
             </div>
 
             <div className="ml-4 flex items-center justify-end space-x-4">
+              {/* Saldo de créditos */}
+              <Link
+                href="/dashboard/creditos"
+                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  currentBalance < 10
+                    ? 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 hover:bg-red-100'
+                    : currentBalance < 100
+                    ? 'bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400 hover:bg-amber-100'
+                    : 'bg-[#00E5FF]/10 text-[#00E5FF] hover:bg-[#00E5FF]/20'
+                }`}
+                title="Ver mis créditos"
+              >
+                <Coins className="h-4 w-4" />
+                <span>{creditsLoading ? '...' : currentBalance.toLocaleString('es-CO')}</span>
+              </Link>
+
               {/* Centro de notificaciones */}
               <NotificationCenter />
 
