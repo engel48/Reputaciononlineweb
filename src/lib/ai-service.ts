@@ -258,6 +258,122 @@ REGLAS:
 
     return this.chat(messages, { temperature: 0.8 });
   }
+
+  // Analisis comprensivo de reputacion
+  async analyzeReputation(name: string, newsData: any[]): Promise<{
+    overallScore: number;
+    sentiment: string;
+    strengths: string[];
+    risks: string[];
+    recommendations: string[];
+    summary: string;
+  }> {
+    const newsContext = newsData.slice(0, 10).map(n =>
+      `- ${n.title} (${n.sentiment || 'neutral'}, fuente: ${n.source || 'desconocida'})`
+    ).join('\n');
+
+    const messages: AIMessage[] = [
+      {
+        role: 'system',
+        content: `Eres Julia, experta en analisis de reputacion online en Colombia. Analiza la reputacion de una persona o marca basandote en noticias recientes. Devuelve SOLO JSON valido.`
+      },
+      {
+        role: 'user',
+        content: `Analiza la reputacion de "${name}" basandote en estas noticias:\n${newsContext || 'No hay noticias disponibles'}\n\nDevuelve JSON con: overallScore (0-100), sentiment (positive/negative/neutral), strengths (array), risks (array), recommendations (array), summary (texto 2-3 frases).`
+      }
+    ];
+
+    try {
+      const response = await this.chat(messages, { temperature: 0.5 });
+      const jsonText = response.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      const match = jsonText.match(/\{[\s\S]*\}/);
+      return JSON.parse(match ? match[0] : jsonText);
+    } catch {
+      return {
+        overallScore: 50,
+        sentiment: 'neutral',
+        strengths: ['Informacion insuficiente para determinar fortalezas'],
+        risks: ['Se requieren mas datos para identificar riesgos'],
+        recommendations: ['Continuar monitoreando menciones'],
+        summary: `No se pudo completar el analisis de reputacion de "${name}" en este momento.`
+      };
+    }
+  }
+
+  // Sugerir respuesta a una alerta de crisis
+  async generateCrisisResponse(alert: {
+    type: string;
+    severity: string;
+    description: string;
+    keyword?: string;
+  }): Promise<{
+    immediateActions: string[];
+    suggestedResponse: string;
+    communicationStrategy: string;
+    timeline: string;
+  }> {
+    const messages: AIMessage[] = [
+      {
+        role: 'system',
+        content: `Eres Julia, experta en gestion de crisis de reputacion en Colombia. Genera estrategias de respuesta rapida y efectiva. Devuelve SOLO JSON valido.`
+      },
+      {
+        role: 'user',
+        content: `Crisis detectada:\n- Tipo: ${alert.type}\n- Severidad: ${alert.severity}\n- Descripcion: ${alert.description}\n${alert.keyword ? `- Keyword: ${alert.keyword}` : ''}\n\nDevuelve JSON con: immediateActions (array de acciones inmediatas), suggestedResponse (texto de comunicado sugerido), communicationStrategy (estrategia general), timeline (linea de tiempo de respuesta).`
+      }
+    ];
+
+    try {
+      const response = await this.chat(messages, { temperature: 0.5 });
+      const jsonText = response.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      const match = jsonText.match(/\{[\s\S]*\}/);
+      return JSON.parse(match ? match[0] : jsonText);
+    } catch {
+      return {
+        immediateActions: ['Monitorear la situacion', 'Preparar comunicado interno'],
+        suggestedResponse: 'Estamos al tanto de la situacion y trabajamos para resolverla.',
+        communicationStrategy: 'Respuesta rapida y transparente',
+        timeline: 'Responder en las proximas 2 horas'
+      };
+    }
+  }
+
+  // Resumir un lote de noticias
+  async summarizeNews(articles: any[]): Promise<{
+    summary: string;
+    keyTopics: string[];
+    overallSentiment: string;
+    notableArticles: string[];
+  }> {
+    const articleList = articles.slice(0, 15).map((a, i) =>
+      `${i + 1}. "${a.title}" - ${a.source || 'Fuente desconocida'} (${a.sentiment || 'neutral'})`
+    ).join('\n');
+
+    const messages: AIMessage[] = [
+      {
+        role: 'system',
+        content: `Eres Julia, experta en analisis de medios colombianos. Resume noticias de forma concisa y util. Devuelve SOLO JSON valido.`
+      },
+      {
+        role: 'user',
+        content: `Resume estas ${articles.length} noticias:\n${articleList}\n\nDevuelve JSON con: summary (resumen ejecutivo 3-5 frases), keyTopics (array de temas principales), overallSentiment (positive/negative/neutral), notableArticles (array de titulos mas relevantes).`
+      }
+    ];
+
+    try {
+      const response = await this.chat(messages, { temperature: 0.4 });
+      const jsonText = response.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      const match = jsonText.match(/\{[\s\S]*\}/);
+      return JSON.parse(match ? match[0] : jsonText);
+    } catch {
+      return {
+        summary: `Se analizaron ${articles.length} noticias. No se pudo generar resumen automatico.`,
+        keyTopics: [],
+        overallSentiment: 'neutral',
+        notableArticles: articles.slice(0, 3).map(a => a.title)
+      };
+    }
+  }
 }
 
 // Exportar instancia única del servicio

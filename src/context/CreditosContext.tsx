@@ -48,6 +48,23 @@ interface CreditContextType {
 
 const CreditContext = createContext<CreditContextType | undefined>(undefined);
 
+// Paquetes de creditos (recarga sin cambiar plan)
+export interface CreditPack {
+  id: string;
+  name: string;
+  credits: number;
+  price: number;
+  pricePerCredit: number;
+  popular?: boolean;
+}
+
+export const CREDIT_PACKS: CreditPack[] = [
+  { id: 'pack-500', name: '500 Creditos', credits: 500, price: 49900, pricePerCredit: 99.8 },
+  { id: 'pack-1000', name: '1,000 Creditos', credits: 1000, price: 89900, pricePerCredit: 89.9, popular: true },
+  { id: 'pack-2500', name: '2,500 Creditos', credits: 2500, price: 199900, pricePerCredit: 79.96 },
+  { id: 'pack-5000', name: '5,000 Creditos', credits: 5000, price: 349900, pricePerCredit: 69.98 },
+];
+
 // Planes disponibles (estos son los productos que se pueden comprar)
 const AVAILABLE_PLANS: CreditPlan[] = [
   {

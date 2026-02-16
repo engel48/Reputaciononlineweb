@@ -4,6 +4,8 @@ import { searchPersonalitiesOnline } from '@/lib/realScraping';
 import { performWebSearch, searchWikipedia } from '@/lib/realWebSearch';
 import { searchPersonOrCompany } from '@/lib/services/newsSearchService';
 import { createClient } from '@supabase/supabase-js';
+import { deductCreditsForAction, extractUserIdFromToken } from '@/lib/credit-guard';
+import { CREDIT_COSTS, getSearchCost } from '@/lib/credit-costs';
 
 // Búsqueda REAL en internet + base de datos
 
@@ -35,7 +37,7 @@ async function searchGoogleNewsRSS(query: string): Promise<any[]> {
     const itemRegex = /<item>([\s\S]*?)<\/item>/gi;
     let match;
 
-    while ((match = itemRegex.exec(xml)) !== null && articles.length < 15) {
+    while ((match = itemRegex.exec(xml)) !== null && articles.length < 25) {
       const item = match[1];
       const title = item.match(/<title>([^<]+)<\/title>/)?.[1];
       const link = item.match(/<link>([^<]+)<\/link>/)?.[1];
@@ -81,6 +83,9 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const query = searchParams.get('q');
     const type = searchParams.get('type');
+    const dateRange = searchParams.get('dateRange'); // 7d, 30d, 90d, custom
+    const dateFrom = searchParams.get('dateFrom');
+    const dateTo = searchParams.get('dateTo');
 
     if (!query) {
       return NextResponse.json({ success: false, error: 'Parámetro de búsqueda requerido' }, { status: 400 });
@@ -98,8 +103,27 @@ export async function GET(request: NextRequest) {
 
     console.log(`📊 Resultados: Google News=${googleNews.length}, Wikipedia=${wikiResults.length}, Web=${webResults.totalResults}, AI=${aiPersonalities.length}`);
 
+    // Filtrar por rango de fechas si se especifica
+    let filteredNews = [...googleNews];
+    if (dateRange || dateFrom) {
+      const now = new Date();
+      let startDate: Date | null = null;
+      if (dateRange === '7d') startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      else if (dateRange === '30d') startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      else if (dateRange === '90d') startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+      else if (dateFrom) startDate = new Date(dateFrom);
+      const endDate = dateTo ? new Date(dateTo) : now;
+
+      if (startDate) {
+        filteredNews = filteredNews.filter(n => {
+          const pubDate = new Date(n.publishedAt);
+          return pubDate >= startDate! && pubDate <= endDate;
+        });
+      }
+    }
+
     // Combinar todos los resultados
-    const allNews = [...googleNews];
+    const allNews = filteredNews;
     const allWebSources = [...wikiResults, ...webResults.webResults];
 
     // Crear personalidad basada en la búsqueda
@@ -137,6 +161,19 @@ export async function GET(request: NextRequest) {
       const negative = allNews.filter(n => n.sentiment === 'negative').length;
       const neutral = allNews.length - positive - negative;
 
+      // Deducir creditos por resultados
+      let creditInfo: { cost: number; newBalance?: number } = { cost: 0 };
+      const authToken = request.cookies.get('auth-token')?.value;
+      const userId = authToken ? extractUserIdFromToken(authToken) : null;
+      if (userId) {
+        const totalResults = allNews.length + allWebSources.length;
+        const creditCost = getSearchCost(30, totalResults); // Busquedas en tiempo real = dentro de 30 dias
+        if (totalResults > 0) {
+          const result = await deductCreditsForAction(userId, 'search_basic', totalResults, `Busqueda: "${query}" (${totalResults} resultados)`);
+          creditInfo = { cost: result.cost || 0, newBalance: result.newBalance };
+        }
+      }
+
       return NextResponse.json({
         success: true,
         results: personality ? [personality] : [],
@@ -148,6 +185,7 @@ export async function GET(request: NextRequest) {
           neutral: allNews.length > 0 ? Math.round((neutral / allNews.length) * 100) : 0,
           total: allNews.length
         },
+        credits: creditInfo,
         source: 'internet_realtime',
         query: query,
         timestamp: new Date().toISOString()
@@ -280,11 +318,22 @@ export async function POST(request: NextRequest) {
 
       analysis.sources_analyzed = allNews.length + wikiResults.length;
 
+      // Deducir creditos por analisis profundo
+      let creditInfo: { cost: number; newBalance?: number } = { cost: 0 };
+      const authToken = request.cookies.get('auth-token')?.value;
+      const userId = authToken ? extractUserIdFromToken(authToken) : null;
+      if (userId) {
+        const totalResults = allNews.length + wikiResults.length;
+        const result = await deductCreditsForAction(userId, 'search_basic', totalResults, `Analisis profundo: "${searchQuery}" (${totalResults} resultados)`);
+        creditInfo = { cost: result.cost || 0, newBalance: result.newBalance };
+      }
+
       return NextResponse.json({
         success: true,
         query: searchQuery,
         analysis: analysis,
         news: allNews,
+        credits: creditInfo,
         source: 'google_news_realtime',
         timestamp: new Date().toISOString()
       });

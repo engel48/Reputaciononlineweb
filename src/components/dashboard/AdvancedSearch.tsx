@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Filter, TrendingUp, TrendingDown, Users, Building, Crown, MapPin, Clock, BarChart3, MessageCircle, ThumbsUp, ThumbsDown, Minus, Sparkles, Brain, RefreshCw } from 'lucide-react';
+import { Search, Filter, TrendingUp, TrendingDown, Users, Building, Crown, MapPin, Clock, BarChart3, MessageCircle, ThumbsUp, ThumbsDown, Minus, Sparkles, Brain, RefreshCw, Calendar, Download, Shield, ShieldCheck, ShieldAlert, Coins } from 'lucide-react';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 interface SearchResult {
@@ -74,6 +74,39 @@ const COLORS = {
   neutral: '#6B7280'
 };
 
+// Fuentes colombianas con nivel de credibilidad
+const SOURCE_CREDIBILITY: Record<string, { level: 'high' | 'medium' | 'low'; label: string }> = {
+  'El Tiempo': { level: 'high', label: 'Alta credibilidad' },
+  'El Espectador': { level: 'high', label: 'Alta credibilidad' },
+  'Semana': { level: 'high', label: 'Alta credibilidad' },
+  'RCN Radio': { level: 'high', label: 'Alta credibilidad' },
+  'Caracol Radio': { level: 'high', label: 'Alta credibilidad' },
+  'Blu Radio': { level: 'high', label: 'Alta credibilidad' },
+  'La FM': { level: 'high', label: 'Alta credibilidad' },
+  'Portafolio': { level: 'high', label: 'Alta credibilidad' },
+  'La República': { level: 'high', label: 'Alta credibilidad' },
+  'W Radio': { level: 'high', label: 'Alta credibilidad' },
+  'Noticias Caracol': { level: 'high', label: 'Alta credibilidad' },
+  'Noticias RCN': { level: 'high', label: 'Alta credibilidad' },
+  'Pulzo': { level: 'medium', label: 'Credibilidad media' },
+  'Infobae': { level: 'medium', label: 'Credibilidad media' },
+  'Google News': { level: 'medium', label: 'Agregador' },
+};
+
+function getSourceCredibility(source: string): { level: 'high' | 'medium' | 'low'; label: string } {
+  for (const [key, value] of Object.entries(SOURCE_CREDIBILITY)) {
+    if (source.toLowerCase().includes(key.toLowerCase())) return value;
+  }
+  return { level: 'low', label: 'Sin verificar' };
+}
+
+const DATE_RANGES = [
+  { value: '7d', label: '7 dias' },
+  { value: '30d', label: '30 dias' },
+  { value: '90d', label: '90 dias' },
+  { value: 'all', label: 'Todo' },
+] as const;
+
 export default function AdvancedSearch() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchType, setSearchType] = useState<'all' | 'político' | 'influencer' | 'empresa'>('all');
@@ -84,8 +117,10 @@ export default function AdvancedSearch() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [suggestions, setSuggestions] = useState('');
+  const [dateRange, setDateRange] = useState<string>('all');
+  const [lastCreditCost, setLastCreditCost] = useState<{ cost: number; balance?: number } | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
-  
+
   // Estados para el estado del sistema
   const [searchEngineEnabled, setSearchEngineEnabled] = useState(true);
   const [maintenanceMessage, setMaintenanceMessage] = useState('');
@@ -152,16 +187,20 @@ export default function AdvancedSearch() {
       const params = new URLSearchParams({
         q: searchQuery,
         ...(searchType !== 'all' && { type: searchType }),
+        ...(dateRange !== 'all' && { dateRange }),
         country: 'Colombia'
       });
-      
+
       const response = await fetch(`/api/search?${params}`);
       const data = await response.json();
-      
+
       if (data.success) {
         setSearchResults(data.results || []);
         if (data.suggestions) {
           setSuggestions(data.suggestions);
+        }
+        if (data.credits) {
+          setLastCreditCost({ cost: data.credits.cost, balance: data.credits.newBalance });
         }
       }
     } catch (error) {
@@ -380,27 +419,54 @@ export default function AdvancedSearch() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg"
+              className="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg space-y-3"
             >
-              <div className="flex flex-wrap gap-2">
-                {['all', 'político', 'influencer', 'empresa'].map((type) => (
-                  <motion.button
-                    key={type}
-                    onClick={() => setSearchType(type as any)}
-                    className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                      searchType === type
-                        ? 'bg-[#01257D] text-white'
-                        : 'bg-white dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-500'
-                    }`}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <div className="flex items-center space-x-2">
-                      {getTypeIcon(type)}
-                      <span className="capitalize">{type === 'all' ? 'Todos' : type}</span>
-                    </div>
-                  </motion.button>
-                ))}
+              {/* Filtro por tipo */}
+              <div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Tipo</p>
+                <div className="flex flex-wrap gap-2">
+                  {['all', 'político', 'influencer', 'empresa'].map((type) => (
+                    <motion.button
+                      key={type}
+                      onClick={() => setSearchType(type as any)}
+                      className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                        searchType === type
+                          ? 'bg-[#01257D] text-white'
+                          : 'bg-white dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-500'
+                      }`}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <div className="flex items-center space-x-2">
+                        {getTypeIcon(type)}
+                        <span className="capitalize">{type === 'all' ? 'Todos' : type}</span>
+                      </div>
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+              {/* Filtro por rango de fechas */}
+              <div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 flex items-center">
+                  <Calendar className="w-3 h-3 mr-1" /> Rango de fechas
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {DATE_RANGES.map((range) => (
+                    <motion.button
+                      key={range.value}
+                      onClick={() => setDateRange(range.value)}
+                      className={`px-4 py-2 rounded-lg font-medium transition-all text-sm ${
+                        dateRange === range.value
+                          ? 'bg-[#01257D] text-white'
+                          : 'bg-white dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-500'
+                      }`}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      {range.label}
+                    </motion.button>
+                  ))}
+                </div>
               </div>
             </motion.div>
           )}
@@ -764,6 +830,25 @@ export default function AdvancedSearch() {
                   </motion.div>
                 </div>
 
+                {/* Costo de creditos */}
+                {lastCreditCost && lastCreditCost.cost > 0 && (
+                  <motion.div
+                    className="flex items-center justify-between p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                  >
+                    <div className="flex items-center space-x-2 text-sm text-amber-800 dark:text-amber-200">
+                      <Coins className="w-4 h-4" />
+                      <span>Esta busqueda costo <strong>{lastCreditCost.cost}</strong> creditos</span>
+                    </div>
+                    {lastCreditCost.balance !== undefined && (
+                      <span className="text-xs text-amber-600 dark:text-amber-300">
+                        Saldo: {lastCreditCost.balance} creditos
+                      </span>
+                    )}
+                  </motion.div>
+                )}
+
                 {/* Noticias Reales */}
                 {analysis.real_news && analysis.real_news.length > 0 && (
                   <motion.div
@@ -772,47 +857,83 @@ export default function AdvancedSearch() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 1.1 }}
                   >
-                    <div className="flex items-center space-x-2 mb-4">
-                      <MessageCircle className="w-5 h-5 text-[#01257D]" />
-                      <h4 className="font-semibold text-gray-900 dark:text-white">
-                        Noticias Recientes ({analysis.sources_analyzed || 0} fuentes analizadas)
-                      </h4>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center space-x-2">
+                        <MessageCircle className="w-5 h-5 text-[#01257D]" />
+                        <h4 className="font-semibold text-gray-900 dark:text-white">
+                          Noticias Recientes ({analysis.sources_analyzed || 0} fuentes analizadas)
+                        </h4>
+                      </div>
+                      <motion.button
+                        onClick={() => {
+                          if (!analysis.real_news) return;
+                          const csv = ['Titulo,Fuente,Credibilidad,Fecha,URL']
+                            .concat(analysis.real_news.map(n => {
+                              const cred = getSourceCredibility(n.source);
+                              return `"${n.title}","${n.source}","${cred.label}","${new Date(n.date).toLocaleDateString('es-ES')}","${n.url}"`;
+                            })).join('\n');
+                          const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                          const link = document.createElement('a');
+                          link.href = URL.createObjectURL(blob);
+                          link.download = `reporte-${selectedPersonality?.name || 'busqueda'}-${new Date().toISOString().split('T')[0]}.csv`;
+                          link.click();
+                        }}
+                        className="flex items-center space-x-1 px-3 py-1.5 text-xs bg-[#01257D] text-white rounded-lg hover:bg-[#013AAA] transition-colors"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <Download className="w-3 h-3" />
+                        <span>Exportar CSV</span>
+                      </motion.button>
                     </div>
                     <div className="space-y-3 max-h-96 overflow-y-auto">
-                      {analysis.real_news.slice(0, 5).map((news, index) => (
-                        <motion.div
-                          key={index}
-                          className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg"
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 1.2 + index * 0.1 }}
-                        >
-                          <div className="flex justify-between items-start mb-2">
-                            <h5 className="font-medium text-gray-900 dark:text-white flex-1">
-                              {news.title}
-                            </h5>
-                            <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
-                              {news.source}
-                            </span>
-                          </div>
-                          <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-                            {(news.content || '').substring(0, 200)}...
-                          </p>
-                          <div className="flex justify-between items-center">
-                            <span className="text-xs text-gray-500">
-                              {new Date(news.date).toLocaleDateString('es-ES')}
-                            </span>
-                            <a 
-                              href={news.url} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="text-xs text-[#01257D] hover:underline"
-                            >
-                              Ver más →
-                            </a>
-                          </div>
-                        </motion.div>
-                      ))}
+                      {analysis.real_news.slice(0, 8).map((news, index) => {
+                        const credibility = getSourceCredibility(news.source);
+                        return (
+                          <motion.div
+                            key={index}
+                            className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 1.2 + index * 0.1 }}
+                          >
+                            <div className="flex justify-between items-start mb-2">
+                              <h5 className="font-medium text-gray-900 dark:text-white flex-1">
+                                {news.title}
+                              </h5>
+                              <div className="flex items-center space-x-2 ml-2 flex-shrink-0">
+                                {/* Indicador de credibilidad */}
+                                <span className={`flex items-center space-x-1 px-2 py-0.5 rounded-full text-xs ${
+                                  credibility.level === 'high' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                                  : credibility.level === 'medium' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300'
+                                  : 'bg-gray-100 text-gray-600 dark:bg-gray-600 dark:text-gray-300'
+                                }`}>
+                                  {credibility.level === 'high' ? <ShieldCheck className="w-3 h-3" />
+                                    : credibility.level === 'medium' ? <Shield className="w-3 h-3" />
+                                    : <ShieldAlert className="w-3 h-3" />}
+                                  <span>{news.source}</span>
+                                </span>
+                              </div>
+                            </div>
+                            <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                              {(news.content || '').substring(0, 200)}...
+                            </p>
+                            <div className="flex justify-between items-center">
+                              <span className="text-xs text-gray-500">
+                                {new Date(news.date).toLocaleDateString('es-ES')}
+                              </span>
+                              <a
+                                href={news.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-[#01257D] hover:underline"
+                              >
+                                Ver mas →
+                              </a>
+                            </div>
+                          </motion.div>
+                        );
+                      })}
                     </div>
                   </motion.div>
                 )}

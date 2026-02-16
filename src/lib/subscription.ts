@@ -20,10 +20,44 @@ export interface SubscriptionPlan {
   name: string;
   description: string;
   price: number;
-  billingCycle: 'monthly' | 'yearly';
+  billingCycle: 'monthly' | 'quarterly' | 'semester' | 'yearly';
   features: string[];
   creditsPerCycle: number;
   isPopular?: boolean;
+}
+
+// Ciclos de facturacion con descuentos
+export const BILLING_CYCLES = {
+  monthly: { months: 1, discount: 0, label: 'Mensual', shortLabel: 'mes' },
+  quarterly: { months: 3, discount: 0.10, label: 'Trimestral (10% dto)', shortLabel: 'trim' },
+  semester: { months: 6, discount: 0.15, label: 'Semestral (15% dto)', shortLabel: 'sem' },
+  yearly: { months: 12, discount: 0.20, label: 'Anual (20% dto)', shortLabel: 'anual' },
+} as const;
+
+export type BillingCycleType = keyof typeof BILLING_CYCLES;
+
+// Calcula precio con descuento para un ciclo
+export function calculateCyclePrice(monthlyPrice: number, cycle: BillingCycleType): {
+  total: number;
+  monthly: number;
+  savings: number;
+  discount: number;
+} {
+  const config = BILLING_CYCLES[cycle];
+  const fullPrice = monthlyPrice * config.months;
+  const discountAmount = Math.round(fullPrice * config.discount);
+  const total = fullPrice - discountAmount;
+  return {
+    total,
+    monthly: Math.round(total / config.months),
+    savings: discountAmount,
+    discount: config.discount,
+  };
+}
+
+// Calcula creditos totales para un ciclo
+export function calculateCycleCredits(monthlyCredits: number, cycle: BillingCycleType): number {
+  return monthlyCredits * BILLING_CYCLES[cycle].months;
 }
 
 // Planes de suscripción disponibles
@@ -76,15 +110,28 @@ export const subscriptionPlans: SubscriptionPlan[] = [
   }
 ];
 
-// Planes anuales con descuento
-export const yearlySubscriptionPlans: SubscriptionPlan[] = subscriptionPlans.map(plan => ({
-  ...plan,
-  id: plan.id.replace('mensual', 'anual'),
-  billingCycle: 'yearly' as const,
-  price: Math.round(plan.price * 10), // Precio anual (10 meses en lugar de 12, descuento de 2 meses)
-  creditsPerCycle: plan.creditsPerCycle * 12, // Créditos anuales
-  name: `${plan.name} (Anual)`
-}));
+// Generar planes para todos los ciclos de facturacion
+export function generatePlansForCycle(cycle: BillingCycleType): SubscriptionPlan[] {
+  if (cycle === 'monthly') return subscriptionPlans;
+
+  const config = BILLING_CYCLES[cycle];
+  return subscriptionPlans.map(plan => {
+    const pricing = calculateCyclePrice(plan.price, cycle);
+    return {
+      ...plan,
+      id: plan.id.replace('mensual', config.shortLabel),
+      billingCycle: cycle,
+      price: pricing.total,
+      creditsPerCycle: calculateCycleCredits(plan.creditsPerCycle, cycle),
+      name: `${plan.name} (${config.label.split(' (')[0]})`,
+    };
+  });
+}
+
+// Mantener compatibilidad con planes anuales existentes
+export const yearlySubscriptionPlans: SubscriptionPlan[] = generatePlansForCycle('yearly');
+export const quarterlySubscriptionPlans: SubscriptionPlan[] = generatePlansForCycle('quarterly');
+export const semesterSubscriptionPlans: SubscriptionPlan[] = generatePlansForCycle('semester');
 
 // Funciones para gestionar suscripciones
 export async function createSubscription(userId: string, planId: string): Promise<Subscription | null> {

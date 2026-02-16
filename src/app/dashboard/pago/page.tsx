@@ -59,10 +59,12 @@ export default function PagoPage() {
   const { currentPlan } = usePlan();
   
   const [selectedPlan, setSelectedPlan] = useState<string>('');
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'quarterly' | 'semester' | 'yearly'>('monthly');
   const [processing, setProcessing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'paypal' | 'pse' | 'bancolombia' | 'nequi'>('card');
   const [pseBank, setPseBank] = useState('');
+  const [paymentType, setPaymentType] = useState<'plan' | 'pack'>('plan');
+  const [selectedPack, setSelectedPack] = useState<string>('');
   const [cardData, setCardData] = useState({
     number: '',
     expiry: '',
@@ -70,9 +72,32 @@ export default function PagoPage() {
     name: ''
   });
 
+  // Paquetes de creditos
+  const CREDIT_PACKS = [
+    { id: 'pack-500', name: '500 Creditos', credits: 500, price: 49900 },
+    { id: 'pack-1000', name: '1,000 Creditos', credits: 1000, price: 89900, popular: true },
+    { id: 'pack-2500', name: '2,500 Creditos', credits: 2500, price: 199900 },
+    { id: 'pack-5000', name: '5,000 Creditos', credits: 5000, price: 349900 },
+  ];
+
+  // Descuentos por periodo
+  const DISCOUNTS: Record<string, { discount: number; label: string; months: number }> = {
+    monthly: { discount: 0, label: 'Mensual', months: 1 },
+    quarterly: { discount: 0.10, label: 'Trimestral (-10%)', months: 3 },
+    semester: { discount: 0.15, label: 'Semestral (-15%)', months: 6 },
+    yearly: { discount: 0.20, label: 'Anual (-20%)', months: 12 },
+  };
+
   useEffect(() => {
     const plan = searchParams.get('plan');
-    if (plan && PLAN_INFO[plan]) {
+    const type = searchParams.get('type');
+    const packId = searchParams.get('packId');
+
+    if (type === 'pack' && packId) {
+      setPaymentType('pack');
+      setSelectedPack(packId);
+    } else if (plan && PLAN_INFO[plan]) {
+      setPaymentType('plan');
       setSelectedPlan(plan);
     } else {
       router.push('/dashboard/perfil?tab=plan');
@@ -80,12 +105,13 @@ export default function PagoPage() {
   }, [searchParams, router]);
 
   const planInfo = selectedPlan ? PLAN_INFO[selectedPlan] : null;
-  
-  if (!planInfo) {
+  const packInfo = CREDIT_PACKS.find(p => p.id === selectedPack);
+
+  if (paymentType === 'plan' && !planInfo) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Plan no válido</h2>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Plan no valido</h2>
           <button
             onClick={() => router.push('/dashboard/perfil?tab=plan')}
             className="mt-4 px-4 py-2 bg-[#01257D] text-white rounded-lg hover:bg-[#013AAA]"
@@ -99,24 +125,62 @@ export default function PagoPage() {
 
   const handlePayment = async () => {
     setProcessing(true);
-    
+
     try {
-      // Simular proceso de pago
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Actualizar plan del usuario
-      await updateUser({ plan: selectedPlan as 'free' | 'basic' | 'pro' | 'enterprise' });
-      
-      // Disparar evento de cambio de plan para notificar al PlanContext
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('planChanged', { 
-          detail: { newPlan: selectedPlan, timestamp: Date.now() } 
-        }));
+      const finalAmount = paymentType === 'pack'
+        ? (packInfo?.price || 0)
+        : getFinalPrice();
+
+      // Crear sesion de pago con el backend
+      const response = await fetch('/api/payments/create-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          type: paymentType,
+          planId: selectedPlan,
+          billingCycle,
+          packId: selectedPack,
+          paymentMethod,
+          amount: finalAmount,
+          currency: 'COP',
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        alert(result.error || 'Error creando sesion de pago');
+        return;
       }
-      
-      // Redirigir con éxito
-      router.push(`/dashboard/perfil?tab=plan&success=true&plan=${selectedPlan}`);
-      
+
+      // Si hay URL de checkout de Wompi, redirigir
+      if (result.data.wompiCheckoutUrl && paymentMethod !== 'card') {
+        window.location.href = result.data.wompiCheckoutUrl;
+        return;
+      }
+
+      // Para tarjeta con widget de Wompi, o si no hay Wompi configurado (fallback a simulacion)
+      if (!result.data.publicKey) {
+        // Fallback: simulacion local (para desarrollo sin Wompi)
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        if (paymentType === 'plan') {
+          await updateUser({ plan: selectedPlan as 'free' | 'basic' | 'pro' | 'enterprise' });
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('planChanged', {
+              detail: { newPlan: selectedPlan, timestamp: Date.now() }
+            }));
+          }
+        }
+
+        router.push(`/dashboard/perfil?tab=plan&success=true&plan=${selectedPlan}`);
+        return;
+      }
+
+      // Con Wompi configurado: redirigir al checkout
+      window.location.href = result.data.wompiCheckoutUrl;
+
     } catch (error) {
       alert('Error procesando el pago. Intenta nuevamente.');
     } finally {
@@ -124,13 +188,17 @@ export default function PagoPage() {
     }
   };
 
-  const getDiscount = () => billingCycle === 'yearly' ? 0.17 : 0; // 17% descuento anual
+  const getDiscount = () => DISCOUNTS[billingCycle]?.discount || 0;
+  const getSavings = () => {
+    if (!planInfo) return 0;
+    const full = planInfo.price * DISCOUNTS[billingCycle].months;
+    return Math.round(full * getDiscount());
+  };
   const getFinalPrice = () => {
+    if (!planInfo) return 0;
     const basePrice = planInfo.price;
-    if (billingCycle === 'yearly') {
-      return Math.round(basePrice * 12 * (1 - getDiscount()));
-    }
-    return basePrice;
+    const months = DISCOUNTS[billingCycle].months;
+    return Math.round(basePrice * months * (1 - getDiscount()));
   };
 
   return (
@@ -146,7 +214,7 @@ export default function PagoPage() {
             Volver
           </button>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Checkout - {planInfo.name}
+            Checkout - {paymentType === 'pack' ? (packInfo?.name || 'Paquete') : (planInfo?.name || '')}
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-2">
             Completa tu compra para acceder a todas las funciones premium
@@ -163,8 +231,8 @@ export default function PagoPage() {
             <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 mb-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {planInfo.name}
-                  {planInfo.popular && (
+                  {planInfo?.name}
+                  {planInfo?.popular && (
                     <span className="ml-2 px-2 py-1 bg-[#01257D] text-white text-xs rounded-full">
                       Más Popular
                     </span>
@@ -172,7 +240,7 @@ export default function PagoPage() {
                 </h3>
                 <div className="text-right">
                   <p className="text-2xl font-bold text-[#01257D]">
-                    {billingCycle === 'yearly' ? planInfo.yearlyPrice : planInfo.monthlyPrice}
+                    {billingCycle === 'yearly' ? planInfo?.yearlyPrice : planInfo?.monthlyPrice}
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     /{billingCycle === 'yearly' ? 'año' : 'mes'}
@@ -180,16 +248,16 @@ export default function PagoPage() {
                 </div>
               </div>
               
-              {billingCycle === 'yearly' && planInfo.price > 0 && (
+              {getDiscount() > 0 && planInfo && planInfo.price > 0 && (
                 <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3 mb-4">
                   <p className="text-green-800 dark:text-green-300 text-sm font-medium">
-                    🎉 ¡Ahorra 17% con el pago anual!
+                    Ahorras ${getSavings().toLocaleString('es-CO')} COP con pago {DISCOUNTS[billingCycle].label.toLowerCase().split(' (')[0]}
                   </p>
                 </div>
               )}
               
               <div className="space-y-2">
-                {planInfo.features.map((feature, index) => (
+                {planInfo?.features.map((feature: string, index: number) => (
                   <div key={index} className="flex items-center">
                     <Check className="h-4 w-4 text-green-500 mr-2" />
                     <span className="text-sm text-gray-700 dark:text-gray-300">{feature}</span>
@@ -199,35 +267,31 @@ export default function PagoPage() {
             </div>
 
             {/* Billing Cycle Toggle */}
-            {planInfo.price > 0 && (
+            {planInfo && planInfo.price > 0 && paymentType === 'plan' && (
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Ciclo de Facturación
+                  Ciclo de Facturacion
                 </label>
                 <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => setBillingCycle('monthly')}
-                    className={`p-3 rounded-lg border-2 transition-colors ${
-                      billingCycle === 'monthly'
-                        ? 'border-[#01257D] bg-[#01257D]/10 text-[#01257D]'
-                        : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300'
-                    }`}
-                  >
-                    <p className="font-medium">Mensual</p>
-                    <p className="text-sm">{planInfo.monthlyPrice}/mes</p>
-                  </button>
-                  <button
-                    onClick={() => setBillingCycle('yearly')}
-                    className={`p-3 rounded-lg border-2 transition-colors ${
-                      billingCycle === 'yearly'
-                        ? 'border-[#01257D] bg-[#01257D]/10 text-[#01257D]'
-                        : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300'
-                    }`}
-                  >
-                    <p className="font-medium">Anual</p>
-                    <p className="text-sm">{planInfo.yearlyPrice}/año</p>
-                    <p className="text-xs text-green-600">Ahorra 17%</p>
-                  </button>
+                  {Object.entries(DISCOUNTS).map(([key, config]) => (
+                    <button
+                      key={key}
+                      onClick={() => setBillingCycle(key as typeof billingCycle)}
+                      className={`p-3 rounded-lg border-2 transition-colors ${
+                        billingCycle === key
+                          ? 'border-[#01257D] bg-[#01257D]/10 text-[#01257D]'
+                          : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300'
+                      }`}
+                    >
+                      <p className="font-medium text-sm">{config.label.split(' (')[0]}</p>
+                      <p className="text-xs mt-0.5">
+                        ${((planInfo?.price || 0) * config.months * (1 - config.discount)).toLocaleString('es-CO')} COP
+                      </p>
+                      {config.discount > 0 && (
+                        <p className="text-xs text-green-600 font-medium mt-0.5">-{config.discount * 100}%</p>
+                      )}
+                    </button>
+                  ))}
                 </div>
               </div>
             )}
@@ -239,7 +303,7 @@ export default function PagoPage() {
               Información de Pago
             </h2>
 
-            {planInfo.price === 0 ? (
+            {(planInfo?.price ?? 0) === 0 ? (
               <div className="text-center py-8">
                 <Award className="h-16 w-16 text-green-500 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
@@ -491,7 +555,7 @@ export default function PagoPage() {
                       ${getFinalPrice()}
                       {billingCycle === 'yearly' && getDiscount() > 0 && (
                         <span className="text-sm text-gray-500 dark:text-gray-400 line-through ml-2">
-                          ${planInfo.price * 12}
+                          ${(planInfo?.price || 0) * 12}
                         </span>
                       )}
                     </span>

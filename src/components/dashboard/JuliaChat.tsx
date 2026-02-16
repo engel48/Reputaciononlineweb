@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, Send, Bot, User, Sparkles, RefreshCw, X, Minimize2, Maximize2, Volume2, VolumeX } from 'lucide-react';
+import { MessageCircle, Send, Bot, User, Sparkles, RefreshCw, X, Minimize2, Maximize2, Volume2, VolumeX, Coins, Brain, AlertTriangle, FileText } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -26,6 +26,7 @@ export default function JuliaChat() {
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [creditBalance, setCreditBalance] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -86,6 +87,11 @@ export default function JuliaChat() {
       // Remover mensaje de typing
       removeTypingMessage(typingId);
 
+      // Actualizar saldo de creditos
+      if (data.credits?.newBalance !== undefined) {
+        setCreditBalance(data.credits.newBalance);
+      }
+
       if (data.success) {
         const juliaMessage: Message = {
           id: `julia-${Date.now()}`,
@@ -95,7 +101,7 @@ export default function JuliaChat() {
         };
         setMessages(prev => [...prev, juliaMessage]);
 
-        // Opción de texto a voz
+        // Opcion de texto a voz
         if ('speechSynthesis' in window && isSpeaking) {
           const utterance = new SpeechSynthesisUtterance(data.response);
           utterance.lang = 'es-ES';
@@ -103,9 +109,12 @@ export default function JuliaChat() {
           speechSynthesis.speak(utterance);
         }
       } else {
+        const errorContent = response.status === 402
+          ? `No tienes suficientes creditos. ${data.response || 'Recarga creditos para continuar.'}`
+          : 'Lo siento, estoy experimentando dificultades tecnicas. ¿Podrias intentarlo de nuevo?';
         const errorMessage: Message = {
           id: `error-${Date.now()}`,
-          content: 'Lo siento, estoy experimentando dificultades técnicas. ¿Podrías intentarlo de nuevo?',
+          content: errorContent,
           sender: 'julia',
           timestamp: new Date()
         };
@@ -135,10 +144,16 @@ export default function JuliaChat() {
   };
 
   const quickQuestions = [
-    "¿Cómo analizar mi reputación online?",
-    "¿Qué métricas son más importantes?",
-    "¿Cómo mejorar mi presencia digital?",
-    "¿Qué hacer con comentarios negativos?"
+    "¿Como analizar mi reputacion online?",
+    "¿Que metricas son mas importantes?",
+    "¿Como mejorar mi presencia digital?",
+    "¿Que hacer con comentarios negativos?"
+  ];
+
+  const quickActions = [
+    { label: 'Analizar Sentimiento', icon: Brain, cost: 3, action: 'analyze' },
+    { label: 'Respuesta a Crisis', icon: AlertTriangle, cost: 5, action: 'crisis-response' },
+    { label: 'Resumir Noticias', icon: FileText, cost: 3, action: 'summarize' },
   ];
 
   const handleQuickQuestion = (question: string) => {
@@ -214,7 +229,14 @@ export default function JuliaChat() {
           </motion.div>
           <div>
             <h3 className="font-semibold text-white">Julia</h3>
-            <p className="text-xs text-blue-100">Asistente de IA</p>
+            <div className="flex items-center space-x-2">
+              <p className="text-xs text-blue-100">Asistente de IA</p>
+              {creditBalance !== null && (
+                <span className="flex items-center text-xs text-blue-100 bg-white/20 px-1.5 py-0.5 rounded">
+                  <Coins className="w-3 h-3 mr-0.5" />{creditBalance}
+                </span>
+              )}
+            </div>
           </div>
         </div>
         
@@ -315,33 +337,67 @@ export default function JuliaChat() {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Quick Questions */}
-          {messages.length === 1 && (
+          {/* Quick Questions + Quick Actions */}
+          {messages.length <= 2 && (
             <motion.div
-              className="px-4 pb-2"
+              className="px-4 pb-2 space-y-2"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
             >
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Preguntas frecuentes:</p>
-              <div className="flex flex-wrap gap-1">
-                {quickQuestions.map((question, index) => (
-                  <motion.button
-                    key={index}
-                    onClick={() => handleQuickQuestion(question)}
-                    className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full transition-colors"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    {question}
-                  </motion.button>
-                ))}
+              {/* Quick Actions */}
+              <div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Acciones rapidas:</p>
+                <div className="flex flex-wrap gap-1">
+                  {quickActions.map((qa, index) => (
+                    <motion.button
+                      key={index}
+                      onClick={() => {
+                        const promptMap: Record<string, string> = {
+                          'analyze': 'Analiza el sentimiento del texto que te voy a compartir',
+                          'crisis-response': 'Necesito una estrategia de respuesta a una crisis de reputacion',
+                          'summarize': 'Resume las noticias mas recientes sobre mi marca',
+                        };
+                        setInputMessage(promptMap[qa.action] || qa.label);
+                      }}
+                      className="flex items-center space-x-1 text-xs px-2 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800/40 rounded-full transition-colors"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <qa.icon className="w-3 h-3" />
+                      <span>{qa.label}</span>
+                      <span className="flex items-center text-amber-600 dark:text-amber-400">
+                        <Coins className="w-2.5 h-2.5 mr-0.5" />{qa.cost}
+                      </span>
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+              {/* Quick Questions */}
+              <div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Preguntas frecuentes:</p>
+                <div className="flex flex-wrap gap-1">
+                  {quickQuestions.map((question, index) => (
+                    <motion.button
+                      key={index}
+                      onClick={() => handleQuickQuestion(question)}
+                      className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full transition-colors"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      {question}
+                    </motion.button>
+                  ))}
+                </div>
               </div>
             </motion.div>
           )}
 
           {/* Input */}
           <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+            <p className="text-xs text-gray-400 mb-1 flex items-center">
+              <Coins className="w-3 h-3 mr-1 text-amber-500" />1 credito por mensaje
+            </p>
             <div className="flex space-x-2">
               <input
                 ref={inputRef}
