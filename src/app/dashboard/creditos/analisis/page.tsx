@@ -1,10 +1,10 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import RecomendacionesCreditos from '@/components/creditos/RecomendacionesCreditos';
 import CreditosUsageChart from '@/components/creditos/CreditosUsageChart';
-import { BarChart3, ChevronRight, BarChart4, PieChart } from 'lucide-react';
+import { BarChart3, ChevronRight, PieChart, TrendingUp, Loader2 } from 'lucide-react';
 
 export default function AnalisisCreditosPage() {
   // Configuración de animaciones
@@ -27,23 +27,30 @@ export default function AnalisisCreditosPage() {
     }
   };
 
-  // Datos del análisis por canal (en un caso real vendrían del backend)
-  const datosConsumoCanales = [
-    { canal: 'Facebook', consumo: 3840, porcentaje: 36.2 },
-    { canal: 'X', consumo: 2560, porcentaje: 24.1 },
-    { canal: 'Instagram', consumo: 1920, porcentaje: 18.1 },
-    { canal: 'YouTube', consumo: 1680, porcentaje: 15.9 },
-    { canal: 'General', consumo: 620, porcentaje: 5.8 }
-  ];
+  const [datosConsumoCanales, setDatosConsumoCanales] = useState<Array<{ canal: string; consumo: number; porcentaje: number }>>([]);
+  const [datosConsumoPorAccion, setDatosConsumoPorAccion] = useState<Array<{ accion: string; consumo: number; porcentaje: number }>>([]);
+  const [cargando, setCargando] = useState(true);
 
-  // Datos del análisis por tipo de acción
-  const datosConsumoPorAccion = [
-    { accion: 'Análisis de sentimiento', consumo: 4280, porcentaje: 40.4 },
-    { accion: 'Monitoreo de menciones', consumo: 3150, porcentaje: 29.7 },
-    { accion: 'Análisis de influenciadores', consumo: 1520, porcentaje: 14.3 },
-    { accion: 'Reportes personalizados', consumo: 980, porcentaje: 9.2 },
-    { accion: 'Alertas en tiempo real', consumo: 690, porcentaje: 6.5 }
-  ];
+  useEffect(() => {
+    const cargarDatos = async () => {
+      setCargando(true);
+      try {
+        const response = await fetch('/api/dashboard-analytics');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.creditUsage) {
+            setDatosConsumoCanales(data.creditUsage.byChannel || []);
+            setDatosConsumoPorAccion(data.creditUsage.byAction || []);
+          }
+        }
+      } catch (error) {
+        console.error('Error cargando datos de analisis:', error);
+      } finally {
+        setCargando(false);
+      }
+    };
+    cargarDatos();
+  }, []);
 
   return (
     <motion.div
@@ -52,12 +59,23 @@ export default function AnalisisCreditosPage() {
       initial="hidden"
       animate="visible"
     >
-      {/* Título de la página */}
-      <motion.div variants={itemVariants}>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Análisis de Uso de Créditos</h1>
-        <p className="mt-1 text-gray-500 dark:text-gray-400">
-          Analiza cómo estás utilizando tus créditos y descubre oportunidades para optimizar tu consumo.
-        </p>
+      {/* Header con gradiente */}
+      <motion.div variants={itemVariants} className="bg-gradient-to-r from-[#01257D] to-indigo-600 rounded-2xl p-6">
+        <div className="flex items-center gap-3">
+          <motion.div
+            className="p-3 bg-white/20 rounded-xl"
+            whileHover={{ scale: 1.1, rotate: 5 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            <TrendingUp className="h-7 w-7 text-white" />
+          </motion.div>
+          <div>
+            <h1 className="text-2xl font-bold text-white">Analisis de Uso de Creditos</h1>
+            <p className="text-white/70 text-sm">
+              Analiza como estas utilizando tus creditos y descubre oportunidades para optimizar tu consumo
+            </p>
+          </div>
+        </div>
       </motion.div>
 
       {/* Migas de pan */}
@@ -82,39 +100,53 @@ export default function AnalisisCreditosPage() {
             <h2 className="heading-secondary">Consumo por Canal</h2>
           </div>
 
-          <div className="space-y-4">
-            {datosConsumoCanales.map((item, index) => (
-              <div key={index} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{item.canal}</span>
-                  <div className="flex items-center">
-                    <span className="mr-2 text-sm font-medium text-gray-900 dark:text-white">
-                      {item.consumo.toLocaleString('es-CO')}
-                    </span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      {item.porcentaje}%
-                    </span>
+          {cargando ? (
+            <div className="text-center py-8">
+              <Loader2 className="h-8 w-8 text-[#01257D] animate-spin mx-auto mb-2" />
+              <p className="text-sm text-gray-500">Cargando datos...</p>
+            </div>
+          ) : datosConsumoCanales.length > 0 ? (
+            <>
+              <div className="space-y-4">
+                {datosConsumoCanales.map((item, index) => (
+                  <div key={index} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{item.canal}</span>
+                      <div className="flex items-center">
+                        <span className="mr-2 text-sm font-medium text-gray-900 dark:text-white">
+                          {item.consumo.toLocaleString('es-CO')}
+                        </span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          {item.porcentaje}%
+                        </span>
+                      </div>
+                    </div>
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                      <motion.div
+                        className="h-full bg-primary-600 dark:bg-primary-500"
+                        style={{ width: `${item.porcentaje}%` }}
+                        initial={{ width: 0 }}
+                        animate={{ width: `${item.porcentaje}%` }}
+                        transition={{ duration: 0.8, delay: index * 0.1 }}
+                      />
+                    </div>
                   </div>
-                </div>
-                <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-                  <motion.div
-                    className="h-full bg-primary-600 dark:bg-primary-500"
-                    style={{ width: `${item.porcentaje}%` }}
-                    initial={{ width: 0 }}
-                    animate={{ width: `${item.porcentaje}%` }}
-                    transition={{ duration: 0.8, delay: index * 0.1 }}
-                  />
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
-
-          <div className="mt-6 rounded-md bg-gray-50 p-4 dark:bg-gray-800">
-            <p className="text-sm text-gray-700 dark:text-gray-300">
-              <span className="font-medium">Total de créditos consumidos: </span>
-              {datosConsumoCanales.reduce((sum, item) => sum + item.consumo, 0).toLocaleString('es-CO')}
-            </p>
-          </div>
+              <div className="mt-6 rounded-md bg-gray-50 p-4 dark:bg-gray-800">
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  <span className="font-medium">Total de creditos consumidos: </span>
+                  {datosConsumoCanales.reduce((sum, item) => sum + item.consumo, 0).toLocaleString('es-CO')}
+                </p>
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-8">
+              <BarChart3 className="h-10 w-10 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
+              <p className="text-gray-500 dark:text-gray-400 text-sm">Sin datos de consumo por canal disponibles</p>
+              <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">Los datos apareceran cuando uses creditos</p>
+            </div>
+          )}
         </div>
       </motion.div>
 
@@ -126,32 +158,45 @@ export default function AnalisisCreditosPage() {
             <h2 className="heading-secondary">Consumo por Tipo de Acción</h2>
           </div>
 
-          <div className="space-y-4">
-            {datosConsumoPorAccion.map((item, index) => (
-              <div key={index} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{item.accion}</span>
-                  <div className="flex items-center">
-                    <span className="mr-2 text-sm font-medium text-gray-900 dark:text-white">
-                      {item.consumo.toLocaleString('es-CO')}
-                    </span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      {item.porcentaje}%
-                    </span>
+          {cargando ? (
+            <div className="text-center py-8">
+              <Loader2 className="h-8 w-8 text-[#01257D] animate-spin mx-auto mb-2" />
+              <p className="text-sm text-gray-500">Cargando datos...</p>
+            </div>
+          ) : datosConsumoPorAccion.length > 0 ? (
+            <div className="space-y-4">
+              {datosConsumoPorAccion.map((item, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{item.accion}</span>
+                    <div className="flex items-center">
+                      <span className="mr-2 text-sm font-medium text-gray-900 dark:text-white">
+                        {item.consumo.toLocaleString('es-CO')}
+                      </span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        {item.porcentaje}%
+                      </span>
+                    </div>
+                  </div>
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                    <motion.div
+                      className="h-full bg-blue-600 dark:bg-blue-500"
+                      style={{ width: `${item.porcentaje}%` }}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${item.porcentaje}%` }}
+                      transition={{ duration: 0.8, delay: index * 0.1 }}
+                    />
                   </div>
                 </div>
-                <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-                  <motion.div
-                    className="h-full bg-blue-600 dark:bg-blue-500"
-                    style={{ width: `${item.porcentaje}%` }}
-                    initial={{ width: 0 }}
-                    animate={{ width: `${item.porcentaje}%` }}
-                    transition={{ duration: 0.8, delay: index * 0.1 }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <PieChart className="h-10 w-10 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
+              <p className="text-gray-500 dark:text-gray-400 text-sm">Sin datos de consumo por accion disponibles</p>
+              <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">Los datos apareceran cuando uses creditos</p>
+            </div>
+          )}
         </div>
       </motion.div>
 

@@ -220,18 +220,22 @@ export default function PrivacidadPage() {
       initial="hidden"
       animate="visible"
     >
-      {/* Header */}
-      <motion.div variants={itemVariants} className="text-center">
-        <div className="flex items-center justify-center mb-4">
-          <div className="p-3 bg-[#01257D] rounded-full text-white mr-4">
-            <Shield className="h-8 w-8" />
-          </div>
+      {/* Header con gradiente */}
+      <motion.div variants={itemVariants} className="bg-gradient-to-r from-[#01257D] to-indigo-600 rounded-2xl p-6">
+        <div className="flex items-center gap-3">
+          <motion.div
+            className="p-3 bg-white/20 rounded-xl"
+            whileHover={{ scale: 1.1, rotate: 5 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            <Shield className="h-7 w-7 text-white" />
+          </motion.div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Configuración de Privacidad
+            <h1 className="text-2xl font-bold text-white">
+              Configuracion de Privacidad
             </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-400">
-              Controla tu privacidad y cómo se manejan tus datos
+            <p className="text-white/70 text-sm">
+              Controla tu privacidad y como se manejan tus datos
             </p>
           </div>
         </div>

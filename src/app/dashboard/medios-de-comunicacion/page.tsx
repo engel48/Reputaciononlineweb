@@ -237,18 +237,27 @@ const MediosComunicacionPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+      {/* Header con gradiente */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="bg-gradient-to-r from-[#01257D] to-indigo-600 rounded-2xl p-6"
+      >
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-[#01257D]/10 rounded-lg">
-              <Radio className="h-6 w-6 text-[#01257D]" />
-            </div>
+            <motion.div
+              className="p-3 bg-white/20 rounded-xl"
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <Radio className="h-7 w-7 text-white" />
+            </motion.div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Medios de Comunicación
+              <h1 className="text-2xl font-bold text-white">
+                Medios de Comunicacion
               </h1>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-white/70 text-sm">
                 Gestiona las fuentes de monitoreo de medios tradicionales y digitales con datos en tiempo real
               </p>
             </div>
@@ -256,13 +265,13 @@ const MediosComunicacionPage = () => {
           <div className="text-right">
             <div className="flex items-center space-x-4">
               <div>
-                <div className="text-2xl font-bold text-[#01257D]">{activeCount}</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">de {totalCount} activos</div>
+                <div className="text-2xl font-bold text-white">{activeCount}</div>
+                <div className="text-sm text-white/70">de {totalCount} activos</div>
               </div>
               {realTimeDataLoaded && (
-                <div className="flex items-center space-x-2 px-3 py-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                  <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse"></div>
-                  <span className="text-xs font-medium text-green-700 dark:text-green-300">
+                <div className="flex items-center space-x-2 px-3 py-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                  <div className="h-2 w-2 bg-green-400 rounded-full animate-pulse"></div>
+                  <span className="text-xs font-medium text-white">
                     Datos en vivo
                   </span>
                 </div>
@@ -270,7 +279,7 @@ const MediosComunicacionPage = () => {
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Stats Cards con datos en tiempo real */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">

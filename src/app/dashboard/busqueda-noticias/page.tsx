@@ -3,7 +3,7 @@
 import React from 'react';
 import AdvancedSearch from '@/components/dashboard/AdvancedSearch';
 import { motion } from 'framer-motion';
-import { Users, Building, Crown } from 'lucide-react';
+import { Users, Building, Crown, Search } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
 // Importar el mapa dinámicamente para evitar problemas con SSR
@@ -32,15 +32,32 @@ export default function BusquedaNoticiasPage() {
 
   return (
     <div className="space-y-6">
-      {/* Título de la página */}
-      <div className="mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          Búsqueda y Noticias
-        </h1>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Busca personalidades, marcas y mantente al día con las noticias más relevantes
-        </p>
-      </div>
+      {/* Header con gradiente */}
+      <motion.div
+        custom={0}
+        initial="hidden"
+        animate="visible"
+        variants={statsVariants}
+        className="bg-gradient-to-r from-[#01257D] to-indigo-600 rounded-2xl p-6 mb-6"
+      >
+        <div className="flex items-center gap-3">
+          <motion.div
+            className="p-3 bg-white/20 rounded-xl"
+            whileHover={{ scale: 1.1, rotate: 5 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            <Search className="h-7 w-7 text-white" />
+          </motion.div>
+          <div>
+            <h1 className="text-2xl font-bold text-white">
+              Busqueda y Noticias
+            </h1>
+            <p className="text-white/70 text-sm">
+              Busca personalidades, marcas y mantente al dia con las noticias mas relevantes
+            </p>
+          </div>
+        </div>
+      </motion.div>
 
       {/* SECCIÓN: BUSCADOR DE PERSONAS Y EMPRESAS - COMPLETO */}
       <motion.div
