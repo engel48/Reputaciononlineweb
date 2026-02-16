@@ -338,28 +338,28 @@ function OverviewTab({ metrics, userProfile }: { metrics: ListeningMetrics | nul
             icon={MessageSquare}
             title="Menciones"
             value={metrics.totalMentions.toLocaleString()}
-            change="+12%"
+            change="--"
             positive={true}
           />
           <MetricCard
             icon={Eye}
             title="Alcance"
             value={`${(metrics.reach / 1000000).toFixed(1)}M`}
-            change="+8%"
+            change="--"
             positive={true}
           />
           <MetricCard
             icon={Activity}
             title="Engagement"
             value={`${metrics.engagement}%`}
-            change="-2%"
-            positive={false}
+            change="--"
+            positive={true}
           />
           <MetricCard
             icon={AlertTriangle}
             title="Alertas"
             value={metrics.crisisAlerts.toString()}
-            change="0"
+            change="--"
             positive={true}
           />
         </div>

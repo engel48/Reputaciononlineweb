@@ -44,6 +44,7 @@ const itemVariants = {
 
 export default function CampanaPage() {
   const { user } = useUser();
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [stats, setStats] = useState<CampanaStats>({
     seguidores: 0,
     interacciones: 0,
@@ -203,6 +204,7 @@ export default function CampanaPage() {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              onClick={() => { setToastMsg('Proximamente: gestion de eventos'); setTimeout(() => setToastMsg(null), 3000); }}
               className="inline-flex items-center rounded-lg bg-[#01257D]/10 px-3 py-1.5 text-sm font-medium text-[#01257D] hover:bg-[#01257D]/20 transition-colors"
             >
               <Plus className="mr-1 h-4 w-4" />
@@ -265,6 +267,7 @@ export default function CampanaPage() {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              onClick={() => { setToastMsg('Proximamente: gestion de propuestas'); setTimeout(() => setToastMsg(null), 3000); }}
               className="inline-flex items-center rounded-lg bg-[#01257D]/10 px-3 py-1.5 text-sm font-medium text-[#01257D] hover:bg-[#01257D]/20 transition-colors"
             >
               <Plus className="mr-1 h-4 w-4" />
@@ -317,6 +320,18 @@ export default function CampanaPage() {
           )}
         </motion.div>
       </div>
+
+      {/* Toast notification */}
+      {toastMsg && (
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 50 }}
+          className="fixed bottom-6 right-6 z-50 bg-[#01257D] text-white px-5 py-3 rounded-xl shadow-lg text-sm font-medium"
+        >
+          {toastMsg}
+        </motion.div>
+      )}
     </motion.div>
   );
 }

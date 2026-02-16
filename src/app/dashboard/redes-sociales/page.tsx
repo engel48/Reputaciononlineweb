@@ -91,19 +91,25 @@ export default function RedesSocialesPage() {
       animate="visible"
     >
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <motion.div variants={itemVariants} className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-gradient-to-br from-[#00E5FF] to-[#00B8D4] rounded-xl">
-              <Share2 className="h-6 w-6 text-white" />
+        {/* Header con gradiente */}
+        <motion.div variants={itemVariants} className="bg-gradient-to-r from-[#01257D] to-indigo-600 rounded-2xl p-6 mb-8">
+          <div className="flex items-center gap-3">
+            <motion.div
+              className="p-3 bg-white/20 rounded-xl"
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <Share2 className="h-7 w-7 text-white" />
+            </motion.div>
+            <div>
+              <h1 className="text-2xl font-bold text-white">
+                Redes Sociales
+              </h1>
+              <p className="text-white/70 text-sm">
+                Conecta y gestiona tus cuentas de redes sociales para monitorear tu reputacion online
+              </p>
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Redes Sociales
-            </h1>
           </div>
-          <p className="text-gray-600 dark:text-gray-400 ml-14">
-            Conecta y gestiona tus cuentas de redes sociales para monitorear tu reputacion online
-          </p>
         </motion.div>
 
         {/* Info del usuario */}

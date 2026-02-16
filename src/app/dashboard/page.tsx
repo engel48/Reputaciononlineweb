@@ -334,7 +334,7 @@ export default function Dashboard() {
     const negative = datosEnTiempoReal?.mentions?.negative ?? 0;
     const porcentajePositivo = total > 0 ? ((positive / total) * 100).toFixed(1) : '0.0';
     const porcentajeNegativo = total > 0 ? ((negative / total) * 100).toFixed(1) : '0.0';
-    const crecimientoSemanal = '+12.5%'; // En producción vendría del backend
+    const crecimientoSemanal = '--'; // Se calculara desde el backend cuando haya datos historicos
 
     return {
       totalMenciones: total.toLocaleString(),
@@ -1050,62 +1050,10 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-          <div className="divide-y divide-gray-200 dark:divide-gray-700">
-            <div className="p-4">
-              <div className="flex items-center">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400">
-                  <Activity className="h-4 w-4" />
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    <span className="font-medium text-gray-900 dark:text-white">Análisis completado</span> para X
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Hace 30 minutos</p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="p-4">
-              <div className="flex items-center">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
-                  <Target className="h-4 w-4" />
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    <span className="font-medium text-gray-900 dark:text-white">50 créditos consumidos</span> en análisis de sentimiento
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Hace 1 hora</p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="p-4">
-              <div className="flex items-center">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400">
-                  <BarChart3 className="h-4 w-4" />
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    <span className="font-medium text-gray-900 dark:text-white">Aumento de menciones</span> detectado en Facebook
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Hace 3 horas</p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="p-4">
-              <div className="flex items-center">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400">
-                  <Award className="h-4 w-4" />
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    <span className="font-medium text-gray-900 dark:text-white">30 créditos consumidos</span> en monitoreo de menciones
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Hace 5 horas</p>
-                </div>
-              </div>
-            </div>
+          <div className="p-8 text-center">
+            <Activity className="h-10 w-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+            <p className="text-gray-500 dark:text-gray-400 font-medium">Sin actividad reciente</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">Tu actividad aparecera aqui cuando uses la plataforma</p>
           </div>
         </motion.div>
       </div>

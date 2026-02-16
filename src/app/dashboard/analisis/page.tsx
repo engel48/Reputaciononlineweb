@@ -231,10 +231,10 @@ export default function AnalisisPage() {
                           </div>
                           <div className="text-right">
                             <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                              {analysisData?.sentimentDistribution?.positive || 68}%
+                              {analysisData?.sentimentDistribution?.positive || 0}%
                             </div>
                             <div className="text-sm text-green-700 dark:text-green-300">
-                              {Math.round((analysisData?.sentimentDistribution?.positive || 68) * 12.48)} menciones
+                              {Math.round((analysisData?.sentimentDistribution?.positive || 0) * 12.48)} menciones
                             </div>
                           </div>
                         </div>
@@ -246,10 +246,10 @@ export default function AnalisisPage() {
                           </div>
                           <div className="text-right">
                             <div className="text-2xl font-bold text-[#01257D] dark:text-blue-400">
-                              {analysisData?.sentimentDistribution?.neutral || 22}%
+                              {analysisData?.sentimentDistribution?.neutral || 0}%
                             </div>
                             <div className="text-sm text-blue-700 dark:text-blue-300">
-                              {Math.round((analysisData?.sentimentDistribution?.neutral || 22) * 12.48)} menciones
+                              {Math.round((analysisData?.sentimentDistribution?.neutral || 0) * 12.48)} menciones
                             </div>
                           </div>
                         </div>
@@ -261,10 +261,10 @@ export default function AnalisisPage() {
                           </div>
                           <div className="text-right">
                             <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-                              {analysisData?.sentimentDistribution?.negative || 10}%
+                              {analysisData?.sentimentDistribution?.negative || 0}%
                             </div>
                             <div className="text-sm text-red-700 dark:text-red-300">
-                              {Math.round((analysisData?.sentimentDistribution?.negative || 10) * 12.48)} menciones
+                              {Math.round((analysisData?.sentimentDistribution?.negative || 0) * 12.48)} menciones
                             </div>
                           </div>
                         </div>
@@ -282,14 +282,14 @@ export default function AnalisisPage() {
                         <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-200 to-blue-200 dark:from-purple-800 dark:to-blue-800 rounded-full -translate-y-16 translate-x-16 opacity-50"></div>
                         <div className="relative z-10">
                           <div className="text-6xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-4">
-                            {analysisData?.averageScore || 7.2}/10
+                            {analysisData?.averageScore || 0}/10
                           </div>
                           <div className="text-lg text-purple-700 dark:text-purple-300 mb-6 font-semibold">
                             Score promedio de sentimiento
                           </div>
                           <Badge className="bg-gradient-to-r from-purple-500 to-blue-500 text-white text-lg px-6 py-2 shadow-lg">
-                            {(analysisData?.averageScore || 7.2) >= 7 ? 'Excelente' :
-                             (analysisData?.averageScore || 7.2) >= 5 ? 'Bueno' : 'Necesita atencion'}
+                            {(analysisData?.averageScore || 0) >= 7 ? 'Excelente' :
+                             (analysisData?.averageScore || 0) >= 5 ? 'Bueno' : 'Necesita atencion'}
                           </Badge>
                         </div>
                       </div>
@@ -305,7 +305,7 @@ export default function AnalisisPage() {
                         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4 shadow-inner">
                           <div
                             className="bg-gradient-to-r from-purple-500 to-blue-500 h-4 rounded-full shadow-lg transition-all duration-1000 ease-out"
-                            style={{ width: `${(analysisData?.averageScore || 7.2) * 10}%` }}
+                            style={{ width: `${(analysisData?.averageScore || 0) * 10}%` }}
                           ></div>
                         </div>
                         <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
@@ -341,11 +341,15 @@ export default function AnalisisPage() {
                       Palabras Clave Principales
                     </h3>
                     <div className="flex flex-wrap gap-3">
-                      {(analysisData?.topKeywords || ['excelente', 'calidad', 'servicio', 'recomendado', 'profesional', 'rapido']).map((keyword: string, index: number) => (
-                        <Badge key={index} className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-2 text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-                          {keyword}
-                        </Badge>
-                      ))}
+                      {(analysisData?.topKeywords && analysisData.topKeywords.length > 0) ? (
+                        analysisData.topKeywords.map((keyword: string, index: number) => (
+                          <Badge key={index} className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-2 text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                            {keyword}
+                          </Badge>
+                        ))
+                      ) : (
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Analiza contenido para ver las palabras clave principales</p>
+                      )}
                     </div>
                   </div>
 
@@ -355,12 +359,7 @@ export default function AnalisisPage() {
                       Emociones Detectadas
                     </h3>
                     <div className="space-y-4">
-                      {(analysisData?.topEmotions || [
-                        { emotion: 'Satisfaccion', percentage: 45 },
-                        { emotion: 'Confianza', percentage: 32 },
-                        { emotion: 'Entusiasmo', percentage: 23 },
-                        { emotion: 'Preocupacion', percentage: 12 }
-                      ]).map((item: any, index: number) => (
+                      {(analysisData?.topEmotions && analysisData.topEmotions.length > 0) ? (analysisData.topEmotions).map((item: any, index: number) => (
                         <div key={index} className="bg-white/70 dark:bg-gray-800/70 rounded-lg p-4 hover:shadow-lg transition-all duration-300">
                           <div className="flex items-center justify-between mb-2">
                             <span className="text-lg font-semibold text-purple-700 dark:text-purple-300">
@@ -375,7 +374,9 @@ export default function AnalisisPage() {
                             ></div>
                           </div>
                         </div>
-                      ))}
+                      )) : (
+                        <p className="text-sm text-gray-500 dark:text-gray-400">Analiza contenido para ver las emociones detectadas</p>
+                      )}
                     </div>
                   </div>
                 </div>

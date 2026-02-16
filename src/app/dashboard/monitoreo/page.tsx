@@ -39,23 +39,25 @@ export default function MonitoreoPage() {
       animate="visible"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <motion.div className="mb-8" variants={itemVariants}>
-          <div className="flex items-center gap-3 mb-2">
+        {/* Header con gradiente */}
+        <motion.div variants={itemVariants} className="bg-gradient-to-r from-[#01257D] to-indigo-600 rounded-2xl p-6 mb-8">
+          <div className="flex items-center gap-3">
             <motion.div
-              className="p-2 bg-gradient-to-br from-[#00E5FF] to-[#00B8D4] rounded-xl"
+              className="p-3 bg-white/20 rounded-xl"
               whileHover={{ scale: 1.1, rotate: 5 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
-              <Activity className="h-6 w-6 text-white" />
+              <Activity className="h-7 w-7 text-white" />
             </motion.div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Centro de Monitoreo
-            </h1>
+            <div>
+              <h1 className="text-2xl font-bold text-white">
+                Centro de Monitoreo
+              </h1>
+              <p className="text-white/70 text-sm">
+                Monitorea tu reputacion en redes sociales, hashtags y medios en tiempo real
+              </p>
+            </div>
           </div>
-          <p className="text-gray-600 dark:text-gray-400 ml-14">
-            Monitorea tu reputacion en redes sociales, hashtags y medios en tiempo real
-          </p>
         </motion.div>
 
         {/* Social Listening Overview */}

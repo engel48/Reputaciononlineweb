@@ -48,7 +48,7 @@ export default function ReportesCreditosPage() {
       color: '#01257D',
       bgGradient: 'from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20',
       borderColor: 'border-blue-200 dark:border-blue-700',
-      stats: '2,450 créditos',
+      stats: 'Ver detalle',
       emoji: '📊'
     },
     {
@@ -59,7 +59,7 @@ export default function ReportesCreditosPage() {
       color: '#059669',
       bgGradient: 'from-emerald-50 to-green-100 dark:from-emerald-900/20 dark:to-green-900/20',
       borderColor: 'border-emerald-200 dark:border-emerald-700',
-      stats: '7 canales activos',
+      stats: 'Ver detalle',
       emoji: '📱'
     },
     {
@@ -70,7 +70,7 @@ export default function ReportesCreditosPage() {
       color: '#8B5CF6',
       bgGradient: 'from-purple-50 to-violet-100 dark:from-purple-900/20 dark:to-violet-900/20',
       borderColor: 'border-purple-200 dark:border-purple-700',
-      stats: '+18% crecimiento',
+      stats: 'Ver detalle',
       emoji: '📈'
     },
     {
@@ -152,12 +152,12 @@ export default function ReportesCreditosPage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-4">
             <div className="text-center">
               <BarChart2 className="h-8 w-8 mx-auto text-white mb-2" />
-              <div className="text-2xl font-bold text-white">156</div>
+              <div className="text-2xl font-bold text-white">--</div>
               <div className="text-sm text-blue-200">Reportes</div>
             </div>
             <div className="text-center">
               <TrendingUp className="h-8 w-8 mx-auto text-white mb-2" />
-              <div className="text-2xl font-bold text-white">+23%</div>
+              <div className="text-2xl font-bold text-white">--</div>
               <div className="text-sm text-blue-200">Eficiencia</div>
             </div>
             <div className="text-center">
@@ -315,67 +315,10 @@ export default function ReportesCreditosPage() {
             </a>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-800">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Nombre</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Tipo</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Periodo</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Fecha</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Acciones</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900">
-                {[
-                  {
-                    nombre: 'Reporte Mensual Mayo 2025',
-                    tipo: 'Completo',
-                    periodo: '01/05/2025 - 31/05/2025',
-                    fecha: '31/05/2025'
-                  },
-                  {
-                    nombre: 'Análisis de Canales Sociales',
-                    tipo: 'Canales',
-                    periodo: 'Abril 2025',
-                    fecha: '30/04/2025'
-                  },
-                  {
-                    nombre: 'Reporte de Optimización',
-                    tipo: 'Eficiencia',
-                    periodo: 'Q1 2025',
-                    fecha: '01/04/2025'
-                  },
-                  {
-                    nombre: 'Tendencias Trimestrales',
-                    tipo: 'Tendencia',
-                    periodo: 'Ene - Mar 2025',
-                    fecha: '01/04/2025'
-                  },
-                  {
-                    nombre: 'Consumo por Tipo de Acción',
-                    tipo: 'Acciones',
-                    periodo: 'Marzo 2025',
-                    fecha: '31/03/2025'
-                  }
-                ].map((reporte, index) => (
-                  <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                    <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">{reporte.nombre}</td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{reporte.tipo}</td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{reporte.periodo}</td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{reporte.fecha}</td>
-                    <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
-                      <button className="mr-2 inline-flex items-center text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
-                        <Download className="h-4 w-4" />
-                      </button>
-                      <button className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
-                        <FileText className="h-4 w-4" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="text-center py-10">
+            <FileText className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+            <p className="text-gray-500 dark:text-gray-400 font-medium">No hay reportes generados aun</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">Genera tu primer reporte desde las opciones de arriba</p>
           </div>
         </div>
       </motion.div>
