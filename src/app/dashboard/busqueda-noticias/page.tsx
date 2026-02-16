@@ -64,32 +64,36 @@ export default function BusquedaNoticiasPage() {
         </div>
       </motion.div>
 
-      {/* SECCIÓN: BUSCADOR DE PERSONAS Y EMPRESAS - COMPLETO */}
+      {/* SECCIÓN: BUSCADOR DE PERSONAS Y EMPRESAS - REDISEÑADO */}
       <motion.div
         custom={0}
         initial="hidden"
         animate="visible"
         variants={statsVariants}
       >
-        {/* Información de tipos de búsqueda */}
-        <div className="mb-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {/* Información de tipos de búsqueda - Cards grandes con gradiente */}
+        <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
-            { icon: Crown, label: 'Politicos', desc: 'Candidatos, funcionarios', bg: 'bg-purple-50 dark:bg-purple-900/20', border: 'border-purple-200 dark:border-purple-800', color: 'text-purple-600', textMain: 'text-purple-900 dark:text-purple-100', textSub: 'text-purple-600 dark:text-purple-300' },
-            { icon: Users, label: 'Influencers', desc: 'Creadores de contenido', bg: 'bg-pink-50 dark:bg-pink-900/20', border: 'border-pink-200 dark:border-pink-800', color: 'text-pink-600', textMain: 'text-pink-900 dark:text-pink-100', textSub: 'text-pink-600 dark:text-pink-300' },
-            { icon: Building, label: 'Empresas', desc: 'Marcas, corporaciones', bg: 'bg-blue-50 dark:bg-blue-900/20', border: 'border-blue-200 dark:border-blue-800', color: 'text-blue-600', textMain: 'text-blue-900 dark:text-blue-100', textSub: 'text-blue-600 dark:text-blue-300' },
+            { icon: Crown, label: 'Politicos', desc: 'Candidatos, funcionarios y figuras publicas', bg: 'bg-gradient-to-br from-purple-50 to-violet-100 dark:from-purple-900/20 dark:to-violet-900/20', border: 'border-purple-200 dark:border-purple-800', iconBg: 'bg-purple-500', textMain: 'text-purple-900 dark:text-purple-100', textSub: 'text-purple-600 dark:text-purple-300' },
+            { icon: Users, label: 'Influencers', desc: 'Creadores de contenido y lideres de opinion', bg: 'bg-gradient-to-br from-pink-50 to-rose-100 dark:from-pink-900/20 dark:to-rose-900/20', border: 'border-pink-200 dark:border-pink-800', iconBg: 'bg-pink-500', textMain: 'text-pink-900 dark:text-pink-100', textSub: 'text-pink-600 dark:text-pink-300' },
+            { icon: Building, label: 'Empresas', desc: 'Marcas, corporaciones y organizaciones', bg: 'bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20', border: 'border-blue-200 dark:border-blue-800', iconBg: 'bg-blue-500', textMain: 'text-blue-900 dark:text-blue-100', textSub: 'text-blue-600 dark:text-blue-300' },
           ].map((item, i) => (
             <motion.div
               key={item.label}
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 + i * 0.1, duration: 0.4 }}
-              whileHover={{ y: -3, boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}
-              className={`flex items-center space-x-3 p-3 ${item.bg} rounded-xl border ${item.border} cursor-pointer transition-shadow`}
+              whileHover={{ y: -4, boxShadow: '0 12px 30px rgba(0,0,0,0.08)' }}
+              className={`p-5 ${item.bg} rounded-xl border ${item.border} cursor-pointer transition-all`}
             >
-              <item.icon className={`w-5 h-5 ${item.color}`} />
-              <div>
-                <p className={`text-sm font-medium ${item.textMain}`}>{item.label}</p>
-                <p className={`text-xs ${item.textSub}`}>{item.desc}</p>
+              <div className="flex items-start space-x-4">
+                <div className={`flex-shrink-0 p-3 rounded-xl ${item.iconBg} shadow-lg`}>
+                  <item.icon className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <p className={`font-bold ${item.textMain}`}>{item.label}</p>
+                  <p className={`text-sm mt-0.5 ${item.textSub}`}>{item.desc}</p>
+                </div>
               </div>
             </motion.div>
           ))}
@@ -99,14 +103,29 @@ export default function BusquedaNoticiasPage() {
         <AdvancedSearch />
       </motion.div>
 
-      {/* SECCIÓN: MAPA DE MENCIONES EN TIEMPO REAL */}
+      {/* SECCIÓN: MAPA DE MENCIONES EN TIEMPO REAL - con wrapper */}
       <motion.div
         custom={1}
         initial="hidden"
         animate="visible"
         variants={statsVariants}
       >
-        <DynamicMencionesMap />
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+          <div className="bg-gradient-to-r from-gray-50 to-blue-50/50 dark:from-gray-800 dark:to-blue-900/10 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center gap-2">
+              <div className="p-2 bg-[#01257D] rounded-lg">
+                <Search className="h-4 w-4 text-white" />
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-900 dark:text-white">Mapa de Menciones en Tiempo Real</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Visualiza la distribucion geografica de las menciones</p>
+              </div>
+            </div>
+          </div>
+          <div className="p-0">
+            <DynamicMencionesMap />
+          </div>
+        </div>
       </motion.div>
     </div>
   );

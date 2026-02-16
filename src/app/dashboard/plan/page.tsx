@@ -157,14 +157,31 @@ export default function PlanPage() {
       initial="hidden"
       animate="visible"
     >
-      {/* Header */}
-      <motion.div variants={itemVariants} className="text-center">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-          Mi Plan Actual
-        </h1>
-        <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-          Gestiona tu suscripción y descubre planes que se adapten mejor a tus necesidades
-        </p>
+      {/* Header con gradiente */}
+      <motion.div
+        variants={itemVariants}
+        className="bg-gradient-to-r from-[#01257D] to-indigo-600 rounded-2xl p-6"
+      >
+        <div className="flex items-center gap-3">
+          <motion.div
+            className="p-3 bg-white/20 rounded-xl"
+            whileHover={{ scale: 1.1, rotate: 5 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            <motion.div
+              animate={{ rotate: [0, -10, 10, 0] }}
+              transition={{ duration: 3, repeat: Infinity, repeatDelay: 4 }}
+            >
+              <Crown className="h-7 w-7 text-white" />
+            </motion.div>
+          </motion.div>
+          <div>
+            <h1 className="text-2xl font-bold text-white">Mi Plan Actual</h1>
+            <p className="text-white/70 text-sm">
+              Gestiona tu suscripcion y descubre planes que se adapten mejor a tus necesidades
+            </p>
+          </div>
+        </div>
       </motion.div>
 
       {/* Plan Actual */}

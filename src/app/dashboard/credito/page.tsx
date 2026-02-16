@@ -171,17 +171,38 @@ export default function CreditosPage() {
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Mis Créditos</h1>
-          <p className="text-gray-600 dark:text-gray-300">Gestiona tus créditos y planes de suscripción</p>
+      {/* Header con gradiente */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="bg-gradient-to-r from-[#01257D] to-indigo-600 rounded-2xl p-6"
+      >
+        <div className="flex items-center gap-3">
+          <motion.div
+            className="p-3 bg-white/20 rounded-xl"
+            whileHover={{ scale: 1.1, rotate: 5 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            <motion.div
+              animate={{ rotate: [0, -10, 10, 0] }}
+              transition={{ duration: 3, repeat: Infinity, repeatDelay: 4 }}
+            >
+              <CreditCard className="h-7 w-7 text-white" />
+            </motion.div>
+          </motion.div>
+          <div>
+            <h1 className="text-2xl font-bold text-white">Mis Creditos</h1>
+            <p className="text-white/70 text-sm">
+              Gestiona tus creditos y planes de suscripcion
+            </p>
+          </div>
         </div>
-      </div>
+      </motion.div>
 
-      {/* Tabs */}
-      <div className="border-b border-gray-200 dark:border-gray-700">
-        <nav className="-mb-px flex space-x-8">
+      {/* Tabs mejorados */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-1.5">
+        <nav className="flex space-x-1">
           {[
             { id: 'resumen', label: 'Resumen', icon: Wallet },
             { id: 'historial', label: 'Historial', icon: History },
@@ -190,18 +211,20 @@ export default function CreditosPage() {
           ].map((tab) => {
             const Icon = tab.icon;
             return (
-              <button
+              <motion.button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as TabType)}
-                className={`flex items-center px-1 py-4 border-b-2 font-medium text-sm ${
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className={`flex items-center px-4 py-2.5 rounded-lg font-medium text-sm transition-all ${
                   activeTab === tab.id
-                    ? 'border-[#01257D] text-[#01257D]'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'bg-gradient-to-r from-[#01257D] to-indigo-600 text-white shadow-md'
+                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                 }`}
               >
-                <Icon className="w-5 h-5 mr-2" />
+                <Icon className="w-4 h-4 mr-2" />
                 {tab.label}
-              </button>
+              </motion.button>
             );
           })}
         </nav>
@@ -220,40 +243,61 @@ export default function CreditosPage() {
             <div className="space-y-6">
               {/* Balance Cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-gradient-to-r from-[#01257D] to-blue-600 rounded-lg p-6 text-white">
+                <motion.div
+                  whileHover={{ y: -4, boxShadow: '0 12px 30px rgba(1,37,125,0.2)' }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                  className="bg-gradient-to-r from-[#01257D] to-indigo-600 rounded-xl p-6 text-white shadow-lg"
+                >
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-blue-100">Balance Actual</p>
-                      <p className="text-3xl font-bold">{currentBalance.toLocaleString()}</p>
+                      <p className="text-blue-200 text-sm font-medium">Balance Actual</p>
+                      <p className="text-3xl font-bold mt-1">{currentBalance.toLocaleString()}</p>
                     </div>
-                    <Wallet className="h-12 w-12 text-blue-200" />
+                    <div className="p-3 bg-white/20 rounded-xl">
+                      <Wallet className="h-8 w-8 text-white" />
+                    </div>
                   </div>
-                </div>
+                </motion.div>
 
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+                <motion.div
+                  whileHover={{ y: -4, boxShadow: '0 12px 30px rgba(0,0,0,0.08)' }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                  className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm"
+                >
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-gray-600 dark:text-gray-400">Total Comprado</p>
-                      <p className="text-2xl font-bold text-gray-900 dark:text-white">{totalPurchased.toLocaleString()}</p>
+                      <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">Total Comprado</p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{totalPurchased.toLocaleString()}</p>
                     </div>
-                    <CreditCard className="h-8 w-8 text-green-500" />
+                    <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl">
+                      <CreditCard className="h-7 w-7 text-green-600 dark:text-green-400" />
+                    </div>
                   </div>
-                </div>
+                </motion.div>
 
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+                <motion.div
+                  whileHover={{ y: -4, boxShadow: '0 12px 30px rgba(0,0,0,0.08)' }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                  className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm"
+                >
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-gray-600 dark:text-gray-400">Total Usado</p>
-                      <p className="text-2xl font-bold text-gray-900 dark:text-white">{totalUsed.toLocaleString()}</p>
+                      <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">Total Usado</p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{totalUsed.toLocaleString()}</p>
                     </div>
-                    <TrendingUp className="h-8 w-8 text-red-500" />
+                    <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-xl">
+                      <TrendingUp className="h-7 w-7 text-red-600 dark:text-red-400" />
+                    </div>
                   </div>
-                </div>
+                </motion.div>
               </div>
 
               {/* Usage Progress */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-                <h3 className="text-lg font-semibold mb-4">Uso de Créditos</h3>
+              <motion.div
+                whileHover={{ y: -2, boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}
+                className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm"
+              >
+                <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Uso de Creditos</h3>
                 <div className="mb-2">
                   <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
                     <span>Usado: {totalUsed.toLocaleString()}</span>
@@ -261,19 +305,22 @@ export default function CreditosPage() {
                   </div>
                 </div>
                 <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-                  <div 
-                    className="bg-[#01257D] h-3 rounded-full transition-all duration-300"
+                  <div
+                    className="bg-gradient-to-r from-[#01257D] to-indigo-500 h-3 rounded-full transition-all duration-300"
                     style={{ width: `${Math.min(usagePercentage, 100)}%` }}
                   ></div>
                 </div>
                 <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
                   {usagePercentage.toFixed(1)}% utilizado
                 </p>
-              </div>
+              </motion.div>
 
               {/* Monthly Stats */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-                <h3 className="text-lg font-semibold mb-4">Estadísticas del Mes</h3>
+              <motion.div
+                whileHover={{ y: -2, boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}
+                className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm"
+              >
+                <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Estadisticas del Mes</h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Uso Mensual</p>
@@ -292,14 +339,14 @@ export default function CreditosPage() {
                     <p className="text-xl font-bold text-purple-600">87%</p>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </div>
           )}
 
           {activeTab === 'historial' && (
             <div className="space-y-6">
               {/* Filters */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+              <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-2">Tipo</label>
@@ -344,7 +391,7 @@ export default function CreditosPage() {
               </div>
 
               {/* Transaction List */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead className="bg-gray-50 dark:bg-gray-900">
@@ -397,17 +444,22 @@ export default function CreditosPage() {
           {activeTab === 'planes' && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {availablePlans.map((plan) => (
-                <div key={plan.id} className={`relative bg-white dark:bg-gray-800 rounded-lg border-2 p-6 ${
-                  plan.popular ? 'border-[#01257D] shadow-lg' : 'border-gray-200 dark:border-gray-700'
-                }`}>
+                <motion.div
+                  key={plan.id}
+                  whileHover={{ y: -4, boxShadow: '0 12px 30px rgba(0,0,0,0.08)' }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                  className={`relative bg-white dark:bg-gray-800 rounded-xl border-2 p-6 ${
+                    plan.popular ? 'border-[#01257D] shadow-lg' : 'border-gray-200 dark:border-gray-700'
+                  }`}
+                >
                   {plan.popular && (
                     <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                      <span className="bg-[#01257D] text-white px-3 py-1 rounded-full text-sm font-medium">
-                        Más Popular
+                      <span className="bg-gradient-to-r from-[#01257D] to-indigo-600 text-white px-4 py-1 rounded-full text-sm font-medium shadow-md">
+                        Mas Popular
                       </span>
                     </div>
                   )}
-                  
+
                   <div className="text-center">
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white">{plan.name}</h3>
                     <div className="mt-4">
@@ -416,9 +468,9 @@ export default function CreditosPage() {
                       </span>
                       <span className="text-gray-600 dark:text-gray-400"> COP</span>
                     </div>
-                    <div className="mt-2">
+                    <div className="mt-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg py-2">
                       <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                        {plan.credits.toLocaleString()} créditos
+                        {plan.credits.toLocaleString()} creditos
                       </span>
                     </div>
                   </div>
@@ -426,32 +478,34 @@ export default function CreditosPage() {
                   <ul className="mt-6 space-y-3">
                     {plan.features.map((feature, index) => (
                       <li key={index} className="flex items-center">
-                        <Check className="h-4 w-4 text-green-500 mr-2" />
+                        <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
                         <span className="text-sm text-gray-600 dark:text-gray-400">{feature}</span>
                       </li>
                     ))}
                   </ul>
 
-                  <button
+                  <motion.button
                     onClick={() => handlePurchase(plan.id)}
                     disabled={isProcessing}
-                    className={`w-full mt-6 py-2 px-4 rounded-md font-medium transition-colors ${
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className={`w-full mt-6 py-2.5 px-4 rounded-xl font-medium transition-colors ${
                       plan.popular
-                        ? 'bg-[#01257D] text-white hover:bg-[#01257D]/90'
+                        ? 'bg-gradient-to-r from-[#01257D] to-indigo-600 text-white hover:from-[#013AAA] hover:to-indigo-700 shadow-md'
                         : 'bg-gray-100 text-gray-900 hover:bg-gray-200 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600'
                     } disabled:opacity-50`}
                   >
                     {isProcessing ? 'Procesando...' : 'Comprar Plan'}
-                  </button>
-                </div>
+                  </motion.button>
+                </motion.div>
               ))}
             </div>
           )}
 
           {activeTab === 'comprar' && (
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-semibold mb-6">Comprar Créditos Adicionales</h3>
-              
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+              <h3 className="text-lg font-semibold mb-6 text-gray-900 dark:text-white">Comprar Creditos Adicionales</h3>
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
                   { credits: 100, price: 15000, bonus: 0 },
@@ -459,23 +513,30 @@ export default function CreditosPage() {
                   { credits: 1000, price: 120000, bonus: 150 },
                   { credits: 2500, price: 280000, bonus: 500 }
                 ].map((pack, index) => (
-                  <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <motion.div
+                    key={index}
+                    whileHover={{ y: -4, boxShadow: '0 12px 30px rgba(0,0,0,0.08)' }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                    className="border border-gray-200 dark:border-gray-700 rounded-xl p-5 bg-white dark:bg-gray-800"
+                  >
                     <div className="text-center">
-                      <h4 className="font-semibold text-lg">{pack.credits} Créditos</h4>
+                      <h4 className="font-semibold text-lg text-gray-900 dark:text-white">{pack.credits} Creditos</h4>
                       {pack.bonus > 0 && (
-                        <p className="text-sm text-green-600">+{pack.bonus} créditos bonus</p>
+                        <p className="text-sm text-green-600 font-medium">+{pack.bonus} creditos bonus</p>
                       )}
                       <p className="text-xl font-bold text-[#01257D] mt-2">
                         ${pack.price.toLocaleString()} COP
                       </p>
-                      <button 
+                      <motion.button
                         onClick={() => handlePurchase(`pack-${index}`)}
-                        className="w-full mt-4 bg-[#01257D] text-white py-2 rounded-md hover:bg-[#01257D]/90 transition-colors"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="w-full mt-4 bg-gradient-to-r from-[#01257D] to-indigo-600 text-white py-2.5 rounded-xl hover:from-[#013AAA] hover:to-indigo-700 transition-colors shadow-md font-medium"
                       >
                         Comprar
-                      </button>
+                      </motion.button>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             </div>

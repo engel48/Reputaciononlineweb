@@ -33,21 +33,42 @@ export default function ConfiguracionCreditosPage() {
       initial="hidden"
       animate="visible"
     >
-      {/* Tu00edtulo de la pu00e1gina */}
-      <motion.div variants={itemVariants}>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Configuraciu00f3n de Cru00e9ditos</h1>
-        <p className="mt-1 text-gray-500 dark:text-gray-400">
-          Personaliza tus preferencias de notificaciones y alertas relacionadas con tus cru00e9ditos.
-        </p>
+      {/* Header con gradiente */}
+      <motion.div
+        variants={itemVariants}
+        className="bg-gradient-to-r from-[#01257D] to-indigo-600 rounded-2xl p-6"
+      >
+        <div className="flex items-center gap-3">
+          <motion.div
+            className="p-3 bg-white/20 rounded-xl"
+            whileHover={{ scale: 1.1, rotate: 5 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            <motion.div
+              animate={{ rotate: [0, -10, 10, 0] }}
+              transition={{ duration: 3, repeat: Infinity, repeatDelay: 4 }}
+            >
+              <Settings className="h-7 w-7 text-white" />
+            </motion.div>
+          </motion.div>
+          <div>
+            <h1 className="text-2xl font-bold text-white">Configuracion de Creditos</h1>
+            <p className="text-white/70 text-sm">
+              Personaliza tus preferencias de notificaciones y alertas
+            </p>
+          </div>
+        </div>
       </motion.div>
 
-      {/* Migas de pan */}
-      <motion.div variants={itemVariants} className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-        <a href="/dashboard" className="hover:text-primary-600 dark:hover:text-primary-400">Dashboard</a>
-        <ChevronRight className="mx-2 h-4 w-4" />
-        <a href="/dashboard/creditos" className="hover:text-primary-600 dark:hover:text-primary-400">Cru00e9ditos</a>
-        <ChevronRight className="mx-2 h-4 w-4" />
-        <span className="text-gray-700 dark:text-gray-300">Configuraciu00f3n</span>
+      {/* Migas de pan mejoradas */}
+      <motion.div variants={itemVariants}>
+        <nav className="flex items-center text-sm text-gray-500 dark:text-gray-400 bg-white/70 dark:bg-gray-800/70 rounded-xl p-4 backdrop-blur-sm border border-gray-200 dark:border-gray-700">
+          <a href="/dashboard" className="hover:text-[#01257D] dark:hover:text-blue-400 font-medium transition-colors">Dashboard</a>
+          <ChevronRight className="mx-2 h-4 w-4" />
+          <a href="/dashboard/creditos" className="hover:text-[#01257D] dark:hover:text-blue-400 font-medium transition-colors">Creditos</a>
+          <ChevronRight className="mx-2 h-4 w-4" />
+          <span className="text-[#01257D] dark:text-white font-semibold">Configuracion</span>
+        </nav>
       </motion.div>
 
       {/* Secciu00f3n de configuraciu00f3n de notificaciones */}

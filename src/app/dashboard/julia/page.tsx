@@ -85,39 +85,71 @@ export default function JuliaPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
-            <Brain className="mr-3 h-8 w-8 text-[#01257D]" />
-            Julia IA - Procesamiento Cognitivo
-          </h1>
-          <p className="mt-1 text-gray-600 dark:text-gray-300">
-            Analisis avanzado de reputacion con inteligencia artificial
-          </p>
+      {/* Header con gradiente */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="bg-gradient-to-r from-[#01257D] via-purple-600 to-indigo-600 rounded-2xl p-6 mb-2"
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <motion.div
+              className="p-3 bg-white/20 rounded-xl"
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <motion.div
+                animate={{ rotate: [0, -10, 10, 0] }}
+                transition={{ duration: 3, repeat: Infinity, repeatDelay: 4 }}
+              >
+                <Brain className="h-7 w-7 text-white" />
+              </motion.div>
+            </motion.div>
+            <div>
+              <h1 className="text-2xl font-bold text-white">
+                Julia IA - Procesamiento Cognitivo
+              </h1>
+              <p className="text-white/70 text-sm">
+                Analisis avanzado de reputacion con inteligencia artificial
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2">
+              <div className="h-2 w-2 bg-green-400 rounded-full animate-pulse"></div>
+              <span className="text-white/80 text-sm font-medium">IA Activa</span>
+            </div>
+          </div>
         </div>
-      </div>
+      </motion.div>
 
-      {/* Tabs */}
-      <div className="flex space-x-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+      {/* Tabs mejoradas */}
+      <div className="flex space-x-1 bg-white dark:bg-gray-800 rounded-xl p-1.5 border border-gray-200 dark:border-gray-700 shadow-sm">
         {tabs.map((tab) => (
-          <button
+          <motion.button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             className={`flex items-center space-x-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex-1 justify-center ${
               activeTab === tab.id
-                ? 'bg-white dark:bg-gray-700 text-[#01257D] dark:text-blue-400 shadow-sm'
-                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                ? 'bg-gradient-to-r from-[#01257D] to-indigo-600 text-white shadow-md'
+                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/50'
             }`}
           >
             <tab.icon className="w-4 h-4" />
             <span>{tab.label}</span>
             {tab.cost > 0 && (
-              <span className="flex items-center text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-1.5 py-0.5 rounded">
+              <span className={`flex items-center text-xs px-1.5 py-0.5 rounded ${
+                activeTab === tab.id
+                  ? 'bg-white/20 text-white'
+                  : 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20'
+              }`}>
                 <Coins className="w-3 h-3 mr-0.5" />{tab.cost}
               </span>
             )}
-          </button>
+          </motion.button>
         ))}
       </div>
 
@@ -400,56 +432,80 @@ export default function JuliaPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700"
+          className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-700"
         >
           <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
             <History className="w-5 h-5 mr-2 text-[#01257D]" />
             Historial de Interacciones
           </h2>
-          <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-            <History className="w-12 h-12 mx-auto mb-3 opacity-30" />
-            <p className="text-sm">El historial de conversaciones con Julia se mostrara aqui.</p>
-            <p className="text-xs mt-1">Proximamente: historial persistente con busqueda.</p>
+          <div className="text-center py-12">
+            <motion.div
+              animate={{ y: [0, -8, 0] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <History className="w-14 h-14 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+            </motion.div>
+            <p className="text-gray-500 dark:text-gray-400 font-medium">El historial de conversaciones con Julia se mostrara aqui</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">Proximamente: historial persistente con busqueda</p>
           </div>
         </motion.div>
       )}
 
-      {/* Info cards */}
+      {/* Info cards mejoradas */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6, duration: 0.5 }}
         className="grid grid-cols-1 md:grid-cols-3 gap-6"
       >
-        <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg p-6 border border-blue-200 dark:border-blue-700">
-          <div className="flex items-center space-x-3 mb-3">
-            <Brain className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-            <h3 className="font-semibold text-gray-900 dark:text-white">Analisis Profundo</h3>
-          </div>
-          <p className="text-sm text-gray-600 dark:text-gray-300">
-            Julia analiza sentimientos, tendencias y patrones en tus menciones usando algoritmos avanzados de IA.
-          </p>
-        </div>
-
-        <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-lg p-6 border border-purple-200 dark:border-purple-700">
-          <div className="flex items-center space-x-3 mb-3">
-            <Sparkles className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-            <h3 className="font-semibold text-gray-900 dark:text-white">Procesamiento en Tiempo Real</h3>
-          </div>
-          <p className="text-sm text-gray-600 dark:text-gray-300">
-            La red neuronal procesa menciones continuamente, identificando patrones y alertas en tiempo real.
-          </p>
-        </div>
-
-        <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg p-6 border border-green-200 dark:border-green-700">
-          <div className="flex items-center space-x-3 mb-3">
-            <Bot className="w-6 h-6 text-green-600 dark:text-green-400" />
-            <h3 className="font-semibold text-gray-900 dark:text-white">Asistente Inteligente</h3>
-          </div>
-          <p className="text-sm text-gray-600 dark:text-gray-300">
-            Preguntale a Julia sobre tu reputacion, obten insights y recomendaciones personalizadas.
-          </p>
-        </div>
+        {[
+          {
+            icon: Brain,
+            title: 'Analisis Profundo',
+            desc: 'Julia analiza sentimientos, tendencias y patrones en tus menciones usando algoritmos avanzados de IA.',
+            gradient: 'from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/20',
+            border: 'border-blue-200 dark:border-blue-700',
+            iconBg: 'bg-blue-500',
+            iconColor: 'text-white'
+          },
+          {
+            icon: Sparkles,
+            title: 'Procesamiento en Tiempo Real',
+            desc: 'La red neuronal procesa menciones continuamente, identificando patrones y alertas en tiempo real.',
+            gradient: 'from-purple-50 to-violet-100 dark:from-purple-900/20 dark:to-violet-900/20',
+            border: 'border-purple-200 dark:border-purple-700',
+            iconBg: 'bg-purple-500',
+            iconColor: 'text-white'
+          },
+          {
+            icon: Bot,
+            title: 'Asistente Inteligente',
+            desc: 'Preguntale a Julia sobre tu reputacion, obten insights y recomendaciones personalizadas.',
+            gradient: 'from-emerald-50 to-green-100 dark:from-emerald-900/20 dark:to-green-900/20',
+            border: 'border-emerald-200 dark:border-emerald-700',
+            iconBg: 'bg-emerald-500',
+            iconColor: 'text-white'
+          }
+        ].map((card, i) => (
+          <motion.div
+            key={card.title}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 + i * 0.1 }}
+            whileHover={{ y: -4, boxShadow: '0 12px 30px rgba(0,0,0,0.08)' }}
+            className={`bg-gradient-to-br ${card.gradient} rounded-xl p-6 border ${card.border} transition-shadow cursor-default`}
+          >
+            <div className="flex items-center space-x-3 mb-3">
+              <div className={`p-2.5 rounded-xl ${card.iconBg} shadow-lg`}>
+                <card.icon className={`w-5 h-5 ${card.iconColor}`} />
+              </div>
+              <h3 className="font-bold text-gray-900 dark:text-white">{card.title}</h3>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+              {card.desc}
+            </p>
+          </motion.div>
+        ))}
       </motion.div>
     </div>
   );

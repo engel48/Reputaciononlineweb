@@ -204,21 +204,30 @@ export default function PagoPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
+        {/* Header con gradiente */}
         <div className="mb-8">
           <button
             onClick={() => router.back()}
-            className="flex items-center text-[#01257D] hover:text-[#013AAA] mb-4"
+            className="flex items-center text-[#01257D] hover:text-[#013AAA] mb-4 font-medium"
           >
             <ArrowLeft className="h-5 w-5 mr-2" />
             Volver
           </button>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Checkout - {paymentType === 'pack' ? (packInfo?.name || 'Paquete') : (planInfo?.name || '')}
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
-            Completa tu compra para acceder a todas las funciones premium
-          </p>
+          <div className="bg-gradient-to-r from-[#01257D] to-indigo-600 rounded-2xl p-6">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-white/20 rounded-xl">
+                <CreditCard className="h-7 w-7 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white">
+                  Checkout - {paymentType === 'pack' ? (packInfo?.name || 'Paquete') : (planInfo?.name || '')}
+                </h1>
+                <p className="text-white/70 text-sm">
+                  Completa tu compra para acceder a todas las funciones premium
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

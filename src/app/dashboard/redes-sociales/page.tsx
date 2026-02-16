@@ -117,74 +117,89 @@ export default function RedesSocialesPage() {
           </div>
         </motion.div>
 
-        {/* Info del usuario */}
+        {/* Info del usuario - rediseñado */}
         {user && (
           <motion.div variants={itemVariants} className="mb-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Estado de tu cuenta</CardTitle>
-                <CardDescription>
-                  Usuario: {user.name} &bull; Plan: {user.plan.toUpperCase()}
-                  {user.socialMedia && user.socialMedia.length > 0 && (
-                    <span className="ml-2 text-green-600">
-                      &bull; {user.socialMedia.filter((sm: any) => sm.connected).length} redes conectadas
+            <motion.div
+              whileHover={{ y: -2, boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}
+              className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-gradient-to-br from-[#01257D] to-indigo-600 rounded-xl shadow-lg">
+                    <Share2 className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">Estado de tu cuenta</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Usuario: <span className="font-medium text-gray-700 dark:text-gray-300">{user.name}</span> &bull; Plan: <span className="font-medium text-[#01257D] dark:text-blue-400">{user.plan.toUpperCase()}</span>
+                    </p>
+                  </div>
+                </div>
+                {user.socialMedia && user.socialMedia.length > 0 && (
+                  <div className="flex items-center gap-2 bg-green-50 dark:bg-green-900/20 px-4 py-2 rounded-xl border border-green-200 dark:border-green-800">
+                    <div className="h-2.5 w-2.5 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm font-semibold text-green-700 dark:text-green-400">
+                      {user.socialMedia.filter((sm: any) => sm.connected).length} redes conectadas
                     </span>
-                  )}
-                </CardDescription>
-              </CardHeader>
-            </Card>
+                  </div>
+                )}
+              </div>
+            </motion.div>
           </motion.div>
         )}
 
-        {/* Connector */}
+        {/* Connector - rediseñado */}
         <motion.div variants={itemVariants}>
-          <Card>
-            <CardHeader>
-              <CardTitle>Conectar Redes Sociales</CardTitle>
-              <CardDescription>
+          <motion.div
+            whileHover={{ y: -2 }}
+            className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden"
+          >
+            <div className="bg-gradient-to-r from-gray-50 to-blue-50/50 dark:from-gray-800 dark:to-blue-900/10 px-6 py-5 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Conectar Redes Sociales</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 Conecta tus cuentas de redes sociales para comenzar a monitorear menciones,
                 analizar sentimiento y gestionar tu reputacion online de manera integral.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
+              </p>
+            </div>
+            <div className="p-6">
               <SocialNetworkConnectorFixed
                 onComplete={handleSocialConnectionComplete}
                 allowSkip={false}
                 isOnboarding={false}
               />
-            </CardContent>
-          </Card>
+            </div>
+          </motion.div>
         </motion.div>
 
-        {/* Beneficios mejorados */}
+        {/* Beneficios - rediseñado como cards independientes */}
         <motion.div variants={itemVariants} className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Por que conectar redes sociales?</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-2 gap-4">
-                {benefits.map((benefit, i) => (
-                  <motion.div
-                    key={benefit.title}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.3 + i * 0.1, duration: 0.4 }}
-                    whileHover={{ y: -4, boxShadow: '0 8px 30px rgba(0,0,0,0.08)' }}
-                    className={`flex items-start space-x-3 p-4 rounded-xl border-l-4 ${benefit.border} bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 transition-shadow`}
-                  >
-                    <div className={`flex-shrink-0 p-2 rounded-lg ${benefit.bg}`}>
-                      <benefit.icon className={`h-5 w-5 ${benefit.color}`} />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-gray-900 dark:text-white text-sm">{benefit.title}</h4>
-                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">{benefit.desc}</p>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+            <Zap className="h-5 w-5 text-[#00E5FF] mr-2" />
+            Por que conectar redes sociales?
+          </h3>
+          <div className="grid md:grid-cols-2 gap-4">
+            {benefits.map((benefit, i) => (
+              <motion.div
+                key={benefit.title}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 + i * 0.1, duration: 0.4 }}
+                whileHover={{ y: -4, boxShadow: '0 12px 30px rgba(0,0,0,0.08)' }}
+                className={`relative overflow-hidden p-5 rounded-xl ${benefit.bg} border border-gray-200 dark:border-gray-700 transition-all cursor-default`}
+              >
+                <div className="flex items-start space-x-4">
+                  <div className={`flex-shrink-0 p-3 rounded-xl bg-white dark:bg-gray-800 shadow-md border border-gray-100 dark:border-gray-600`}>
+                    <benefit.icon className={`h-6 w-6 ${benefit.color}`} />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-900 dark:text-white">{benefit.title}</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{benefit.desc}</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </motion.div>
       </div>
     </motion.div>

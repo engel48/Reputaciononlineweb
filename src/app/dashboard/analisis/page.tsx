@@ -152,11 +152,25 @@ export default function AnalisisPage() {
       {/* Encabezado mejorado */}
       <div className="bg-gradient-to-r from-[#01257D] to-[#013AAA] rounded-2xl p-6 mb-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Análisis de Reputación</h1>
-            <p className="text-blue-100">
-              📊 Visualiza y analiza los datos de tu reputación online con Julia IA
-            </p>
+          <div className="flex items-center gap-3">
+            <motion.div
+              className="p-3 bg-white/20 rounded-xl"
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <motion.div
+                animate={{ rotate: [0, -10, 10, 0] }}
+                transition={{ duration: 3, repeat: Infinity, repeatDelay: 4 }}
+              >
+                <BarChart3 className="h-7 w-7 text-white" />
+              </motion.div>
+            </motion.div>
+            <div>
+              <h1 className="text-2xl font-bold text-white">Analisis de Reputacion</h1>
+              <p className="text-white/70 text-sm">
+                Visualiza y analiza los datos de tu reputacion online con Julia IA
+              </p>
+            </div>
           </div>
           <div className="mt-4 flex space-x-3 md:mt-0">
             <Button variant="outline" size="sm" className="bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-sm">

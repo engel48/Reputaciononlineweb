@@ -106,12 +106,31 @@ export default function ComprarCreditosPage() {
       initial="hidden"
       animate="visible"
     >
-      {/* Título de la página */}
-      <motion.div variants={itemVariants}>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Comprar Créditos</h1>
-        <p className="mt-1 text-gray-500 dark:text-gray-400">
-          Elige el plan que mejor se adapte a tus necesidades de monitoreo y análisis de reputación.
-        </p>
+      {/* Header con gradiente */}
+      <motion.div
+        variants={itemVariants}
+        className="bg-gradient-to-r from-[#01257D] to-indigo-600 rounded-2xl p-6"
+      >
+        <div className="flex items-center gap-3">
+          <motion.div
+            className="p-3 bg-white/20 rounded-xl"
+            whileHover={{ scale: 1.1, rotate: 5 }}
+            transition={{ type: "spring", stiffness: 300 }}
+          >
+            <motion.div
+              animate={{ rotate: [0, -10, 10, 0] }}
+              transition={{ duration: 3, repeat: Infinity, repeatDelay: 4 }}
+            >
+              <CreditCard className="h-7 w-7 text-white" />
+            </motion.div>
+          </motion.div>
+          <div>
+            <h1 className="text-2xl font-bold text-white">Comprar Creditos</h1>
+            <p className="text-white/70 text-sm">
+              Elige el plan que mejor se adapte a tus necesidades de monitoreo y analisis de reputacion
+            </p>
+          </div>
+        </div>
       </motion.div>
 
       {/* Planes de créditos */}
@@ -120,9 +139,11 @@ export default function ComprarCreditosPage() {
         variants={itemVariants}
       >
         {planes.map((plan) => (
-          <div 
+          <motion.div
             key={plan.id}
-            className={`relative overflow-hidden rounded-lg ${plan.popular ? 'border-2 border-primary-500 dark:border-primary-400' : 'border border-gray-200 dark:border-gray-700'}`}
+            whileHover={{ y: -4, boxShadow: '0 12px 30px rgba(0,0,0,0.08)' }}
+            transition={{ type: "spring", stiffness: 300 }}
+            className={`relative overflow-hidden rounded-xl ${plan.popular ? 'border-2 border-[#01257D] dark:border-blue-400 shadow-lg' : 'border border-gray-200 dark:border-gray-700'}`}
           >
             {plan.popular && (
               <div className="absolute right-0 top-0 bg-primary-500 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white dark:bg-primary-400">
@@ -156,11 +177,11 @@ export default function ComprarCreditosPage() {
                 ))}
               </ul>
 
-              <button className={`mt-2 w-full rounded-md px-4 py-2 text-center text-sm font-medium ${plan.popular ? 'bg-primary-600 text-white hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-400' : 'border border-primary-600 text-primary-600 hover:bg-primary-50 dark:border-primary-400 dark:text-primary-400 dark:hover:bg-primary-900/20'}`}>
+              <button className={`mt-2 w-full rounded-xl px-4 py-2.5 text-center text-sm font-medium transition-all ${plan.popular ? 'bg-[#01257D] text-white hover:bg-[#013AAA] shadow-md' : 'border border-[#01257D] text-[#01257D] hover:bg-[#01257D]/5 dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-900/20'}`}>
                 Comprar Plan
               </button>
             </div>
-          </div>
+          </motion.div>
         ))}
       </motion.div>
 

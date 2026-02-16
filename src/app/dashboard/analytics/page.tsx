@@ -205,36 +205,42 @@ export default function AnalyticsPage() {
 
   return (
     <div ref={pageRef} className="p-6">
-      {/* Encabezado */}
-      <div ref={headerRef} className="mb-8 flex justify-between items-start">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            {isFromPoliticalDashboard ? terminology.analytics : 'Panel de Análisis'}
-          </h1>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            {isFromPoliticalDashboard 
-              ? 'Monitoriza tu aprobación política y analiza el sentimiento ciudadano'
-              : 'Monitoriza tu reputación online y analiza el sentimiento de las menciones'
-            }
-          </p>
-        </div>
-        
-        {/* Real-time controls */}
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2">
-            <div className="flex items-center space-x-1">
-              <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-sm text-gray-600 dark:text-gray-400">Datos en tiempo real</span>
+      {/* Header con gradiente */}
+      <div ref={headerRef} className="mb-8">
+        <div className="bg-gradient-to-r from-[#01257D] to-indigo-600 rounded-2xl p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-white/20 rounded-xl">
+                <BarChart3 className="h-7 w-7 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white">
+                  {isFromPoliticalDashboard ? terminology.analytics : 'Panel de Analisis'}
+                </h1>
+                <p className="text-white/70 text-sm">
+                  {isFromPoliticalDashboard
+                    ? 'Monitoriza tu aprobacion politica y analiza el sentimiento ciudadano'
+                    : 'Monitoriza tu reputacion online y analiza el sentimiento de las menciones'
+                  }
+                </p>
+              </div>
             </div>
-            <button
-              onClick={updateRealTimeEngagement}
-              disabled={isRefreshing}
-              className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              title="Actualizar datos manualmente"
-            >
-              <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-              {isRefreshing ? 'Actualizando...' : 'Actualizar'}
-            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2">
+                <div className="h-2 w-2 bg-green-400 rounded-full animate-pulse"></div>
+                <span className="text-white/80 text-sm font-medium">En vivo</span>
+              </div>
+              <button
+                onClick={updateRealTimeEngagement}
+                disabled={isRefreshing}
+                className="inline-flex items-center px-4 py-2 rounded-xl text-sm font-medium text-white bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-colors disabled:opacity-50"
+                title="Actualizar datos manualmente"
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+                {isRefreshing ? 'Actualizando...' : 'Actualizar'}
+              </button>
+            </div>
           </div>
         </div>
       </div>
