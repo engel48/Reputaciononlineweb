@@ -166,11 +166,6 @@ export default {
   getUserStats,
   updateUserStats,
   
-  // Notificaciones
-  createNotification,
-  getUserNotifications,
-  markNotificationAsRead,
-  
   // Utilidades
   initializeDefaultData,
   cleanupOldData,
