@@ -25,7 +25,7 @@ interface Conversation {
 
 export function useAmelia() {
   const { supabase } = useSupabase()
-  const user = useUser()
+  const { user } = useUser()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
