@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
             expires_at: expiresAt,
           });
 
-        await sendVerificationEmail(email, code, name);
+        await sendVerificationEmail(email, code, name, result.user.id);
       } catch (emailError) {
         console.error('Error sending verification email:', emailError);
         // Don't fail registration if email fails

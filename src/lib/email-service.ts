@@ -70,24 +70,28 @@ function baseTemplate(content: string): string {
 </html>`;
 }
 
-// Send email verification code
-export async function sendVerificationEmail(email: string, code: string, name: string): Promise<boolean> {
+// Send email verification link
+export async function sendVerificationEmail(email: string, code: string, name: string, userId?: string): Promise<boolean> {
   try {
+    const verifyUrl = `${APP_URL}/verify-email?code=${code}${userId ? `&userId=${userId}` : ''}`;
+
     const html = baseTemplate(`
       <h1>Verifica tu correo electronico</h1>
       <p>Hola <span class="highlight">${name}</span>,</p>
-      <p>Gracias por registrarte en ${APP_NAME}. Usa el siguiente codigo para verificar tu cuenta:</p>
-      <div class="code">
-        <div class="code-text">${code}</div>
+      <p>Gracias por registrarte en ${APP_NAME}. Haz clic en el siguiente boton para verificar tu cuenta:</p>
+      <div style="text-align: center;">
+        <a href="${verifyUrl}" class="btn">Verificar mi cuenta</a>
       </div>
-      <p>Este codigo expira en <span class="highlight">15 minutos</span>.</p>
+      <p>O copia y pega este enlace en tu navegador:</p>
+      <p style="word-break: break-all; font-size: 13px; color: #64748b;">${verifyUrl}</p>
+      <p>Este enlace expira en <span class="highlight">15 minutos</span>.</p>
       <p>Si no creaste una cuenta, puedes ignorar este mensaje.</p>
     `);
 
     const { error } = await getResend().emails.send({
       from: FROM_EMAIL,
       to: email,
-      subject: `${code} - Codigo de verificacion | ${APP_NAME}`,
+      subject: `Verifica tu cuenta | ${APP_NAME}`,
       html,
     });
 

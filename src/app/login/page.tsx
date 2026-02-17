@@ -21,6 +21,7 @@ function LoginPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirect') || '/dashboard'
+  const justRegistered = searchParams.get('registered') === 'true'
   const { supabase } = useSupabase()
 
   const [email, setEmail] = useState('')
@@ -214,6 +215,14 @@ function LoginPageContent() {
               Ingresa tus credenciales para acceder a tu cuenta
             </p>
           </div>
+
+          {/* Registration success message */}
+          {justRegistered && (
+            <div className="rounded-xl bg-blue-50 border border-blue-200 p-4">
+              <p className="text-sm text-blue-700 font-medium">Cuenta creada exitosamente</p>
+              <p className="text-sm text-blue-600 mt-1">Te enviamos un email de verificacion. Revisa tu bandeja de entrada y haz clic en el link para activar tu cuenta.</p>
+            </div>
+          )}
 
           {/* Error message */}
           {error && (
