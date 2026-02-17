@@ -1,11 +1,15 @@
 /**
  * Email Service - Resend Integration
  * Handles all transactional emails for the platform
+ * Professional email templates with modern design
  */
 
 import { Resend } from 'resend';
 
 const APP_NAME = 'Reputacion Online';
+const BRAND_COLOR = '#01257D';
+const BRAND_LIGHT = '#0ea5e9';
+const BRAND_GRADIENT = 'linear-gradient(135deg, #01257D 0%, #0ea5e9 100%)';
 
 // Read env vars at call time, not module load time
 function getFromEmail(): string {
@@ -47,47 +51,156 @@ export function generateResetToken(): string {
   return token;
 }
 
-// Base HTML template
-function baseTemplate(content: string): string {
+// Parse user agent to friendly device/browser name
+function parseUserAgent(ua: string): { browser: string; os: string } {
+  let browser = 'Navegador desconocido';
+  let os = 'Sistema desconocido';
+
+  // Browser detection
+  if (ua.includes('Edg/')) browser = 'Microsoft Edge';
+  else if (ua.includes('OPR/') || ua.includes('Opera')) browser = 'Opera';
+  else if (ua.includes('Chrome/') && !ua.includes('Edg/')) browser = 'Google Chrome';
+  else if (ua.includes('Firefox/')) browser = 'Mozilla Firefox';
+  else if (ua.includes('Safari/') && !ua.includes('Chrome')) browser = 'Safari';
+
+  // OS detection
+  if (ua.includes('Windows NT 10')) os = 'Windows 10/11';
+  else if (ua.includes('Windows')) os = 'Windows';
+  else if (ua.includes('Mac OS X')) os = 'macOS';
+  else if (ua.includes('Android')) os = 'Android';
+  else if (ua.includes('iPhone') || ua.includes('iPad')) os = 'iOS';
+  else if (ua.includes('Linux')) os = 'Linux';
+
+  return { browser, os };
+}
+
+// Professional base HTML template
+function baseTemplate(content: string, headerIcon?: string): string {
   return `
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f4f4f5; }
-    .container { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
-    .card { background: #ffffff; border-radius: 12px; padding: 40px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    .logo { text-align: center; margin-bottom: 24px; font-size: 24px; font-weight: 700; color: #0f172a; }
-    .code { background: #f0f9ff; border: 2px dashed #0ea5e9; border-radius: 8px; padding: 20px; text-align: center; margin: 24px 0; }
-    .code-text { font-size: 32px; font-weight: 700; letter-spacing: 8px; color: #0369a1; }
-    .btn { display: inline-block; background: #0ea5e9; color: #ffffff; text-decoration: none; padding: 12px 32px; border-radius: 8px; font-weight: 600; margin: 24px 0; }
-    .footer { text-align: center; margin-top: 24px; color: #94a3b8; font-size: 12px; }
-    h1 { color: #0f172a; font-size: 20px; margin-bottom: 16px; }
-    p { color: #475569; line-height: 1.6; margin-bottom: 12px; }
-    .highlight { color: #0f172a; font-weight: 600; }
-    .invoice-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
-    .invoice-table td { padding: 8px 12px; border-bottom: 1px solid #e2e8f0; }
-    .invoice-table td:first-child { color: #64748b; font-size: 14px; }
-    .invoice-table td:last-child { text-align: right; font-weight: 600; color: #0f172a; }
-    .alert-critical { background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 16px; margin: 16px 0; }
-    .alert-warning { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 16px; margin: 16px 0; }
-  </style>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>${APP_NAME}</title>
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
 </head>
-<body>
-  <div class="container">
-    <div class="card">
-      <div class="logo">${APP_NAME}</div>
-      ${content}
-    </div>
-    <div class="footer">
-      <p>&copy; ${new Date().getFullYear()} ${APP_NAME}. Todos los derechos reservados.</p>
-      <p>Este correo fue enviado automaticamente. No responder a este mensaje.</p>
-    </div>
-  </div>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f0f2f5; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;">
+
+  <!-- Wrapper -->
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f0f2f5;">
+    <tr>
+      <td align="center" style="padding: 32px 16px;">
+
+        <!-- Main Container -->
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; width: 100%;">
+
+          <!-- Header with gradient -->
+          <tr>
+            <td style="background: ${BRAND_GRADIENT}; border-radius: 16px 16px 0 0; padding: 32px 40px; text-align: center;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center">
+                    <!-- Logo/Icon -->
+                    <div style="width: 56px; height: 56px; background: rgba(255,255,255,0.2); border-radius: 14px; display: inline-block; line-height: 56px; font-size: 28px; margin-bottom: 12px;">
+                      ${headerIcon || '&#x1F310;'}
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center">
+                    <h1 style="margin: 0; color: #ffffff; font-size: 22px; font-weight: 700; letter-spacing: 0.5px;">${APP_NAME}</h1>
+                    <p style="margin: 6px 0 0 0; color: rgba(255,255,255,0.8); font-size: 13px; font-weight: 400;">Gestion inteligente de reputacion digital</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Accent line -->
+          <tr>
+            <td style="height: 4px; background: linear-gradient(90deg, ${BRAND_COLOR} 0%, ${BRAND_LIGHT} 50%, #38bdf8 100%);"></td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="background: #ffffff; padding: 40px 40px 32px 40px;">
+              ${content}
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background: #f8fafc; border-radius: 0 0 16px 16px; padding: 24px 40px; border-top: 1px solid #e2e8f0;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center">
+                    <p style="margin: 0 0 8px 0; color: #64748b; font-size: 13px;">
+                      <a href="${getAppUrl()}/dashboard" style="color: ${BRAND_LIGHT}; text-decoration: none; font-weight: 500;">Dashboard</a>
+                      &nbsp;&nbsp;&#x2022;&nbsp;&nbsp;
+                      <a href="${getAppUrl()}/dashboard/configuracion" style="color: ${BRAND_LIGHT}; text-decoration: none; font-weight: 500;">Configuracion</a>
+                      &nbsp;&nbsp;&#x2022;&nbsp;&nbsp;
+                      <a href="${getAppUrl()}/dashboard/soporte" style="color: ${BRAND_LIGHT}; text-decoration: none; font-weight: 500;">Soporte</a>
+                    </p>
+                    <p style="margin: 8px 0 0 0; color: #94a3b8; font-size: 12px;">
+                      &copy; ${new Date().getFullYear()} ${APP_NAME}. Todos los derechos reservados.
+                    </p>
+                    <p style="margin: 4px 0 0 0; color: #cbd5e1; font-size: 11px;">
+                      Este correo fue enviado automaticamente. No responder a este mensaje.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+
 </body>
 </html>`;
+}
+
+// Reusable button component
+function emailButton(text: string, url: string, color?: string): string {
+  const bgColor = color || BRAND_COLOR;
+  return `
+    <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 28px auto;">
+      <tr>
+        <td align="center" style="background: ${bgColor}; border-radius: 10px;">
+          <a href="${url}" target="_blank" style="display: inline-block; padding: 14px 36px; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 600; letter-spacing: 0.3px;">${text}</a>
+        </td>
+      </tr>
+    </table>`;
+}
+
+// Reusable info box component
+function infoBox(content: string, bgColor?: string, borderColor?: string): string {
+  const bg = bgColor || '#f0f7ff';
+  const border = borderColor || '#bfdbfe';
+  return `
+    <div style="background: ${bg}; border: 1px solid ${border}; border-radius: 12px; padding: 20px 24px; margin: 20px 0;">
+      ${content}
+    </div>`;
+}
+
+// Reusable detail row for info boxes
+function detailRow(label: string, value: string): string {
+  return `<p style="margin: 6px 0; color: #334155; font-size: 14px; line-height: 1.5;">
+    <span style="color: #64748b;">${label}:</span> <strong style="color: #0f172a;">${value}</strong>
+  </p>`;
 }
 
 // Helper to send email with proper logging
@@ -111,23 +224,39 @@ async function sendEmail(to: string, subject: string, html: string): Promise<boo
   return true;
 }
 
-// Send email verification link
+// ============================================================
+// EMAIL FUNCTIONS
+// ============================================================
+
+// 1. Send email verification link
 export async function sendVerificationEmail(email: string, code: string, name: string, userId?: string): Promise<boolean> {
   try {
     const verifyUrl = `${getAppUrl()}/verify-email?code=${code}${userId ? `&userId=${userId}` : ''}`;
 
     const html = baseTemplate(`
-      <h1>Verifica tu correo electronico</h1>
-      <p>Hola <span class="highlight">${name}</span>,</p>
-      <p>Gracias por registrarte en ${APP_NAME}. Haz clic en el siguiente boton para verificar tu cuenta:</p>
-      <div style="text-align: center;">
-        <a href="${verifyUrl}" class="btn">Verificar mi cuenta</a>
-      </div>
-      <p>O copia y pega este enlace en tu navegador:</p>
-      <p style="word-break: break-all; font-size: 13px; color: #64748b;">${verifyUrl}</p>
-      <p>Este enlace expira en <span class="highlight">15 minutos</span>.</p>
-      <p>Si no creaste una cuenta, puedes ignorar este mensaje.</p>
-    `);
+      <h2 style="margin: 0 0 8px 0; color: #0f172a; font-size: 22px; font-weight: 700;">Verifica tu correo electronico</h2>
+      <div style="width: 48px; height: 4px; background: ${BRAND_GRADIENT}; border-radius: 2px; margin-bottom: 24px;"></div>
+
+      <p style="color: #475569; font-size: 15px; line-height: 1.7; margin: 0 0 16px 0;">
+        Hola <strong style="color: #0f172a;">${name}</strong>,
+      </p>
+      <p style="color: #475569; font-size: 15px; line-height: 1.7; margin: 0 0 8px 0;">
+        Gracias por registrarte en <strong>${APP_NAME}</strong>. Para activar tu cuenta y acceder a todas las funciones, verifica tu correo electronico haciendo clic en el siguiente boton:
+      </p>
+
+      ${emailButton('Verificar mi cuenta', verifyUrl)}
+
+      <p style="color: #64748b; font-size: 13px; line-height: 1.5; margin: 16px 0 8px 0;">
+        O copia y pega este enlace en tu navegador:
+      </p>
+      <p style="word-break: break-all; font-size: 12px; color: #94a3b8; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0;">${verifyUrl}</p>
+
+      ${infoBox(`
+        <p style="margin: 0; color: #475569; font-size: 13px;">
+          &#x23F0; Este enlace expira en <strong style="color: #0f172a;">15 minutos</strong>. Si no creaste una cuenta, puedes ignorar este mensaje.
+        </p>
+      `, '#fffbeb', '#fde68a')}
+    `, '&#x2709;');
 
     return await sendEmail(email, `Verifica tu cuenta | ${APP_NAME}`, html);
   } catch (error) {
@@ -136,24 +265,35 @@ export async function sendVerificationEmail(email: string, code: string, name: s
   }
 }
 
-// Send password reset email
+// 2. Send password reset email
 export async function sendPasswordResetEmail(email: string, token: string, name: string): Promise<boolean> {
   try {
     const resetUrl = `${getAppUrl()}/reset-password?token=${token}`;
 
     const html = baseTemplate(`
-      <h1>Recupera tu contrasena</h1>
-      <p>Hola <span class="highlight">${name}</span>,</p>
-      <p>Recibimos una solicitud para restablecer la contrasena de tu cuenta en ${APP_NAME}.</p>
-      <p>Haz clic en el siguiente boton para crear una nueva contrasena:</p>
-      <div style="text-align: center;">
-        <a href="${resetUrl}" class="btn">Restablecer Contrasena</a>
-      </div>
-      <p>O copia y pega este enlace en tu navegador:</p>
-      <p style="word-break: break-all; font-size: 13px; color: #64748b;">${resetUrl}</p>
-      <p>Este enlace expira en <span class="highlight">1 hora</span>.</p>
-      <p>Si no solicitaste este cambio, puedes ignorar este mensaje. Tu contrasena no sera modificada.</p>
-    `);
+      <h2 style="margin: 0 0 8px 0; color: #0f172a; font-size: 22px; font-weight: 700;">Recupera tu contrasena</h2>
+      <div style="width: 48px; height: 4px; background: ${BRAND_GRADIENT}; border-radius: 2px; margin-bottom: 24px;"></div>
+
+      <p style="color: #475569; font-size: 15px; line-height: 1.7; margin: 0 0 16px 0;">
+        Hola <strong style="color: #0f172a;">${name}</strong>,
+      </p>
+      <p style="color: #475569; font-size: 15px; line-height: 1.7; margin: 0 0 8px 0;">
+        Recibimos una solicitud para restablecer la contrasena de tu cuenta en <strong>${APP_NAME}</strong>. Haz clic en el siguiente boton para crear una nueva contrasena:
+      </p>
+
+      ${emailButton('Restablecer contrasena', resetUrl)}
+
+      <p style="color: #64748b; font-size: 13px; line-height: 1.5; margin: 16px 0 8px 0;">
+        O copia y pega este enlace en tu navegador:
+      </p>
+      <p style="word-break: break-all; font-size: 12px; color: #94a3b8; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0;">${resetUrl}</p>
+
+      ${infoBox(`
+        <p style="margin: 0; color: #475569; font-size: 13px;">
+          &#x23F0; Este enlace expira en <strong style="color: #0f172a;">1 hora</strong>. Si no solicitaste este cambio, puedes ignorar este mensaje. Tu contrasena no sera modificada.
+        </p>
+      `, '#fffbeb', '#fde68a')}
+    `, '&#x1F512;');
 
     return await sendEmail(email, `Recupera tu contrasena | ${APP_NAME}`, html);
   } catch (error) {
@@ -162,19 +302,54 @@ export async function sendPasswordResetEmail(email: string, token: string, name:
   }
 }
 
-// Send plan change notification
+// 3. Send plan change notification
 export async function sendPlanChangeEmail(email: string, name: string, oldPlan: string, newPlan: string): Promise<boolean> {
   try {
+    const planColors: Record<string, string> = {
+      free: '#94a3b8',
+      basic: '#0ea5e9',
+      professional: '#8b5cf6',
+      enterprise: '#f59e0b',
+      political: '#ef4444',
+    };
+
+    const oldColor = planColors[oldPlan] || '#94a3b8';
+    const newColor = planColors[newPlan] || '#0ea5e9';
+
     const html = baseTemplate(`
-      <h1>Tu plan ha sido actualizado</h1>
-      <p>Hola <span class="highlight">${name}</span>,</p>
-      <p>Tu plan en ${APP_NAME} ha sido actualizado exitosamente.</p>
-      <div style="background: #f0f9ff; border-radius: 8px; padding: 16px; margin: 16px 0;">
-        <p style="margin: 4px 0;"><span class="highlight">Plan anterior:</span> ${oldPlan}</p>
-        <p style="margin: 4px 0;"><span class="highlight">Plan nuevo:</span> ${newPlan}</p>
-      </div>
-      <p>Si tienes alguna pregunta, no dudes en contactarnos.</p>
-    `);
+      <h2 style="margin: 0 0 8px 0; color: #0f172a; font-size: 22px; font-weight: 700;">Tu plan ha sido actualizado</h2>
+      <div style="width: 48px; height: 4px; background: ${BRAND_GRADIENT}; border-radius: 2px; margin-bottom: 24px;"></div>
+
+      <p style="color: #475569; font-size: 15px; line-height: 1.7; margin: 0 0 16px 0;">
+        Hola <strong style="color: #0f172a;">${name}</strong>,
+      </p>
+      <p style="color: #475569; font-size: 15px; line-height: 1.7; margin: 0 0 20px 0;">
+        Tu plan en <strong>${APP_NAME}</strong> ha sido actualizado exitosamente.
+      </p>
+
+      <!-- Plan change visual -->
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin: 8px 0 24px 0;">
+        <tr>
+          <td width="44%" style="text-align: center; padding: 20px 16px; background: #f8fafc; border-radius: 12px; border: 2px solid #e2e8f0;">
+            <p style="margin: 0 0 8px 0; color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Plan anterior</p>
+            <p style="margin: 0; font-size: 18px; font-weight: 700; color: ${oldColor}; text-transform: capitalize;">${oldPlan}</p>
+          </td>
+          <td width="12%" style="text-align: center; vertical-align: middle;">
+            <span style="font-size: 24px; color: #cbd5e1;">&#x27A1;</span>
+          </td>
+          <td width="44%" style="text-align: center; padding: 20px 16px; background: linear-gradient(135deg, ${newColor}10, ${newColor}20); border-radius: 12px; border: 2px solid ${newColor};">
+            <p style="margin: 0 0 8px 0; color: ${newColor}; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Plan nuevo</p>
+            <p style="margin: 0; font-size: 18px; font-weight: 700; color: ${newColor}; text-transform: capitalize;">${newPlan}</p>
+          </td>
+        </tr>
+      </table>
+
+      ${emailButton('Ver mi plan', `${getAppUrl()}/dashboard/credito`)}
+
+      <p style="color: #64748b; font-size: 13px; line-height: 1.5; margin: 0; text-align: center;">
+        Si tienes alguna pregunta sobre tu nuevo plan, no dudes en contactarnos.
+      </p>
+    `, '&#x1F680;');
 
     return await sendEmail(email, `Plan actualizado a ${newPlan} | ${APP_NAME}`, html);
   } catch (error) {
@@ -183,26 +358,53 @@ export async function sendPlanChangeEmail(email: string, name: string, oldPlan: 
   }
 }
 
-// Send purchase confirmation email
+// 4. Send purchase confirmation email
 export async function sendPurchaseConfirmationEmail(
   email: string,
   name: string,
   details: { plan: string; amount: number; credits: number; transactionId: string }
 ): Promise<boolean> {
   try {
+    const fecha = new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' });
+
     const html = baseTemplate(`
-      <h1>Confirmacion de compra</h1>
-      <p>Hola <span class="highlight">${name}</span>,</p>
-      <p>Tu compra en ${APP_NAME} ha sido procesada exitosamente.</p>
-      <div style="background: #f0fdf4; border-radius: 8px; padding: 16px; margin: 16px 0; border: 1px solid #bbf7d0;">
-        <p style="margin: 4px 0;"><span class="highlight">Plan:</span> ${details.plan}</p>
-        <p style="margin: 4px 0;"><span class="highlight">Creditos:</span> ${details.credits}</p>
-        <p style="margin: 4px 0;"><span class="highlight">Monto:</span> $${details.amount.toLocaleString('es-CO')} COP</p>
-        <p style="margin: 4px 0;"><span class="highlight">ID Transaccion:</span> ${details.transactionId}</p>
-        <p style="margin: 4px 0;"><span class="highlight">Fecha:</span> ${new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-      </div>
-      <p>Puedes ver el detalle de tus creditos en tu <a href="${getAppUrl()}/dashboard/credito" style="color: #0ea5e9;">panel de control</a>.</p>
-    `);
+      <h2 style="margin: 0 0 8px 0; color: #0f172a; font-size: 22px; font-weight: 700;">Compra confirmada</h2>
+      <div style="width: 48px; height: 4px; background: ${BRAND_GRADIENT}; border-radius: 2px; margin-bottom: 24px;"></div>
+
+      <p style="color: #475569; font-size: 15px; line-height: 1.7; margin: 0 0 16px 0;">
+        Hola <strong style="color: #0f172a;">${name}</strong>,
+      </p>
+      <p style="color: #475569; font-size: 15px; line-height: 1.7; margin: 0 0 20px 0;">
+        Tu compra en <strong>${APP_NAME}</strong> ha sido procesada exitosamente.
+      </p>
+
+      ${infoBox(`
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="padding: 6px 0;"><span style="color: #64748b; font-size: 14px;">Plan</span></td>
+            <td style="padding: 6px 0; text-align: right;"><strong style="color: #0f172a; font-size: 14px; text-transform: capitalize;">${details.plan}</strong></td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0; border-top: 1px solid #e0e7ff;"><span style="color: #64748b; font-size: 14px;">Creditos agregados</span></td>
+            <td style="padding: 6px 0; border-top: 1px solid #e0e7ff; text-align: right;"><strong style="color: #0ea5e9; font-size: 14px;">+${details.credits}</strong></td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0; border-top: 1px solid #e0e7ff;"><span style="color: #64748b; font-size: 14px;">Monto</span></td>
+            <td style="padding: 6px 0; border-top: 1px solid #e0e7ff; text-align: right;"><strong style="color: #0f172a; font-size: 14px;">$${details.amount.toLocaleString('es-CO')} COP</strong></td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0; border-top: 1px solid #e0e7ff;"><span style="color: #64748b; font-size: 14px;">ID Transaccion</span></td>
+            <td style="padding: 6px 0; border-top: 1px solid #e0e7ff; text-align: right;"><strong style="color: #0f172a; font-size: 13px; font-family: monospace;">${details.transactionId}</strong></td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0; border-top: 1px solid #e0e7ff;"><span style="color: #64748b; font-size: 14px;">Fecha</span></td>
+            <td style="padding: 6px 0; border-top: 1px solid #e0e7ff; text-align: right;"><strong style="color: #0f172a; font-size: 14px;">${fecha}</strong></td>
+          </tr>
+        </table>
+      `, '#f0fdf4', '#bbf7d0')}
+
+      ${emailButton('Ver mis creditos', `${getAppUrl()}/dashboard/credito`)}
+    `, '&#x2705;');
 
     return await sendEmail(email, `Confirmacion de compra - ${details.plan} | ${APP_NAME}`, html);
   } catch (error) {
@@ -211,7 +413,7 @@ export async function sendPurchaseConfirmationEmail(
   }
 }
 
-// Send invoice/receipt email
+// 5. Send invoice/receipt email
 export async function sendInvoiceEmail(
   email: string,
   name: string,
@@ -229,22 +431,55 @@ export async function sendInvoiceEmail(
     const metodo = invoice.paymentMethod || 'Tarjeta de credito';
 
     const html = baseTemplate(`
-      <h1>Factura de compra</h1>
-      <p>Hola <span class="highlight">${name}</span>,</p>
-      <p>A continuacion encontraras el detalle de tu compra en ${APP_NAME}:</p>
-      <table class="invoice-table">
-        <tr><td>No. Transaccion</td><td>${invoice.transactionId}</td></tr>
-        <tr><td>Fecha</td><td>${fecha}</td></tr>
-        <tr><td>Plan / Producto</td><td>${invoice.plan}</td></tr>
-        <tr><td>Creditos</td><td>${invoice.credits}</td></tr>
-        <tr><td>Metodo de pago</td><td>${metodo}</td></tr>
-        <tr style="border-top: 2px solid #0f172a;"><td style="font-weight: 700; color: #0f172a;">Total</td><td style="font-size: 18px;">$${invoice.amount.toLocaleString('es-CO')} COP</td></tr>
+      <h2 style="margin: 0 0 8px 0; color: #0f172a; font-size: 22px; font-weight: 700;">Factura de compra</h2>
+      <div style="width: 48px; height: 4px; background: ${BRAND_GRADIENT}; border-radius: 2px; margin-bottom: 24px;"></div>
+
+      <p style="color: #475569; font-size: 15px; line-height: 1.7; margin: 0 0 16px 0;">
+        Hola <strong style="color: #0f172a;">${name}</strong>,
+      </p>
+      <p style="color: #475569; font-size: 15px; line-height: 1.7; margin: 0 0 20px 0;">
+        A continuacion encontraras el detalle de tu compra:
+      </p>
+
+      <!-- Invoice table -->
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin: 0 0 24px 0; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
+        <tr style="background: #f8fafc;">
+          <td colspan="2" style="padding: 16px 20px; border-bottom: 1px solid #e2e8f0;">
+            <p style="margin: 0; color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">Detalle de factura</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 14px 20px; border-bottom: 1px solid #f1f5f9; color: #64748b; font-size: 14px;">No. Transaccion</td>
+          <td style="padding: 14px 20px; border-bottom: 1px solid #f1f5f9; text-align: right; font-weight: 600; color: #0f172a; font-size: 14px; font-family: monospace;">${invoice.transactionId}</td>
+        </tr>
+        <tr>
+          <td style="padding: 14px 20px; border-bottom: 1px solid #f1f5f9; color: #64748b; font-size: 14px;">Fecha</td>
+          <td style="padding: 14px 20px; border-bottom: 1px solid #f1f5f9; text-align: right; font-weight: 600; color: #0f172a; font-size: 14px;">${fecha}</td>
+        </tr>
+        <tr>
+          <td style="padding: 14px 20px; border-bottom: 1px solid #f1f5f9; color: #64748b; font-size: 14px;">Plan / Producto</td>
+          <td style="padding: 14px 20px; border-bottom: 1px solid #f1f5f9; text-align: right; font-weight: 600; color: #0f172a; font-size: 14px; text-transform: capitalize;">${invoice.plan}</td>
+        </tr>
+        <tr>
+          <td style="padding: 14px 20px; border-bottom: 1px solid #f1f5f9; color: #64748b; font-size: 14px;">Creditos</td>
+          <td style="padding: 14px 20px; border-bottom: 1px solid #f1f5f9; text-align: right; font-weight: 600; color: #0ea5e9; font-size: 14px;">${invoice.credits}</td>
+        </tr>
+        <tr>
+          <td style="padding: 14px 20px; border-bottom: 1px solid #f1f5f9; color: #64748b; font-size: 14px;">Metodo de pago</td>
+          <td style="padding: 14px 20px; border-bottom: 1px solid #f1f5f9; text-align: right; font-weight: 600; color: #0f172a; font-size: 14px;">${metodo}</td>
+        </tr>
+        <tr style="background: #f0f7ff;">
+          <td style="padding: 18px 20px; color: #01257D; font-size: 16px; font-weight: 700;">Total</td>
+          <td style="padding: 18px 20px; text-align: right; color: #01257D; font-size: 20px; font-weight: 700;">$${invoice.amount.toLocaleString('es-CO')} COP</td>
+        </tr>
       </table>
-      <p style="font-size: 13px; color: #64748b;">Este documento sirve como comprobante de pago. Si necesitas una factura formal con NIT, contacta a nuestro equipo de soporte.</p>
-      <div style="text-align: center;">
-        <a href="${getAppUrl()}/dashboard/credito" class="btn">Ver mis creditos</a>
-      </div>
-    `);
+
+      <p style="font-size: 12px; color: #94a3b8; line-height: 1.5; margin: 0 0 20px 0;">
+        Este documento sirve como comprobante de pago. Si necesitas una factura formal con NIT, contacta a nuestro equipo de soporte.
+      </p>
+
+      ${emailButton('Ver mis creditos', `${getAppUrl()}/dashboard/credito`)}
+    `, '&#x1F9FE;');
 
     return await sendEmail(email, `Factura de compra #${invoice.transactionId} | ${APP_NAME}`, html);
   } catch (error) {
@@ -253,7 +488,7 @@ export async function sendInvoiceEmail(
   }
 }
 
-// Send critical alert email
+// 6. Send critical alert email
 export async function sendCriticalAlertEmail(
   email: string,
   name: string,
@@ -265,8 +500,13 @@ export async function sendCriticalAlertEmail(
   }
 ): Promise<boolean> {
   try {
-    const severityLabel = alert.severity === 'critical' ? 'CRITICA' : 'ALTA';
-    const severityClass = alert.severity === 'critical' ? 'alert-critical' : 'alert-warning';
+    const isCritical = alert.severity === 'critical';
+    const severityLabel = isCritical ? 'CRITICA' : 'ALTA';
+    const alertBg = isCritical ? '#fef2f2' : '#fffbeb';
+    const alertBorder = isCritical ? '#fecaca' : '#fde68a';
+    const alertTextColor = isCritical ? '#991b1b' : '#92400e';
+    const alertBadgeBg = isCritical ? '#dc2626' : '#f59e0b';
+
     const typeLabels: Record<string, string> = {
       'negative_spike': 'Pico de menciones negativas',
       'sentiment_drop': 'Caida de sentimiento',
@@ -276,19 +516,38 @@ export async function sendCriticalAlertEmail(
     };
 
     const html = baseTemplate(`
-      <h1>Alerta de reputacion ${severityLabel}</h1>
-      <p>Hola <span class="highlight">${name}</span>,</p>
-      <p>Se ha detectado una situacion importante que requiere tu atencion:</p>
-      <div class="${severityClass}">
-        <p style="margin: 4px 0; font-weight: 600; color: #0f172a;">${typeLabels[alert.type] || alert.type}</p>
-        <p style="margin: 8px 0 4px 0; color: #475569;">${alert.description}</p>
+      <h2 style="margin: 0 0 8px 0; color: #0f172a; font-size: 22px; font-weight: 700;">Alerta de reputacion</h2>
+      <div style="width: 48px; height: 4px; background: ${alertBadgeBg}; border-radius: 2px; margin-bottom: 8px;"></div>
+
+      <!-- Severity badge -->
+      <span style="display: inline-block; background: ${alertBadgeBg}; color: #ffffff; padding: 4px 14px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 1px; margin-bottom: 20px;">SEVERIDAD ${severityLabel}</span>
+
+      <p style="color: #475569; font-size: 15px; line-height: 1.7; margin: 16px 0;">
+        Hola <strong style="color: #0f172a;">${name}</strong>,
+      </p>
+      <p style="color: #475569; font-size: 15px; line-height: 1.7; margin: 0 0 20px 0;">
+        Se ha detectado una situacion importante que requiere tu atencion:
+      </p>
+
+      <div style="background: ${alertBg}; border: 1px solid ${alertBorder}; border-left: 4px solid ${alertBadgeBg}; border-radius: 0 12px 12px 0; padding: 20px 24px; margin: 0 0 24px 0;">
+        <p style="margin: 0 0 8px 0; font-weight: 700; color: ${alertTextColor}; font-size: 16px;">${typeLabels[alert.type] || alert.type}</p>
+        <p style="margin: 0; color: #475569; font-size: 14px; line-height: 1.6;">${alert.description}</p>
       </div>
-      ${alert.actionRequired ? `<p><span class="highlight">Accion recomendada:</span> ${alert.actionRequired}</p>` : ''}
-      <div style="text-align: center;">
-        <a href="${getAppUrl()}/dashboard" class="btn">Ir al dashboard</a>
-      </div>
-      <p style="font-size: 13px; color: #64748b;">Puedes configurar tus preferencias de notificacion en tu perfil.</p>
-    `);
+
+      ${alert.actionRequired ? `
+      ${infoBox(`
+        <p style="margin: 0; color: #475569; font-size: 14px;">
+          <strong style="color: #0f172a;">Accion recomendada:</strong> ${alert.actionRequired}
+        </p>
+      `, '#f0f7ff', '#bfdbfe')}
+      ` : ''}
+
+      ${emailButton('Ir al dashboard', `${getAppUrl()}/dashboard`, alertBadgeBg)}
+
+      <p style="font-size: 12px; color: #94a3b8; line-height: 1.5; margin: 0; text-align: center;">
+        Puedes configurar tus preferencias de notificacion en tu perfil.
+      </p>
+    `, '&#x26A0;');
 
     return await sendEmail(email, `Alerta ${severityLabel}: ${typeLabels[alert.type] || alert.type} | ${APP_NAME}`, html);
   } catch (error) {
@@ -297,25 +556,118 @@ export async function sendCriticalAlertEmail(
   }
 }
 
-// Send admin password reset email (when admin resets a user's password)
+// 7. Send admin password reset email (when admin resets a user's password)
 export async function sendAdminResetPasswordEmail(email: string, name: string, tempPassword: string): Promise<boolean> {
   try {
     const html = baseTemplate(`
-      <h1>Contrasena restablecida</h1>
-      <p>Hola <span class="highlight">${name}</span>,</p>
-      <p>Tu contrasena ha sido restablecida por un administrador. Tu nueva contrasena temporal es:</p>
-      <div class="code">
-        <div class="code-text" style="letter-spacing: 2px;">${tempPassword}</div>
+      <h2 style="margin: 0 0 8px 0; color: #0f172a; font-size: 22px; font-weight: 700;">Contrasena restablecida</h2>
+      <div style="width: 48px; height: 4px; background: ${BRAND_GRADIENT}; border-radius: 2px; margin-bottom: 24px;"></div>
+
+      <p style="color: #475569; font-size: 15px; line-height: 1.7; margin: 0 0 16px 0;">
+        Hola <strong style="color: #0f172a;">${name}</strong>,
+      </p>
+      <p style="color: #475569; font-size: 15px; line-height: 1.7; margin: 0 0 24px 0;">
+        Tu contrasena ha sido restablecida por un administrador. Tu nueva contrasena temporal es:
+      </p>
+
+      <!-- Password display -->
+      <div style="background: #f0f7ff; border: 2px dashed #0ea5e9; border-radius: 12px; padding: 24px; text-align: center; margin: 0 0 24px 0;">
+        <p style="margin: 0; font-size: 28px; font-weight: 700; letter-spacing: 3px; color: #01257D; font-family: 'Courier New', monospace;">${tempPassword}</p>
       </div>
-      <p>Te recomendamos cambiar esta contrasena despues de iniciar sesion.</p>
-      <div style="text-align: center;">
-        <a href="${getAppUrl()}/login" class="btn">Iniciar sesion</a>
-      </div>
-    `);
+
+      ${infoBox(`
+        <p style="margin: 0; color: #475569; font-size: 13px;">
+          &#x1F6E1; Te recomendamos cambiar esta contrasena inmediatamente despues de iniciar sesion por seguridad.
+        </p>
+      `, '#fffbeb', '#fde68a')}
+
+      ${emailButton('Iniciar sesion', `${getAppUrl()}/login`)}
+    `, '&#x1F511;');
 
     return await sendEmail(email, `Contrasena restablecida | ${APP_NAME}`, html);
   } catch (error) {
     console.error('EMAIL SERVICE EXCEPTION [admin-reset-password]:', error);
+    return false;
+  }
+}
+
+// 8. Send login notification email
+export async function sendLoginNotificationEmail(
+  email: string,
+  name: string,
+  details: {
+    ip: string;
+    userAgent: string;
+    date: string;
+  }
+): Promise<boolean> {
+  try {
+    const { browser, os } = parseUserAgent(details.userAgent);
+
+    const html = baseTemplate(`
+      <h2 style="margin: 0 0 8px 0; color: #0f172a; font-size: 22px; font-weight: 700;">Nuevo inicio de sesion</h2>
+      <div style="width: 48px; height: 4px; background: ${BRAND_GRADIENT}; border-radius: 2px; margin-bottom: 24px;"></div>
+
+      <p style="color: #475569; font-size: 15px; line-height: 1.7; margin: 0 0 16px 0;">
+        Hola <strong style="color: #0f172a;">${name}</strong>,
+      </p>
+      <p style="color: #475569; font-size: 15px; line-height: 1.7; margin: 0 0 20px 0;">
+        Se ha detectado un nuevo inicio de sesion en tu cuenta de <strong>${APP_NAME}</strong>. Aqui estan los detalles:
+      </p>
+
+      ${infoBox(`
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="padding: 8px 0; border-bottom: 1px solid #e0e7ff;">
+              <span style="color: #64748b; font-size: 13px;">Fecha y hora</span>
+            </td>
+            <td style="padding: 8px 0; border-bottom: 1px solid #e0e7ff; text-align: right;">
+              <strong style="color: #0f172a; font-size: 14px;">${details.date}</strong>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; border-bottom: 1px solid #e0e7ff;">
+              <span style="color: #64748b; font-size: 13px;">Direccion IP</span>
+            </td>
+            <td style="padding: 8px 0; border-bottom: 1px solid #e0e7ff; text-align: right;">
+              <strong style="color: #0f172a; font-size: 14px; font-family: monospace;">${details.ip}</strong>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; border-bottom: 1px solid #e0e7ff;">
+              <span style="color: #64748b; font-size: 13px;">Navegador</span>
+            </td>
+            <td style="padding: 8px 0; border-bottom: 1px solid #e0e7ff; text-align: right;">
+              <strong style="color: #0f172a; font-size: 14px;">${browser}</strong>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0;">
+              <span style="color: #64748b; font-size: 13px;">Sistema operativo</span>
+            </td>
+            <td style="padding: 8px 0; text-align: right;">
+              <strong style="color: #0f172a; font-size: 14px;">${os}</strong>
+            </td>
+          </tr>
+        </table>
+      `, '#f8fafc', '#e2e8f0')}
+
+      <div style="background: #fef2f2; border: 1px solid #fecaca; border-left: 4px solid #ef4444; border-radius: 0 12px 12px 0; padding: 16px 20px; margin: 20px 0;">
+        <p style="margin: 0; color: #991b1b; font-size: 14px; line-height: 1.5;">
+          <strong>Si no fuiste tu,</strong> cambia tu contrasena inmediatamente para proteger tu cuenta.
+        </p>
+      </div>
+
+      ${emailButton('Cambiar contrasena', `${getAppUrl()}/dashboard/configuracion`, '#ef4444')}
+
+      <p style="font-size: 12px; color: #94a3b8; line-height: 1.5; margin: 0; text-align: center;">
+        Este es un correo de seguridad. Recibiras esta notificacion cada vez que inicies sesion.
+      </p>
+    `, '&#x1F6E1;');
+
+    return await sendEmail(email, `Nuevo inicio de sesion | ${APP_NAME}`, html);
+  } catch (error) {
+    console.error('EMAIL SERVICE EXCEPTION [login-notification]:', error);
     return false;
   }
 }

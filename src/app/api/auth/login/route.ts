@@ -14,6 +14,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { login } from '@/services/authServiceReal';
+import { sendLoginNotificationEmail } from '@/lib/email-service';
 
 export async function POST(request: NextRequest) {
   try {
@@ -57,6 +58,15 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('✅ LOGIN: Autenticación exitosa para:', result.user?.email);
+
+    // Enviar notificacion de login por email (no bloquear respuesta)
+    if (result.user?.email) {
+      sendLoginNotificationEmail(result.user.email, result.user.name || 'Usuario', {
+        ip: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'Desconocida',
+        userAgent: request.headers.get('user-agent') || 'Desconocido',
+        date: new Date().toLocaleString('es-CO', { timeZone: 'America/Bogota' }),
+      }).catch(err => console.error('LOGIN: Error enviando email de notificacion:', err));
+    }
 
     // ✅ NUEVA ARQUITECTURA: Retornar token en JSON
     // El cliente (web/móvil) guardará el token localmente
