@@ -148,6 +148,18 @@ console.log('Variables de entorno que contienen "postgres":', Object.keys(proces
 console.log('Variables de entorno que contienen "database":', Object.keys(process.env).filter(k => k.toLowerCase().includes('database')));
 console.log('=' .repeat(60));
 
+// Diagnóstico de configuración de email (Resend)
+console.log('\n📧 DIAGNÓSTICO DE EMAIL (Resend):');
+const resendKey = process.env.RESEND_API_KEY;
+const resendFrom = process.env.RESEND_FROM_EMAIL;
+if (resendKey) {
+  console.log(`  RESEND_API_KEY: CONFIGURADA (${resendKey.substring(0, 10)}...)`);
+} else {
+  console.log('  ⚠️ RESEND_API_KEY: NO CONFIGURADA - Los emails NO se enviaran');
+  console.log('  💡 Agregar RESEND_API_KEY en las variables de entorno de Coolify');
+}
+console.log(`  RESEND_FROM_EMAIL: ${resendFrom || 'NO DEFINIDA (usara default: noreply@reputaciononline.com.co)'}`);
+
 // Detectar si se está usando Supabase
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;

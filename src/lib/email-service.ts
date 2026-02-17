@@ -21,8 +21,14 @@ function getResend(): Resend | null {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
     console.error('EMAIL SERVICE: RESEND_API_KEY no esta configurada. No se pueden enviar emails.');
+    console.error('EMAIL SERVICE: Variables disponibles:', {
+      RESEND_API_KEY: 'NOT SET',
+      RESEND_FROM_EMAIL: process.env.RESEND_FROM_EMAIL || 'NOT SET',
+      NODE_ENV: process.env.NODE_ENV || 'NOT SET',
+    });
     return null;
   }
+  console.log(`EMAIL SERVICE: Resend inicializado (key: ${apiKey.substring(0, 10)}...)`);
   return new Resend(apiKey);
 }
 
@@ -97,6 +103,7 @@ async function sendEmail(to: string, subject: string, html: string): Promise<boo
 
   if (error) {
     console.error(`EMAIL SERVICE ERROR: ${subject} -> ${to}:`, JSON.stringify(error));
+    console.error(`EMAIL SERVICE ERROR: Config check - API_KEY: ${process.env.RESEND_API_KEY ? process.env.RESEND_API_KEY.substring(0, 10) + '...' : 'NOT SET'}, FROM: ${getFromEmail()}`);
     return false;
   }
 
@@ -286,6 +293,29 @@ export async function sendCriticalAlertEmail(
     return await sendEmail(email, `Alerta ${severityLabel}: ${typeLabels[alert.type] || alert.type} | ${APP_NAME}`, html);
   } catch (error) {
     console.error('EMAIL SERVICE EXCEPTION [critical-alert]:', error);
+    return false;
+  }
+}
+
+// Send admin password reset email (when admin resets a user's password)
+export async function sendAdminResetPasswordEmail(email: string, name: string, tempPassword: string): Promise<boolean> {
+  try {
+    const html = baseTemplate(`
+      <h1>Contrasena restablecida</h1>
+      <p>Hola <span class="highlight">${name}</span>,</p>
+      <p>Tu contrasena ha sido restablecida por un administrador. Tu nueva contrasena temporal es:</p>
+      <div class="code">
+        <div class="code-text" style="letter-spacing: 2px;">${tempPassword}</div>
+      </div>
+      <p>Te recomendamos cambiar esta contrasena despues de iniciar sesion.</p>
+      <div style="text-align: center;">
+        <a href="${getAppUrl()}/login" class="btn">Iniciar sesion</a>
+      </div>
+    `);
+
+    return await sendEmail(email, `Contrasena restablecida | ${APP_NAME}`, html);
+  } catch (error) {
+    console.error('EMAIL SERVICE EXCEPTION [admin-reset-password]:', error);
     return false;
   }
 }
