@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
         });
     }
 
-    // Enviar email de confirmacion de compra (non-blocking)
+    // Enviar email de confirmacion de compra
     try {
       const { data: userData } = await supabase
         .from('users')
@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (userData?.email) {
-        sendPurchaseConfirmationEmail(
+        await sendPurchaseConfirmationEmail(
           userData.email,
           userData.name || 'Usuario',
           {
@@ -126,10 +126,10 @@ export async function POST(request: NextRequest) {
             amount: amount || 0,
             transactionId: `TX-${Date.now()}`
           }
-        ).catch(err => console.error('Error enviando email de compra:', err));
+        );
       }
     } catch (emailError) {
-      console.error('Error preparando email de compra:', emailError);
+      console.error('Error enviando email de compra:', emailError);
     }
 
     return NextResponse.json({

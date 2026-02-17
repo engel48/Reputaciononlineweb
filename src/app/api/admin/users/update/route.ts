@@ -38,18 +38,17 @@ export async function PUT(request: NextRequest) {
     const success = await userService.update(userId, updateData);
 
     if (success) {
-      // Enviar email si cambio de plan (non-blocking)
+      // Enviar email si cambio de plan
       if (plan && plan !== (user as any).plan) {
         try {
           const email = (user as any).email;
           const name = (user as any).name || 'Usuario';
           const oldPlan = (user as any).plan || 'free';
           if (email) {
-            sendPlanChangeEmail(email, name, oldPlan, plan)
-              .catch(err => console.error('Error enviando email de cambio de plan:', err));
+            await sendPlanChangeEmail(email, name, oldPlan, plan);
           }
         } catch (emailError) {
-          console.error('Error preparando email de cambio de plan:', emailError);
+          console.error('Error enviando email de cambio de plan:', emailError);
         }
       }
 

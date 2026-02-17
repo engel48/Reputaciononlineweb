@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { requireRole } from '@/lib/auth-helper';
+import { sendPurchaseConfirmationEmail } from '@/lib/email-service';
 
 // Crear cliente Supabase admin
 const supabaseAdmin = createClient(
@@ -218,6 +219,30 @@ export async function POST(request: NextRequest) {
           });
 
         console.log(`✅ Créditos agregados: ${currentPayment.credits_purchased} al usuario ${currentPayment.user_id}`);
+      }
+
+      // Enviar email de confirmacion al usuario
+      try {
+        const { data: emailUser } = await supabaseAdmin
+          .from('users')
+          .select('email, name')
+          .eq('id', currentPayment.user_id)
+          .single();
+
+        if (emailUser?.email) {
+          await sendPurchaseConfirmationEmail(
+            emailUser.email,
+            emailUser.name || 'Usuario',
+            {
+              plan: currentPayment.plan_type || 'creditos',
+              credits: currentPayment.credits_purchased || 0,
+              amount: Number(currentPayment.amount) || 0,
+              transactionId: currentPayment.transaction_id || `TX-${paymentId}`
+            }
+          );
+        }
+      } catch (emailErr) {
+        console.error('Error enviando email de confirmacion:', emailErr);
       }
     }
 
