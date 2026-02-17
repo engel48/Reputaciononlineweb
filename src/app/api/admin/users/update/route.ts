@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { userService } from '@/lib/database-adapter';
 import { requireRole } from '@/lib/auth-helper';
+import { sendPlanChangeEmail } from '@/lib/email-service';
 
 export async function PUT(request: NextRequest) {
   try {
@@ -37,6 +38,21 @@ export async function PUT(request: NextRequest) {
     const success = await userService.update(userId, updateData);
 
     if (success) {
+      // Enviar email si cambio de plan (non-blocking)
+      if (plan && plan !== (user as any).plan) {
+        try {
+          const email = (user as any).email;
+          const name = (user as any).name || 'Usuario';
+          const oldPlan = (user as any).plan || 'free';
+          if (email) {
+            sendPlanChangeEmail(email, name, oldPlan, plan)
+              .catch(err => console.error('Error enviando email de cambio de plan:', err));
+          }
+        } catch (emailError) {
+          console.error('Error preparando email de cambio de plan:', emailError);
+        }
+      }
+
       return NextResponse.json({
         success: true,
         message: 'Usuario actualizado exitosamente'

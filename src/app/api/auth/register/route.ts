@@ -31,9 +31,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (password.length < 6) {
+    if (password.length < 8) {
       return NextResponse.json(
-        { success: false, message: 'La contraseña debe tener al menos 6 caracteres' },
+        { success: false, message: 'La contrasena debe tener al menos 8 caracteres' },
         { status: 400 }
       );
     }

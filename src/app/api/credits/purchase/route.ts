@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as jwt from 'jsonwebtoken';
 import { supabase } from '@/lib/supabase-server';
+import { sendPurchaseConfirmationEmail } from '@/lib/email-service';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'reputacion-online-secret-key-2025';
 
@@ -105,6 +106,30 @@ export async function POST(request: NextRequest) {
           credits_purchased: credits,
           paid_at: new Date().toISOString(),
         });
+    }
+
+    // Enviar email de confirmacion de compra (non-blocking)
+    try {
+      const { data: userData } = await supabase
+        .from('users')
+        .select('email, name')
+        .eq('id', userId)
+        .single();
+
+      if (userData?.email) {
+        sendPurchaseConfirmationEmail(
+          userData.email,
+          userData.name || 'Usuario',
+          {
+            plan: planId || 'creditos',
+            credits: credits,
+            amount: amount || 0,
+            transactionId: `TX-${Date.now()}`
+          }
+        ).catch(err => console.error('Error enviando email de compra:', err));
+      }
+    } catch (emailError) {
+      console.error('Error preparando email de compra:', emailError);
     }
 
     return NextResponse.json({

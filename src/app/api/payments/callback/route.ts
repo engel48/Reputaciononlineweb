@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase-server';
+import { sendPurchaseConfirmationEmail } from '@/lib/email-service';
 
 const WOMPI_PRIVATE_KEY = process.env.WOMPI_PRIVATE_KEY || '';
 const WOMPI_API_URL = process.env.WOMPI_API_URL || 'https://sandbox.wompi.co/v1';
@@ -56,10 +57,39 @@ export async function GET(request: NextRequest) {
       })
       .eq('transaction_id', reference);
 
-    // Si el pago fue aprobado, el webhook de Wompi se encargara de:
-    // - Agregar creditos
-    // - Crear/actualizar suscripcion
-    // - Notificar al usuario
+    // Enviar email de confirmacion si pago aprobado (non-blocking)
+    if (transactionStatus === 'APPROVED') {
+      try {
+        const { data: payment } = await supabase
+          .from('payments')
+          .select('user_id, amount, credits_purchased, plan_type')
+          .eq('transaction_id', reference)
+          .single();
+
+        if (payment?.user_id) {
+          const { data: userData } = await supabase
+            .from('users')
+            .select('email, name')
+            .eq('id', payment.user_id)
+            .single();
+
+          if (userData?.email) {
+            sendPurchaseConfirmationEmail(
+              userData.email,
+              userData.name || 'Usuario',
+              {
+                plan: payment.plan_type || 'creditos',
+                credits: payment.credits_purchased || 0,
+                amount: Number(payment.amount) || 0,
+                transactionId: transactionId || reference || `TX-${Date.now()}`
+              }
+            ).catch(err => console.error('Error enviando email de compra:', err));
+          }
+        }
+      } catch (emailError) {
+        console.error('Error preparando email de compra:', emailError);
+      }
+    }
 
     // Redirigir al usuario
     if (transactionStatus === 'APPROVED') {

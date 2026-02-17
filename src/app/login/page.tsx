@@ -303,14 +303,24 @@ function LoginPageContent() {
             </button>
           </form>
 
+          {/* Link a recuperar contrasena */}
+          <div className="text-center">
+            <Link
+              href="/reset-password"
+              className="text-sm font-medium text-gray-500 hover:text-[#00E5FF] transition-colors"
+            >
+              ¿Olvidaste tu contrasena?
+            </Link>
+          </div>
+
           {/* Link a registro */}
-          <div className="mt-6 text-center text-sm text-gray-600">
+          <div className="mt-4 text-center text-sm text-gray-600">
             ¿No tienes cuenta?{' '}
             <Link
               href="/register"
               className="font-medium text-[#00E5FF] hover:text-[#00B8D4] transition-colors"
             >
-              Regístrate
+              Registrate
             </Link>
           </div>
         </div>
