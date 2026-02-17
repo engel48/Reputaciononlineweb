@@ -11,6 +11,8 @@ export interface LoginResponse {
   user?: User;
   token?: string;
   message?: string;
+  emailNotVerified?: boolean;
+  userId?: string;
 }
 
 export interface RegisterData {
@@ -135,6 +137,12 @@ export const login = async (email: string, password: string): Promise<LoginRespo
     if (!isPasswordValid) {
       console.log('❌ AUTH: Contraseña incorrecta');
       return { success: false, message: 'Credenciales incorrectas' };
+    }
+
+    // Verificar si el email está verificado (solo si Resend está configurado)
+    if (process.env.RESEND_API_KEY && user.email_verified === false) {
+      console.log('⚠️ AUTH: Email no verificado para:', email);
+      return { success: false, message: 'Debes verificar tu correo electronico antes de iniciar sesion', emailNotVerified: true, userId: user.id };
     }
 
     console.log('✅ AUTH: Contraseña válida, actualizando último login...');

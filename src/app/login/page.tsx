@@ -29,6 +29,11 @@ function LoginPageContent() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [emailNotVerified, setEmailNotVerified] = useState(false)
+  const [verificationUserId, setVerificationUserId] = useState('')
+  const [verificationEmail, setVerificationEmail] = useState('')
+  const [resending, setResending] = useState(false)
+  const [resendSuccess, setResendSuccess] = useState(false)
 
   // Referencias para animaciones
   const titleRef = useRef<HTMLDivElement>(null)
@@ -51,7 +56,14 @@ function LoginPageContent() {
       const data = await response.json()
 
       if (!response.ok) {
-        setError(data.message || 'Error al iniciar sesión')
+        if (data.requiresEmailVerification) {
+          setEmailNotVerified(true)
+          setVerificationUserId(data.userId)
+          setVerificationEmail(data.email)
+          setError('')
+        } else {
+          setError(data.message || 'Error al iniciar sesión')
+        }
         setLoading(false)
         return
       }
@@ -65,6 +77,28 @@ function LoginPageContent() {
       console.error('Error en login:', error)
       setError('Error de conexión. Por favor, intenta de nuevo.')
       setLoading(false)
+    }
+  }
+
+  async function handleResendVerification() {
+    setResending(true)
+    setResendSuccess(false)
+    try {
+      const response = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: verificationUserId, email: verificationEmail })
+      })
+      const data = await response.json()
+      if (data.success) {
+        setResendSuccess(true)
+      } else {
+        setError(data.message || 'Error al reenviar')
+      }
+    } catch {
+      setError('Error de conexion. Intenta nuevamente.')
+    } finally {
+      setResending(false)
     }
   }
 
@@ -216,8 +250,27 @@ function LoginPageContent() {
             </p>
           </div>
 
+          {/* Email not verified message */}
+          {emailNotVerified && (
+            <div className="rounded-xl bg-amber-50 border border-amber-200 p-4">
+              <p className="text-sm text-amber-800 font-medium">Verificacion de correo pendiente</p>
+              <p className="text-sm text-amber-700 mt-1">Debes verificar tu correo electronico antes de iniciar sesion. Revisa tu bandeja de entrada y haz clic en el link de verificacion.</p>
+              {resendSuccess ? (
+                <p className="text-sm text-green-600 font-medium mt-2">Email reenviado exitosamente. Revisa tu bandeja.</p>
+              ) : (
+                <button
+                  onClick={handleResendVerification}
+                  disabled={resending}
+                  className="mt-2 text-sm font-medium text-[#00E5FF] hover:text-[#00B8D4] transition-colors disabled:opacity-50"
+                >
+                  {resending ? 'Reenviando...' : 'Reenviar email de verificacion'}
+                </button>
+              )}
+            </div>
+          )}
+
           {/* Registration success message */}
-          {justRegistered && (
+          {justRegistered && !emailNotVerified && (
             <div className="rounded-xl bg-blue-50 border border-blue-200 p-4">
               <p className="text-sm text-blue-700 font-medium">Cuenta creada exitosamente</p>
               <p className="text-sm text-blue-600 mt-1">Te enviamos un email de verificacion. Revisa tu bandeja de entrada y haz clic en el link para activar tu cuenta.</p>

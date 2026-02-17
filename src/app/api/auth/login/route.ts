@@ -34,6 +34,13 @@ export async function POST(request: NextRequest) {
     const result = await login(email, password);
 
     if (!result.success) {
+      if (result.emailNotVerified) {
+        console.log('⚠️ LOGIN: Email no verificado para:', email);
+        return NextResponse.json(
+          { success: false, message: result.message, requiresEmailVerification: true, userId: result.userId, email },
+          { status: 403 }
+        );
+      }
       console.log('❌ LOGIN: Credenciales inválidas');
       return NextResponse.json(
         { success: false, message: result.message },

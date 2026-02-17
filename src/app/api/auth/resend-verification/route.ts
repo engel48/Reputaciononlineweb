@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
       });
 
     // Send email
-    const sent = await sendVerificationEmail(user.email, code, user.name || 'Usuario');
+    const sent = await sendVerificationEmail(user.email, code, user.name || 'Usuario', userId);
 
     if (!sent) {
       return NextResponse.json(
