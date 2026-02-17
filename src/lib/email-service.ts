@@ -14,7 +14,7 @@ function getResend(): Resend {
   return _resend;
 }
 
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'noreply@reputaciononline.com';
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'noreply@reputaciononline.com.co';
 const APP_NAME = 'Reputacion Online';
 const APP_URL = process.env.NEXTAUTH_URL || 'http://localhost:3000';
 
