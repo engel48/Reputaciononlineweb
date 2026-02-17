@@ -1,39 +1,47 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { userService } from '@/lib/database-adapter';
+import { createClient } from '@supabase/supabase-js';
+import { sendPlanChangeEmail, sendPurchaseConfirmationEmail } from '@/lib/email-service';
+
+// Supabase directo para obtener email y datos confiables del usuario
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+);
 
 export async function PUT(request: NextRequest) {
   try {
-    console.log('🔍 USERS API PUT: Iniciando actualización de usuario...');
-    console.log('🔍 USERS API PUT: DATABASE_URL configurada:', !!process.env.DATABASE_URL);
-    console.log('🔍 USERS API PUT: Usando engine:', process.env.DATABASE_URL?.startsWith('postgres') ? 'PostgreSQL' : 'SQLite');
-    
     const body = await request.json();
     const { userId, ...updates } = body;
 
-    console.log('🔍 USERS API PUT: Datos recibidos:', { userId, updates });
-    console.log('🔍 USERS API PUT: onboardingCompleted recibido:', updates.onboardingCompleted);
+    console.log('USERS API PUT: Datos recibidos:', { userId, updates: Object.keys(updates) });
 
     if (!userId) {
-      console.log('❌ USERS API PUT: Falta userId');
       return NextResponse.json(
         { success: false, message: 'ID de usuario requerido' },
         { status: 400 }
       );
     }
 
-    // Verificar que el usuario existe
-    console.log('🔍 USERS API PUT: Verificando si usuario existe...');
-    const existingUser = await userService.findById(userId);
-    if (!existingUser) {
-      console.log('❌ USERS API PUT: Usuario no encontrado:', userId);
+    // Obtener datos ACTUALES del usuario directo de Supabase (email, plan, credits)
+    const { data: currentUser, error: fetchError } = await supabaseAdmin
+      .from('users')
+      .select('id, email, name, plan, credits')
+      .eq('id', userId)
+      .single();
+
+    if (fetchError || !currentUser) {
+      console.error('USERS API PUT: Usuario no encontrado en Supabase:', userId, fetchError?.message);
       return NextResponse.json(
         { success: false, message: 'Usuario no encontrado' },
         { status: 404 }
       );
     }
 
-    console.log('✅ USERS API PUT: Usuario existe, procediendo con actualización');
-    console.log('📝 USERS API PUT: Datos a actualizar:', updates);
+    const oldPlan = currentUser.plan || 'free';
+    const oldCredits = currentUser.credits || 0;
+
+    console.log('USERS API PUT: Estado actual:', { email: currentUser.email, plan: oldPlan, credits: oldCredits });
 
     // Actualizar usuario en la base de datos
     await userService.update(userId, {
@@ -41,29 +49,63 @@ export async function PUT(request: NextRequest) {
       updatedAt: new Date().toISOString()
     });
 
-    // Si llegamos aquí, el update fue exitoso
     // Obtener el usuario actualizado
     const updatedUser = await userService.findById(userId);
+    console.log('USERS API PUT: Usuario actualizado exitosamente');
 
-    console.log('✅ Usuario actualizado exitosamente');
-    console.log('🔍 USERS API PUT: onboardingCompleted después de actualización:', updatedUser?.onboardingCompleted);
-    console.log('🔍 USERS API PUT: Datos completos del usuario:', {
-      id: updatedUser?.id,
-      name: updatedUser?.name,
-      onboardingCompleted: updatedUser?.onboardingCompleted
-    });
+    // === ENVIAR EMAILS SI HUBO CAMBIOS ===
+    const emailResults: Record<string, any> = {};
+    const newPlan = updates.plan || oldPlan;
+    const newCredits = updates.credits !== undefined ? parseInt(updates.credits) : oldCredits;
+
+    // Email si cambio de plan
+    if (updates.plan && updates.plan !== oldPlan) {
+      console.log(`USERS API PUT: Plan cambio de "${oldPlan}" a "${updates.plan}", enviando email a ${currentUser.email}`);
+      try {
+        if (currentUser.email) {
+          const sent = await sendPlanChangeEmail(currentUser.email, currentUser.name || 'Usuario', oldPlan, updates.plan);
+          emailResults.planChange = { sent, to: currentUser.email };
+          console.log(`USERS API PUT: Email de plan ${sent ? 'ENVIADO OK' : 'FALLO'} a ${currentUser.email}`);
+        } else {
+          emailResults.planChange = { sent: false, reason: 'sin email' };
+        }
+      } catch (emailError: any) {
+        emailResults.planChange = { sent: false, error: emailError.message };
+        console.error('USERS API PUT: Error enviando email de plan:', emailError.message);
+      }
+    }
+
+    // Email si aumentaron creditos
+    if (updates.credits !== undefined && newCredits > oldCredits) {
+      const creditsAdded = newCredits - oldCredits;
+      console.log(`USERS API PUT: Creditos +${creditsAdded}, enviando email a ${currentUser.email}`);
+      try {
+        if (currentUser.email) {
+          const sent = await sendPurchaseConfirmationEmail(currentUser.email, currentUser.name || 'Usuario', {
+            plan: newPlan,
+            credits: creditsAdded,
+            amount: 0,
+            transactionId: `UPDATE-${Date.now()}`
+          });
+          emailResults.credits = { sent, to: currentUser.email, creditsAdded };
+          console.log(`USERS API PUT: Email de creditos ${sent ? 'ENVIADO OK' : 'FALLO'} a ${currentUser.email}`);
+        }
+      } catch (emailError: any) {
+        emailResults.credits = { sent: false, error: emailError.message };
+        console.error('USERS API PUT: Error enviando email de creditos:', emailError.message);
+      }
+    }
 
     return NextResponse.json({
       success: true,
       message: 'Usuario actualizado exitosamente',
-      user: updatedUser
+      user: updatedUser,
+      emailResults,
     });
 
   } catch (error) {
-    console.error('❌ Error en API users:', error);
+    console.error('USERS API PUT: Error general:', error);
     const errorMessage = error instanceof Error ? error.message : 'Error interno del servidor';
-    console.error('❌ Error message:', errorMessage);
-
     return NextResponse.json(
       { success: false, message: errorMessage },
       { status: 500 }
@@ -83,9 +125,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Buscar usuario
     const user = await userService.findById(userId);
-    
+
     if (!user) {
       return NextResponse.json(
         { success: false, message: 'Usuario no encontrado' },
@@ -99,7 +140,7 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('❌ Error obteniendo usuario:', error);
+    console.error('Error obteniendo usuario:', error);
     return NextResponse.json(
       { success: false, message: 'Error interno del servidor' },
       { status: 500 }
