@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase-server';
-import { sendPurchaseConfirmationEmail, sendPlanChangeEmail } from '@/lib/email-service';
+import { sendPurchaseConfirmationEmail, sendPlanChangeEmail, sendInvoiceEmail } from '@/lib/email-service';
 
 const WOMPI_PRIVATE_KEY = process.env.WOMPI_PRIVATE_KEY || '';
 const WOMPI_API_URL = process.env.WOMPI_API_URL || 'https://sandbox.wompi.co/v1';
@@ -113,6 +113,15 @@ export async function GET(request: NextRequest) {
                 if (payment.plan_type !== oldPlan) {
                   await sendPlanChangeEmail(currentUser.email, currentUser.name || 'Usuario', oldPlan, payment.plan_type);
                 }
+
+                // Enviar factura
+                await sendInvoiceEmail(currentUser.email, currentUser.name || 'Usuario', {
+                  transactionId: transactionId || reference || `TX-${Date.now()}`,
+                  plan: payment.plan_type || 'creditos',
+                  credits: payment.credits_purchased || 0,
+                  amount: Number(payment.amount) || 0,
+                  paymentMethod: 'Wompi',
+                });
               }
             }
           } else {
@@ -137,6 +146,7 @@ export async function GET(request: NextRequest) {
                 });
 
                 if (currentUser.email) {
+                  const txId = transactionId || reference || `TX-${Date.now()}`;
                   await sendPurchaseConfirmationEmail(
                     currentUser.email,
                     currentUser.name || 'Usuario',
@@ -144,9 +154,17 @@ export async function GET(request: NextRequest) {
                       plan: 'creditos',
                       credits: payment.credits_purchased,
                       amount: Number(payment.amount) || 0,
-                      transactionId: transactionId || reference || `TX-${Date.now()}`
+                      transactionId: txId
                     }
                   );
+                  // Enviar factura
+                  await sendInvoiceEmail(currentUser.email, currentUser.name || 'Usuario', {
+                    transactionId: txId,
+                    plan: 'creditos',
+                    credits: payment.credits_purchased,
+                    amount: Number(payment.amount) || 0,
+                    paymentMethod: 'Wompi',
+                  });
                 }
               }
             }

@@ -5,18 +5,26 @@
 
 import { Resend } from 'resend';
 
-let _resend: Resend | null = null;
+const APP_NAME = 'Reputacion Online';
 
-function getResend(): Resend {
-  if (!_resend) {
-    _resend = new Resend(process.env.RESEND_API_KEY || '');
-  }
-  return _resend;
+// Read env vars at call time, not module load time
+function getFromEmail(): string {
+  return process.env.RESEND_FROM_EMAIL || 'noreply@reputaciononline.com.co';
 }
 
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'noreply@reputaciononline.com.co';
-const APP_NAME = 'Reputacion Online';
-const APP_URL = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+function getAppUrl(): string {
+  return process.env.NEXTAUTH_URL || 'http://localhost:3000';
+}
+
+// Create fresh Resend instance each call to avoid stale/empty key caching
+function getResend(): Resend | null {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.error('EMAIL SERVICE: RESEND_API_KEY no esta configurada. No se pueden enviar emails.');
+    return null;
+  }
+  return new Resend(apiKey);
+}
 
 // Generate a random 6-digit code
 export function generateVerificationCode(): string {
@@ -53,6 +61,12 @@ function baseTemplate(content: string): string {
     h1 { color: #0f172a; font-size: 20px; margin-bottom: 16px; }
     p { color: #475569; line-height: 1.6; margin-bottom: 12px; }
     .highlight { color: #0f172a; font-weight: 600; }
+    .invoice-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    .invoice-table td { padding: 8px 12px; border-bottom: 1px solid #e2e8f0; }
+    .invoice-table td:first-child { color: #64748b; font-size: 14px; }
+    .invoice-table td:last-child { text-align: right; font-weight: 600; color: #0f172a; }
+    .alert-critical { background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 16px; margin: 16px 0; }
+    .alert-warning { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 16px; margin: 16px 0; }
   </style>
 </head>
 <body>
@@ -70,10 +84,30 @@ function baseTemplate(content: string): string {
 </html>`;
 }
 
+// Helper to send email with proper logging
+async function sendEmail(to: string, subject: string, html: string): Promise<boolean> {
+  const resend = getResend();
+  if (!resend) return false;
+
+  const from = `${APP_NAME} <${getFromEmail()}>`;
+
+  console.log(`EMAIL SERVICE: Enviando "${subject}" a ${to} desde ${from}`);
+
+  const { data, error } = await resend.emails.send({ from, to, subject, html });
+
+  if (error) {
+    console.error(`EMAIL SERVICE ERROR: ${subject} -> ${to}:`, JSON.stringify(error));
+    return false;
+  }
+
+  console.log(`EMAIL SERVICE OK: "${subject}" enviado a ${to} (id: ${data?.id})`);
+  return true;
+}
+
 // Send email verification link
 export async function sendVerificationEmail(email: string, code: string, name: string, userId?: string): Promise<boolean> {
   try {
-    const verifyUrl = `${APP_URL}/verify-email?code=${code}${userId ? `&userId=${userId}` : ''}`;
+    const verifyUrl = `${getAppUrl()}/verify-email?code=${code}${userId ? `&userId=${userId}` : ''}`;
 
     const html = baseTemplate(`
       <h1>Verifica tu correo electronico</h1>
@@ -88,21 +122,9 @@ export async function sendVerificationEmail(email: string, code: string, name: s
       <p>Si no creaste una cuenta, puedes ignorar este mensaje.</p>
     `);
 
-    const { error } = await getResend().emails.send({
-      from: FROM_EMAIL,
-      to: email,
-      subject: `Verifica tu cuenta | ${APP_NAME}`,
-      html,
-    });
-
-    if (error) {
-      console.error('Error sending verification email:', error);
-      return false;
-    }
-
-    return true;
+    return await sendEmail(email, `Verifica tu cuenta | ${APP_NAME}`, html);
   } catch (error) {
-    console.error('Error sending verification email:', error);
+    console.error('EMAIL SERVICE EXCEPTION [verification]:', error);
     return false;
   }
 }
@@ -110,7 +132,7 @@ export async function sendVerificationEmail(email: string, code: string, name: s
 // Send password reset email
 export async function sendPasswordResetEmail(email: string, token: string, name: string): Promise<boolean> {
   try {
-    const resetUrl = `${APP_URL}/reset-password?token=${token}`;
+    const resetUrl = `${getAppUrl()}/reset-password?token=${token}`;
 
     const html = baseTemplate(`
       <h1>Recupera tu contrasena</h1>
@@ -126,21 +148,9 @@ export async function sendPasswordResetEmail(email: string, token: string, name:
       <p>Si no solicitaste este cambio, puedes ignorar este mensaje. Tu contrasena no sera modificada.</p>
     `);
 
-    const { error } = await getResend().emails.send({
-      from: FROM_EMAIL,
-      to: email,
-      subject: `Recupera tu contrasena | ${APP_NAME}`,
-      html,
-    });
-
-    if (error) {
-      console.error('Error sending password reset email:', error);
-      return false;
-    }
-
-    return true;
+    return await sendEmail(email, `Recupera tu contrasena | ${APP_NAME}`, html);
   } catch (error) {
-    console.error('Error sending password reset email:', error);
+    console.error('EMAIL SERVICE EXCEPTION [password-reset]:', error);
     return false;
   }
 }
@@ -159,21 +169,9 @@ export async function sendPlanChangeEmail(email: string, name: string, oldPlan: 
       <p>Si tienes alguna pregunta, no dudes en contactarnos.</p>
     `);
 
-    const { error } = await getResend().emails.send({
-      from: FROM_EMAIL,
-      to: email,
-      subject: `Plan actualizado a ${newPlan} | ${APP_NAME}`,
-      html,
-    });
-
-    if (error) {
-      console.error('Error sending plan change email:', error);
-      return false;
-    }
-
-    return true;
+    return await sendEmail(email, `Plan actualizado a ${newPlan} | ${APP_NAME}`, html);
   } catch (error) {
-    console.error('Error sending plan change email:', error);
+    console.error('EMAIL SERVICE EXCEPTION [plan-change]:', error);
     return false;
   }
 }
@@ -196,24 +194,98 @@ export async function sendPurchaseConfirmationEmail(
         <p style="margin: 4px 0;"><span class="highlight">ID Transaccion:</span> ${details.transactionId}</p>
         <p style="margin: 4px 0;"><span class="highlight">Fecha:</span> ${new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
       </div>
-      <p>Puedes ver el detalle de tus creditos en tu <a href="${APP_URL}/dashboard/credito" style="color: #0ea5e9;">panel de control</a>.</p>
+      <p>Puedes ver el detalle de tus creditos en tu <a href="${getAppUrl()}/dashboard/credito" style="color: #0ea5e9;">panel de control</a>.</p>
     `);
 
-    const { error } = await getResend().emails.send({
-      from: FROM_EMAIL,
-      to: email,
-      subject: `Confirmacion de compra - ${details.plan} | ${APP_NAME}`,
-      html,
-    });
-
-    if (error) {
-      console.error('Error sending purchase confirmation email:', error);
-      return false;
-    }
-
-    return true;
+    return await sendEmail(email, `Confirmacion de compra - ${details.plan} | ${APP_NAME}`, html);
   } catch (error) {
-    console.error('Error sending purchase confirmation email:', error);
+    console.error('EMAIL SERVICE EXCEPTION [purchase]:', error);
+    return false;
+  }
+}
+
+// Send invoice/receipt email
+export async function sendInvoiceEmail(
+  email: string,
+  name: string,
+  invoice: {
+    transactionId: string;
+    plan: string;
+    credits: number;
+    amount: number;
+    paymentMethod?: string;
+    date?: string;
+  }
+): Promise<boolean> {
+  try {
+    const fecha = invoice.date || new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    const metodo = invoice.paymentMethod || 'Tarjeta de credito';
+
+    const html = baseTemplate(`
+      <h1>Factura de compra</h1>
+      <p>Hola <span class="highlight">${name}</span>,</p>
+      <p>A continuacion encontraras el detalle de tu compra en ${APP_NAME}:</p>
+      <table class="invoice-table">
+        <tr><td>No. Transaccion</td><td>${invoice.transactionId}</td></tr>
+        <tr><td>Fecha</td><td>${fecha}</td></tr>
+        <tr><td>Plan / Producto</td><td>${invoice.plan}</td></tr>
+        <tr><td>Creditos</td><td>${invoice.credits}</td></tr>
+        <tr><td>Metodo de pago</td><td>${metodo}</td></tr>
+        <tr style="border-top: 2px solid #0f172a;"><td style="font-weight: 700; color: #0f172a;">Total</td><td style="font-size: 18px;">$${invoice.amount.toLocaleString('es-CO')} COP</td></tr>
+      </table>
+      <p style="font-size: 13px; color: #64748b;">Este documento sirve como comprobante de pago. Si necesitas una factura formal con NIT, contacta a nuestro equipo de soporte.</p>
+      <div style="text-align: center;">
+        <a href="${getAppUrl()}/dashboard/credito" class="btn">Ver mis creditos</a>
+      </div>
+    `);
+
+    return await sendEmail(email, `Factura de compra #${invoice.transactionId} | ${APP_NAME}`, html);
+  } catch (error) {
+    console.error('EMAIL SERVICE EXCEPTION [invoice]:', error);
+    return false;
+  }
+}
+
+// Send critical alert email
+export async function sendCriticalAlertEmail(
+  email: string,
+  name: string,
+  alert: {
+    type: string;
+    severity: string;
+    description: string;
+    actionRequired?: string;
+  }
+): Promise<boolean> {
+  try {
+    const severityLabel = alert.severity === 'critical' ? 'CRITICA' : 'ALTA';
+    const severityClass = alert.severity === 'critical' ? 'alert-critical' : 'alert-warning';
+    const typeLabels: Record<string, string> = {
+      'negative_spike': 'Pico de menciones negativas',
+      'sentiment_drop': 'Caida de sentimiento',
+      'influential_criticism': 'Critica de influenciador',
+      'trending_negative': 'Tendencia negativa',
+      'media_coverage': 'Cobertura mediatica negativa',
+    };
+
+    const html = baseTemplate(`
+      <h1>Alerta de reputacion ${severityLabel}</h1>
+      <p>Hola <span class="highlight">${name}</span>,</p>
+      <p>Se ha detectado una situacion importante que requiere tu atencion:</p>
+      <div class="${severityClass}">
+        <p style="margin: 4px 0; font-weight: 600; color: #0f172a;">${typeLabels[alert.type] || alert.type}</p>
+        <p style="margin: 8px 0 4px 0; color: #475569;">${alert.description}</p>
+      </div>
+      ${alert.actionRequired ? `<p><span class="highlight">Accion recomendada:</span> ${alert.actionRequired}</p>` : ''}
+      <div style="text-align: center;">
+        <a href="${getAppUrl()}/dashboard" class="btn">Ir al dashboard</a>
+      </div>
+      <p style="font-size: 13px; color: #64748b;">Puedes configurar tus preferencias de notificacion en tu perfil.</p>
+    `);
+
+    return await sendEmail(email, `Alerta ${severityLabel}: ${typeLabels[alert.type] || alert.type} | ${APP_NAME}`, html);
+  } catch (error) {
+    console.error('EMAIL SERVICE EXCEPTION [critical-alert]:', error);
     return false;
   }
 }

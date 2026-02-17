@@ -13,6 +13,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { CREDIT_COSTS } from '@/lib/credit-costs';
+import { sendCriticalAlertEmail } from '@/lib/email-service';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -246,6 +247,28 @@ export async function GET(request: NextRequest) {
               crisisAlerts.push(alertData);
               const label = spikeType === 'positive_spike' ? 'TENDENCIA POSITIVA' : 'ALERTA DE CRISIS';
               console.log(`  ${label}: "${kw.keyword}" +${increasePercent}% (${severity})`);
+
+              // Enviar email si es alerta critica o alta (no positiva)
+              if (spikeType !== 'positive_spike' && (severity === 'critical' || severity === 'high')) {
+                try {
+                  const { data: alertUser } = await supabase
+                    .from('users')
+                    .select('email, name')
+                    .eq('id', kw.user_id)
+                    .single();
+
+                  if (alertUser?.email) {
+                    await sendCriticalAlertEmail(alertUser.email, alertUser.name || 'Usuario', {
+                      type: spikeType,
+                      severity,
+                      description: alertData.description,
+                      actionRequired: 'Revisa tu dashboard para ver el detalle de las menciones y tomar accion.',
+                    });
+                  }
+                } catch (emailErr) {
+                  console.error('Error enviando email de alerta critica:', emailErr);
+                }
+              }
             }
           }
         }
