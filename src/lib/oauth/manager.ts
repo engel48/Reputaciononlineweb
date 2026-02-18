@@ -1,6 +1,6 @@
-import { facebookOAuth, FacebookProfile } from './facebook';
-import { twitterOAuth, TwitterProfile } from './twitter';
-import { youtubeOAuth, YouTubeProfile } from './youtube';
+import { facebookOAuth } from './facebook';
+import { twitterOAuth } from './twitter';
+import { youtubeOAuth } from './youtube';
 
 export type SocialPlatform = 'facebook' | 'instagram' | 'x' | 'youtube';
 
@@ -11,9 +11,6 @@ export interface SocialConnection {
   displayName?: string;
   profileImage?: string;
   followers?: number;
-  accessToken?: string;
-  refreshToken?: string;
-  expiresAt?: number;
   lastSync?: string;
   metrics?: {
     posts?: number;
@@ -29,172 +26,18 @@ export interface UserSocialData {
 }
 
 export class SocialOAuthManager {
-  private connections: Map<string, UserSocialData> = new Map();
-
-  /**
-   * Conecta una red social para un usuario
-   */
-  async connectSocialNetwork(
-    userId: string, 
-    platform: SocialPlatform, 
-    accessToken: string, 
-    refreshToken?: string, 
-    expiresAt?: number
-  ): Promise<boolean> {
-    try {
-      let profileData: any = null;
-      let username = '';
-      let displayName = '';
-      let profileImage = '';
-      let followers = 0;
-
-      // Obtener datos del perfil según la plataforma
-      switch (platform) {
-        case 'facebook':
-          profileData = await facebookOAuth.getProfile(accessToken);
-          if (profileData) {
-            username = profileData.name;
-            displayName = profileData.name;
-            profileImage = profileData.picture?.data?.url || '';
-            
-            // Obtener páginas para obtener seguidores
-            const pages = await facebookOAuth.getUserPages(accessToken);
-            if (pages.length > 0) {
-              followers = pages[0].followers_count || pages[0].likes || 0;
-            }
-          }
-          break;
-
-        case 'instagram':
-          // Instagram usa Facebook OAuth
-          profileData = await facebookOAuth.getProfile(accessToken);
-          if (profileData) {
-            const pages = await facebookOAuth.getUserPages(accessToken);
-            for (const page of pages) {
-              const instagramAccounts = await facebookOAuth.getInstagramAccounts(accessToken, page.id);
-              if (instagramAccounts.length > 0) {
-                const igAccount = instagramAccounts[0];
-                username = igAccount.username;
-                displayName = igAccount.username;
-                followers = igAccount.followers_count;
-                break;
-              }
-            }
-          }
-          break;
-
-        case 'x':
-          profileData = await twitterOAuth.getProfile(accessToken);
-          if (profileData) {
-            username = profileData.username;
-            displayName = profileData.name;
-            profileImage = profileData.profile_image_url;
-            followers = profileData.public_metrics?.followers_count || 0;
-          }
-          break;
-
-        case 'youtube':
-          profileData = await youtubeOAuth.getChannelProfile(accessToken);
-          if (profileData) {
-            username = profileData.snippet.customUrl || profileData.snippet.title;
-            displayName = profileData.snippet.title;
-            profileImage = profileData.snippet.thumbnails?.high?.url || '';
-            followers = parseInt(profileData.statistics.subscriberCount) || 0;
-          }
-          break;
-
-        default:
-          console.warn(`Plataforma ${platform} no implementada aún`);
-          return false;
-      }
-
-      if (!profileData) {
-        throw new Error(`No se pudo obtener el perfil de ${platform}`);
-      }
-
-      // Obtener o crear datos del usuario
-      let userData = this.connections.get(userId);
-      if (!userData) {
-        userData = {
-          userId,
-          connections: {} as Record<SocialPlatform, SocialConnection>,
-          lastUpdated: new Date().toISOString()
-        };
-      }
-
-      // Actualizar conexión
-      userData.connections[platform] = {
-        platform,
-        connected: true,
-        username,
-        displayName,
-        profileImage,
-        followers,
-        accessToken,
-        refreshToken,
-        expiresAt,
-        lastSync: new Date().toISOString(),
-        metrics: {
-          posts: 0,
-          engagement: 0,
-          reach: 0
-        }
-      };
-
-      userData.lastUpdated = new Date().toISOString();
-      this.connections.set(userId, userData);
-
-      // En una implementación real, guardarías esto en la base de datos
-      console.log(`✅ ${platform} conectado exitosamente para usuario ${userId}`);
-      return true;
-
-    } catch (error) {
-      console.error(`❌ Error conectando ${platform}:`, error);
-      return false;
-    }
-  }
 
   /**
    * Desconecta una red social para un usuario
-   * Actualiza en Supabase directamente
    */
   async disconnectSocialNetwork(userId: string, platform: SocialPlatform): Promise<boolean> {
     try {
-      // Importar Supabase
-      const { supabase } = await import('@/lib/supabase-server');
-
-      // Actualizar en Supabase - marcar como desconectado y limpiar tokens
-      const { error: updateError } = await supabase
-        .from('social_media')
-        .update({
-          connected: false,
-          access_token: null,
-          refresh_token: null,
-          token_expiry: null,
-          last_sync: new Date().toISOString()
-        })
-        .eq('user_id', userId)
-        .eq('platform', platform);
-
-      if (updateError) {
-        console.error(`❌ Error actualizando Supabase para ${platform}:`, updateError);
-        throw updateError;
+      const { disconnectOAuth } = await import('@/lib/oauth-storage');
+      const result = await disconnectOAuth(userId, platform);
+      if (result) {
+        console.log(`✅ ${platform} desconectado para usuario ${userId}`);
       }
-
-      // También actualizar memoria local
-      const userData = this.connections.get(userId);
-      if (userData && userData.connections[platform]) {
-        userData.connections[platform] = {
-          platform,
-          connected: false
-        };
-        userData.lastUpdated = new Date().toISOString();
-        this.connections.set(userId, userData);
-      }
-
-      console.log(`✅ ${platform} desconectado exitosamente para usuario ${userId} (Supabase actualizado)`);
-      return true;
-
+      return result;
     } catch (error) {
       console.error(`❌ Error desconectando ${platform}:`, error);
       return false;
@@ -202,16 +45,13 @@ export class SocialOAuthManager {
   }
 
   /**
-   * Obtiene todas las conexiones de un usuario
-   * AHORA LEE DIRECTAMENTE DE SUPABASE en lugar de memoria
+   * Obtiene todas las conexiones de un usuario desde Supabase
    */
   async getUserConnections(userId: string): Promise<Record<SocialPlatform, SocialConnection>> {
     try {
-      // Importar Supabase dinámicamente para evitar dependencias circulares
       const { supabase } = await import('@/lib/supabase-server');
 
-      // Obtener todas las conexiones del usuario desde Supabase
-      const { data: socialMediaRecords, error } = await supabase
+      const { data: records, error } = await supabase
         .from('social_media')
         .select('*')
         .eq('user_id', userId);
@@ -220,7 +60,6 @@ export class SocialOAuthManager {
         console.error('Error cargando conexiones de Supabase:', error);
       }
 
-      // Crear objeto con todas las plataformas soportadas (4 redes)
       const connections: Record<SocialPlatform, SocialConnection> = {
         facebook: { platform: 'facebook', connected: false },
         instagram: { platform: 'instagram', connected: false },
@@ -228,23 +67,22 @@ export class SocialOAuthManager {
         youtube: { platform: 'youtube', connected: false }
       };
 
-      // Poblar con datos reales de Supabase
-      if (socialMediaRecords && socialMediaRecords.length > 0) {
-        for (const record of socialMediaRecords) {
+      if (records && records.length > 0) {
+        for (const record of records) {
           const platform = record.platform as SocialPlatform;
           if (connections[platform]) {
             connections[platform] = {
               platform,
               connected: record.connected || false,
               username: record.username || '',
-              displayName: record.username || '', // Supabase no tiene displayName separado
-              profileImage: '', // No almacenado en Supabase actualmente
+              displayName: record.display_name || record.username || '',
+              profileImage: record.profile_image || '',
               followers: record.followers || 0,
               lastSync: record.last_sync || null,
               metrics: {
                 posts: record.posts || 0,
                 engagement: record.engagement || 0,
-                reach: 0 // No almacenado actualmente
+                reach: 0
               }
             };
           }
@@ -254,7 +92,6 @@ export class SocialOAuthManager {
       return connections;
     } catch (error) {
       console.error('Error en getUserConnections:', error);
-      // Retornar conexiones por defecto en caso de error
       return {
         facebook: { platform: 'facebook', connected: false },
         instagram: { platform: 'instagram', connected: false },
@@ -266,19 +103,39 @@ export class SocialOAuthManager {
 
   /**
    * Sincroniza datos de todas las redes conectadas
+   * Lee tokens de Supabase (desencriptados) en vez de memoria
    */
   async syncAllConnections(userId: string): Promise<boolean> {
     try {
-      const userData = this.connections.get(userId);
-      if (!userData) return false;
+      const { getAccessToken } = await import('@/lib/oauth-storage');
+      const { supabase } = await import('@/lib/supabase-server');
 
-      for (const [platform, connection] of Object.entries(userData.connections)) {
-        if (connection.connected && connection.accessToken) {
-          await this.syncPlatformData(userId, platform as SocialPlatform, connection.accessToken);
+      // Obtener plataformas conectadas de Supabase
+      const { data: records, error } = await supabase
+        .from('social_media')
+        .select('platform, connected')
+        .eq('user_id', userId)
+        .eq('connected', true);
+
+      if (error || !records || records.length === 0) {
+        console.log('No hay conexiones activas para sincronizar');
+        return false;
+      }
+
+      let synced = false;
+      for (const record of records) {
+        const platform = record.platform as SocialPlatform;
+        const accessToken = await getAccessToken(userId, platform);
+
+        if (accessToken) {
+          await this.syncPlatformData(userId, platform, accessToken);
+          synced = true;
+        } else {
+          console.warn(`⚠️ No se pudo obtener token para ${platform} (expirado o no disponible)`);
         }
       }
 
-      return true;
+      return synced;
     } catch (error) {
       console.error('❌ Error sincronizando conexiones:', error);
       return false;
@@ -286,31 +143,35 @@ export class SocialOAuthManager {
   }
 
   /**
-   * Sincroniza datos de una plataforma específica
+   * Sincroniza datos de una plataforma específica y actualiza Supabase
    */
   private async syncPlatformData(userId: string, platform: SocialPlatform, accessToken: string): Promise<void> {
     try {
+      const { supabase } = await import('@/lib/supabase-server');
       let metrics = { posts: 0, engagement: 0, reach: 0 };
+      let followers = 0;
 
       switch (platform) {
         case 'facebook':
           const pages = await facebookOAuth.getUserPages(accessToken);
           if (pages.length > 0) {
+            followers = pages[0].followers_count || pages[0].likes || 0;
             const posts = await facebookOAuth.getPagePosts(accessToken, pages[0].id, 50);
             metrics.posts = posts.length;
-            metrics.engagement = posts.reduce((sum, post) => {
+            metrics.engagement = posts.reduce((sum: number, post: any) => {
               return sum + (post.likes?.summary?.total_count || 0) + (post.comments?.summary?.total_count || 0);
             }, 0);
           }
           break;
 
         case 'x':
-          const profile = await twitterOAuth.getProfile(accessToken);
-          if (profile) {
-            const tweets = await twitterOAuth.getUserTweets(accessToken, profile.id, 50);
+          const tProfile = await twitterOAuth.getProfile(accessToken);
+          if (tProfile) {
+            followers = tProfile.public_metrics?.followers_count || 0;
+            const tweets = await twitterOAuth.getUserTweets(accessToken, tProfile.id, 50);
             metrics.posts = tweets.length;
-            metrics.engagement = tweets.reduce((sum, tweet) => {
-              return sum + tweet.public_metrics.like_count + tweet.public_metrics.retweet_count;
+            metrics.engagement = tweets.reduce((sum: number, tweet: any) => {
+              return sum + (tweet.public_metrics?.like_count || 0) + (tweet.public_metrics?.retweet_count || 0);
             }, 0);
           }
           break;
@@ -318,21 +179,43 @@ export class SocialOAuthManager {
         case 'youtube':
           const channelMetrics = await youtubeOAuth.getChannelMetrics(accessToken);
           if (channelMetrics) {
-            metrics.posts = channelMetrics.video_metrics.total_videos;
-            metrics.engagement = channelMetrics.video_metrics.total_likes + channelMetrics.video_metrics.total_comments;
-            metrics.reach = channelMetrics.video_metrics.total_views;
+            followers = channelMetrics.subscribers || 0;
+            metrics.posts = channelMetrics.video_metrics?.total_videos || 0;
+            metrics.engagement = (channelMetrics.video_metrics?.total_likes || 0) + (channelMetrics.video_metrics?.total_comments || 0);
+            metrics.reach = channelMetrics.video_metrics?.total_views || 0;
           }
           break;
 
-        // Agregar más plataformas según sea necesario
+        case 'instagram':
+          // Instagram data is fetched via Facebook API
+          const igPages = await facebookOAuth.getUserPages(accessToken);
+          for (const page of igPages) {
+            const igAccounts = await facebookOAuth.getInstagramAccounts(accessToken, page.id);
+            if (igAccounts && igAccounts.length > 0) {
+              followers = igAccounts[0].followers_count || 0;
+              metrics.posts = igAccounts[0].media_count || 0;
+              break;
+            }
+          }
+          break;
       }
 
-      // Actualizar métricas en userData
-      const userData = this.connections.get(userId);
-      if (userData && userData.connections[platform]) {
-        userData.connections[platform].metrics = metrics;
-        userData.connections[platform].lastSync = new Date().toISOString();
-        this.connections.set(userId, userData);
+      // Actualizar en Supabase
+      const { error } = await supabase
+        .from('social_media')
+        .update({
+          followers,
+          posts: metrics.posts,
+          engagement: metrics.engagement,
+          last_sync: new Date().toISOString()
+        })
+        .eq('user_id', userId)
+        .eq('platform', platform);
+
+      if (error) {
+        console.error(`Error actualizando métricas de ${platform}:`, error);
+      } else {
+        console.log(`✅ ${platform} sincronizado: ${followers} followers, ${metrics.posts} posts`);
       }
 
     } catch (error) {
@@ -342,9 +225,9 @@ export class SocialOAuthManager {
 
   /**
    * Valida si los tokens de un usuario siguen siendo válidos
+   * Lee tokens de Supabase (desencriptados) en vez de memoria
    */
   async validateUserTokens(userId: string): Promise<Record<SocialPlatform, boolean>> {
-    const userData = this.connections.get(userId);
     const results: Record<SocialPlatform, boolean> = {
       facebook: false,
       instagram: false,
@@ -352,37 +235,65 @@ export class SocialOAuthManager {
       youtube: false
     };
 
-    if (!userData) return results;
+    try {
+      const { getAccessToken } = await import('@/lib/oauth-storage');
+      const { supabase } = await import('@/lib/supabase-server');
 
-    for (const [platform, connection] of Object.entries(userData.connections)) {
-      if (connection.connected && connection.accessToken) {
+      // Obtener plataformas conectadas
+      const { data: records } = await supabase
+        .from('social_media')
+        .select('platform, connected')
+        .eq('user_id', userId)
+        .eq('connected', true);
+
+      if (!records || records.length === 0) return results;
+
+      for (const record of records) {
+        const platform = record.platform as SocialPlatform;
+        const accessToken = await getAccessToken(userId, platform);
+
+        if (!accessToken) {
+          // Token expired or missing - mark as disconnected
+          await supabase
+            .from('social_media')
+            .update({ connected: false })
+            .eq('user_id', userId)
+            .eq('platform', platform);
+          continue;
+        }
+
         try {
           let isValid = false;
 
           switch (platform) {
             case 'facebook':
             case 'instagram':
-              isValid = await facebookOAuth.validateToken(connection.accessToken);
+              isValid = await facebookOAuth.validateToken(accessToken);
               break;
             case 'x':
-              isValid = await twitterOAuth.validateToken(connection.accessToken);
+              isValid = await twitterOAuth.validateToken(accessToken);
               break;
             case 'youtube':
-              isValid = await youtubeOAuth.validateToken(connection.accessToken);
+              isValid = await youtubeOAuth.validateToken(accessToken);
               break;
           }
 
-          results[platform as SocialPlatform] = isValid;
+          results[platform] = isValid;
 
-          // Si el token no es válido, marcar como desconectado
-          if (!isValid && userData.connections[platform as SocialPlatform]) {
-            userData.connections[platform as SocialPlatform].connected = false;
+          if (!isValid) {
+            console.warn(`⚠️ Token inválido para ${platform}, marcando como desconectado`);
+            await supabase
+              .from('social_media')
+              .update({ connected: false })
+              .eq('user_id', userId)
+              .eq('platform', platform);
           }
-
         } catch (error) {
           console.error(`Error validando token de ${platform}:`, error);
         }
       }
+    } catch (error) {
+      console.error('Error en validateUserTokens:', error);
     }
 
     return results;

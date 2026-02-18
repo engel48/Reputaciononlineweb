@@ -41,7 +41,11 @@ export async function saveOAuthConnection(data: OAuthConnectionData): Promise<bo
         user_id: data.userId,
         platform: data.platform,
         username: data.profile.username || data.profile.name || 'Usuario',
-        profile_url: null, // Se puede agregar después
+        display_name: data.profile.name || data.profile.username || 'Usuario',
+        profile_image: data.profile.profileImage || null,
+        profile_url: data.profile.username
+          ? `https://${data.platform === 'x' ? 'x.com' : data.platform + '.com'}/${data.profile.username}`
+          : null,
         followers: data.profile.followers || 0,
         following: 0,
         posts: 0,
@@ -50,8 +54,7 @@ export async function saveOAuthConnection(data: OAuthConnectionData): Promise<bo
         last_sync: new Date().toISOString(),
         access_token: encryptedAccessToken,
         refresh_token: encryptedRefreshToken,
-        token_expiry: data.expiresAt || null,
-        profile_data: JSON.stringify(data.profile)
+        token_expiry: data.expiresAt || null
       }, {
         onConflict: 'user_id,platform'
       });

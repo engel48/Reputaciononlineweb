@@ -30,21 +30,21 @@ export async function GET(request: NextRequest) {
   if (error) {
     console.error('❌ Twitter OAuth error:', error, errorDescription);
     return NextResponse.redirect(
-      `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard/redes-sociales?error=${error}&description=${encodeURIComponent(errorDescription || '')}`
+      `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/oauth-callback?error=${error}&description=${encodeURIComponent(errorDescription || '')}`
     );
   }
 
   if (!code) {
     console.error('❌ No se recibió código de autorización');
     return NextResponse.redirect(
-      `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard/redes-sociales?error=no_code`
+      `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/oauth-callback?error=no_code`
     );
   }
 
   if (!TWITTER_CLIENT_ID || !TWITTER_CLIENT_SECRET) {
     console.error('❌ Twitter credentials no configuradas en .env');
     return NextResponse.redirect(
-      `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard/redes-sociales?error=config_missing`
+      `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/oauth-callback?error=config_missing`
     );
   }
 
@@ -77,6 +77,10 @@ export async function GET(request: NextRequest) {
     // Twitter OAuth 2.0 requiere Basic Auth con client_id:client_secret en Base64
     const basicAuth = Buffer.from(`${TWITTER_CLIENT_ID}:${TWITTER_CLIENT_SECRET}`).toString('base64');
 
+    // Leer PKCE code_verifier de cookie (puesta por oauth-login page)
+    const pkceVerifier = cookieStore.get('pkce_verifier')?.value || 'challenge';
+    console.log(`🔐 PKCE verifier: ${pkceVerifier.substring(0, 10)}...`);
+
     const tokenResponse = await fetch('https://api.twitter.com/2/oauth2/token', {
       method: 'POST',
       headers: {
@@ -87,7 +91,7 @@ export async function GET(request: NextRequest) {
         grant_type: 'authorization_code',
         code: code,
         redirect_uri: REDIRECT_URI,
-        code_verifier: 'challenge' // En producción, usar PKCE real
+        code_verifier: pkceVerifier
       })
     });
 
@@ -95,7 +99,7 @@ export async function GET(request: NextRequest) {
       const errorData = await tokenResponse.json();
       console.error('❌ Error obteniendo access token:', errorData);
       return NextResponse.redirect(
-        `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard/redes-sociales?error=token_exchange_failed`
+        `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/oauth-callback?error=token_exchange_failed`
       );
     }
 
@@ -115,7 +119,7 @@ export async function GET(request: NextRequest) {
     if (!profileResponse.ok) {
       console.error('❌ Error obteniendo perfil de Twitter');
       return NextResponse.redirect(
-        `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard/redes-sociales?error=profile_fetch_failed`
+        `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/oauth-callback?error=profile_fetch_failed`
       );
     }
 
@@ -144,19 +148,19 @@ export async function GET(request: NextRequest) {
     if (!saved) {
       console.error('❌ Error guardando conexión en Supabase');
       return NextResponse.redirect(
-        `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard/redes-sociales?error=save_failed`
+        `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/oauth-callback?error=save_failed`
       );
     }
 
     console.log('✅ Twitter conectado exitosamente');
     return NextResponse.redirect(
-      `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard/redes-sociales?success=twitter`
+      `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/oauth-callback?success=twitter`
     );
 
   } catch (error) {
     console.error('❌ Error en Twitter OAuth callback:', error);
     return NextResponse.redirect(
-      `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/dashboard/redes-sociales?error=oauth_failed`
+      `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/oauth-callback?error=oauth_failed`
     );
   }
 }

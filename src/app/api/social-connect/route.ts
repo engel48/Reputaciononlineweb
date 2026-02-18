@@ -20,32 +20,34 @@ export async function POST(request: NextRequest) {
     if (action === 'connect') {
       if (accessToken) {
         // Conectar con token existente (callback de OAuth)
-        const success = await socialOAuthManager.connectSocialNetwork(
+        const { saveOAuthConnection } = await import('@/lib/oauth-storage');
+        const saved = await saveOAuthConnection({
           userId,
-          platform as SocialPlatform,
+          platform,
           accessToken,
           refreshToken,
-          expiresAt
-        );
+          expiresAt: expiresAt ? new Date(expiresAt) : undefined,
+          profile: { id: 'manual', username: platform }
+        });
 
-        if (success) {
-          return NextResponse.json({ 
-            success: true, 
-            message: `${platform} conectado exitosamente` 
+        if (saved) {
+          return NextResponse.json({
+            success: true,
+            message: `${platform} conectado exitosamente`
           });
         } else {
-          return NextResponse.json({ 
-            error: `Error al conectar ${platform}` 
+          return NextResponse.json({
+            error: `Error al conectar ${platform}`
           }, { status: 500 });
         }
       } else {
         // Generar URL de autorización OAuth
         const authUrl = generateOAuthUrl(platform);
-        
-        return NextResponse.json({ 
-          success: true, 
+
+        return NextResponse.json({
+          success: true,
           authUrl,
-          message: `Redirigiendo a ${platform} para autorización...` 
+          message: `Redirigiendo a ${platform} para autorización...`
         });
       }
     }

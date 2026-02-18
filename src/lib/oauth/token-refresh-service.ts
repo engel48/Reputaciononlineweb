@@ -1,41 +1,19 @@
 /**
  * Servicio de Auto-Renovación de Tokens OAuth
  *
- * Este servicio gestiona automáticamente la renovación de tokens OAuth
- * antes de que expiren para mantener las conexiones activas.
- *
- * Características:
- * - Detecta tokens que están por expirar (24h antes)
- * - Renueva automáticamente usando refresh_token
- * - Registra intentos en oauth_logs
- * - Desconecta plataformas si el refresh falla
- *
- * Uso:
- * 1. Ejecutar manualmente: await tokenRefreshService.refreshExpiringTokens()
- * 2. Cron job: Ejecutar cada 6 horas
- * 3. API endpoint: /api/cron/refresh-tokens
+ * Renueva tokens de YouTube (Google), Facebook/Instagram, y Twitter/X
+ * usando los refresh tokens almacenados (encriptados) en Supabase.
  */
 
 import { createClient } from '@supabase/supabase-js';
-import { youtubeOAuth } from './youtube';
-import { facebookOAuth } from './facebook';
+import { decryptToken, encryptToken } from '@/lib/encryption';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-interface ExpiringToken {
-  connection_id: string;
-  user_id: string;
-  platform: string;
-  username: string;
-  token_expiry: string;
-  hours_until_expiry: number;
-}
-
 interface RefreshResult {
-  connection_id: string;
   platform: string;
   success: boolean;
   error?: string;
@@ -43,69 +21,158 @@ interface RefreshResult {
 }
 
 export class TokenRefreshService {
-  /**
-   * Obtiene tokens que expiran en las próximas N horas
-   */
-  async getExpiringTokens(hoursThreshold: number = 24): Promise<ExpiringToken[]> {
-    try {
-      const { data, error } = await supabase.rpc('get_expiring_tokens', {
-        hours_threshold: hoursThreshold
-      });
-
-      if (error) {
-        console.error('❌ Error obteniendo tokens por expirar:', error);
-        return [];
-      }
-
-      return data || [];
-    } catch (error) {
-      console.error('❌ Error en getExpiringTokens:', error);
-      return [];
-    }
-  }
 
   /**
-   * Renueva un token específico según la plataforma
+   * Renueva un token según la plataforma
    */
   async refreshToken(
-    connectionId: string,
-    platform: string,
     userId: string,
-    refreshToken: string
+    platform: string,
+    encryptedRefreshToken: string
   ): Promise<RefreshResult> {
-    const result: RefreshResult = {
-      connection_id: connectionId,
-      platform,
-      success: false
-    };
+    const result: RefreshResult = { platform, success: false };
 
     try {
-      let newTokenData: any = null;
+      // Desencriptar refresh token
+      const refreshToken = decryptToken(encryptedRefreshToken);
 
       switch (platform) {
-        case 'youtube':
-        case 'google':
-          // YouTube usa Google OAuth - requiere refresh via Google APIs
-          // Por ahora, marcar para reconexión manual
-          result.error = 'YouTube requiere reconexión manual por ahora';
-          await this.logRefreshAttempt(userId, platform, false, result.error);
+        case 'youtube': {
+          // Google OAuth2 refresh
+          const resp = await fetch('https://oauth2.googleapis.com/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+              grant_type: 'refresh_token',
+              refresh_token: refreshToken,
+              client_id: process.env.GOOGLE_CLIENT_ID!,
+              client_secret: process.env.GOOGLE_CLIENT_SECRET!
+            })
+          });
+
+          if (!resp.ok) {
+            const err = await resp.text();
+            result.error = `Google refresh failed: ${err}`;
+            break;
+          }
+
+          const data = await resp.json();
+          const newExpiry = new Date(Date.now() + data.expires_in * 1000);
+
+          // Guardar nuevo access_token encriptado
+          await supabase
+            .from('social_media')
+            .update({
+              access_token: encryptToken(data.access_token),
+              token_expiry: newExpiry.toISOString(),
+              last_sync: new Date().toISOString()
+            })
+            .eq('user_id', userId)
+            .eq('platform', 'youtube');
+
+          result.success = true;
+          result.new_expiry = newExpiry.toISOString();
+          console.log(`✅ YouTube token renovado, expira: ${newExpiry.toISOString()}`);
           break;
+        }
 
         case 'facebook':
-        case 'instagram':
-          // Facebook puede intercambiar por long-lived token
-          // Requiere implementación específica
-          result.error = 'Facebook requiere intercambio de long-lived token';
-          await this.logRefreshAttempt(userId, platform, false, result.error);
+        case 'instagram': {
+          // Facebook: intercambiar short-lived token por long-lived token
+          // Para Facebook, el "refresh" es obtener un nuevo long-lived token
+          // usando el access_token actual (no hay refresh_token separado)
+          const currentAccessToken = decryptToken(encryptedRefreshToken);
+          const resp = await fetch(
+            `https://graph.facebook.com/v21.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${process.env.NEXT_PUBLIC_FACEBOOK_APP_ID}&client_secret=${process.env.FACEBOOK_APP_SECRET}&fb_exchange_token=${currentAccessToken}`
+          );
+
+          if (!resp.ok) {
+            const err = await resp.text();
+            result.error = `Facebook token exchange failed: ${err}`;
+            break;
+          }
+
+          const data = await resp.json();
+          // Long-lived tokens last ~60 days
+          const newExpiry = new Date(Date.now() + (data.expires_in || 5184000) * 1000);
+
+          await supabase
+            .from('social_media')
+            .update({
+              access_token: encryptToken(data.access_token),
+              token_expiry: newExpiry.toISOString(),
+              last_sync: new Date().toISOString()
+            })
+            .eq('user_id', userId)
+            .eq('platform', platform);
+
+          result.success = true;
+          result.new_expiry = newExpiry.toISOString();
+          console.log(`✅ ${platform} token renovado, expira: ${newExpiry.toISOString()}`);
           break;
+        }
+
+        case 'x': {
+          // Twitter OAuth 2.0 refresh
+          const clientId = process.env.TWITTER_CLIENT_ID || process.env.NEXT_PUBLIC_TWITTER_CLIENT_ID;
+          const clientSecret = process.env.TWITTER_CLIENT_SECRET;
+
+          if (!clientId || !clientSecret) {
+            result.error = 'Twitter credentials not configured';
+            break;
+          }
+
+          const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+
+          const resp = await fetch('https://api.twitter.com/2/oauth2/token', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'Authorization': `Basic ${basicAuth}`
+            },
+            body: new URLSearchParams({
+              grant_type: 'refresh_token',
+              refresh_token: refreshToken
+            })
+          });
+
+          if (!resp.ok) {
+            const err = await resp.text();
+            result.error = `Twitter refresh failed: ${err}`;
+            break;
+          }
+
+          const data = await resp.json();
+          const newExpiry = new Date(Date.now() + (data.expires_in || 7200) * 1000);
+
+          const updateData: any = {
+            access_token: encryptToken(data.access_token),
+            token_expiry: newExpiry.toISOString(),
+            last_sync: new Date().toISOString()
+          };
+
+          // Twitter returns a new refresh_token on each refresh
+          if (data.refresh_token) {
+            updateData.refresh_token = encryptToken(data.refresh_token);
+          }
+
+          await supabase
+            .from('social_media')
+            .update(updateData)
+            .eq('user_id', userId)
+            .eq('platform', 'x');
+
+          result.success = true;
+          result.new_expiry = newExpiry.toISOString();
+          console.log(`✅ Twitter token renovado, expira: ${newExpiry.toISOString()}`);
+          break;
+        }
 
         default:
-          result.error = `Plataforma ${platform} no soporta refresh automático`;
-          await this.logRefreshAttempt(userId, platform, false, result.error);
+          result.error = `Plataforma ${platform} no soporta refresh`;
       }
     } catch (error: any) {
       result.error = error.message || 'Error desconocido';
-      await this.logRefreshAttempt(userId, platform, false, result.error);
       console.error(`❌ Error renovando token de ${platform}:`, error);
     }
 
@@ -113,201 +180,92 @@ export class TokenRefreshService {
   }
 
   /**
-   * Procesa todos los tokens que están por expirar
+   * Renueva tokens que están por expirar para todos los usuarios
    */
   async refreshExpiringTokens(hoursThreshold: number = 24): Promise<RefreshResult[]> {
-    console.log(`🔄 Iniciando proceso de renovación de tokens (umbral: ${hoursThreshold}h)...`);
+    console.log(`🔄 Buscando tokens que expiran en ${hoursThreshold}h...`);
 
-    const expiringTokens = await this.getExpiringTokens(hoursThreshold);
+    const thresholdDate = new Date(Date.now() + hoursThreshold * 60 * 60 * 1000);
 
-    if (expiringTokens.length === 0) {
-      console.log('✅ No hay tokens por expirar en este momento');
+    const { data: connections, error } = await supabase
+      .from('social_media')
+      .select('user_id, platform, username, access_token, refresh_token, token_expiry')
+      .eq('connected', true)
+      .not('token_expiry', 'is', null)
+      .lt('token_expiry', thresholdDate.toISOString())
+      .gt('token_expiry', new Date().toISOString()); // Not already expired
+
+    if (error || !connections || connections.length === 0) {
+      console.log('✅ No hay tokens por expirar');
       return [];
     }
 
-    console.log(`⚠️  Encontrados ${expiringTokens.length} tokens que expiran pronto:`);
-    expiringTokens.forEach(token => {
-      console.log(`   - ${token.platform} (${token.username}): expira en ${token.hours_until_expiry.toFixed(1)}h`);
-    });
+    console.log(`⚠️ ${connections.length} tokens expiran pronto`);
 
     const results: RefreshResult[] = [];
 
-    // Obtener refresh tokens de la BD
-    for (const token of expiringTokens) {
-      const { data: connection } = await supabase
-        .from('social_media')
-        .select('refresh_token')
-        .eq('id', token.connection_id)
-        .single();
+    for (const conn of connections) {
+      // For Facebook/Instagram, use access_token as the "refresh" source
+      // For YouTube/Twitter, use the actual refresh_token
+      const tokenToUse = (conn.platform === 'facebook' || conn.platform === 'instagram')
+        ? conn.access_token
+        : conn.refresh_token;
 
-      if (!connection?.refresh_token) {
-        console.log(`⚠️  ${token.platform} (${token.username}): No tiene refresh_token, requiere reconexión manual`);
-        results.push({
-          connection_id: token.connection_id,
-          platform: token.platform,
-          success: false,
-          error: 'No refresh_token disponible'
-        });
+      if (!tokenToUse) {
+        results.push({ platform: conn.platform, success: false, error: 'No refresh token' });
         continue;
       }
 
-      // Intentar renovar
-      const result = await this.refreshToken(
-        token.connection_id,
-        token.platform,
-        token.user_id,
-        connection.refresh_token
-      );
-
+      const result = await this.refreshToken(conn.user_id, conn.platform, tokenToUse);
       results.push(result);
     }
 
-    // Resumen de resultados
-    const successful = results.filter(r => r.success).length;
-    const failed = results.filter(r => !r.success).length;
-
-    console.log(`\n📊 Resumen de renovación:`);
-    console.log(`   ✅ Exitosos: ${successful}`);
-    console.log(`   ❌ Fallidos: ${failed}`);
+    const ok = results.filter(r => r.success).length;
+    const fail = results.filter(r => !r.success).length;
+    console.log(`📊 Renovación: ${ok} exitosos, ${fail} fallidos`);
 
     return results;
   }
 
   /**
-   * Registra intento de renovación en oauth_logs
-   */
-  private async logRefreshAttempt(
-    userId: string,
-    platform: string,
-    success: boolean,
-    errorMessage?: string
-  ): Promise<void> {
-    try {
-      await supabase.rpc('log_token_refresh_attempt', {
-        p_user_id: userId,
-        p_platform: platform,
-        p_success: success,
-        p_error_message: errorMessage || null
-      });
-    } catch (error) {
-      console.error('Error logging refresh attempt:', error);
-    }
-  }
-
-  /**
-   * Obtiene estado de conexiones de un usuario
-   */
-  async getUserConnectionsStatus(userId: string): Promise<any[]> {
-    try {
-      const { data, error } = await supabase.rpc('get_active_social_connections', {
-        p_user_id: userId
-      });
-
-      if (error) {
-        console.error('Error obteniendo estado de conexiones:', error);
-        return [];
-      }
-
-      return data || [];
-    } catch (error) {
-      console.error('Error en getUserConnectionsStatus:', error);
-      return [];
-    }
-  }
-
-  /**
-   * Verifica y renueva tokens para un usuario específico
+   * Renueva tokens para un usuario específico
    */
   async refreshUserTokens(userId: string): Promise<RefreshResult[]> {
     console.log(`🔄 Verificando tokens para usuario ${userId}...`);
 
     const { data: connections } = await supabase
       .from('social_media')
-      .select('id, platform, username, token_expiry, refresh_token')
+      .select('platform, access_token, refresh_token, token_expiry')
       .eq('user_id', userId)
       .eq('connected', true)
       .not('token_expiry', 'is', null);
 
-    if (!connections || connections.length === 0) {
-      console.log('✅ No hay tokens con expiración para este usuario');
-      return [];
-    }
+    if (!connections || connections.length === 0) return [];
 
     const results: RefreshResult[] = [];
 
     for (const conn of connections) {
       const expiryDate = new Date(conn.token_expiry);
-      const hoursUntilExpiry = (expiryDate.getTime() - Date.now()) / (1000 * 60 * 60);
+      const hoursLeft = (expiryDate.getTime() - Date.now()) / (1000 * 60 * 60);
 
-      // Si expira en menos de 24 horas, renovar
-      if (hoursUntilExpiry < 24 && hoursUntilExpiry > 0) {
-        console.log(`⚠️  ${conn.platform}: expira en ${hoursUntilExpiry.toFixed(1)}h, renovando...`);
+      if (hoursLeft < 24 && hoursLeft > 0) {
+        const tokenToUse = (conn.platform === 'facebook' || conn.platform === 'instagram')
+          ? conn.access_token
+          : conn.refresh_token;
 
-        if (!conn.refresh_token) {
-          results.push({
-            connection_id: conn.id,
-            platform: conn.platform,
-            success: false,
-            error: 'No refresh_token disponible'
-          });
+        if (!tokenToUse) {
+          results.push({ platform: conn.platform, success: false, error: 'No refresh token' });
           continue;
         }
 
-        const result = await this.refreshToken(
-          conn.id,
-          conn.platform,
-          userId,
-          conn.refresh_token
-        );
-
+        const result = await this.refreshToken(userId, conn.platform, tokenToUse);
         results.push(result);
       }
     }
 
     return results;
   }
-
-  /**
-   * Desconecta plataformas con tokens inválidos
-   */
-  async disconnectInvalidTokens(): Promise<number> {
-    console.log('🔍 Buscando conexiones con tokens expirados...');
-
-    const { data: expiredConnections } = await supabase
-      .from('social_media')
-      .select('id, platform, username, token_expiry')
-      .eq('connected', true)
-      .not('token_expiry', 'is', null)
-      .lt('token_expiry', new Date().toISOString());
-
-    if (!expiredConnections || expiredConnections.length === 0) {
-      console.log('✅ No hay tokens expirados');
-      return 0;
-    }
-
-    console.log(`⚠️  Encontradas ${expiredConnections.length} conexiones con tokens expirados`);
-
-    let disconnected = 0;
-
-    for (const conn of expiredConnections) {
-      const { error } = await supabase.rpc('disconnect_social_platform', {
-        p_connection_id: conn.id,
-        p_reason: 'token_expired'
-      });
-
-      if (!error) {
-        disconnected++;
-        console.log(`❌ Desconectado: ${conn.platform} (${conn.username})`);
-      }
-    }
-
-    console.log(`\n📊 Total desconectados: ${disconnected}`);
-    return disconnected;
-  }
 }
 
-// Singleton instance
 export const tokenRefreshService = new TokenRefreshService();
-
-// Export para uso en API routes
 export default tokenRefreshService;

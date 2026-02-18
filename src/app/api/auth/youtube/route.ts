@@ -154,53 +154,34 @@ export async function POST(request: NextRequest) {
 
     console.log(`✅ Perfil del canal obtenido: ${channelProfile.snippet.title}`);
 
-    // Guardar en base de datos
-    const { supabase } = await import('@/lib/supabase-server');
+    // Guardar en Supabase con encriptación via saveOAuthConnection
+    const { saveOAuthConnection } = await import('@/lib/oauth-storage');
+    const expiresAt = new Date(Date.now() + expires_in * 1000);
 
-    const { data: existingConnection } = await supabase
-      .from('social_media')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('platform', 'youtube')
-      .single();
-
-    const socialMediaData = {
-      user_id: userId,
+    const saved = await saveOAuthConnection({
+      userId,
       platform: 'youtube',
-      username: channelProfile.id,
-      display_name: channelProfile.snippet.title,
-      profile_url: `https://www.youtube.com/channel/${channelProfile.id}`,
-      followers: parseInt(channelProfile.statistics.subscriberCount) || 0,
-      posts: parseInt(channelProfile.statistics.videoCount) || 0,
-      engagement: 0,
-      connected: true,
-      access_token,
-      refresh_token: refresh_token || existingConnection?.refresh_token || null,
-      token_expiry: new Date(Date.now() + expires_in * 1000).toISOString(),
-      last_sync: new Date().toISOString()
-    };
+      accessToken: access_token,
+      refreshToken: refresh_token,
+      expiresAt,
+      profile: {
+        id: channelProfile.id,
+        name: channelProfile.snippet.title,
+        username: channelProfile.snippet.customUrl || channelProfile.id,
+        profileImage: channelProfile.snippet.thumbnails?.high?.url || '',
+        followers: parseInt(channelProfile.statistics.subscriberCount) || 0
+      }
+    });
 
-    if (existingConnection) {
-      // Actualizar conexión existente
-      const { error: updateError } = await supabase
-        .from('social_media')
-        .update(socialMediaData)
-        .eq('user_id', userId)
-        .eq('platform', 'youtube');
-
-      if (updateError) throw updateError;
-      console.log('✅ Conexión de YouTube actualizada');
-    } else {
-      // Crear nueva conexión
-      const { error: insertError } = await supabase
-        .from('social_media')
-        .insert(socialMediaData);
-
-      if (insertError) throw insertError;
-      console.log('✅ Nueva conexión de YouTube creada');
+    if (!saved) {
+      return NextResponse.json(
+        { success: false, error: 'Error guardando conexión' },
+        { status: 500 }
+      );
     }
 
-    // Retornar perfil (sin exponer access_token por seguridad)
+    console.log('✅ YouTube conectado exitosamente');
+
     return NextResponse.json({
       success: true,
       profile: {

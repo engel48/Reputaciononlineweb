@@ -45,9 +45,6 @@ export async function POST(request: NextRequest) {
     // Ejecutar renovación de tokens que expiran en 24h
     const results = await tokenRefreshService.refreshExpiringTokens(24);
 
-    // Desconectar tokens ya expirados
-    const disconnected = await tokenRefreshService.disconnectInvalidTokens();
-
     // Calcular estadísticas
     const successful = results.filter(r => r.success).length;
     const failed = results.filter(r => !r.success).length;
@@ -60,8 +57,7 @@ export async function POST(request: NextRequest) {
       summary: {
         tokens_checked: results.length,
         tokens_refreshed: successful,
-        tokens_failed: failed,
-        connections_disconnected: disconnected
+        tokens_failed: failed
       },
       results: results.map(r => ({
         platform: r.platform,
@@ -97,19 +93,10 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // Obtener lista de tokens que expiran pronto (sin renovar)
-  const expiringTokens = await tokenRefreshService.getExpiringTokens(48);
-
   return NextResponse.json({
     status: 'active',
     endpoint: '/api/cron/refresh-tokens',
     method: 'POST',
-    description: 'Renovación automática de tokens OAuth',
-    tokens_expiring_soon: expiringTokens.length,
-    tokens: expiringTokens.map(t => ({
-      platform: t.platform,
-      username: t.username,
-      hours_until_expiry: Math.round(t.hours_until_expiry * 10) / 10
-    }))
+    description: 'Renovación automática de tokens OAuth'
   });
 }

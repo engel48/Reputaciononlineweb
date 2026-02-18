@@ -27,6 +27,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAuthToken } from '@/lib/auth-helper';
 import { tokenRefreshService } from '@/lib/oauth/token-refresh-service';
+import { createClient } from '@supabase/supabase-js';
 
 export async function GET(request: NextRequest) {
   try {
@@ -42,8 +43,34 @@ export async function GET(request: NextRequest) {
 
     const userId = user.userId;
 
-    // Obtener estado de conexiones
-    const connections = await tokenRefreshService.getUserConnectionsStatus(userId);
+    // Obtener estado de conexiones directamente de Supabase
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    const { data: records } = await supabase
+      .from('social_media')
+      .select('platform, username, display_name, connected, token_expiry, followers, profile_image')
+      .eq('user_id', userId);
+
+    const connections = (records || []).map(r => {
+      const expiryDate = r.token_expiry ? new Date(r.token_expiry) : null;
+      const now = new Date();
+      const daysUntilExpiry = expiryDate ? (expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24) : null;
+      const tokenValid = r.connected && (!expiryDate || expiryDate > now);
+
+      return {
+        platform: r.platform,
+        username: r.username || '',
+        display_name: r.display_name || r.username || '',
+        connected: r.connected || false,
+        token_valid: tokenValid,
+        days_until_expiry: daysUntilExpiry !== null ? Math.round(daysUntilExpiry * 10) / 10 : null,
+        followers: r.followers || 0,
+        profile_image: r.profile_image || ''
+      };
+    });
 
     // Enriquecer con información adicional
     const enrichedConnections = connections.map(conn => ({
