@@ -13,7 +13,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { CREDIT_COSTS } from '@/lib/credit-costs';
-import { sendCriticalAlertEmail } from '@/lib/email-service';
+import { sendCriticalAlertEmail, sendNewsMentionAlert, sendLowCreditsWarningEmail } from '@/lib/email-service';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -272,6 +272,50 @@ export async function GET(request: NextRequest) {
             }
           }
         }
+
+        // A6: Send news mention alert for important new mentions (first negative one per keyword)
+        if (savedCount > 0) {
+          const negativeNews = newsMatches.filter((n: any) => n.sentiment === 'negative').slice(0, 1);
+          if (negativeNews.length > 0) {
+            try {
+              const { data: mentionUser } = await supabase
+                .from('users')
+                .select('email, name')
+                .eq('id', kw.user_id)
+                .single();
+
+              if (mentionUser?.email) {
+                const news = negativeNews[0];
+                sendNewsMentionAlert(mentionUser.email, mentionUser.name || 'Usuario', {
+                  title: news.title || 'Sin titulo',
+                  source: news.source || 'Medio desconocido',
+                  url: news.article_url || '',
+                  sentiment: news.sentiment || 'neutral',
+                  sentimentScore: news.sentiment_score || 50,
+                  matchedTerms: [kw.keyword],
+                  context: (news.content || '').substring(0, 300),
+                  publishedDate: news.published_at ? new Date(news.published_at).toLocaleDateString('es-CO') : 'Reciente',
+                }).catch(e => console.error('Error enviando news mention alert:', e));
+              }
+            } catch {}
+          }
+        }
+
+        // C3: Check if user credits are low after deduction
+        try {
+          const { data: userCredits } = await supabase
+            .from('users')
+            .select('email, name, credits, plan')
+            .eq('id', kw.user_id)
+            .single();
+
+          if (userCredits && userCredits.credits < 100 && userCredits.email) {
+            sendLowCreditsWarningEmail(userCredits.email, userCredits.name || 'Usuario', {
+              credits: userCredits.credits,
+              plan: userCredits.plan || 'basic',
+            }).catch(e => console.error('Error enviando low credits warning:', e));
+          }
+        } catch {}
 
         results.push({
           keyword: kw.keyword,

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { userService } from '@/lib/database-adapter';
 import { createClient } from '@supabase/supabase-js';
-import { sendPlanChangeEmail, sendPurchaseConfirmationEmail } from '@/lib/email-service';
+import { sendPlanChangeEmail, sendPurchaseConfirmationEmail, sendLowCreditsWarningEmail } from '@/lib/email-service';
 
 // Supabase directo para obtener email y datos confiables del usuario
 const supabaseAdmin = createClient(
@@ -94,6 +94,15 @@ export async function PUT(request: NextRequest) {
         emailResults.credits = { sent: false, error: emailError.message };
         console.error('USERS API PUT: Error enviando email de creditos:', emailError.message);
       }
+    }
+
+    // C3: Email si creditos estan bajos (< 100)
+    if (updates.credits !== undefined && newCredits < 100 && newCredits < oldCredits && currentUser.email) {
+      sendLowCreditsWarningEmail(currentUser.email, currentUser.name || 'Usuario', {
+        credits: newCredits,
+        plan: newPlan,
+      }).catch(e => console.error('USERS API PUT: Error enviando low credits warning:', e));
+      emailResults.lowCredits = { triggered: true, credits: newCredits };
     }
 
     return NextResponse.json({

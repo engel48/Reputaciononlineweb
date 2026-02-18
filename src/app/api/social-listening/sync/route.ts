@@ -4,6 +4,12 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { SocialListeningService } from "@/services/socialMediaService"
 import { SentimentAnalysisService } from "@/services/sentimentAnalysisService"
+import {
+  sendNewMentionAlert,
+  sendNegativeSpikeAlert,
+  sendFollowerMilestoneEmail,
+  sendEngagementSpikeEmail,
+} from "@/lib/email-service"
 
 export async function POST(request: NextRequest) {
   try {
@@ -84,6 +90,75 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(`Sincronización completada para ${syncResults.length} plataformas`)
+
+    // === EMAIL TRIGGERS (non-blocking) ===
+    if (user.email) {
+      const userName = user.name || 'Usuario';
+
+      // Check for negative mentions and send alerts
+      for (const result of syncResults) {
+        const negativePosts = result.recentPosts.filter((p: any) => p.sentiment === 'negative');
+
+        // A1: Alert for worst negative mention
+        if (negativePosts.length > 0) {
+          const worst = negativePosts.sort((a: any, b: any) => a.score - b.score)[0];
+          sendNewMentionAlert(user.email, userName, {
+            content: worst.content,
+            source: result.platform,
+            author: result.username,
+            sentiment: 'negative',
+            sentimentScore: worst.score,
+            date: new Date().toLocaleDateString('es-CO'),
+          }).catch(e => console.error('SYNC EMAIL: Error sending mention alert:', e));
+        }
+
+        // A2: Check for negative spike (>5 negatives in one sync)
+        if (negativePosts.length >= 5) {
+          sendNegativeSpikeAlert(user.email, userName, {
+            negativeCount: negativePosts.length,
+            averageCount: Math.round(result.postsAnalyzed * 0.15),
+            increasePercent: Math.round((negativePosts.length / Math.max(result.postsAnalyzed * 0.15, 1)) * 100),
+            topMentions: negativePosts.slice(0, 3).map((p: any) => ({
+              content: p.content, source: result.platform, author: result.username,
+            })),
+            period: 'las ultimas horas',
+          }).catch(e => console.error('SYNC EMAIL: Error sending spike alert:', e));
+        }
+
+        // A4: Check for engagement spike (any post with 2x+ average engagement)
+        const avgEngagement = result.recentPosts.reduce((sum: number, p: any) => sum + (p.engagement || 0), 0) / Math.max(result.recentPosts.length, 1);
+        const viralPosts = result.recentPosts.filter((p: any) => (p.engagement || 0) > avgEngagement * 2 && avgEngagement > 0);
+        if (viralPosts.length > 0) {
+          const topPost = viralPosts.sort((a: any, b: any) => (b.engagement || 0) - (a.engagement || 0))[0];
+          sendEngagementSpikeEmail(user.email, userName, {
+            platform: result.platform,
+            postContent: topPost.content,
+            likes: Math.round((topPost.engagement || 0) * 0.6),
+            shares: Math.round((topPost.engagement || 0) * 0.2),
+            comments: Math.round((topPost.engagement || 0) * 0.2),
+            engagementRate: topPost.engagement || 0,
+            averageEngagement: avgEngagement,
+            postUrl: undefined,
+          }).catch(e => console.error('SYNC EMAIL: Error sending engagement alert:', e));
+        }
+      }
+
+      // A3: Check follower milestones
+      const milestones = [500, 1000, 2000, 5000, 10000, 25000, 50000, 100000];
+      for (const metrics of socialMetrics) {
+        for (const milestone of milestones) {
+          if (metrics.followers >= milestone && (metrics.followers - (metrics.followers % 100)) <= milestone + 100) {
+            sendFollowerMilestoneEmail(user.email, userName, {
+              platform: metrics.platform,
+              currentFollowers: metrics.followers,
+              milestone,
+              previousFollowers: Math.max(metrics.followers - 50, 0),
+            }).catch(e => console.error('SYNC EMAIL: Error sending milestone alert:', e));
+            break;
+          }
+        }
+      }
+    }
 
     return NextResponse.json({
       success: true,
