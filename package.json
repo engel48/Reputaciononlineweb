@@ -71,6 +71,7 @@
     "d3-scale": "^4.0.2",
     "date-fns": "^4.1.0",
     "framer-motion": "^10.16.4",
+    "groq-sdk": "^0.37.0",
     "gsap": "^3.13.0",
     "jsonwebtoken": "^9.0.2",
     "leaflet": "^1.9.4",

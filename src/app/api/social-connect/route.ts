@@ -159,7 +159,7 @@ export async function GET(request: NextRequest) {
 }
 
 function generateOAuthUrl(platform: string): string {
-  const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3002';
+  const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
   const callbackUrl = `${baseUrl}/dashboard/redes-sociales?connect=${platform}`;
   
   switch (platform) {

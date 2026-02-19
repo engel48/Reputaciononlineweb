@@ -1,56 +1,56 @@
-// Servicio de IA centralizado usando Google Gemini
+// Servicio de IA centralizado usando Groq (LPU Inference)
 // Mantiene el branding como "Julia" para el usuario
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import Groq from 'groq-sdk';
 
 interface AIMessage {
   role: 'system' | 'user' | 'assistant';
   content: string;
 }
 
+const GROQ_MODEL = 'llama-3.3-70b-versatile';
+
 class AIService {
-  private genAI?: GoogleGenerativeAI;
-  private geminiApiKey: string;
-  private model?: any;
+  private client?: Groq;
 
   constructor() {
-    this.geminiApiKey = process.env.GEMINI_API_KEY || '';
+    const apiKey = process.env.GROQ_API_KEY || '';
 
-    if (!this.geminiApiKey) {
-      console.warn('⚠️ GEMINI_API_KEY no está configurada');
+    if (!apiKey) {
+      console.warn('⚠️ GROQ_API_KEY no está configurada');
     } else {
-      this.genAI = new GoogleGenerativeAI(this.geminiApiKey);
-      // Usando gemini-2.5-flash (versión estable con mejor cuota y rendimiento)
-      this.model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+      this.client = new Groq({ apiKey });
     }
   }
 
-  private async callGemini(messages: AIMessage[], options?: {
+  private async callGroq(messages: AIMessage[], options?: {
     temperature?: number;
     max_tokens?: number;
   }): Promise<string> {
-    if (!this.geminiApiKey || !this.model) {
+    if (!this.client) {
       console.log('🤖 Julia: API no disponible, usando respuesta simulada');
-      throw new Error('Gemini API not configured');
+      throw new Error('Groq API not configured');
     }
 
     try {
-      console.log('🤖 Julia: Procesando con Gemini AI...');
+      console.log('🤖 Julia: Procesando con Groq AI...');
 
-      // Combinar system y user messages para Gemini
-      const systemMessage = messages.find(m => m.role === 'system')?.content || '';
-      const userMessages = messages.filter(m => m.role === 'user');
+      const completion = await this.client.chat.completions.create({
+        messages: messages.map(m => ({
+          role: m.role,
+          content: m.content
+        })),
+        model: GROQ_MODEL,
+        temperature: options?.temperature ?? 0.7,
+        max_tokens: options?.max_tokens ?? 2048
+      });
 
-      const fullPrompt = systemMessage + '\n\n' + userMessages.map(m => m.content).join('\n');
+      const text = completion.choices[0]?.message?.content || '';
 
-      const result = await this.model.generateContent(fullPrompt);
-      const response = await result.response;
-      const text = response.text();
-
-      console.log('✅ Julia: Respuesta generada exitosamente con Gemini');
+      console.log('✅ Julia: Respuesta generada exitosamente con Groq');
       return text;
     } catch (error: any) {
-      console.error('❌ Julia: Error con Gemini:', error?.message || error);
+      console.error('❌ Julia: Error con Groq:', error?.message || error);
       throw error;
     }
   }
@@ -61,7 +61,7 @@ class AIService {
     stream?: boolean;
   }): Promise<string> {
     try {
-      return await this.callGemini(messages, options);
+      return await this.callGroq(messages, options);
     } catch (error) {
       console.error('🚨 Julia: Error en servicio de IA:', error);
       throw new Error('Julia no puede procesar la solicitud en este momento');
@@ -157,7 +157,7 @@ REGLAS:
         explanation: parsed.explanation || 'Análisis completado'
       };
     } catch (error) {
-      console.error('❌ Error analizando sentimiento con Gemini:', error);
+      console.error('❌ Error analizando sentimiento con Groq:', error);
       throw error; // Lanzar error para que el endpoint use fallback
     }
   }
@@ -191,7 +191,8 @@ REGLAS:
       const response = await this.chat(messages, { temperature: 0.5 });
       // Limpiar respuesta de markdown si existe
       const jsonText = response.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-      return JSON.parse(jsonText);
+      const match = jsonText.match(/\{[\s\S]*\}/);
+      return JSON.parse(match ? match[0] : jsonText);
     } catch (error) {
       console.error('Error buscando información:', error);
       return {
@@ -226,7 +227,8 @@ REGLAS:
     try {
       const response = await this.chat(messages, { temperature: 0.6 });
       const jsonText = response.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-      return JSON.parse(jsonText);
+      const match = jsonText.match(/\{[\s\S]*\}/);
+      return JSON.parse(match ? match[0] : jsonText);
     } catch (error) {
       console.error('Error en análisis político:', error);
       return {
