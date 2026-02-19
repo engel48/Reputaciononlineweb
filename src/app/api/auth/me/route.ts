@@ -10,7 +10,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth-helper';
-import { userService } from '@/lib/database';
+import { userService } from '@/lib/database-adapter';
 
 export async function GET(request: NextRequest) {
   try {

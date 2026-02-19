@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { decryptToken, isEncrypted } from '@/lib/encryption';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 
@@ -61,11 +62,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Desencriptar token antes de usarlo
+    const rawToken = socialMedia.access_token;
+    const accessToken = isEncrypted(rawToken) ? decryptToken(rawToken) : rawToken;
+
     console.log(`✅ Conexión encontrada para usuario: ${userId}`);
 
     // 2. Obtener páginas del usuario
     const pagesResponse = await fetch(
-      `https://graph.facebook.com/v18.0/me/accounts?access_token=${socialMedia.access_token}`
+      `https://graph.facebook.com/v18.0/me/accounts?access_token=${accessToken}`
     );
 
     if (!pagesResponse.ok) {

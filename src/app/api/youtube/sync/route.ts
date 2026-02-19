@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { youtubeOAuth } from '@/lib/oauth/youtube';
 import { aiService } from '@/lib/ai-service';
 import { userService, socialMediaService } from '@/lib/database-adapter';
+import { decryptToken, isEncrypted } from '@/lib/encryption';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 
@@ -10,7 +11,7 @@ import jwt from 'jsonwebtoken';
  *
  * Funcionalidad:
  * 1. Obtiene datos del canal (perfil, videos, comentarios)
- * 2. Analiza sentimiento usando Gemini AI
+ * 2. Analiza sentimiento usando Groq AI
  * 3. Calcula métricas de reputación
  * 4. Guarda en Supabase
  * 5. Retorna datos procesados
@@ -55,8 +56,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const accessToken = socialMedia.access_token;
-    console.log('✅ Token de YouTube encontrado');
+    const rawToken = socialMedia.access_token;
+    const accessToken = isEncrypted(rawToken) ? decryptToken(rawToken) : rawToken;
+    console.log('✅ Token de YouTube encontrado y desencriptado');
 
     // 3. Obtener configuración de sincronización
     const { maxVideos = 20, maxCommentsPerVideo = 50, lookbackDays = 30 } = await request.json();
@@ -100,7 +102,7 @@ export async function POST(request: NextRequest) {
 
         console.log(`   - ${comments.length} comentarios obtenidos`);
 
-        // Analizar sentimiento de cada comentario usando Gemini AI
+        // Analizar sentimiento de cada comentario usando Groq AI
         for (const comment of comments) {
           try {
             // Usar Gemini AI para análisis de sentimiento
