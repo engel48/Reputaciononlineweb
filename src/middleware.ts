@@ -58,6 +58,11 @@ export async function middleware(request: NextRequest) {
   const authHeader = request.headers.get('authorization');
   const hasAuthToken = !!(cookieToken || authHeader?.startsWith('Bearer '));
 
+  // Redirigir raiz: autenticados al dashboard, no autenticados al login
+  if (pathname === '/') {
+    return NextResponse.redirect(new URL(hasAuthToken ? '/dashboard' : '/login', request.url))
+  }
+
   // Si es ruta pública y no protegida, permitir acceso
   if (isPublicPath && !isProtectedPath && !isAdminPath) {
     return NextResponse.next()
