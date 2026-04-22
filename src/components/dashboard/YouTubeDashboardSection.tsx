@@ -86,7 +86,7 @@ export default function YouTubeDashboardSection() {
       setLoading(true);
       setError(null);
 
-      const response = await fetch('/api/youtube/dashboard');
+      const response = await fetch('/api/youtube/dashboard', { credentials: 'include' });
       const result = await response.json();
 
       if (!response.ok || !result.success) {
@@ -107,6 +107,7 @@ export default function YouTubeDashboardSection() {
       setSyncing(true);
       const response = await fetch('/api/youtube/sync', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ maxVideos: 20, maxCommentsPerVideo: 50 })
       });

@@ -104,7 +104,7 @@ export default function XDashboardSection() {
       setLoading(true);
       setError(null);
 
-      const response = await fetch('/api/x/dashboard');
+      const response = await fetch('/api/x/dashboard', { credentials: 'include' });
       const result = await response.json();
 
       if (!response.ok || !result.success) {
@@ -125,6 +125,7 @@ export default function XDashboardSection() {
       setSyncing(true);
       const response = await fetch('/api/x/sync', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ maxTweets: 20, maxRepliesPerTweet: 50 })
       });

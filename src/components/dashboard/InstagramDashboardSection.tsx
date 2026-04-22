@@ -103,7 +103,7 @@ export default function InstagramDashboardSection() {
       setLoading(true);
       setError(null);
 
-      const response = await fetch('/api/instagram/dashboard');
+      const response = await fetch('/api/instagram/dashboard', { credentials: 'include' });
       const result = await response.json();
 
       if (!response.ok || !result.success) {
@@ -124,6 +124,7 @@ export default function InstagramDashboardSection() {
       setSyncing(true);
       const response = await fetch('/api/instagram/sync', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ maxPosts: 20, maxCommentsPerPost: 50 })
       });

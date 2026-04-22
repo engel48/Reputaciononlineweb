@@ -103,7 +103,7 @@ export default function FacebookDashboardSection() {
       setLoading(true);
       setError(null);
 
-      const response = await fetch('/api/facebook/dashboard');
+      const response = await fetch('/api/facebook/dashboard', { credentials: 'include' });
       const result = await response.json();
 
       if (!response.ok || !result.success) {
@@ -124,6 +124,7 @@ export default function FacebookDashboardSection() {
       setSyncing(true);
       const response = await fetch('/api/facebook/sync', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ maxPosts: 20, maxCommentsPerPost: 50 })
       });
