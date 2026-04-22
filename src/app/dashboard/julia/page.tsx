@@ -418,14 +418,17 @@ export default function JuliaPage() {
               <Coins className="w-3 h-3 mr-0.5" />{CREDIT_COSTS.julia_reputation} creditos
             </span>
           </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-            Ingresa el nombre de una persona o marca para generar un reporte de reputacion con Julia IA.
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+            Ingresa el nombre de una persona o marca. Julia buscará noticias <strong>en tiempo real</strong> en Google News y medios colombianos, y generará un análisis basado en las fuentes encontradas.
+          </p>
+          <p className="text-xs text-blue-600 dark:text-blue-400 mb-4 flex items-center gap-1">
+            <Sparkles className="w-3 h-3" /> Scraping en vivo · Sin datos simulados
           </p>
           <input
             type="text"
             value={reportName}
             onChange={(e) => setReportName(e.target.value)}
-            placeholder="Nombre de persona o marca..."
+            placeholder="Ej: Gustavo Petro, Ecopetrol, Nequi..."
             className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white text-sm focus:ring-2 focus:ring-[#01257D]"
           />
           <button
@@ -433,7 +436,7 @@ export default function JuliaPage() {
             disabled={reportLoading || !reportName.trim()}
             className="mt-3 px-6 py-2 bg-[#01257D] text-white rounded-lg hover:bg-[#013AAA] disabled:opacity-50 font-medium text-sm"
           >
-            {reportLoading ? 'Generando reporte...' : 'Generar Reporte'}
+            {reportLoading ? 'Buscando noticias y analizando...' : 'Generar Reporte'}
           </button>
 
           {reportResult && (
@@ -453,7 +456,7 @@ export default function JuliaPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm text-blue-600 dark:text-blue-400">Score de Reputacion</p>
-                        <p className="text-3xl font-bold text-blue-700 dark:text-blue-300">{reportResult.overallScore || 50}/100</p>
+                        <p className="text-3xl font-bold text-blue-700 dark:text-blue-300">{reportResult.overallScore || 0}/100</p>
                       </div>
                       <span className={`px-3 py-1 rounded-full text-sm font-medium ${
                         reportResult.sentiment === 'positive' ? 'bg-green-100 text-green-700' : reportResult.sentiment === 'negative' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'
@@ -462,6 +465,31 @@ export default function JuliaPage() {
                       </span>
                     </div>
                   </div>
+
+                  {/* Fuentes encontradas */}
+                  {typeof reportResult.sources_found === 'number' && (
+                    <div className="p-3 bg-gray-50 dark:bg-gray-900/40 rounded-lg border border-gray-200 dark:border-gray-700">
+                      <p className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-1">
+                        <Sparkles className="w-3 h-3 text-[#00E5FF]" />
+                        Análisis basado en{' '}
+                        <strong className="text-gray-800 dark:text-white">
+                          {reportResult.sources_found} fuentes reales
+                        </strong>
+                        {reportResult.sources_summary && Object.keys(reportResult.sources_summary).length > 0 && (
+                          <>
+                            {' '}— Top medios:{' '}
+                            <span className="text-gray-700 dark:text-gray-300">
+                              {Object.entries(reportResult.sources_summary as Record<string, number>)
+                                .sort((a, b) => b[1] - a[1])
+                                .slice(0, 5)
+                                .map(([src, count]) => `${src} (${count})`)
+                                .join(', ')}
+                            </span>
+                          </>
+                        )}
+                      </p>
+                    </div>
+                  )}
 
                   {/* Summary */}
                   {reportResult.summary && (

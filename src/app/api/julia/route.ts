@@ -3,6 +3,7 @@ import { aiService } from '@/lib/ai-service';
 import { buildUserContext } from '@/lib/user-context';
 import { deductCreditsForAction, extractUserIdFromToken, checkBalance } from '@/lib/credit-guard';
 import { CREDIT_COSTS, CreditAction } from '@/lib/credit-costs';
+import { searchGoogleNewsLive } from '@/lib/news-search/google-news-rss';
 
 // Runtime Node.js (necesario para groq-sdk + supabase-server)
 // maxDuration extendido porque la llamada a Groq + buildUserContext + deduct
@@ -98,8 +99,9 @@ export async function POST(request: NextRequest) {
       }
       response = JSON.stringify(await aiService.generateCrisisResponse(alertData, userContext));
     } else if (action === 'reputation' && message) {
-      // Si el cliente mandó context, usarlo. Si no, cargar automáticamente datos
-      // REALES del sistema: menciones del user + noticias scrapeadas relevantes.
+      // Si el cliente mandó context, usarlo. Si no, buscar noticias EN VIVO
+      // en Google News (tiempo real) + mezclar con menciones reales del user.
+      // Cero datos simulados — todo viene de fuentes verificables.
       let newsData: any[] = [];
       try {
         newsData = context ? JSON.parse(context) : [];
@@ -107,51 +109,95 @@ export async function POST(request: NextRequest) {
         newsData = [];
       }
 
+      const sourcesSummary: Record<string, number> = {};
+
       if (newsData.length === 0) {
+        // 1) Búsqueda EN VIVO en Google News (no caché, tiempo real)
+        try {
+          const liveNews = await searchGoogleNewsLive(message, { limit: 25 });
+          for (const item of liveNews) {
+            newsData.push({
+              title: item.title,
+              source: item.source || 'Google News',
+              date: item.pubDate,
+              url: item.link,
+              snippet: item.snippet,
+              sentiment: 'neutral', // se analizará en conjunto por Julia
+            });
+            sourcesSummary[item.source || 'otros'] =
+              (sourcesSummary[item.source || 'otros'] || 0) + 1;
+          }
+          console.log(
+            `[julia/reputation] Google News: ${liveNews.length} noticias en vivo para "${message}"`
+          );
+        } catch (liveErr) {
+          console.warn('[julia/reputation] Google News search falló:', liveErr);
+        }
+
+        // 2) Complementar con menciones propias del user (solo si user autenticado)
         try {
           const { supabase } = await import('@/lib/supabase-server');
-
-          // 1) Traer menciones propias del user (últimos 30 días)
           if (userId) {
             const { data: mentions } = await supabase
               .from('mentions')
-              .select('content, platform, published_at, metadata')
+              .select('content, platform, published_at, url, metadata')
               .eq('user_id', userId)
               .order('published_at', { ascending: false })
-              .limit(20);
+              .limit(10);
 
             for (const m of (mentions || []) as any[]) {
               newsData.push({
                 title: String(m.content || '').slice(0, 200),
-                source: m.platform,
+                source: m.platform || 'redes sociales',
                 sentiment: m.metadata?.sentiment || 'neutral',
                 date: m.published_at,
+                url: m.url,
               });
             }
           }
 
-          // 2) Traer noticias scrapeadas que mencionen el nombre
-          const { data: news } = await supabase
+          // 3) Noticias ya scrapeadas en BD (histórico) para contexto adicional
+          const { data: cachedNews } = await supabase
             .from('scraped_news')
-            .select('title, source, sentiment, published_at')
-            .ilike('title', `%${message}%`)
+            .select('title, source, sentiment, published_at, article_url')
+            .or(`title.ilike.%${message}%,content.ilike.%${message}%`)
             .order('published_at', { ascending: false })
-            .limit(20);
+            .limit(10);
 
-          for (const n of (news || []) as any[]) {
+          for (const n of (cachedNews || []) as any[]) {
+            // Evitar duplicados con Google News (por URL o título similar)
+            const alreadyHave = newsData.some(
+              (x) =>
+                (x.url && n.article_url && x.url === n.article_url) ||
+                (typeof x.title === 'string' &&
+                  typeof n.title === 'string' &&
+                  x.title.toLowerCase().slice(0, 50) === n.title.toLowerCase().slice(0, 50))
+            );
+            if (alreadyHave) continue;
             newsData.push({
               title: n.title,
               source: n.source,
               sentiment: n.sentiment || 'neutral',
               date: n.published_at,
+              url: n.article_url,
             });
           }
         } catch (enrichErr) {
-          console.warn('[julia/reputation] enrichment falló, continuando:', enrichErr);
+          console.warn('[julia/reputation] enrichment BD falló, continuando:', enrichErr);
         }
       }
 
-      response = JSON.stringify(await aiService.analyzeReputation(message, newsData, userContext));
+      const analysis = await aiService.analyzeReputation(message, newsData, userContext);
+
+      // Adjuntar metadata de fuentes para que el cliente muestre "basado en N noticias reales"
+      const enriched = {
+        ...analysis,
+        sources_found: newsData.length,
+        sources_summary: sourcesSummary,
+        query: message,
+      };
+
+      response = JSON.stringify(enriched);
     } else if (action === 'recommendations') {
       if (!userContext) {
         return NextResponse.json(
