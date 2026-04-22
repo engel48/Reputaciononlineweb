@@ -13,6 +13,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { saveOAuthConnection } from '@/lib/oauth-storage';
+import { checkSocialAccountLimit } from '@/lib/plan-limits';
 import { facebookOAuth } from '@/lib/oauth/facebook';
 import jwt from 'jsonwebtoken';
 
@@ -115,7 +116,16 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Step 3: Save to Supabase
+    // Step 3: Verificar límite del plan antes de conectar
+    const limitCheck = await checkSocialAccountLimit(userId, 'instagram');
+    if (!limitCheck.allowed) {
+      console.warn(`⚠️ Instagram conexión rechazada por límite de plan: ${limitCheck.reason}`);
+      return NextResponse.redirect(
+        `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/oauth-callback?error=plan_limit&plan=${limitCheck.plan}&reason=${encodeURIComponent(limitCheck.reason || 'Límite alcanzado')}`
+      );
+    }
+
+    // Step 4: Save to Supabase
     const expiresAt = new Date(Date.now() + (expires_in || 3600) * 1000);
 
     const saved = await saveOAuthConnection({

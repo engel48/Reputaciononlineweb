@@ -154,6 +154,17 @@ export async function POST(request: NextRequest) {
 
     console.log(`✅ Perfil del canal obtenido: ${channelProfile.snippet.title}`);
 
+    // Verificar límite del plan antes de conectar
+    const { checkSocialAccountLimit } = await import('@/lib/plan-limits');
+    const limitCheck = await checkSocialAccountLimit(userId, 'youtube');
+    if (!limitCheck.allowed) {
+      console.warn(`⚠️ YouTube conexión rechazada por límite de plan: ${limitCheck.reason}`);
+      return NextResponse.json(
+        { success: false, error: limitCheck.reason, plan: limitCheck.plan, limit: limitCheck.limit },
+        { status: 403 }
+      );
+    }
+
     // Guardar en Supabase con encriptación via saveOAuthConnection
     const { saveOAuthConnection } = await import('@/lib/oauth-storage');
     const expiresAt = new Date(Date.now() + expires_in * 1000);

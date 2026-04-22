@@ -10,6 +10,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { saveOAuthConnection } from '@/lib/oauth-storage';
+import { checkSocialAccountLimit } from '@/lib/plan-limits';
 import jwt from 'jsonwebtoken';
 
 const TWITTER_CLIENT_ID = process.env.TWITTER_CLIENT_ID || process.env.NEXT_PUBLIC_TWITTER_CLIENT_ID;
@@ -127,7 +128,16 @@ export async function GET(request: NextRequest) {
     const profile = profileData.data;
     console.log('✅ Perfil obtenido:', profile.username);
 
-    // PASO 3: Guardar en Supabase con encriptación
+    // PASO 3: Verificar límite del plan antes de conectar
+    const limitCheck = await checkSocialAccountLimit(userId, 'x');
+    if (!limitCheck.allowed) {
+      console.warn(`⚠️ X conexión rechazada por límite de plan: ${limitCheck.reason}`);
+      return NextResponse.redirect(
+        `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/oauth-callback?error=plan_limit&plan=${limitCheck.plan}&reason=${encodeURIComponent(limitCheck.reason || 'Límite alcanzado')}`
+      );
+    }
+
+    // PASO 4: Guardar en Supabase con encriptación
     const expiresAt = new Date(Date.now() + expires_in * 1000);
 
     const saved = await saveOAuthConnection({

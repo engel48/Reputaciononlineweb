@@ -109,7 +109,7 @@ const PLAN_FEATURES: Record<string, PlanFeatures> = {
     hasSpeechAnalysis: false,
   },
   pro: {
-    maxSocialAccounts: 10,
+    maxSocialAccounts: 4,
     maxMonthlyCredits: 5000,
     maxSearchQueries: 500,
     maxReports: 10,
@@ -141,8 +141,8 @@ const PLAN_FEATURES: Record<string, PlanFeatures> = {
     hasSpeechAnalysis: true,
   },
   enterprise: {
-    maxSocialAccounts: -1, // Ilimitado
-    maxMonthlyCredits: -1, // Ilimitado
+    maxSocialAccounts: 8, // Múltiples cuentas por red permitidas
+    maxMonthlyCredits: 50000, // Renovación mensual automática
     maxSearchQueries: -1, // Ilimitado
     maxReports: -1, // Ilimitado
     hasAdvancedAnalytics: true,

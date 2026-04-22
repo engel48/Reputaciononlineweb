@@ -51,14 +51,28 @@ export const register = async (userData: RegisterData): Promise<LoginResponse> =
       company: userData.company
     });
     
-    // Actualizar datos adicionales incluyendo profileType y plan
+    // Por defecto los users nuevos van a plan 'free' con 100 créditos.
+    // Si el registro incluye un plan de pago explícito (ej. desde /register con
+    // upgrade seleccionado), respetamos ese y asignamos los créditos del plan.
+    const defaultCreditsByPlan: Record<string, number> = {
+      free: 100,
+      basic: 500,
+      pro: 5000,
+      enterprise: 50000,
+    };
+    const resolvedPlan = userData.plan || 'free';
+    const resolvedCredits =
+      typeof userData.credits === 'number' && userData.credits > 0
+        ? userData.credits
+        : defaultCreditsByPlan[resolvedPlan] ?? 100;
+
     const updateData = {
       phone: userData.phone,
       avatarUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.name)}&background=01257D&color=fff`,
-      credits: userData.credits || 1000, // Créditos según el plan seleccionado
+      credits: resolvedCredits,
       onboardingCompleted: Boolean(userData.onboardingCompleted),
       profileType: userData.profileType || 'personal',
-      plan: userData.plan || 'basic',
+      plan: resolvedPlan,
       role: userData.role || 'user'
     };
     
