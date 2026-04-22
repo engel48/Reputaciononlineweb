@@ -12,6 +12,7 @@ import {
   ThumbsUp, ThumbsDown, Eye, Bookmark, Play, Loader2
 } from 'lucide-react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { emitCreditsChanged } from '@/lib/credit-events';
 
 interface BrandRecommendation {
   id: string;
@@ -205,8 +206,9 @@ export default function AIBrandAdvisor({ userProfile }: AIBrandAdvisorProps) {
         }
 
         const data = await response.json();
+        emitCreditsChanged(data.credits?.newBalance);
 
-        // Parsear respuesta de Gemini (puede venir como string JSON)
+        // Parsear respuesta (puede venir como string JSON)
         let parsedData = data.response;
         if (typeof parsedData === 'string') {
           // Limpiar markdown si existe
@@ -288,6 +290,7 @@ export default function AIBrandAdvisor({ userProfile }: AIBrandAdvisorProps) {
 
       if (response.ok) {
         const data = await response.json();
+        emitCreditsChanged(data.credits?.newBalance);
         let parsedData = data.response;
 
         if (typeof parsedData === 'string') {

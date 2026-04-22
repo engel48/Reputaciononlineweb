@@ -9,6 +9,7 @@ import {
   Calendar, Clock, AlertTriangle, CheckCircle, ArrowUp, ArrowDown,
   Filter, Download, RefreshCw, Search, Bell, Settings, Shield
 } from 'lucide-react';
+import { emitCreditsChanged } from '@/lib/credit-events';
 
 interface InfluenceMetrics {
   totalFollowers: number;
@@ -126,6 +127,7 @@ export default function InfluenceTracker({ userProfile }: InfluenceTrackerProps)
           })
         });
         const opportunitiesData = await opportunitiesResponse.json();
+        emitCreditsChanged(opportunitiesData.credits?.newBalance);
 
         setMetrics({
           totalFollowers,

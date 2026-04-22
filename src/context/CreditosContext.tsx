@@ -28,6 +28,7 @@ interface CreditContextType {
   totalPurchased: number;
   totalUsed: number;
   isLoading: boolean;
+  lastUpdated: Date | null;
 
   // Historial y transacciones
   transactions: CreditTransaction[];
@@ -37,7 +38,7 @@ interface CreditContextType {
 
   // Acciones
   purchaseCredits: (planId: string) => Promise<boolean>;
-  useCredits: (amount: number, service: string, description: string) => Promise<boolean>;
+  refreshBalance: (newBalance?: number) => Promise<void>;
   refreshData: () => Promise<void>;
 
   // Utilidades
@@ -114,6 +115,7 @@ export const CreditProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const [totalPurchased, setTotalPurchased] = useState<number>(0);
   const [totalUsed, setTotalUsed] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [transactions, setTransactions] = useState<CreditTransaction[]>([]);
   const [availablePlans] = useState<CreditPlan[]>(AVAILABLE_PLANS);
 
@@ -146,6 +148,7 @@ export const CreditProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         setCurrentBalance(data.data.balance || 0);
         setTotalPurchased(data.data.totalPurchased || 0);
         setTotalUsed(data.data.totalUsed || 0);
+        setLastUpdated(new Date());
 
         // Mapear transacciones de la base de datos
         const mappedTransactions: CreditTransaction[] = (data.data.transactions || []).map((t: any) => ({
@@ -172,9 +175,36 @@ export const CreditProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     }
   };
 
+  /**
+   * Actualización optimista del balance. Si recibe `newBalance` lo setea
+   * inmediatamente (sin fetch) y en background refresca el historial completo.
+   * Si no recibe nada, hace un GET completo a /api/credits.
+   */
+  const refreshBalance = async (newBalance?: number): Promise<void> => {
+    if (typeof newBalance === 'number' && newBalance >= 0) {
+      setCurrentBalance(newBalance);
+      setLastUpdated(new Date());
+      // Refresco el historial completo en segundo plano
+      loadCreditsData().catch(() => {});
+      return;
+    }
+    await loadCreditsData();
+  };
+
   // Inicializar datos al montar el componente
   useEffect(() => {
     loadCreditsData();
+  }, []);
+
+  // Escuchar evento global "creditsChanged" disparado por los endpoints IA
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail as { newBalance?: number } | undefined;
+      refreshBalance(detail?.newBalance);
+    };
+    window.addEventListener('creditsChanged', handler);
+    return () => window.removeEventListener('creditsChanged', handler);
   }, []);
 
   const purchaseCredits = async (planId: string): Promise<boolean> => {
@@ -213,41 +243,6 @@ export const CreditProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     }
   };
 
-  const useCredits = async (amount: number, service: string, description: string): Promise<boolean> => {
-    try {
-      if (currentBalance < amount) return false;
-
-      // Llamar a la API para registrar el uso
-      const response = await fetch('/api/credits/use', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          amount,
-          service,
-          description,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al usar creditos');
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Recargar datos para reflejar cambios
-        await loadCreditsData();
-        return true;
-      }
-
-      return false;
-    } catch (error) {
-      console.error('Error usando creditos:', error);
-      return false;
-    }
-  };
-
   const refreshData = async (): Promise<void> => {
     await loadCreditsData();
   };
@@ -281,10 +276,11 @@ export const CreditProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     totalPurchased,
     totalUsed,
     isLoading,
+    lastUpdated,
     transactions,
     availablePlans,
     purchaseCredits,
-    useCredits,
+    refreshBalance,
     refreshData,
     getMonthlyUsage,
     getWeeklyUsage,

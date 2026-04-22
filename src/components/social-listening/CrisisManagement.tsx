@@ -2,14 +2,15 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  AlertTriangle, Shield, Bell, MessageSquare, TrendingDown, 
-  Activity, Clock, Users, MapPin, Target, Zap, Phone, 
+import {
+  AlertTriangle, Shield, Bell, MessageSquare, TrendingDown,
+  Activity, Clock, Users, MapPin, Target, Zap, Phone,
   MessageCircle, Send, CheckCircle, XCircle, PlayCircle,
   PauseCircle, Settings, Filter, RefreshCw, Download,
   BarChart3, PieChart, ArrowUp, ArrowDown, Eye, Heart,
   Share2, AlertCircle, Flame, Siren, PhoneCall, Mail
 } from 'lucide-react';
+import { emitCreditsChanged } from '@/lib/credit-events';
 
 interface CrisisAlert {
   id: string;
@@ -130,6 +131,7 @@ export default function CrisisManagement({ userProfile }: CrisisManagementProps)
           })
         });
         const crisisAnalysis = await crisisAnalysisResponse.json();
+        emitCreditsChanged(crisisAnalysis.credits?.newBalance);
 
         // Set crisis alerts from AI analysis
         if (crisisAnalysis.alerts && crisisAnalysis.alerts.length > 0) {

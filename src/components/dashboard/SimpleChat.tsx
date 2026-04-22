@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Brain, Send, User } from 'lucide-react';
+import { emitCreditsChanged } from '@/lib/credit-events';
 
 interface Mensaje {
   id: string;
@@ -67,6 +68,7 @@ export default function SimpleChat() {
           timestamp: new Date()
         };
         setMensajes(prev => [...prev, mensajeJulia]);
+        emitCreditsChanged(data.credits?.newBalance);
       } else {
         throw new Error('Error en la respuesta');
       }

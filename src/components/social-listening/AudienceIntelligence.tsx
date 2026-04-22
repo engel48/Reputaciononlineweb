@@ -8,6 +8,7 @@ import {
   User, Activity, Heart, ArrowUp, ArrowDown, Loader2, AlertCircle
 } from 'lucide-react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { emitCreditsChanged } from '@/lib/credit-events';
 
 interface UserProfile {
   type: string;
@@ -173,6 +174,7 @@ export default function AudienceIntelligence({ userProfile }: AudienceIntelligen
           }
 
           const data = await response.json();
+          emitCreditsChanged(data.credits?.newBalance);
           let parsedData = data.response;
 
           if (typeof parsedData === 'string') {

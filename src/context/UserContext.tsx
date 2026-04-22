@@ -142,6 +142,37 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
   }, []);
 
+  // Escuchar evento creditsChanged para mantener user.credits sincronizado
+  // con CreditosContext. Si viene newBalance, lo aplicamos local; si no,
+  // re-fetchea /api/auth/verify.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handler = async (e: Event) => {
+      const detail = (e as CustomEvent).detail as { newBalance?: number } | undefined;
+      if (typeof detail?.newBalance === 'number' && detail.newBalance >= 0) {
+        setUser((prev) => (prev ? { ...prev, credits: detail.newBalance! } : prev));
+        return;
+      }
+      // Fallback: re-verificar sesión para traer balance actualizado
+      try {
+        const res = await fetch('/api/auth/verify', {
+          method: 'GET',
+          credentials: 'include',
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.success && data.user) {
+            setUser((prev) =>
+              prev ? { ...prev, credits: data.user.credits ?? prev.credits } : prev
+            );
+          }
+        }
+      } catch {}
+    };
+    window.addEventListener('creditsChanged', handler);
+    return () => window.removeEventListener('creditsChanged', handler);
+  }, []);
+
   // Actualizar usuario
   const updateUser = async (updates: Partial<User>) => {
     if (!user) return;

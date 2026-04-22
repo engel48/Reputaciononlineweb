@@ -22,6 +22,7 @@ import { usePlan } from '@/context/PlanContext';
 import FeatureGate, { PlanBadge } from '@/components/plan/FeatureGate';
 import { useHasMentionsData } from '@/hooks/useHasMentionsData';
 import { AIRecommendationsWidget } from '@/components/dashboard/AIRecommendationsWidget';
+import { CreditsWidget } from '@/components/dashboard/CreditsWidget';
 import Link from 'next/link';
 
 // Interfaces
@@ -439,6 +440,9 @@ export default function Dashboard() {
           </button>
         </div>
       </div>
+
+      {/* Widget de créditos en vivo */}
+      <CreditsWidget />
 
       {/* Banner onboarding - solo si no hay redes conectadas */}
       {!hasDataLoading && !hasConnections && (

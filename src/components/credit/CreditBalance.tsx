@@ -6,6 +6,7 @@ import { Wallet, PlusCircle, Clock, CreditCard } from 'lucide-react';
 
 interface CreditBalanceProps {
   currentBalance?: number;
+  lastUpdated?: Date | null;
   balanceHistory?: {
     date: string;
     amount: number;
@@ -14,10 +15,27 @@ interface CreditBalanceProps {
   }[];
 }
 
-const CreditBalance: React.FC<CreditBalanceProps> = ({ 
+function formatRelativeTime(date: Date | null | undefined): string {
+  if (!date) return 'Nunca actualizado';
+  const diffSec = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (diffSec < 5) return 'Actualizado ahora';
+  if (diffSec < 60) return `Actualizado hace ${diffSec}s`;
+  if (diffSec < 3600) return `Actualizado hace ${Math.floor(diffSec / 60)} min`;
+  if (diffSec < 86400) return `Actualizado hace ${Math.floor(diffSec / 3600)} h`;
+  return `Actualizado el ${date.toLocaleDateString('es-CO')}`;
+}
+
+const CreditBalance: React.FC<CreditBalanceProps> = ({
   currentBalance = 0,
+  lastUpdated = null,
   balanceHistory = []
 }) => {
+  // Tick cada 30s para refrescar el label de tiempo relativo
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setTick((t) => t + 1), 30_000);
+    return () => clearInterval(id);
+  }, []);
   const [isExpanded, setIsExpanded] = useState(false);
   const balanceRef = useRef<HTMLDivElement>(null);
   const counterRef = useRef<HTMLSpanElement>(null);
@@ -108,7 +126,7 @@ const CreditBalance: React.FC<CreditBalanceProps> = ({
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">Saldo de Créditos</h3>
             <p className="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
               <Clock className="mr-1 h-4 w-4" />
-              Actualizado hace 2 horas
+              {formatRelativeTime(lastUpdated)}
             </p>
           </div>
         </div>

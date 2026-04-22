@@ -11,6 +11,7 @@ import {
   Lightbulb,
   Loader2,
 } from 'lucide-react';
+import { emitCreditsChanged } from '@/lib/credit-events';
 
 interface Recommendation {
   title: string;
@@ -68,7 +69,10 @@ export function AIRecommendationsWidget() {
         throw new Error(json.error || 'No se pudieron generar recomendaciones');
       }
       setData(json.data || null);
-      if (json.credits) setCreditsInfo(json.credits);
+      if (json.credits) {
+        setCreditsInfo(json.credits);
+        emitCreditsChanged(json.credits.newBalance);
+      }
     } catch (err: any) {
       setError(err?.message || 'Error inesperado');
     } finally {

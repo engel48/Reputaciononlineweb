@@ -8,6 +8,7 @@ import SimpleChat from '@/components/dashboard/SimpleChat';
 import { CREDIT_COSTS } from '@/lib/credit-costs';
 import { useHasMentionsData } from '@/hooks/useHasMentionsData';
 import { useUser } from '@/context/UserContext';
+import { emitCreditsChanged } from '@/lib/credit-events';
 import Link from 'next/link';
 
 interface JuliaConversation {
@@ -98,6 +99,7 @@ export default function JuliaPage() {
       const data = await res.json();
       if (data.success) {
         try { setAnalysisResult(JSON.parse(data.response)); } catch { setAnalysisResult({ raw: data.response }); }
+        emitCreditsChanged(data.credits?.newBalance);
       } else {
         setAnalysisResult({ error: data.response || data.error });
       }
@@ -122,6 +124,7 @@ export default function JuliaPage() {
       const data = await res.json();
       if (data.success) {
         try { setReportResult(JSON.parse(data.response)); } catch { setReportResult({ raw: data.response }); }
+        emitCreditsChanged(data.credits?.newBalance);
       } else {
         setReportResult({ error: data.response || data.error });
       }

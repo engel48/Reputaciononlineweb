@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Send, Bot, User, Sparkles, RefreshCw, X, Minimize2, Maximize2, Volume2, VolumeX, Coins, Brain, AlertTriangle, FileText } from 'lucide-react';
+import { emitCreditsChanged } from '@/lib/credit-events';
 
 interface Message {
   id: string;
@@ -91,6 +92,7 @@ export default function JuliaChat() {
       // Actualizar saldo de creditos
       if (data.credits?.newBalance !== undefined) {
         setCreditBalance(data.credits.newBalance);
+        emitCreditsChanged(data.credits.newBalance);
       }
 
       if (data.success) {

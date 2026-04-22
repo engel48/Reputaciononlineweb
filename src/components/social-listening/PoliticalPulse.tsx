@@ -2,12 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
+import {
   Vote, MapPin, TrendingUp, TrendingDown, Users, MessageSquare,
   Calendar, Target, BarChart3, PieChart, Activity, AlertTriangle,
   CheckCircle, Clock, ArrowUp, ArrowDown, Zap, Globe, Filter,
   Search, RefreshCw, Download, Share2, Eye, ThumbsUp, ThumbsDown
 } from 'lucide-react';
+import { emitCreditsChanged } from '@/lib/credit-events';
 
 interface CampaignMetrics {
   totalMentions: number;
@@ -125,6 +126,7 @@ export default function PoliticalPulse({ userProfile }: PoliticalPulseProps) {
           })
         });
         const proposalData = await proposalAnalysisResponse.json();
+        emitCreditsChanged(proposalData.credits?.newBalance);
 
         setMetrics({
           totalMentions: politicalData.metrics.total_mentions || 0,
