@@ -17,6 +17,7 @@ import {
   Play
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { PlatformMentionsList } from './PlatformMentionsList';
 import { Button } from '@/components/ui/button';
 
 interface YouTubeData {
@@ -410,41 +411,12 @@ export default function YouTubeDashboardSection() {
           </CardContent>
         </Card>
 
-        {/* Mejores Comentarios */}
-        <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center text-base">
-              <ThumbsUp className="w-5 h-5 mr-2 text-green-600" />
-              Mejores Comentarios
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {data.top_mentions.most_positive.slice(0, 3).map((mention, index) => (
-                <div key={index} className="p-3 rounded-xl bg-[#00E5FF]/5 border border-[#00E5FF]/20">
-                  <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2 mb-2">
-                    "{mention.text}"
-                  </p>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-500 dark:text-gray-400">{mention.author}</span>
-                    <div className="flex items-center gap-1 text-[#00E5FF]">
-                      <ThumbsUp className="w-3 h-3" />
-                      <span className="font-semibold">{mention.likes}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              {data.top_mentions.most_positive.length === 0 && (
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 mx-auto rounded-2xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-3">
-                    <CheckCircle2 className="w-8 h-8 text-gray-400" />
-                  </div>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm">No hay comentarios positivos aún</p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Lista de menciones con tabs y highlights */}
+        <PlatformMentionsList
+          platform="youtube"
+          platformLabel="YouTube"
+          mentions={(data as any).recent_mentions || []}
+        />
       </div>
 
       {/* Última sincronización */}

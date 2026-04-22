@@ -271,12 +271,13 @@ export async function GET(request: NextRequest) {
         top_posts: topPosts,
 
         // Menciones recientes (últimas 20)
-        recent_mentions: mentions.slice(0, 20).map(m => ({
+        recent_mentions: mentions.slice(0, 40).map(m => ({
           id: m.id,
           content: m.content,
           author: m.author_name,
           sentiment: m.metadata?.sentiment || 'neutral',
           sentiment_score: m.metadata?.sentiment_score || 0,
+          source_type: m.metadata?.source_type || null,
           likes: m.likes,
           shares: m.shares,
           comments: m.comments,

@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { PlatformMentionsList } from './PlatformMentionsList';
 
 interface InstagramData {
   account: {
@@ -487,62 +488,12 @@ export default function InstagramDashboardSection() {
           </CardContent>
         </Card>
 
-        {/* Top Comments */}
-        <Card className="bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center text-base font-semibold text-gray-900 dark:text-white">
-              <ThumbsUp className="w-4 h-4 mr-2 text-green-500" />
-              Mejores Comentarios
-            </CardTitle>
-            <CardDescription className="text-sm text-gray-500 dark:text-gray-400">
-              Comentarios positivos con más interacción
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="space-y-3">
-              {data.top_mentions.most_positive.slice(0, 3).map((mention, index) => (
-                <div
-                  key={index}
-                  className="p-3 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800/50"
-                >
-                  <p className="text-sm text-gray-800 dark:text-gray-200 line-clamp-2 mb-2">
-                    "{mention.text}"
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">
-                      @{mention.author}
-                    </span>
-                    <div className="flex items-center gap-1.5">
-                      <ThumbsUp className="w-3 h-3 text-green-500" />
-                      <span className="text-xs text-green-600 dark:text-green-400 font-semibold">
-                        {mention.likes}
-                      </span>
-                      {mention.url && (
-                        <a
-                          href={mention.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="ml-2 text-[#00E5FF] hover:text-[#00B8D4]"
-                        >
-                          <ExternalLink className="w-3 h-3" />
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-              {data.top_mentions.most_positive.length === 0 && (
-                <div className="text-center py-8">
-                  <div className="w-14 h-14 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-3">
-                    <CheckCircle2 className="w-7 h-7 text-green-500 dark:text-green-400" />
-                  </div>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">No hay comentarios positivos aún</p>
-                  <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">Sincroniza para obtener datos</p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Lista de menciones con tabs y highlights */}
+        <PlatformMentionsList
+          platform="instagram"
+          platformLabel="Instagram"
+          mentions={(data as any).recent_mentions || []}
+        />
       </div>
 
       {/* Last Sync Footer */}
