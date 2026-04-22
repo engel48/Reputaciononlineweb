@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { usePlan } from '@/context/PlanContext';
 import {
   Facebook,
   Twitter,
@@ -16,7 +17,9 @@ import {
   AlertTriangle,
   Loader2,
   Clock,
-  Zap
+  Zap,
+  Plus,
+  Crown
 } from 'lucide-react';
 
 // X (Twitter) requiere TWITTER_CLIENT_ID configurado. Si no está, la tarjeta
@@ -88,12 +91,33 @@ const socialNetworks = [
   }
 ];
 
+interface AccountItem {
+  id: string;
+  platform: string;
+  username: string;
+  displayName: string | null;
+  profileImage: string | null;
+  profileUrl: string | null;
+  followers: number;
+  connected: boolean;
+  lastSync: string | null;
+  metrics: { posts: number; engagement: number };
+}
+
 export default function SocialNetworkConnectorFixed(props: SocialNetworkConnectorProps) {
+  const { currentPlan } = usePlan();
+  const isEnterprise = currentPlan === 'enterprise';
+
   const [connections, setConnections] = useState<SocialConnectionsState>({
     facebook: { connected: false, username: '', displayName: '', followers: 0, profileImage: '', lastSync: null, metrics: { posts: 0, engagement: 0, reach: 0 } },
     instagram: { connected: false, username: '', displayName: '', followers: 0, profileImage: '', lastSync: null, metrics: { posts: 0, engagement: 0, reach: 0 } },
     x: { connected: false, username: '', displayName: '', followers: 0, profileImage: '', lastSync: null, metrics: { posts: 0, engagement: 0, reach: 0 } },
     youtube: { connected: false, username: '', displayName: '', followers: 0, profileImage: '', lastSync: null, metrics: { posts: 0, engagement: 0, reach: 0 } }
+  });
+
+  // Lista completa de cuentas por plataforma (solo relevante para enterprise con múltiples)
+  const [accounts, setAccounts] = useState<Record<string, AccountItem[]>>({
+    facebook: [], instagram: [], x: [], youtube: []
   });
 
   const [loading, setLoading] = useState<Record<string, boolean>>({});
@@ -154,6 +178,27 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
         setLastUpdated(new Date().toISOString());
       } else {
         throw new Error('No se recibieron datos de conexiones');
+      }
+
+      // Cargar lista completa de cuentas (soporta múltiples para enterprise)
+      try {
+        const accRes = await fetch('/api/social-connect?action=list_accounts', {
+          credentials: 'include',
+        });
+        if (accRes.ok) {
+          const accData = await accRes.json();
+          if (accData.success && Array.isArray(accData.accounts)) {
+            const grouped: Record<string, AccountItem[]> = {
+              facebook: [], instagram: [], x: [], youtube: []
+            };
+            for (const acc of accData.accounts as AccountItem[]) {
+              if (grouped[acc.platform]) grouped[acc.platform].push(acc);
+            }
+            setAccounts(grouped);
+          }
+        }
+      } catch (accErr) {
+        console.warn('No se pudo cargar lista multi-cuenta:', accErr);
       }
 
     } catch (error) {
@@ -334,6 +379,29 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
         text: error instanceof Error ? error.message : 'Error al conectar'
       });
       setLoading(prev => ({ ...prev, [networkId]: false }));
+    }
+  };
+
+  const handleDisconnectAccount = async (accountId: string, username: string) => {
+    if (!confirm(`¿Desconectar la cuenta @${username}?`)) return;
+
+    try {
+      const response = await fetch('/api/social-connect', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'disconnect_account', accountId }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        setMessage({ type: 'success', text: `Cuenta @${username} desconectada` });
+        await loadConnections();
+      } else {
+        setMessage({ type: 'error', text: data.error || 'Error al desconectar cuenta' });
+      }
+    } catch (error) {
+      console.error('Error disconnecting account:', error);
+      setMessage({ type: 'error', text: 'Error de red al desconectar cuenta' });
     }
   };
 
@@ -675,6 +743,42 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
                   </div>
                 )}
 
+                {/* Cuentas adicionales (solo enterprise con 2+ cuentas en esta red) */}
+                {isEnterprise && accounts[network.id] && accounts[network.id].length > 1 && (
+                  <div className="space-y-2 border-t border-gray-200 dark:border-gray-700 pt-3">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300">
+                      <Crown className="w-3.5 h-3.5 text-amber-500" />
+                      Cuentas adicionales ({accounts[network.id].length - 1})
+                    </div>
+                    {accounts[network.id].slice(1).map((acc) => (
+                      <div
+                        key={acc.id}
+                        className="flex items-center justify-between gap-2 p-2 bg-gray-50 dark:bg-gray-800/50 rounded-md text-xs"
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          {acc.profileImage ? (
+                            <img src={acc.profileImage} alt={acc.username} className="w-6 h-6 rounded-full flex-shrink-0" />
+                          ) : (
+                            <div className="w-6 h-6 rounded-full bg-gray-300 flex-shrink-0" />
+                          )}
+                          <div className="min-w-0">
+                            <p className="font-medium truncate">@{acc.username}</p>
+                            <p className="text-gray-500">{formatNumber(acc.followers)} seguidores</p>
+                          </div>
+                        </div>
+                        <Button
+                          onClick={() => handleDisconnectAccount(acc.id, acc.username)}
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <XCircle className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 {/* Botones de acción */}
                 <div className="flex flex-col gap-2">
                   {connection.connected ? (
@@ -691,6 +795,23 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
                           <><RefreshCw className="w-4 h-4 mr-2" /> Sincronizar ahora</>
                         )}
                       </Button>
+                      {/* Botón "Agregar otra cuenta" solo para enterprise */}
+                      {isEnterprise && !isXDisabled && (
+                        <Button
+                          onClick={() => handleConnect(network.id)}
+                          disabled={isLoading}
+                          variant="outline"
+                          size="sm"
+                          className="w-full border-amber-300 text-amber-700 hover:bg-amber-50 dark:border-amber-700 dark:text-amber-400 dark:hover:bg-amber-900/20"
+                        >
+                          {isLoading ? (
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          ) : (
+                            <Plus className="w-4 h-4 mr-2" />
+                          )}
+                          Agregar otra cuenta
+                        </Button>
+                      )}
                       <Button
                         onClick={() => handleDisconnect(network.id)}
                         disabled={isLoading || isSyncing}
@@ -703,7 +824,7 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
                         ) : (
                           <XCircle className="w-4 h-4 mr-2" />
                         )}
-                        Desconectar
+                        Desconectar {isEnterprise && accounts[network.id]?.length > 1 ? 'todas' : ''}
                       </Button>
                     </>
                   ) : (

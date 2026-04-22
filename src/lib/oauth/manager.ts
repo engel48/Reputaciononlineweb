@@ -51,10 +51,14 @@ export class SocialOAuthManager {
     try {
       const { supabase } = await import('@/lib/supabase-server');
 
+      // Si enterprise tiene múltiples cuentas por red, ordenamos por last_sync DESC
+      // para mostrar la más reciente en el summary (el detalle multi-cuenta se
+      // consulta vía /api/social-connect?action=list_accounts)
       const { data: records, error } = await supabase
         .from('social_media')
         .select('*')
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .order('last_sync', { ascending: false, nullsFirst: false });
 
       if (error) {
         console.error('Error cargando conexiones de Supabase:', error);
@@ -70,7 +74,8 @@ export class SocialOAuthManager {
       if (records && records.length > 0) {
         for (const record of records) {
           const platform = record.platform as SocialPlatform;
-          if (connections[platform]) {
+          // Solo tomar la primera (más reciente) por plataforma para el summary
+          if (connections[platform] && !connections[platform].connected) {
             connections[platform] = {
               platform,
               connected: record.connected || false,

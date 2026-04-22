@@ -25,7 +25,12 @@ export interface OAuthConnectionData {
 }
 
 /**
- * Guarda una conexión OAuth en Supabase con encriptación
+ * Guarda una conexión OAuth en Supabase con encriptación.
+ *
+ * El UNIQUE constraint (user_id, platform, username) permite que los planes
+ * enterprise conecten múltiples cuentas de la misma red social. Para planes
+ * con límite de 1 cuenta por red, la capa de validación (checkSocialAccountLimit)
+ * bloquea la segunda conexión antes de llegar aquí.
  */
 export async function saveOAuthConnection(data: OAuthConnectionData): Promise<boolean> {
   try {
@@ -35,12 +40,14 @@ export async function saveOAuthConnection(data: OAuthConnectionData): Promise<bo
     const encryptedAccessToken = encryptToken(data.accessToken);
     const encryptedRefreshToken = data.refreshToken ? encryptToken(data.refreshToken) : null;
 
+    const username = data.profile.username || data.profile.name || 'Usuario';
+
     const { error } = await supabase
       .from('social_media')
       .upsert({
         user_id: data.userId,
         platform: data.platform,
-        username: data.profile.username || data.profile.name || 'Usuario',
+        username,
         display_name: data.profile.name || data.profile.username || 'Usuario',
         profile_image: data.profile.profileImage || null,
         profile_url: data.profile.username
@@ -56,7 +63,7 @@ export async function saveOAuthConnection(data: OAuthConnectionData): Promise<bo
         refresh_token: encryptedRefreshToken,
         token_expiry: data.expiresAt || null
       }, {
-        onConflict: 'user_id,platform'
+        onConflict: 'user_id,platform,username'
       });
 
     if (error) {
@@ -64,7 +71,7 @@ export async function saveOAuthConnection(data: OAuthConnectionData): Promise<bo
       return false;
     }
 
-    console.log(`✅ Conexión OAuth guardada exitosamente para ${data.platform}`);
+    console.log(`✅ Conexión OAuth guardada exitosamente para ${data.platform} (@${username})`);
     return true;
   } catch (error) {
     console.error('❌ Error en saveOAuthConnection:', error);
@@ -73,17 +80,128 @@ export async function saveOAuthConnection(data: OAuthConnectionData): Promise<bo
 }
 
 /**
- * Obtiene el access token desencriptado para una plataforma
+ * Lista todas las cuentas conectadas de un usuario, opcionalmente filtradas
+ * por plataforma. Los planes enterprise pueden tener múltiples cuentas por
+ * red, así que esta función retorna un array.
  */
-export async function getAccessToken(userId: string, platform: string): Promise<string | null> {
+export interface ConnectedAccount {
+  id: string;
+  platform: string;
+  username: string;
+  displayName: string | null;
+  profileImage: string | null;
+  profileUrl: string | null;
+  followers: number;
+  connected: boolean;
+  lastSync: string | null;
+  metrics: {
+    posts: number;
+    engagement: number;
+  };
+}
+
+export async function listConnectedAccounts(
+  userId: string,
+  platform?: string
+): Promise<ConnectedAccount[]> {
   try {
-    const { data, error } = await supabase
+    let query = supabase
+      .from('social_media')
+      .select('id, platform, username, display_name, profile_image, profile_url, followers, connected, last_sync, posts, engagement')
+      .eq('user_id', userId)
+      .eq('connected', true);
+
+    if (platform) {
+      query = query.eq('platform', platform);
+    }
+
+    const { data, error } = await query.order('last_sync', { ascending: false, nullsFirst: false });
+
+    if (error || !data) {
+      console.error('❌ Error listando cuentas conectadas:', error);
+      return [];
+    }
+
+    return data.map((row: any) => ({
+      id: row.id,
+      platform: row.platform,
+      username: row.username,
+      displayName: row.display_name,
+      profileImage: row.profile_image,
+      profileUrl: row.profile_url,
+      followers: row.followers || 0,
+      connected: row.connected,
+      lastSync: row.last_sync,
+      metrics: {
+        posts: row.posts || 0,
+        engagement: row.engagement || 0,
+      },
+    }));
+  } catch (error) {
+    console.error('❌ Error en listConnectedAccounts:', error);
+    return [];
+  }
+}
+
+/**
+ * Desconecta una cuenta social específica por id (soporta múltiples cuentas
+ * por red en planes enterprise).
+ */
+export async function disconnectAccountById(
+  userId: string,
+  accountId: string
+): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('social_media')
+      .update({
+        connected: false,
+        access_token: null,
+        refresh_token: null,
+        token_expiry: null
+      })
+      .eq('id', accountId)
+      .eq('user_id', userId);
+
+    if (error) {
+      console.error('❌ Error desconectando cuenta por id:', error);
+      return false;
+    }
+
+    console.log(`✅ Cuenta ${accountId} desconectada`);
+    return true;
+  } catch (error) {
+    console.error('❌ Error en disconnectAccountById:', error);
+    return false;
+  }
+}
+
+/**
+ * Obtiene el access token desencriptado para una plataforma.
+ * Si hay múltiples cuentas (enterprise), retorna la de `last_sync` más reciente
+ * salvo que se especifique un username concreto.
+ */
+export async function getAccessToken(
+  userId: string,
+  platform: string,
+  username?: string
+): Promise<string | null> {
+  try {
+    let query = supabase
       .from('social_media')
       .select('access_token, token_expiry')
       .eq('user_id', userId)
       .eq('platform', platform)
-      .eq('connected', true)
-      .single();
+      .eq('connected', true);
+
+    if (username) {
+      query = query.eq('username', username);
+    }
+
+    const { data, error } = await query
+      .order('last_sync', { ascending: false, nullsFirst: false })
+      .limit(1)
+      .maybeSingle();
 
     if (error || !data || !data.access_token) {
       return null;
@@ -109,15 +227,27 @@ export async function getAccessToken(userId: string, platform: string): Promise<
 /**
  * Obtiene el refresh token desencriptado para una plataforma
  */
-export async function getRefreshToken(userId: string, platform: string): Promise<string | null> {
+export async function getRefreshToken(
+  userId: string,
+  platform: string,
+  username?: string
+): Promise<string | null> {
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from('social_media')
       .select('refresh_token')
       .eq('user_id', userId)
       .eq('platform', platform)
-      .eq('connected', true)
-      .single();
+      .eq('connected', true);
+
+    if (username) {
+      query = query.eq('username', username);
+    }
+
+    const { data, error } = await query
+      .order('last_sync', { ascending: false, nullsFirst: false })
+      .limit(1)
+      .maybeSingle();
 
     if (error || !data || !data.refresh_token) {
       return null;
@@ -195,7 +325,8 @@ export async function disconnectOAuth(userId: string, platform: string): Promise
 }
 
 /**
- * Verifica si una plataforma está conectada y el token es válido
+ * Verifica si una plataforma está conectada y al menos un token es válido.
+ * Con multi-cuenta enterprise, basta con que una de las cuentas esté activa.
  */
 export async function isConnected(userId: string, platform: string): Promise<boolean> {
   try {
@@ -204,21 +335,19 @@ export async function isConnected(userId: string, platform: string): Promise<boo
       .select('connected, token_expiry')
       .eq('user_id', userId)
       .eq('platform', platform)
-      .single();
+      .eq('connected', true);
 
-    if (error || !data || !data.connected) {
+    if (error || !data || data.length === 0) {
       return false;
     }
 
-    // Verificar expiración
-    if (data.token_expiry) {
-      const expiryDate = new Date(data.token_expiry);
-      if (expiryDate < new Date()) {
-        return false;
-      }
-    }
-
-    return true;
+    // Al menos una cuenta debe tener token no expirado (o sin expiración)
+    const now = new Date();
+    return data.some((row: any) => {
+      if (!row.connected) return false;
+      if (!row.token_expiry) return true;
+      return new Date(row.token_expiry) > now;
+    });
   } catch (error) {
     return false;
   }

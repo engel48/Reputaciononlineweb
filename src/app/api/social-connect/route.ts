@@ -11,10 +11,13 @@ export async function POST(request: NextRequest) {
     const userId = user.userId;
     console.log(`✅ SOCIAL-CONNECT POST: Usuario autenticado: ${userId}`);
 
-    const { platform, action, accessToken, refreshToken, expiresAt } = await request.json();
+    const { platform, action, accessToken, refreshToken, expiresAt, accountId } = await request.json();
 
-    if (!platform || !['facebook', 'instagram', 'x', 'youtube'].includes(platform)) {
-      return NextResponse.json({ error: 'Plataforma no válida' }, { status: 400 });
+    // `disconnect_account` no requiere platform (usa accountId directamente)
+    if (action !== 'disconnect_account') {
+      if (!platform || !['facebook', 'instagram', 'x', 'youtube'].includes(platform)) {
+        return NextResponse.json({ error: 'Plataforma no válida' }, { status: 400 });
+      }
     }
 
     if (action === 'connect') {
@@ -59,15 +62,33 @@ export async function POST(request: NextRequest) {
       );
 
       if (success) {
-        return NextResponse.json({ 
-          success: true, 
-          message: `${platform} desconectado exitosamente` 
+        return NextResponse.json({
+          success: true,
+          message: `${platform} desconectado exitosamente`
         });
       } else {
-        return NextResponse.json({ 
-          error: `Error al desconectar ${platform}` 
+        return NextResponse.json({
+          error: `Error al desconectar ${platform}`
         }, { status: 500 });
       }
+    }
+
+    // Desconecta una cuenta específica por id (para planes con múltiples cuentas)
+    if (action === 'disconnect_account') {
+      if (!accountId) {
+        return NextResponse.json({ error: 'accountId requerido' }, { status: 400 });
+      }
+
+      const { disconnectAccountById } = await import('@/lib/oauth-storage');
+      const success = await disconnectAccountById(userId, accountId);
+
+      if (success) {
+        return NextResponse.json({
+          success: true,
+          message: 'Cuenta desconectada exitosamente',
+        });
+      }
+      return NextResponse.json({ error: 'Error al desconectar cuenta' }, { status: 500 });
     }
 
     if (action === 'sync') {
@@ -122,6 +143,13 @@ export async function GET(request: NextRequest) {
         summary,
         message: 'Resumen de conexiones obtenido exitosamente'
       });
+    }
+
+    if (action === 'list_accounts') {
+      const platformFilter = url.searchParams.get('platform') || undefined;
+      const { listConnectedAccounts } = await import('@/lib/oauth-storage');
+      const accounts = await listConnectedAccounts(userId, platformFilter);
+      return NextResponse.json({ success: true, accounts });
     }
 
     // Obtener estado de conexiones de redes sociales del usuario (AHORA DE SUPABASE)
