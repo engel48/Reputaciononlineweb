@@ -73,6 +73,7 @@ export default function JuliaChat() {
     try {
       const response = await fetch('/api/julia', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },

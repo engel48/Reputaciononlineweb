@@ -132,9 +132,10 @@ export default function AIBrandAdvisor({ userProfile }: AIBrandAdvisorProps) {
           .order('published_at', { ascending: false })
           .limit(50);
 
-        // Generar recomendaciones con Gemini AI
+        // Generar recomendaciones con Julia IA (Groq)
         const response = await fetch('/api/julia', {
           method: 'POST',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             prompt: `Analiza estos datos reales del usuario y genera recomendaciones de marca estratégicas:
@@ -277,6 +278,7 @@ export default function AIBrandAdvisor({ userProfile }: AIBrandAdvisorProps) {
 
       const response = await fetch('/api/julia', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt: `Basándote en la actividad reciente: ${JSON.stringify(recentActivity?.slice(0, 20))}, genera UNA nueva recomendación estratégica para mejorar la reputación y alcance. Devuelve SOLO un JSON con el formato de BrandRecommendation.`,

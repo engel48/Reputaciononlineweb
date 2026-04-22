@@ -43,6 +43,7 @@ export default function JuliaPage() {
     try {
       const res = await fetch('/api/julia', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: analysisText, action: 'analyze' }),
       });
@@ -66,6 +67,7 @@ export default function JuliaPage() {
     try {
       const res = await fetch('/api/julia', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: reportName, action: 'reputation', context: '[]' }),
       });

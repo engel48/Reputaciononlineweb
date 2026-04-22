@@ -20,6 +20,9 @@ import LoadingAnimation from '@/components/ui/LoadingAnimation';
 import { useUser } from '@/context/UserContext';
 import { usePlan } from '@/context/PlanContext';
 import FeatureGate, { PlanBadge } from '@/components/plan/FeatureGate';
+import { useHasMentionsData } from '@/hooks/useHasMentionsData';
+import { AIRecommendationsWidget } from '@/components/dashboard/AIRecommendationsWidget';
+import Link from 'next/link';
 
 // Interfaces
 interface MentionEngagement {
@@ -77,6 +80,8 @@ const defaultData = {
 export default function Dashboard() {
   const { user } = useUser();
   const { hasFeature, currentPlan } = usePlan();
+  const { loading: hasDataLoading, hasConnections } = useHasMentionsData();
+  const firstName = user?.name ? user.name.split(' ')[0] : null;
   
 
   // Estados para controlar los datos del dashboard
@@ -364,7 +369,9 @@ export default function Dashboard() {
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center space-x-3">
-            <h1 className="text-3xl font-bold text-[#0B1120] dark:text-white">Dashboard</h1>
+            <h1 className="text-3xl font-bold text-[#0B1120] dark:text-white">
+              {firstName ? `Hola ${firstName}` : 'Dashboard'}
+            </h1>
             <PlanBadge />
             {/* Badge de Menciones Totales - compacto e inline */}
             <AnimatePresence mode="wait">
@@ -381,7 +388,11 @@ export default function Dashboard() {
               </motion.div>
             </AnimatePresence>
           </div>
-          <p className="mt-1 text-gray-500 dark:text-gray-400">Bienvenido a tu centro de monitoreo de reputacion online</p>
+          <p className="mt-1 text-gray-500 dark:text-gray-400">
+            {firstName
+              ? `Este es tu centro de monitoreo de reputación online`
+              : 'Bienvenido a tu centro de monitoreo de reputación online'}
+          </p>
         </div>
         <div className="flex items-center space-x-3">
           {/* Indicador de conexión */}
@@ -399,9 +410,16 @@ export default function Dashboard() {
             )}
           </div>
           
-          {/* Última actualización */}
-          <div className="text-xs text-gray-500 dark:text-gray-400">
-            Actualizado: {ultimaActualizacion.toLocaleTimeString()}
+          {/* Última actualización + sync automático */}
+          <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
+            <span>Actualizado: {ultimaActualizacion.toLocaleTimeString()}</span>
+            <span
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-[10px] font-semibold"
+              title="Sync automático de menciones cada 30 minutos"
+            >
+              <Clock className="h-3 w-3" />
+              Auto 30min
+            </span>
           </div>
           
           {/* Botón de actualización mejorado */}
@@ -421,6 +439,40 @@ export default function Dashboard() {
           </button>
         </div>
       </div>
+
+      {/* Banner onboarding - solo si no hay redes conectadas */}
+      {!hasDataLoading && !hasConnections && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="rounded-2xl border border-[#00E5FF]/30 bg-gradient-to-r from-[#01257D]/5 via-indigo-500/5 to-[#00E5FF]/10 dark:from-[#01257D]/20 dark:via-indigo-500/10 dark:to-[#00E5FF]/10 p-5 sm:p-6"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="flex items-start gap-3 flex-1">
+              <div className="p-3 rounded-xl bg-gradient-to-br from-[#01257D] to-indigo-600 shadow-lg flex-shrink-0">
+                <Sparkles className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                  {firstName ? `${firstName}, comienza conectando tus redes` : 'Comienza conectando tus redes sociales'}
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                  Una vez conectes Facebook, Instagram o YouTube, Julia traerá menciones, sentimiento y
+                  métricas automáticamente cada 30 minutos. El dashboard se llenará solo.
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/dashboard/redes-sociales"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#01257D] hover:bg-[#013AAA] text-white font-semibold rounded-xl transition-all shadow-md hover:shadow-lg whitespace-nowrap"
+            >
+              Conectar ahora
+              <ArrowUpRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </motion.div>
+      )}
 
       {/* Sentimiento - TARJETAS PROMINENTES */}
       <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
@@ -1040,21 +1092,8 @@ export default function Dashboard() {
           animate="visible"
           variants={statsVariants}
           whileHover={{ y: -2, transition: { duration: 0.2 } }}
-          className="card overflow-hidden"
         >
-          <div className="border-b border-gray-200 p-4 dark:border-gray-700">
-            <div className="flex items-center justify-between">
-              <h2 className="heading-secondary">Actividad Reciente</h2>
-              <div className="text-xs text-gray-500 dark:text-gray-400">
-                Actualizando cada 30s
-              </div>
-            </div>
-          </div>
-          <div className="p-8 text-center">
-            <Activity className="h-10 w-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-            <p className="text-gray-500 dark:text-gray-400 font-medium">Sin actividad reciente</p>
-            <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">Tu actividad aparecera aqui cuando uses la plataforma</p>
-          </div>
+          <AIRecommendationsWidget />
         </motion.div>
       </div>
 

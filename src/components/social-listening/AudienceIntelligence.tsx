@@ -89,10 +89,11 @@ export default function AudienceIntelligence({ userProfile }: AudienceIntelligen
         const totalPosts = socialData.reduce((sum, platform) => sum + (platform.posts || 0), 0);
         const avgEngagement = socialData.reduce((sum, platform) => sum + (platform.engagement || 0), 0) / socialData.length;
 
-        // Si tenemos followers reales, generar análisis con Gemini AI
+        // Si tenemos followers reales, generar análisis con Julia IA (Groq)
         if (totalFollowers > 0) {
           const response = await fetch('/api/julia', {
             method: 'POST',
+            credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               prompt: `Basándote en estos datos REALES de redes sociales: ${JSON.stringify(socialData)}, genera un análisis de audiencia completo.

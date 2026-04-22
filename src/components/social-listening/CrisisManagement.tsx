@@ -118,9 +118,10 @@ export default function CrisisManagement({ userProfile }: CrisisManagementProps)
         // Detect sentiment drop (crisis indicator)
         const sentimentDrop = 50 - avgSentiment;
 
-        // Use Gemini AI to analyze potential crisis
+        // Use Julia IA (Groq) to analyze potential crisis
         const crisisAnalysisResponse = await fetch('/api/julia', {
           method: 'POST',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             message: `Analiza posible crisis: ${mentionVelocity.toFixed(1)} menciones/hora, sentiment promedio: ${avgSentiment.toFixed(0)}%, caída de sentiment: ${sentimentDrop.toFixed(0)}%`,

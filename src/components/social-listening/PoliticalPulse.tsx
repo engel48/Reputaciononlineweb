@@ -113,9 +113,10 @@ export default function PoliticalPulse({ userProfile }: PoliticalPulseProps) {
         const mentionsByRegionResponse = await fetch(`/api/mentions/by-region?userId=${session.user.id}`);
         const regionData = await mentionsByRegionResponse.json();
 
-        // Use Gemini AI to analyze political proposals
+        // Use Julia IA (Groq) to analyze political proposals
         const proposalAnalysisResponse = await fetch('/api/julia', {
           method: 'POST',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             message: 'Analiza menciones políticas y extrae propuestas principales con sentiment y engagement',

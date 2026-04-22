@@ -117,6 +117,7 @@ export default function InfluenceTracker({ userProfile }: InfluenceTrackerProps)
         // Use Julia AI to generate brand opportunities based on real data
         const opportunitiesResponse = await fetch('/api/julia', {
           method: 'POST',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             message: `Analiza oportunidades de marca para usuario con ${totalFollowers} seguidores en ${platformsData.platforms?.length || 0} plataformas`,
