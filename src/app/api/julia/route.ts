@@ -207,16 +207,18 @@ export async function POST(request: NextRequest) {
       }
       response = JSON.stringify(await aiService.generateRecommendations(userContext));
     } else {
-      // Chat general con persona Julia + contexto del usuario.
-      // Si el user está autenticado, guardar la conversación en julia_conversations.
-      response = await aiService.juliaChat(message || context || '', {
-        context: context && context !== message ? context : undefined,
+      // Chat general con persona Julia + contexto del usuario + HISTORIAL.
+      // Carga los últimos 20 mensajes del usuario para que Julia recuerde
+      // conversaciones previas (incluso de días anteriores).
+      const history = userId ? await loadRecentHistory(userId, 20) : [];
+
+      response = await aiService.chatWithHistory(history, message || context || '', {
         user: userContext,
       });
 
       if (userId && message) {
         try {
-          conversationId = await saveJuliaExchange(userId, message, response);
+          conversationId = await appendToActiveConversation(userId, message, response);
         } catch (saveErr) {
           console.warn('[julia] no se pudo guardar historial:', saveErr);
         }
@@ -262,32 +264,53 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * Guarda un intercambio del chat en `amelia_conversations`/`amelia_messages`
- * (reusamos las tablas existentes ya que la feature Amelia fue consolidada en Julia).
- * Retorna el conversationId creado.
+ * Devuelve la conversación activa del usuario (la más reciente). Si no existe
+ * ninguna, crea una nueva. Modelo: "un solo hilo continuo por usuario" para
+ * que Julia tenga memoria persistente entre sesiones y días.
  */
-async function saveJuliaExchange(
-  userId: string,
-  userMessage: string,
-  assistantResponse: string
-): Promise<string | null> {
+async function getOrCreateJuliaConversation(userId: string): Promise<string> {
   const { supabase } = await import('@/lib/supabase-server');
 
-  // Crear conversación nueva (título = primeras 80 chars del mensaje)
-  const { data: conv, error: convErr } = await supabase
+  const { data: existing } = await supabase
+    .from('amelia_conversations')
+    .select('id')
+    .eq('user_id', userId)
+    .order('updated_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (existing?.id) {
+    return (existing as any).id as string;
+  }
+
+  const { data: created, error } = await supabase
     .from('amelia_conversations')
     .insert({
       user_id: userId,
-      title: userMessage.slice(0, 80),
+      title: 'Conversación con Julia',
     })
     .select('id')
     .single();
 
-  if (convErr || !conv) {
-    throw new Error(convErr?.message || 'No se pudo crear conversación');
+  if (error || !created) {
+    throw new Error(error?.message || 'No se pudo crear conversación');
   }
 
-  const conversationId = (conv as any).id as string;
+  return (created as any).id as string;
+}
+
+/**
+ * Añade un intercambio (mensaje usuario + respuesta asistente) a la
+ * conversación activa del usuario y actualiza su timestamp.
+ */
+async function appendToActiveConversation(
+  userId: string,
+  userMessage: string,
+  assistantResponse: string
+): Promise<string> {
+  const { supabase } = await import('@/lib/supabase-server');
+
+  const conversationId = await getOrCreateJuliaConversation(userId);
 
   await supabase.from('amelia_messages').insert([
     { conversation_id: conversationId, role: 'user', content: userMessage },
@@ -300,6 +323,46 @@ async function saveJuliaExchange(
     .eq('id', conversationId);
 
   return conversationId;
+}
+
+/**
+ * Carga los últimos N mensajes del usuario (cross-conversaciones) en orden
+ * cronológico para inyectar como contexto al LLM. Esto permite que Julia
+ * "recuerde" lo que el usuario le ha pedido antes.
+ */
+async function loadRecentHistory(
+  userId: string,
+  limit: number = 20
+): Promise<Array<{ role: 'user' | 'assistant'; content: string }>> {
+  const { supabase } = await import('@/lib/supabase-server');
+
+  // 1. IDs de conversaciones del usuario
+  const { data: convs } = await supabase
+    .from('amelia_conversations')
+    .select('id')
+    .eq('user_id', userId);
+
+  const convIds = (convs || []).map((c: any) => c.id);
+  if (convIds.length === 0) return [];
+
+  // 2. Últimos N mensajes (DESC por created_at), luego invertir a ASC
+  const { data: messages } = await supabase
+    .from('amelia_messages')
+    .select('role, content, created_at')
+    .in('conversation_id', convIds)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (!messages) return [];
+
+  return messages
+    .slice()
+    .reverse()
+    .filter((m: any) => m.role === 'user' || m.role === 'assistant')
+    .map((m: any) => ({
+      role: m.role as 'user' | 'assistant',
+      content: String(m.content || ''),
+    }));
 }
 
 /**

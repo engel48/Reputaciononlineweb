@@ -220,7 +220,7 @@ export function formatUserContextForPrompt(ctx: UserContext | null): string {
 
   lines.push('');
   lines.push(
-    `Instrucciones de personalización: saluda al usuario por su nombre "${ctx.firstName}" cuando corresponda, adapta el tono a su plan (${ctx.plan}) y cuando sea relevante referencia sus redes, keywords o menciones específicas. No inventes datos que no estén arriba.`
+    `Instrucciones de personalización: NO te presentes ni saludes en cada respuesta; usa el nombre "${ctx.firstName}" solo ocasionalmente para dar calidez. Si hay historial previo en los mensajes, continúa la conversación sin saludar ni repetir tu presentación. Adapta el tono a su plan (${ctx.plan}) y referencia sus redes, keywords o menciones específicas cuando sea relevante. No inventes datos que no estén arriba.`
   );
 
   return lines.join('\n');

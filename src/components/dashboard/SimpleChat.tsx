@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Brain, Send, User } from 'lucide-react';
 import { emitCreditsChanged } from '@/lib/credit-events';
+import { useUser } from '@/context/UserContext';
 
 interface Mensaje {
   id: string;
@@ -12,17 +13,14 @@ interface Mensaje {
   timestamp: Date;
 }
 
+const GREETING_KEY = 'julia_last_greeting_day';
+
 export default function SimpleChat() {
-  const [mensajes, setMensajes] = useState<Mensaje[]>([
-    {
-      id: '1',
-      texto: '¡Hola! Soy Julia, tu asistente de IA especializada en reputación online. ¿En qué puedo ayudarte?',
-      esUsuario: false,
-      timestamp: new Date()
-    }
-  ]);
+  const { user } = useUser();
+  const [mensajes, setMensajes] = useState<Mensaje[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [enviando, setEnviando] = useState(false);
+  const [cargandoHistorial, setCargandoHistorial] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -32,6 +30,79 @@ export default function SimpleChat() {
   useEffect(() => {
     scrollToBottom();
   }, [mensajes]);
+
+  // Carga historial del backend al montar + saludo 1/día
+  useEffect(() => {
+    let cancelled = false;
+
+    const cargar = async () => {
+      try {
+        const res = await fetch('/api/julia?history=1', {
+          method: 'GET',
+          credentials: 'include',
+        });
+
+        let historico: Mensaje[] = [];
+        if (res.ok) {
+          const data = await res.json();
+          const conversaciones = (data?.data || []) as Array<{
+            messages?: Array<{ role: string; content: string; created_at: string }>;
+          }>;
+          // Toma la conversación más reciente (primera del array) — es nuestro hilo continuo
+          const msgs = conversaciones[0]?.messages || [];
+          historico = msgs.map((m, idx) => ({
+            id: `hist-${idx}`,
+            texto: m.content,
+            esUsuario: m.role === 'user',
+            timestamp: new Date(m.created_at),
+          }));
+        }
+
+        if (cancelled) return;
+
+        // Decidir si mostrar saludo de bienvenida hoy
+        const today = new Date().toDateString();
+        let lastGreeting: string | null = null;
+        try {
+          lastGreeting = localStorage.getItem(GREETING_KEY);
+        } catch {
+          // localStorage no disponible (SSR o navegador privado) — mostrar saludo
+        }
+
+        const firstName = (user?.name || '').trim().split(' ')[0] || '';
+        const debeSaludar = lastGreeting !== today;
+
+        if (debeSaludar) {
+          const saludoTexto = historico.length > 0
+            ? `¡Hola de nuevo${firstName ? `, ${firstName}` : ''}! ¿En qué te ayudo hoy?`
+            : `¡Hola${firstName ? `, ${firstName}` : ''}! Soy Julia, tu asistente de IA especializada en reputación online. ¿En qué puedo ayudarte?`;
+
+          const saludo: Mensaje = {
+            id: `saludo-${Date.now()}`,
+            texto: saludoTexto,
+            esUsuario: false,
+            timestamp: new Date(),
+          };
+
+          setMensajes([...historico, saludo]);
+          try {
+            localStorage.setItem(GREETING_KEY, today);
+          } catch { /* ignore */ }
+        } else {
+          setMensajes(historico);
+        }
+      } catch (err) {
+        console.warn('No se pudo cargar el historial de Julia:', err);
+      } finally {
+        if (!cancelled) setCargandoHistorial(false);
+      }
+    };
+
+    cargar();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.name]);
 
   const enviarMensaje = async () => {
     if (!inputMessage.trim() || enviando) return;
@@ -102,6 +173,12 @@ export default function SimpleChat() {
     <div className="space-y-4">
       {/* Chat container */}
       <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 min-h-[300px] max-h-[400px] overflow-y-auto border-2 border-gray-200 dark:border-gray-600">
+        {cargandoHistorial && mensajes.length === 0 && (
+          <div className="flex items-center justify-center h-[280px] text-sm text-gray-500 dark:text-gray-400">
+            <Brain className="w-4 h-4 mr-2 animate-pulse" />
+            Cargando tu conversación con Julia...
+          </div>
+        )}
         {mensajes.map((mensaje) => (
           <motion.div
             key={mensaje.id}

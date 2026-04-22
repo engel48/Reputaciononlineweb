@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Send, Bot, User, Sparkles, RefreshCw, X, Minimize2, Maximize2, Volume2, VolumeX, Coins, Brain, AlertTriangle, FileText } from 'lucide-react';
 import { emitCreditsChanged } from '@/lib/credit-events';
+import { useUser } from '@/context/UserContext';
 
 interface Message {
   id: string;
@@ -13,21 +14,18 @@ interface Message {
   typing?: boolean;
 }
 
+const GREETING_KEY = 'julia_last_greeting_day';
+
 export default function JuliaChat() {
+  const { user } = useUser();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      content: '¡Hola! Soy Julia, tu asistente de IA especializada en análisis de reputación online. ¿En qué puedo ayudarte hoy?',
-      sender: 'julia',
-      timestamp: new Date()
-    }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [creditBalance, setCreditBalance] = useState<number | null>(null);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -38,6 +36,77 @@ export default function JuliaChat() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Carga historial + saludo 1/día al primer abrir
+  useEffect(() => {
+    if (!isOpen || historyLoaded) return;
+
+    let cancelled = false;
+    const cargar = async () => {
+      try {
+        const res = await fetch('/api/julia?history=1', {
+          method: 'GET',
+          credentials: 'include',
+        });
+
+        let historico: Message[] = [];
+        if (res.ok) {
+          const data = await res.json();
+          const conversaciones = (data?.data || []) as Array<{
+            messages?: Array<{ role: string; content: string; created_at: string }>;
+          }>;
+          const msgs = conversaciones[0]?.messages || [];
+          historico = msgs.map((m, idx) => ({
+            id: `hist-${idx}`,
+            content: m.content,
+            sender: m.role === 'user' ? 'user' : 'julia',
+            timestamp: new Date(m.created_at),
+          }));
+        }
+
+        if (cancelled) return;
+
+        const today = new Date().toDateString();
+        let lastGreeting: string | null = null;
+        try {
+          lastGreeting = localStorage.getItem(GREETING_KEY);
+        } catch { /* ignore */ }
+
+        const firstName = (user?.name || '').trim().split(' ')[0] || '';
+        const debeSaludar = lastGreeting !== today;
+
+        if (debeSaludar) {
+          const saludoTexto = historico.length > 0
+            ? `¡Hola de nuevo${firstName ? `, ${firstName}` : ''}! ¿En qué te ayudo hoy?`
+            : `¡Hola${firstName ? `, ${firstName}` : ''}! Soy Julia, tu asistente de IA especializada en análisis de reputación online. ¿En qué puedo ayudarte hoy?`;
+
+          setMessages([
+            ...historico,
+            {
+              id: `saludo-${Date.now()}`,
+              content: saludoTexto,
+              sender: 'julia',
+              timestamp: new Date(),
+            },
+          ]);
+          try {
+            localStorage.setItem(GREETING_KEY, today);
+          } catch { /* ignore */ }
+        } else {
+          setMessages(historico);
+        }
+      } catch (err) {
+        console.warn('No se pudo cargar el historial de Julia:', err);
+      } finally {
+        if (!cancelled) setHistoryLoaded(true);
+      }
+    };
+
+    cargar();
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, historyLoaded, user?.name]);
 
   const addTypingMessage = () => {
     const typingMessage: Message = {
