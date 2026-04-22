@@ -1,14 +1,22 @@
 'use client';
 
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Sparkles, Brain, Bot, AlertTriangle, MessageSquare, BarChart3, FileText, History, Coins } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Sparkles, Brain, Bot, AlertTriangle, MessageSquare, BarChart3, FileText, History, Coins, Loader2, ChevronDown, ChevronRight, Search } from 'lucide-react';
 import JuliaThinkingAnimation from '@/components/dashboard/JuliaThinkingAnimation';
 import SimpleChat from '@/components/dashboard/SimpleChat';
 import { CREDIT_COSTS } from '@/lib/credit-costs';
 import { useHasMentionsData } from '@/hooks/useHasMentionsData';
 import { useUser } from '@/context/UserContext';
 import Link from 'next/link';
+
+interface JuliaConversation {
+  id: string;
+  title: string;
+  created_at: string;
+  updated_at: string;
+  messages: Array<{ role: 'user' | 'assistant'; content: string; created_at: string }>;
+}
 
 type JuliaTab = 'chat' | 'analysis' | 'reports' | 'history';
 
@@ -31,10 +39,50 @@ export default function JuliaPage() {
   const [reportResult, setReportResult] = useState<any>(null);
   const [reportLoading, setReportLoading] = useState(false);
 
+  // History states
+  const [history, setHistory] = useState<JuliaConversation[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState<string | null>(null);
+  const [expandedConv, setExpandedConv] = useState<string | null>(null);
+  const [historySearch, setHistorySearch] = useState('');
+
   React.useEffect(() => {
     const timer = setTimeout(() => setIsAnalyzing(false), 8000);
     return () => clearTimeout(timer);
   }, []);
+
+  // Cargar historial cuando se abre el tab
+  useEffect(() => {
+    if (activeTab !== 'history') return;
+    let cancelled = false;
+    (async () => {
+      setHistoryLoading(true);
+      setHistoryError(null);
+      try {
+        const res = await fetch('/api/julia', {
+          method: 'GET',
+          credentials: 'include',
+        });
+        const data = await res.json();
+        if (cancelled) return;
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || 'Error cargando historial');
+        }
+        setHistory(data.data || []);
+      } catch (err: any) {
+        if (!cancelled) setHistoryError(err?.message || 'Error de conexión');
+      } finally {
+        if (!cancelled) setHistoryLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [activeTab]);
+
+  const filteredHistory = history.filter((c) =>
+    !historySearch ||
+    c.title.toLowerCase().includes(historySearch.toLowerCase()) ||
+    c.messages.some((m) => m.content.toLowerCase().includes(historySearch.toLowerCase()))
+  );
 
   const handleSentimentAnalysis = async () => {
     if (!analysisText.trim()) return;
@@ -471,20 +519,125 @@ export default function JuliaPage() {
           animate={{ opacity: 1, y: 0 }}
           className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-700"
         >
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
-            <History className="w-5 h-5 mr-2 text-[#01257D]" />
-            Historial de Interacciones
-          </h2>
-          <div className="text-center py-12">
-            <motion.div
-              animate={{ y: [0, -8, 0] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <History className="w-14 h-14 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-            </motion.div>
-            <p className="text-gray-500 dark:text-gray-400 font-medium">El historial de conversaciones con Julia se mostrara aqui</p>
-            <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">Proximamente: historial persistente con busqueda</p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
+              <History className="w-5 h-5 mr-2 text-[#01257D]" />
+              Historial de Interacciones
+            </h2>
+            <div className="relative w-full sm:w-72">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <input
+                type="text"
+                value={historySearch}
+                onChange={(e) => setHistorySearch(e.target.value)}
+                placeholder="Buscar conversación..."
+                className="w-full pl-9 pr-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 text-sm focus:ring-2 focus:ring-[#01257D] focus:border-[#01257D] text-gray-900 dark:text-white"
+              />
+            </div>
           </div>
+
+          {historyLoading && (
+            <div className="flex items-center justify-center py-12 text-gray-500 dark:text-gray-400">
+              <Loader2 className="h-5 w-5 animate-spin mr-2" /> Cargando conversaciones...
+            </div>
+          )}
+
+          {historyError && !historyLoading && (
+            <div className="text-center py-8">
+              <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-amber-500" />
+              <p className="text-sm text-gray-700 dark:text-gray-300">{historyError}</p>
+            </div>
+          )}
+
+          {!historyLoading && !historyError && filteredHistory.length === 0 && (
+            <div className="text-center py-12">
+              <History className="w-14 h-14 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+              <p className="text-gray-500 dark:text-gray-400 font-medium">
+                {historySearch ? 'Sin resultados' : 'Aún no has chateado con Julia'}
+              </p>
+              <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+                {historySearch
+                  ? 'Intenta con otros términos de búsqueda.'
+                  : 'Comienza una conversación en la pestaña Chat para ver el historial aquí.'}
+              </p>
+            </div>
+          )}
+
+          {!historyLoading && filteredHistory.length > 0 && (
+            <div className="space-y-2">
+              <AnimatePresence initial={false}>
+                {filteredHistory.map((conv) => {
+                  const expanded = expandedConv === conv.id;
+                  const lastAssistantMsg = [...conv.messages].reverse().find((m) => m.role === 'assistant');
+                  const msgCount = conv.messages.length;
+                  return (
+                    <motion.div
+                      key={conv.id}
+                      layout
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
+                    >
+                      <button
+                        onClick={() => setExpandedConv(expanded ? null : conv.id)}
+                        className="w-full flex items-center justify-between gap-3 p-4 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors text-left"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-sm text-gray-900 dark:text-white truncate">
+                            {conv.title || 'Sin título'}
+                          </h4>
+                          {lastAssistantMsg && !expanded && (
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
+                              Julia: {lastAssistantMsg.content}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-3 mt-2 text-xs text-gray-500 dark:text-gray-400">
+                            <span>{new Date(conv.updated_at).toLocaleString('es-CO')}</span>
+                            <span>·</span>
+                            <span>{msgCount} mensaje{msgCount !== 1 ? 's' : ''}</span>
+                          </div>
+                        </div>
+                        {expanded ? (
+                          <ChevronDown className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                        )}
+                      </button>
+
+                      {expanded && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30"
+                        >
+                          <div className="p-4 space-y-3 max-h-96 overflow-y-auto">
+                            {conv.messages.map((m, i) => (
+                              <div
+                                key={i}
+                                className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                              >
+                                <div
+                                  className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${
+                                    m.role === 'user'
+                                      ? 'bg-[#01257D] text-white'
+                                      : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200'
+                                  }`}
+                                >
+                                  <p className="whitespace-pre-wrap">{m.content}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            </div>
+          )}
         </motion.div>
       )}
 

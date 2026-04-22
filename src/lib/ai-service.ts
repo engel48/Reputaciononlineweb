@@ -449,27 +449,74 @@ Reglas de score: -1.0 a -0.3 = negative, -0.3 a +0.3 = neutral, +0.3 a +1.0 = po
     }>;
     summary: string;
   }> {
+    // 1) Detectar redes faltantes y generar recomendaciones deterministas de conexión
+    const supportedPlatforms: Array<{ id: string; label: string; note: string }> = [
+      { id: 'facebook', label: 'Facebook', note: 'para monitorear comentarios y menciones en tus páginas y posts propios' },
+      { id: 'instagram', label: 'Instagram', note: 'para capturar comentarios, tags y menciones de tu cuenta Business' },
+      { id: 'x', label: 'X (Twitter)', note: 'para detectar menciones directas, retweets y tweets que te etiquetan' },
+      { id: 'youtube', label: 'YouTube', note: 'para analizar comentarios de tus videos y videos externos que te mencionan' },
+    ];
+    const connectedIds = new Set(user.connectedNetworks.map((n) => n.platform));
+    const missing = supportedPlatforms.filter((p) => !connectedIds.has(p.id));
+
+    const missingRecommendations = missing.map((p, idx) => ({
+      title: `Conecta ${p.label}`,
+      description: `Aún no has conectado ${p.label}. Al hacerlo, Julia ${p.note}. Sin esta red, tu monitoreo de reputación queda incompleto.`,
+      priority: (idx === 0 ? 'high' : 'medium') as 'high' | 'medium' | 'low',
+      category: 'Conexión de redes',
+    }));
+
+    // Si TODAS las redes están desconectadas, no vale la pena llamar a la IA para
+    // recomendaciones de contenido: devolvemos solo las recomendaciones deterministas.
+    if (user.connectedNetworks.length === 0) {
+      return {
+        recommendations: missingRecommendations,
+        summary: `${user.firstName}, el primer paso es conectar al menos una red social. Mientras no lo hagas, no podemos traer menciones reales ni calcular tu reputación. Te dejo abajo las que faltan por conectar.`,
+      };
+    }
+
+    // 2) Con al menos una red conectada, pedimos a Julia recomendaciones basadas en
+    // el contexto real del usuario (menciones, sentimiento, keywords).
     const messages: AIMessage[] = [
       {
         role: 'system',
         content: `${JULIA_PERSONALITY}\n\n${formatUserContextForPrompt(
           user
-        )}\n\nTu tarea: generar recomendaciones accionables ESPECÍFICAS al contexto del usuario (no genéricas). Responde SIEMPRE con JSON con las claves: recommendations (array de objetos {title, description, priority: high|medium|low, category}), summary (texto 2-3 frases dirigido al usuario por su nombre).`,
+        )}\n\nTu tarea: generar recomendaciones accionables ESPECÍFICAS al contexto del usuario (no genéricas). Responde SIEMPRE con JSON con las claves: recommendations (array de objetos {title, description, priority: high|medium|low, category}), summary (texto 2-3 frases dirigido al usuario por su nombre). Genera entre 3 y 5 recomendaciones SIN mencionar conectar redes que ya tiene conectadas.`,
       },
       {
         role: 'user',
-        content: `Genera entre 3 y 6 recomendaciones accionables para mí, basadas en mis datos reales. No repitas consejos genéricos, quiero acciones concretas.`,
+        content: `Genera recomendaciones accionables para mí basadas en mis datos reales. Las recomendaciones deben ser concretas y aprovechar las redes que ya tengo conectadas (${user.connectedNetworks
+          .map((n) => n.platform)
+          .join(', ')}).`,
       },
     ];
 
     try {
       const response = await this.chat(messages, { temperature: 0.7, jsonMode: true });
-      return this.parseJsonResponse(response);
+      const parsed = this.parseJsonResponse(response);
+
+      // 3) Mezclar: redes faltantes primero (high priority), luego las de contenido
+      const merged = [
+        ...missingRecommendations,
+        ...(Array.isArray(parsed.recommendations) ? parsed.recommendations : []),
+      ].slice(0, 8);
+
+      return {
+        recommendations: merged,
+        summary:
+          parsed.summary ||
+          `${user.firstName}, aquí están tus recomendaciones personalizadas basadas en tus datos reales.`,
+      };
     } catch (error) {
       console.error('Error generando recomendaciones:', error);
+      // Fallback: al menos devolvemos las recomendaciones deterministas de redes faltantes
       return {
-        recommendations: [],
-        summary: `${user.firstName}, no pude generar recomendaciones en este momento. Inténtalo de nuevo en unos minutos.`,
+        recommendations: missingRecommendations,
+        summary:
+          missingRecommendations.length > 0
+            ? `${user.firstName}, aquí hay acciones inmediatas que puedes tomar:`
+            : `${user.firstName}, no pude generar recomendaciones personalizadas en este momento. Inténtalo de nuevo en unos minutos.`,
       };
     }
   }

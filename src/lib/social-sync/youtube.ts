@@ -3,6 +3,7 @@ import { youtubeOAuth } from '@/lib/oauth/youtube';
 import { aiService } from '@/lib/ai-service';
 import { DEFAULT_SYNC_OPTIONS, SyncOptions, SyncResult } from './types';
 import { analyzeSentimentBasic } from './sentiment';
+import { notifyFromMentions } from './notifications';
 
 /**
  * Sincroniza YouTube para un usuario:
@@ -196,6 +197,20 @@ export async function syncYoutubeMentions(
       })
       .eq('user_id', userId)
       .eq('platform', 'youtube');
+
+    const totalNew = result.mentions_created + result.external_mentions_created;
+    if (totalNew > 0) {
+      const sinceIso = new Date(start - 1000).toISOString();
+      const { data: fresh } = await supabase
+        .from('mentions')
+        .select('content, url, metadata')
+        .eq('user_id', userId)
+        .eq('platform', 'youtube')
+        .gte('scraped_at', sinceIso);
+      if (fresh && fresh.length > 0) {
+        await notifyFromMentions({ userId, platform: 'youtube', mentions: fresh as any });
+      }
+    }
 
     result.success = true;
   } catch (err: any) {
