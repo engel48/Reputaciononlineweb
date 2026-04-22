@@ -61,7 +61,7 @@ interface DashboardAnalytics {
   };
 }
 
-async function getRealAnalytics(userId: string): Promise<DashboardAnalytics> {
+async function getRealAnalytics(userId: string): Promise<DashboardAnalytics & { no_data: boolean }> {
   // Get date ranges
   const now = new Date();
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -78,6 +78,14 @@ async function getRealAnalytics(userId: string): Promise<DashboardAnalytics> {
   if (mentionsError) {
     console.error('Error fetching mentions:', mentionsError);
   }
+
+  // 1b. Get previous-period mentions (7-14 days ago) for real trend calculation
+  const { data: prevMentions } = await supabase
+    .from('mentions')
+    .select('id, metadata, content')
+    .eq('user_id', userId)
+    .gte('scraped_at', fourteenDaysAgo.toISOString())
+    .lt('scraped_at', sevenDaysAgo.toISOString());
 
   // 2. Get news mentions from last 7 days
   const { data: newsMentions, error: newsError } = await supabase
@@ -96,7 +104,7 @@ async function getRealAnalytics(userId: string): Promise<DashboardAnalytics> {
     .from('user_stats')
     .select('*')
     .eq('user_id', userId)
-    .single();
+    .maybeSingle();
 
   // 4. Get connected social media accounts
   const { data: socialAccounts } = await supabase
@@ -173,25 +181,41 @@ async function getRealAnalytics(userId: string): Promise<DashboardAnalytics> {
   if (percentChange > 10) trend = 'up';
   else if (percentChange < -10) trend = 'down';
 
-  // Calculate reputation score from user stats or from sentiment data
-  let reputationScore = userStats?.sentiment_score || 50;
+  // Calculate reputation score from REAL data only. If no data, return null/0 and
+  // signal via `no_data` flag so the frontend can render an empty state instead of
+  // fake numbers.
+  let reputationScore = 0;
   if (sentimentData && sentimentData.length > 0) {
-    const avgSentiment = sentimentData.reduce((sum, s) => sum + (s.sentiment_score || 0), 0) / sentimentData.length;
-    // Convert -100 to 100 scale to 0-100 scale
+    const avgSentiment =
+      sentimentData.reduce((sum, s) => sum + (s.sentiment_score || 0), 0) / sentimentData.length;
     reputationScore = Math.round(((avgSentiment + 100) / 200) * 100);
   } else if (total > 0) {
-    // Calculate from mentions if no sentiment analysis
-    reputationScore = Math.round(((positive * 100 + neutral * 50 + negative * 0) / total));
+    reputationScore = Math.round((positive * 100 + neutral * 50 + negative * 0) / total);
+  } else if (userStats?.sentiment_score != null) {
+    reputationScore = Math.round(((userStats.sentiment_score + 100) / 200) * 100);
   }
 
-  // Get previous score for trend (simplified - use stats if available)
-  const previousScore = userStats?.sentiment_score
-    ? Math.round(userStats.sentiment_score - (Math.random() * 5 - 2.5))
-    : reputationScore - 2;
+  // Previous score calculated from real mentions of the PREVIOUS 7-day window.
+  // No random jitter, no fake baseline.
+  const prev = prevMentions || [];
+  let previousScore = 0;
+  if (prev.length > 0) {
+    let prevPos = 0;
+    let prevNeg = 0;
+    let prevNeu = 0;
+    for (const m of prev) {
+      const s = determineSentiment(m);
+      if (s === 'positive') prevPos++;
+      else if (s === 'negative') prevNeg++;
+      else prevNeu++;
+    }
+    previousScore = Math.round((prevPos * 100 + prevNeu * 50) / prev.length);
+  }
 
-  // Process social media accounts
   const accounts = socialAccounts || [];
-  const connectedCount = accounts.filter(a => a.connected).length;
+  const connectedCount = accounts.filter((a) => a.connected).length;
+
+  const noData = total === 0 && (prev?.length || 0) === 0 && accounts.length === 0;
 
   return {
     mentions: {
@@ -199,28 +223,34 @@ async function getRealAnalytics(userId: string): Promise<DashboardAnalytics> {
       positive,
       negative,
       neutral,
-      trend: `${percentChange > 0 ? '+' : ''}${percentChange.toFixed(1)}%`,
+      trend: total === 0 ? '0.0%' : `${percentChange > 0 ? '+' : ''}${percentChange.toFixed(1)}%`,
       byPlatform,
-      recent: allMentions.slice(0, 10).map(m => ({
+      recent: allMentions.slice(0, 10).map((m) => ({
         ...m,
-        sentiment: m.sentiment as 'positive' | 'negative' | 'neutral'
+        sentiment: m.sentiment as 'positive' | 'negative' | 'neutral',
       })),
-      timeSeries
+      timeSeries,
     },
     reputation: {
       score: reputationScore,
       previousScore,
-      trend: reputationScore > previousScore ? 'up' : reputationScore < previousScore ? 'down' : 'stable'
+      trend:
+        reputationScore > previousScore
+          ? 'up'
+          : reputationScore < previousScore
+          ? 'down'
+          : 'stable',
     },
     socialMedia: {
       connected: connectedCount,
-      platforms: accounts.map(a => ({
+      platforms: accounts.map((a) => ({
         platform: a.platform,
         followers: a.followers || 0,
         engagement: a.engagement || 0,
-        connected: a.connected || false
-      }))
-    }
+        connected: a.connected || false,
+      })),
+    },
+    no_data: noData,
   };
 }
 
@@ -269,6 +299,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: analytics,
+      no_data: analytics.no_data,
       generated_at: new Date().toISOString(),
       source: 'supabase_realtime'
     });

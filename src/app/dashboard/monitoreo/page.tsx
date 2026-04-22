@@ -8,6 +8,8 @@ import AudienceIntelligence from '@/components/social-listening/AudienceIntellig
 import MediaMonitoring from '@/components/social-listening/MediaMonitoring';
 import { SocialListeningCard } from '@/components/dashboard/SocialListeningCard';
 import { useUser } from '@/context/UserContext';
+import { EmptyMentionsState } from '@/components/ui/EmptyMentionsState';
+import { useHasMentionsData } from '@/hooks/useHasMentionsData';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -24,6 +26,7 @@ const itemVariants = {
 
 export default function MonitoreoPage() {
   const { user } = useUser();
+  const { loading: hasDataLoading, hasAnyData } = useHasMentionsData();
 
   const userProfile = {
     type: user?.profileType || 'business',
@@ -61,6 +64,16 @@ export default function MonitoreoPage() {
             </div>
           </div>
         </motion.div>
+
+        {/* Empty state si no hay datos */}
+        {!hasDataLoading && !hasAnyData && (
+          <motion.div variants={itemVariants} className="mb-8">
+            <EmptyMentionsState
+              title="Tu centro de monitoreo está listo, falta conectar tus redes"
+              description="Una vez conectes Facebook, Instagram, X o YouTube, Julia traerá menciones, sentimiento y métricas automáticamente cada 30 minutos."
+            />
+          </motion.div>
+        )}
 
         {/* Social Listening Overview */}
         <motion.section

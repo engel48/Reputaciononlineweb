@@ -102,15 +102,15 @@ export class SocialOAuthManager {
   }
 
   /**
-   * Sincroniza datos de todas las redes conectadas
-   * Lee tokens de Supabase (desencriptados) en vez de memoria
+   * Sincroniza datos Y menciones de todas las redes conectadas para un usuario.
+   * Delega a src/lib/social-sync/* para traer menciones reales (no solo métricas).
    */
   async syncAllConnections(userId: string): Promise<boolean> {
     try {
       const { getAccessToken } = await import('@/lib/oauth-storage');
       const { supabase } = await import('@/lib/supabase-server');
+      const { syncPlatformMentions } = await import('@/lib/social-sync');
 
-      // Obtener plataformas conectadas de Supabase
       const { data: records, error } = await supabase
         .from('social_media')
         .select('platform, connected')
@@ -127,11 +127,19 @@ export class SocialOAuthManager {
         const platform = record.platform as SocialPlatform;
         const accessToken = await getAccessToken(userId, platform);
 
-        if (accessToken) {
-          await this.syncPlatformData(userId, platform, accessToken);
-          synced = true;
-        } else {
+        if (!accessToken) {
           console.warn(`⚠️ No se pudo obtener token para ${platform} (expirado o no disponible)`);
+          continue;
+        }
+
+        const result = await syncPlatformMentions(platform, userId, accessToken);
+        if (result.success) {
+          synced = true;
+          console.log(
+            `✅ ${platform} sync: ${result.mentions_created} menciones + ${result.external_mentions_created} externas`
+          );
+        } else {
+          console.warn(`⚠️ ${platform} sync falló: ${result.error}`);
         }
       }
 

@@ -9,29 +9,6 @@ import { supabase } from '@/lib/supabase-server';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'reputacion-online-secret-key-2025';
 
-// Ciudades de Latinoamerica con coordenadas
-const LATIN_AMERICA_CITIES = [
-  { name: 'Bogota, Colombia', lat: 4.6097, lng: -74.0817 },
-  { name: 'Medellin, Colombia', lat: 6.2476, lng: -75.5658 },
-  { name: 'Cali, Colombia', lat: 3.4516, lng: -76.5320 },
-  { name: 'Barranquilla, Colombia', lat: 10.9639, lng: -74.7964 },
-  { name: 'Cartagena, Colombia', lat: 10.3910, lng: -75.4794 },
-  { name: 'Ciudad de Mexico, Mexico', lat: 19.4326, lng: -99.1332 },
-  { name: 'Guadalajara, Mexico', lat: 20.6597, lng: -103.3496 },
-  { name: 'Buenos Aires, Argentina', lat: -34.6118, lng: -58.3960 },
-  { name: 'Sao Paulo, Brasil', lat: -23.5558, lng: -46.6396 },
-  { name: 'Lima, Peru', lat: -12.0464, lng: -77.0428 },
-  { name: 'Santiago, Chile', lat: -33.4489, lng: -70.6693 },
-  { name: 'Caracas, Venezuela', lat: 10.4806, lng: -66.9036 },
-  { name: 'Quito, Ecuador', lat: -0.1807, lng: -78.4678 },
-  { name: 'Panama City, Panama', lat: 8.9824, lng: -79.5199 },
-  { name: 'San Jose, Costa Rica', lat: 9.9281, lng: -84.0907 },
-];
-
-function getRandomCity() {
-  return LATIN_AMERICA_CITIES[Math.floor(Math.random() * LATIN_AMERICA_CITIES.length)];
-}
-
 interface MapMention {
   id: string;
   author: string;
@@ -90,48 +67,49 @@ export async function GET(request: NextRequest) {
       .limit(limit);
 
     if (!mentionsError && mentions && mentions.length > 0) {
-      mapMentions = mentions.map((m: any) => {
+      for (const m of mentions) {
         const metadata = m.metadata || {};
         const locationData = metadata.location;
 
-        // Si tiene ubicacion en metadata, usarla; si no, asignar ciudad aleatoria
-        let location;
-        if (locationData && locationData.lat && locationData.lng) {
-          location = {
-            lat: locationData.lat,
-            lng: locationData.lng,
-            name: locationData.name || 'Ubicacion desconocida'
-          };
-        } else {
-          const city = getRandomCity();
-          location = { lat: city.lat, lng: city.lng, name: city.name };
-        }
+        // Solo incluir menciones con ubicación real en metadata.
+        // NO asignamos ciudades aleatorias — si no hay coords, se omite.
+        if (!locationData?.lat || !locationData?.lng) continue;
 
-        // Extraer sentiment
+        const location = {
+          lat: locationData.lat,
+          lng: locationData.lng,
+          name: locationData.name || 'Ubicación desconocida',
+        };
+
         let sentiment: 'positive' | 'negative' | 'neutral' = 'neutral';
         if (metadata.sentiment) {
-          const s = metadata.sentiment.toLowerCase();
+          const s = String(metadata.sentiment).toLowerCase();
           if (s === 'positive' || s === 'negative' || s === 'neutral') {
             sentiment = s;
           }
         } else if (typeof metadata.sentimentScore === 'number') {
-          sentiment = metadata.sentimentScore > 0.3 ? 'positive' :
-                     metadata.sentimentScore < -0.3 ? 'negative' : 'neutral';
+          sentiment =
+            metadata.sentimentScore > 0.3
+              ? 'positive'
+              : metadata.sentimentScore < -0.3
+              ? 'negative'
+              : 'neutral';
         }
 
-        return {
+        mapMentions.push({
           id: m.id,
           author: m.author_name || m.author_username || 'Usuario',
           content: m.content || '',
           sentiment,
           platform: m.platform || 'web',
           location,
-          timestamp: m.published_at || m.scraped_at
-        };
-      });
+          timestamp: m.published_at || m.scraped_at,
+        });
+      }
     }
 
-    // 6. SI NO HAY MENCIONES, BUSCAR EN news_mentions
+    // 6. Si no hay menciones sociales con ubicación, intentar news_mentions.
+    //    También requerimos coords reales en metadata/location.
     if (mapMentions.length === 0) {
       const { data: newsMentions, error: newsError } = await supabase
         .from('news_mentions')
@@ -141,27 +119,32 @@ export async function GET(request: NextRequest) {
         .limit(limit);
 
       if (!newsError && newsMentions && newsMentions.length > 0) {
-        mapMentions = newsMentions.map((m: any) => {
-          const city = getRandomCity();
+        for (const m of newsMentions as any[]) {
+          const loc = m.metadata?.location;
+          if (!loc?.lat || !loc?.lng) continue;
 
           let sentiment: 'positive' | 'negative' | 'neutral' = 'neutral';
           if (m.sentiment) {
-            const s = m.sentiment.toLowerCase();
+            const s = String(m.sentiment).toLowerCase();
             if (s === 'positive' || s === 'negative' || s === 'neutral') {
               sentiment = s;
             }
           }
 
-          return {
+          mapMentions.push({
             id: m.id,
             author: m.article_author || 'Medio de noticias',
             content: m.mention_context || m.article_title || '',
             sentiment,
             platform: 'news',
-            location: { lat: city.lat, lng: city.lng, name: city.name },
-            timestamp: m.published_date || m.discovered_at
-          };
-        });
+            location: {
+              lat: loc.lat,
+              lng: loc.lng,
+              name: loc.name || 'Ubicación desconocida',
+            },
+            timestamp: m.published_date || m.discovered_at,
+          });
+        }
       }
     }
 

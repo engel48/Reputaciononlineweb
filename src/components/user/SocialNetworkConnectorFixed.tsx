@@ -14,8 +14,17 @@ import {
   CheckCircle,
   XCircle,
   AlertTriangle,
-  Loader2
+  Loader2,
+  Clock,
+  Zap
 } from 'lucide-react';
+
+// X (Twitter) requiere TWITTER_CLIENT_ID configurado. Si no está, la tarjeta
+// muestra "Próximamente" y el botón Conectar queda disabled.
+const X_OAUTH_AVAILABLE = !!(
+  process.env.NEXT_PUBLIC_TWITTER_CLIENT_ID &&
+  process.env.NEXT_PUBLIC_TWITTER_CLIENT_ID.trim().length > 0
+);
 
 interface SocialConnection {
   connected: boolean;
@@ -88,6 +97,7 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
   });
 
   const [loading, setLoading] = useState<Record<string, boolean>>({});
+  const [syncing, setSyncing] = useState<Record<string, boolean>>({});
   const [message, setMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string>('');
@@ -430,6 +440,49 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
     }
   };
 
+  const handleSyncSingle = async (platform: string) => {
+    if (syncing[platform]) return;
+    setSyncing((prev) => ({ ...prev, [platform]: true }));
+    setMessage(null);
+
+    try {
+      // Mapear platform al endpoint correcto
+      const endpoint = platform === 'x' ? '/api/x/sync' : `/api/${platform}/sync`;
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        const mentionsCreated =
+          (data.data?.mentions_created || 0) +
+          (data.data?.external_mentions_created || 0);
+        setMessage({
+          type: 'success',
+          text: `${platform}: ${mentionsCreated} menciones nuevas sincronizadas`,
+        });
+        await loadConnections();
+      } else {
+        setMessage({
+          type: 'error',
+          text: data.error || `Error sincronizando ${platform}`,
+        });
+      }
+    } catch (error) {
+      console.error(`Error sincronizando ${platform}:`, error);
+      setMessage({
+        type: 'error',
+        text: `Error de conexión al sincronizar ${platform}`,
+      });
+    } finally {
+      setSyncing((prev) => ({ ...prev, [platform]: false }));
+    }
+  };
+
   const formatNumber = (num: number): string => {
     if (num >= 1000000) {
       return (num / 1000000).toFixed(1) + 'M';
@@ -519,15 +572,41 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
         </div>
       )}
 
+      {/* Banner: sync automático cada 30 min */}
+      <div className="rounded-xl border border-blue-200 dark:border-blue-800 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-4">
+        <div className="flex items-start gap-3">
+          <div className="p-2 rounded-lg bg-white dark:bg-gray-800 shadow-sm flex-shrink-0">
+            <Clock className="h-5 w-5 text-[#01257D] dark:text-blue-400" />
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h4 className="text-sm font-bold text-gray-900 dark:text-white">
+                Sincronización automática cada 30 minutos
+              </h4>
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 rounded-full">
+                <Zap className="h-3 w-3" /> Activo
+              </span>
+            </div>
+            <p className="text-xs text-gray-700 dark:text-gray-300 mt-1">
+              El sistema trae automáticamente menciones y métricas de todas tus redes
+              conectadas. También puedes usar el botón <strong>Sincronizar ahora</strong> en
+              cada tarjeta para traer datos al instante.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Grid de redes sociales */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {socialNetworks.map((network) => {
           const connection = connections[network.id as keyof SocialConnectionsState];
           const isLoading = loading[network.id];
+          const isSyncing = syncing[network.id];
           const IconComponent = network.icon;
+          const isXDisabled = network.id === 'x' && !X_OAUTH_AVAILABLE && !connection.connected;
 
           return (
-            <Card key={network.id} className="relative overflow-hidden">
+            <Card key={network.id} className={`relative overflow-hidden ${isXDisabled ? 'opacity-80' : ''}`}>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
@@ -536,18 +615,26 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
                     </div>
                     <div>
                       <CardTitle className="text-lg">{network.name}</CardTitle>
-                      <Badge variant={connection.connected ? "default" : "secondary"} className="mt-1">
-                        {connection.connected ? (
-                          <><CheckCircle className="w-3 h-3 mr-1" /> Conectado</>
-                        ) : (
-                          <><XCircle className="w-3 h-3 mr-1" /> Desconectado</>
-                        )}
-                      </Badge>
+                      {isXDisabled ? (
+                        <Badge variant="secondary" className="mt-1 bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
+                          <Clock className="w-3 h-3 mr-1" /> Próximamente
+                        </Badge>
+                      ) : (
+                        <Badge variant={connection.connected ? "default" : "secondary"} className="mt-1">
+                          {connection.connected ? (
+                            <><CheckCircle className="w-3 h-3 mr-1" /> Conectado</>
+                          ) : (
+                            <><XCircle className="w-3 h-3 mr-1" /> Desconectado</>
+                          )}
+                        </Badge>
+                      )}
                     </div>
                   </div>
                 </div>
                 <CardDescription className="text-sm">
-                  {network.description}
+                  {isXDisabled
+                    ? 'Conexión con X estará disponible cuando terminemos la aprobación con X Developer.'
+                    : network.description}
                 </CardDescription>
               </CardHeader>
 
@@ -589,35 +676,51 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
                 )}
 
                 {/* Botones de acción */}
-                <div className="flex gap-2">
+                <div className="flex flex-col gap-2">
                   {connection.connected ? (
-                    <Button
-                      onClick={() => handleDisconnect(network.id)}
-                      disabled={isLoading}
-                      variant="outline"
-                      size="sm"
-                      className="flex-1"
-                    >
-                      {isLoading ? (
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      ) : (
-                        <XCircle className="w-4 h-4 mr-2" />
-                      )}
-                      Desconectar
-                    </Button>
+                    <>
+                      <Button
+                        onClick={() => handleSyncSingle(network.id)}
+                        disabled={isSyncing || isLoading}
+                        className="w-full bg-[#01257D] hover:bg-[#013AAA] text-white"
+                        size="sm"
+                      >
+                        {isSyncing ? (
+                          <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Sincronizando...</>
+                        ) : (
+                          <><RefreshCw className="w-4 h-4 mr-2" /> Sincronizar ahora</>
+                        )}
+                      </Button>
+                      <Button
+                        onClick={() => handleDisconnect(network.id)}
+                        disabled={isLoading || isSyncing}
+                        variant="outline"
+                        size="sm"
+                        className="w-full"
+                      >
+                        {isLoading ? (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          <XCircle className="w-4 h-4 mr-2" />
+                        )}
+                        Desconectar
+                      </Button>
+                    </>
                   ) : (
                     <Button
                       onClick={() => handleConnect(network.id)}
-                      disabled={isLoading}
-                      className="flex-1 bg-[#01257D] hover:bg-[#013AAA] text-white"
+                      disabled={isLoading || isXDisabled}
+                      className="flex-1 bg-[#01257D] hover:bg-[#013AAA] text-white disabled:opacity-60 disabled:cursor-not-allowed"
                       size="sm"
                     >
                       {isLoading ? (
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : isXDisabled ? (
+                        <Clock className="w-4 h-4 mr-2" />
                       ) : (
                         <ExternalLink className="w-4 h-4 mr-2" />
                       )}
-                      Conectar
+                      {isXDisabled ? 'No disponible' : 'Conectar'}
                     </Button>
                   )}
                 </div>

@@ -427,7 +427,9 @@ export default function GeneradorReportes() {
               <h5 className="mb-2 text-base font-medium text-gray-900 dark:text-white">Tendencia de Consumo</h5>
               <div className="flex h-40 items-end justify-between">
                 {Array.from({ length: 10 }).map((_, index) => {
-                  const altura = 30 + Math.random() * 70;
+                  // Alturas deterministas (placeholder visual, sin random):
+                  // patrón sinusoidal para simular tendencia de forma estable.
+                  const altura = 40 + 30 * Math.sin((index / 10) * Math.PI * 2);
                   return (
                     <div key={index} className="group flex w-full flex-col items-center">
                       <div 

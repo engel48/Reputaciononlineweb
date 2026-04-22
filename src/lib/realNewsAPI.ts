@@ -101,8 +101,8 @@ export async function searchRealNews(personalityName: string): Promise<RealNewsR
         // Validar y limpiar datos
         const validNews = Array.isArray(newsData) ? newsData : [];
 
-        // Estrategia 2: Enriquecer con búsqueda web simulada adicional
-        const enrichedNews = await enrichWithWebSearch(personalityName, validNews);
+        // Sin enriquecimiento simulado: solo noticias reales verificadas.
+        const enrichedNews = validNews;
 
         // Garantizar que siempre tengamos datos mínimos
         if (enrichedNews.length === 0) {
@@ -330,44 +330,9 @@ async function generateRealInsights(personalityName: string, news: RealNewsResul
   }
 }
 
-// Función para enriquecer noticias con búsqueda web adicional
-async function enrichWithWebSearch(personalityName: string, baseNews: any[]): Promise<any[]> {
-  try {
-    console.log(`🌐 Enriqueciendo búsqueda web para: ${personalityName}`);
-    
-    // Simular búsqueda en múltiples fuentes web
-    const webSources = [
-      'El Tiempo', 'Semana', 'El Espectador', 'Caracol Radio', 'RCN Radio',
-      'Infobae', 'CNN Español', 'BBC Mundo', 'El Universal', 'Clarín'
-    ];
-    
-    const additionalNews = [];
-    const currentDate = new Date();
-    
-    // Generar noticias adicionales basadas en patrones reales
-    for (let i = 0; i < 3; i++) {
-      const randomSource = webSources[Math.floor(Math.random() * webSources.length)];
-      const daysBefore = Math.floor(Math.random() * 30) + 1;
-      const newsDate = new Date(currentDate.getTime() - daysBefore * 24 * 60 * 60 * 1000);
-      
-      additionalNews.push({
-        title: `${personalityName} en tendencia según análisis de ${randomSource}`,
-        content: `Análisis detallado sobre la actividad reciente y el impacto mediático de ${personalityName} en el panorama latinoamericano actual.`,
-        source: randomSource,
-        date: newsDate.toISOString(),
-        sentiment: ['positive', 'neutral', 'negative'][Math.floor(Math.random() * 3)],
-        verification: 'confirmed',
-        region: 'Colombia',
-        category: 'social'
-      });
-    }
-    
-    return [...baseNews, ...additionalNews];
-  } catch (error) {
-    console.error('Error enriching web search:', error);
-    return baseNews;
-  }
-}
+// enrichWithWebSearch fue eliminada: generaba 3 noticias falsas por búsqueda con
+// source/date/sentiment aleatorios. Ahora el retorno de la consulta al LLM pasa
+// sin enriquecimiento simulado.
 
 // Función para generar URLs realistas de noticias
 function generateRealNewsUrl(source: string, personalityName: string, index: number): string {

@@ -1,8 +1,9 @@
 /**
- * useAmelia Hook - Hook personalizado para interactuar con Amelia (AI Assistant)
+ * useAmelia Hook - Hook personalizado para interactuar con Amelia (AI Assistant).
  *
- * Permite enviar mensajes a Amelia y gestionar conversaciones
- * usando Edge Functions de Supabase con Gemini
+ * Usa el endpoint interno /api/amelia/chat que corre sobre Groq llama-3.3-70b-versatile
+ * con memoria conversacional (tablas amelia_conversations + amelia_messages) y
+ * contexto personalizado del usuario (nombre, redes, keywords, menciones recientes).
  */
 
 import { useState } from 'react'
@@ -30,62 +31,48 @@ export function useAmelia() {
   const [error, setError] = useState<string | null>(null)
 
   /**
-   * Enviar mensaje a Amelia
-   * Llama a la Edge Function 'amelia-chat' si existe,
-   * sino hace una petición directa al backend
+   * Enviar mensaje a Amelia — llama /api/amelia/chat (Groq + memoria)
    */
   async function sendMessage(
     message: string,
     conversationId?: string
-  ): Promise<string | null> {
+  ): Promise<{ response: string | null; conversationId: string | null }> {
     if (!user) {
       setError('Usuario no autenticado')
-      return null
+      return { response: null, conversationId: null }
     }
 
     setLoading(true)
     setError(null)
 
     try {
-      // Intentar usar Edge Function primero
-      const { data, error: functionError } = await supabase.functions.invoke('amelia-chat', {
-        body: {
+      const response = await fetch('/api/amelia/chat', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
           message,
-          conversationId,
-          userId: user.id
-        }
+          conversationId
+        })
       })
 
-      if (functionError) {
-        console.warn('Edge Function no disponible, usando endpoint de API')
+      const result = await response.json()
 
-        // Fallback a endpoint de API
-        const response = await fetch('/api/amelia/chat', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            message,
-            conversationId,
-            userId: user.id
-          })
-        })
-
-        if (!response.ok) {
-          throw new Error('Error al enviar mensaje a Amelia')
-        }
-
-        const result = await response.json()
-        return result.response
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Error al enviar mensaje a Amelia')
       }
 
-      return data?.response || null
+      return {
+        response: result.response || null,
+        conversationId: result.conversationId || null
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error desconocido'
       setError(errorMessage)
       console.error('Error en useAmelia.sendMessage:', err)
-      return null
+      return { response: null, conversationId: null }
     } finally {
       setLoading(false)
     }

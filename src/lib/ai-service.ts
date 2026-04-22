@@ -1,97 +1,187 @@
-// Servicio de IA centralizado usando Groq (LPU Inference)
-// Mantiene el branding como "Julia" para el usuario
+// Servicio de IA centralizado.
+// Primario: Groq (llama-3.3-70b-versatile). Fallback: DeepSeek R1 (OpenAI-compatible).
+// Mantiene el branding como "Julia" y soporta inyección de contexto de usuario.
 
 import Groq from 'groq-sdk';
+import { UserContext, formatUserContextForPrompt } from './user-context';
 
 interface AIMessage {
   role: 'system' | 'user' | 'assistant';
   content: string;
 }
 
+interface ChatOptions {
+  temperature?: number;
+  max_tokens?: number;
+  jsonMode?: boolean;
+}
+
 const GROQ_MODEL = 'llama-3.3-70b-versatile';
+const DEEPSEEK_MODEL = 'deepseek-chat';
+const DEEPSEEK_BASE_URL = 'https://api.deepseek.com/v1';
+
+const JULIA_PERSONALITY = `Eres Julia, asistente de IA especializada en análisis de reputación online y monitoreo de redes sociales para el contexto colombiano y latinoamericano.
+Eres profesional, cercana, empática y práctica. Hablas español neutral con modismos naturales.
+Tus áreas de expertise:
+- Análisis de sentimientos en redes sociales y medios
+- Monitoreo de reputación online y detección temprana de crisis
+- Estrategias de comunicación digital y gestión de marca
+- Análisis político y electoral (Colombia/LATAM)
+- Respuesta a crisis de reputación
+- Interpretación de métricas de social media
+Reglas:
+- Siempre personaliza tus respuestas usando el nombre del usuario cuando esté disponible.
+- Sé concreta y accionable: sugiere pasos, no solo observaciones.
+- Si no tienes datos suficientes, dilo honestamente y pide más contexto.
+- No inventes cifras, nombres ni fuentes que no estén en el contexto.`;
 
 class AIService {
-  private client?: Groq;
+  private groqClient?: Groq;
+  private deepseekApiKey?: string;
 
   constructor() {
-    const apiKey = process.env.GROQ_API_KEY || '';
+    const groqKey = process.env.GROQ_API_KEY || '';
+    const deepseekKey = process.env.DEEPSEEK_API_KEY || '';
 
-    if (!apiKey) {
-      console.warn('⚠️ GROQ_API_KEY no está configurada');
+    if (groqKey) {
+      this.groqClient = new Groq({ apiKey: groqKey });
     } else {
-      this.client = new Groq({ apiKey });
+      console.warn('⚠️ GROQ_API_KEY no está configurada');
+    }
+
+    if (deepseekKey) {
+      this.deepseekApiKey = deepseekKey;
     }
   }
 
-  private async callGroq(messages: AIMessage[], options?: {
-    temperature?: number;
-    max_tokens?: number;
-  }): Promise<string> {
-    if (!this.client) {
-      console.log('🤖 Julia: API no disponible, usando respuesta simulada');
-      throw new Error('Groq API not configured');
-    }
-
-    try {
-      console.log('🤖 Julia: Procesando con Groq AI...');
-
-      const completion = await this.client.chat.completions.create({
-        messages: messages.map(m => ({
-          role: m.role,
-          content: m.content
-        })),
-        model: GROQ_MODEL,
-        temperature: options?.temperature ?? 0.7,
-        max_tokens: options?.max_tokens ?? 2048
-      });
-
-      const text = completion.choices[0]?.message?.content || '';
-
-      console.log('✅ Julia: Respuesta generada exitosamente con Groq');
-      return text;
-    } catch (error: any) {
-      console.error('❌ Julia: Error con Groq:', error?.message || error);
-      throw error;
-    }
+  /** True si al menos un proveedor está configurado */
+  isAvailable(): boolean {
+    return !!(this.groqClient || this.deepseekApiKey);
   }
 
-  async chat(messages: AIMessage[], options?: {
-    temperature?: number;
-    max_tokens?: number;
-    stream?: boolean;
-  }): Promise<string> {
-    try {
-      return await this.callGroq(messages, options);
-    } catch (error) {
-      console.error('🚨 Julia: Error en servicio de IA:', error);
-      throw new Error('Julia no puede procesar la solicitud en este momento');
-    }
+  private async callGroq(messages: AIMessage[], options: ChatOptions): Promise<string> {
+    if (!this.groqClient) throw new Error('Groq not configured');
+
+    const completion = await this.groqClient.chat.completions.create({
+      messages: messages.map((m) => ({ role: m.role, content: m.content })),
+      model: GROQ_MODEL,
+      temperature: options.temperature ?? 0.7,
+      max_tokens: options.max_tokens ?? 2048,
+      ...(options.jsonMode ? { response_format: { type: 'json_object' as const } } : {}),
+    });
+
+    return completion.choices[0]?.message?.content || '';
   }
 
-  // Método específico para Julia
-  async juliaChat(userMessage: string, context?: string): Promise<string> {
-    const messages: AIMessage[] = [
-      {
-        role: 'system',
-        content: `Eres Julia, una asistente de IA especializada en análisis de reputación online y monitoreo de redes sociales en Colombia.
-        Eres amigable, profesional y experta en:
-        - Análisis de sentimientos
-        - Monitoreo de redes sociales
-        - Gestión de reputación online
-        - Estrategias de comunicación digital
-        - Análisis de tendencias
-        ${context ? `\nContexto adicional: ${context}` : ''}`
+  private async callDeepSeek(messages: AIMessage[], options: ChatOptions): Promise<string> {
+    if (!this.deepseekApiKey) throw new Error('DeepSeek not configured');
+
+    const res = await fetch(`${DEEPSEEK_BASE_URL}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${this.deepseekApiKey}`,
       },
-      {
-        role: 'user',
-        content: userMessage
-      }
-    ];
+      body: JSON.stringify({
+        model: DEEPSEEK_MODEL,
+        messages: messages.map((m) => ({ role: m.role, content: m.content })),
+        temperature: options.temperature ?? 0.7,
+        max_tokens: options.max_tokens ?? 2048,
+        ...(options.jsonMode ? { response_format: { type: 'json_object' } } : {}),
+      }),
+    });
 
-    return this.chat(messages, { temperature: 0.8 });
+    if (!res.ok) {
+      throw new Error(`DeepSeek API error ${res.status}: ${await res.text().catch(() => '')}`);
+    }
+
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content || '';
   }
 
-  // Método para análisis de sentimientos
+  /**
+   * Chat principal. Intenta Groq; si falla con 429/5xx o timeout, cae a DeepSeek.
+   */
+  async chat(messages: AIMessage[], options: ChatOptions = {}): Promise<string> {
+    const errors: string[] = [];
+
+    if (this.groqClient) {
+      try {
+        return await this.callGroq(messages, options);
+      } catch (err: any) {
+        const msg = err?.message || String(err);
+        errors.push(`Groq: ${msg}`);
+        const status = err?.status || err?.response?.status;
+        const isRetryable = !status || status === 429 || status === 503 || status >= 500;
+        if (!isRetryable) {
+          throw err;
+        }
+        console.warn(`[aiService] Groq falló (${msg}), intentando DeepSeek...`);
+      }
+    }
+
+    if (this.deepseekApiKey) {
+      try {
+        return await this.callDeepSeek(messages, options);
+      } catch (err: any) {
+        errors.push(`DeepSeek: ${err?.message || String(err)}`);
+      }
+    }
+
+    throw new Error(`Julia no puede procesar la solicitud. ${errors.join(' | ')}`);
+  }
+
+  /** Parser robusto de JSON con tolerancia a markdown wraps */
+  private parseJsonResponse(raw: string): any {
+    let txt = (raw || '').trim();
+    txt = txt.replace(/```json\n?/gi, '').replace(/```\n?/g, '');
+    const match = txt.match(/\{[\s\S]*\}/);
+    if (match) txt = match[0];
+    return JSON.parse(txt);
+  }
+
+  /**
+   * Chat genérico con persona Julia + contexto opcional de usuario.
+   */
+  async juliaChat(
+    userMessage: string,
+    options?: { context?: string; user?: UserContext | null }
+  ): Promise<string> {
+    const systemParts = [JULIA_PERSONALITY];
+    if (options?.user) systemParts.push(formatUserContextForPrompt(options.user));
+    if (options?.context) systemParts.push(`## Contexto adicional\n${options.context}`);
+
+    return this.chat(
+      [
+        { role: 'system', content: systemParts.join('\n\n') },
+        { role: 'user', content: userMessage },
+      ],
+      { temperature: 0.8 }
+    );
+  }
+
+  /**
+   * Chat con historial conversacional (para Amelia o conversaciones de Julia).
+   */
+  async chatWithHistory(
+    history: AIMessage[],
+    newUserMessage: string,
+    options: { user?: UserContext | null; persona?: string; temperature?: number } = {}
+  ): Promise<string> {
+    const systemParts = [options.persona || JULIA_PERSONALITY];
+    if (options.user) systemParts.push(formatUserContextForPrompt(options.user));
+
+    return this.chat(
+      [
+        { role: 'system', content: systemParts.join('\n\n') },
+        ...history,
+        { role: 'user', content: newUserMessage },
+      ],
+      { temperature: options.temperature ?? 0.7 }
+    );
+  }
+
+  /** Análisis de sentimiento con JSON mode */
   async analyzeSentiment(text: string): Promise<{
     sentiment: 'positive' | 'negative' | 'neutral';
     score: number;
@@ -100,70 +190,37 @@ class AIService {
     const messages: AIMessage[] = [
       {
         role: 'system',
-        content: `Eres un experto en análisis de sentimientos para contenido en español, especializado en contexto colombiano.
-
-IMPORTANTE: Debes analizar el texto y devolver SOLO un JSON válido con este formato exacto:
-{
-  "sentiment": "positive" | "negative" | "neutral",
-  "score": número entre -1.0 (muy negativo) y +1.0 (muy positivo),
-  "explanation": "breve explicación en español de 1-2 frases"
-}
-
-REGLAS:
-- score: -1.0 a -0.3 = negativo, -0.3 a +0.3 = neutral, +0.3 a +1.0 = positivo
-- Detecta sarcasmo, ironía y modismos colombianos
-- Considera emojis y hashtags en el análisis
-- NO incluyas código markdown, SOLO el JSON puro`
+        content: `Eres un experto en análisis de sentimientos para español colombiano. Detectas sarcasmo, ironía, emojis y hashtags. Respondes SIEMPRE con un JSON válido con las claves: sentiment (positive|negative|neutral), score (número -1.0 a +1.0), explanation (1-2 frases en español).
+Reglas de score: -1.0 a -0.3 = negative, -0.3 a +0.3 = neutral, +0.3 a +1.0 = positive.`,
       },
       {
         role: 'user',
-        content: `Analiza el sentimiento de este texto: "${text}"`
-      }
+        content: `Analiza el sentimiento de este texto: "${text}"`,
+      },
     ];
 
-    try {
-      const response = await this.chat(messages, { temperature: 0.3 });
+    const response = await this.chat(messages, { temperature: 0.3, jsonMode: true });
+    const parsed = this.parseJsonResponse(response);
 
-      // Limpiar respuesta de markdown si existe
-      let jsonText = response.trim();
-
-      // Eliminar bloques de código markdown
-      jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
-
-      // Buscar el JSON dentro del texto (puede haber texto antes/después)
-      const jsonMatch = jsonText.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        jsonText = jsonMatch[0];
-      }
-
-      const parsed = JSON.parse(jsonText);
-
-      // Validar estructura de respuesta
-      if (!parsed.sentiment || !['positive', 'negative', 'neutral'].includes(parsed.sentiment)) {
-        throw new Error('Formato de respuesta inválido: sentiment no válido');
-      }
-
-      // Normalizar score a rango -1 a +1
-      let normalizedScore = parsed.score;
-      if (typeof normalizedScore !== 'number') {
-        normalizedScore = 0;
-      }
-      if (normalizedScore > 1) normalizedScore = normalizedScore / 100;
-      normalizedScore = Math.max(-1, Math.min(1, normalizedScore));
-
-      return {
-        sentiment: parsed.sentiment,
-        score: normalizedScore,
-        explanation: parsed.explanation || 'Análisis completado'
-      };
-    } catch (error) {
-      console.error('❌ Error analizando sentimiento con Groq:', error);
-      throw error; // Lanzar error para que el endpoint use fallback
+    if (!['positive', 'negative', 'neutral'].includes(parsed.sentiment)) {
+      throw new Error('Formato inválido: sentiment');
     }
+
+    let score = typeof parsed.score === 'number' ? parsed.score : 0;
+    if (score > 1) score = score / 100;
+    score = Math.max(-1, Math.min(1, score));
+
+    return {
+      sentiment: parsed.sentiment,
+      score,
+      explanation: parsed.explanation || 'Análisis completado',
+    };
   }
 
-  // Método para búsqueda de personas
-  async searchPersonInfo(name: string, context?: string): Promise<{
+  async searchPersonInfo(
+    name: string,
+    context?: string
+  ): Promise<{
     bio: string;
     highlights: string[];
     socialPresence: string[];
@@ -172,97 +229,84 @@ REGLAS:
     const messages: AIMessage[] = [
       {
         role: 'system',
-        content: 'Eres un experto en investigación de perfiles públicos y análisis de reputación online en Colombia. Proporciona información profesional y relevante sobre personas basándote en datos públicos disponibles.'
+        content:
+          'Eres experta en investigación de perfiles públicos y análisis de reputación online en Colombia. Basas tus respuestas en información pública. Responde SIEMPRE con JSON con las claves: bio, highlights (array), socialPresence (array), reputationInsights.',
       },
       {
         role: 'user',
-        content: `Busca información sobre: ${name}${context ? `. Contexto: ${context}` : ''}.
-        Devuelve la información en formato JSON con:
-        - bio: biografía breve (máximo 200 caracteres)
-        - highlights: array de 3-5 logros principales
-        - socialPresence: array de presencia en redes sociales
-        - reputationInsights: análisis de reputación (máximo 300 caracteres)
-
-        IMPORTANTE: Devuelve SOLO el JSON, sin texto adicional.`
-      }
+        content: `Información sobre: ${name}${context ? `. Contexto: ${context}` : ''}`,
+      },
     ];
 
     try {
-      const response = await this.chat(messages, { temperature: 0.5 });
-      // Limpiar respuesta de markdown si existe
-      const jsonText = response.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-      const match = jsonText.match(/\{[\s\S]*\}/);
-      return JSON.parse(match ? match[0] : jsonText);
+      const response = await this.chat(messages, { temperature: 0.5, jsonMode: true });
+      return this.parseJsonResponse(response);
     } catch (error) {
       console.error('Error buscando información:', error);
       return {
         bio: 'Información no disponible en este momento',
-        highlights: ['Búsqueda en progreso'],
+        highlights: [],
         socialPresence: [],
-        reputationInsights: 'No se pudo obtener análisis de reputación'
+        reputationInsights: 'No se pudo obtener análisis de reputación',
       };
     }
   }
 
-  // Método para análisis político
-  async analyzePoliticalMetrics(data: any): Promise<any> {
+  async analyzePoliticalMetrics(data: any, user?: UserContext | null): Promise<any> {
+    const systemParts = [
+      'Eres analista política experta en Colombia. Respondes SIEMPRE con JSON con claves: insights (array), recommendations (array), trends (array).',
+    ];
+    if (user) systemParts.push(formatUserContextForPrompt(user));
+
     const messages: AIMessage[] = [
-      {
-        role: 'system',
-        content: 'Eres un analista político experto en Colombia. Analiza métricas políticas y proporciona insights valiosos sobre tendencias, sentimiento público y estrategias de comunicación.'
-      },
-      {
-        role: 'user',
-        content: `Analiza estas métricas políticas y genera insights: ${JSON.stringify(data)}.
-
-        Devuelve un JSON con:
-        - insights: array de observaciones clave
-        - recommendations: array de recomendaciones
-        - trends: array de tendencias identificadas
-
-        IMPORTANTE: Devuelve SOLO el JSON.`
-      }
+      { role: 'system', content: systemParts.join('\n\n') },
+      { role: 'user', content: `Analiza estas métricas y genera insights: ${JSON.stringify(data)}` },
     ];
 
     try {
-      const response = await this.chat(messages, { temperature: 0.6 });
-      const jsonText = response.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-      const match = jsonText.match(/\{[\s\S]*\}/);
-      return JSON.parse(match ? match[0] : jsonText);
+      const response = await this.chat(messages, { temperature: 0.6, jsonMode: true });
+      return this.parseJsonResponse(response);
     } catch (error) {
       console.error('Error en análisis político:', error);
       return {
         insights: ['Análisis en progreso'],
         recommendations: ['Continuar monitoreo'],
-        trends: []
+        trends: [],
       };
     }
   }
 
-  // Método para generación de contenido
-  async generateContent(prompt: string, type: 'social' | 'blog' | 'email' = 'social'): Promise<string> {
-    const systemPrompts = {
-      social: 'Eres un experto en redes sociales en Colombia. Genera contenido atractivo, conciso y optimizado para engagement.',
-      blog: 'Eres un redactor profesional colombiano. Genera contenido informativo, bien estructurado y SEO-friendly.',
-      email: 'Eres un experto en email marketing. Genera contenido persuasivo y profesional para audiencia colombiana.'
+  async generateContent(
+    prompt: string,
+    type: 'social' | 'blog' | 'email' = 'social',
+    user?: UserContext | null
+  ): Promise<string> {
+    const systemPrompts: Record<string, string> = {
+      social:
+        'Eres experta en redes sociales para el mercado colombiano. Generas contenido atractivo, conciso y optimizado para engagement.',
+      blog:
+        'Eres redactora profesional colombiana. Generas contenido informativo, bien estructurado y SEO-friendly.',
+      email:
+        'Eres experta en email marketing. Generas contenido persuasivo y profesional para audiencia colombiana.',
     };
 
-    const messages: AIMessage[] = [
-      {
-        role: 'system',
-        content: systemPrompts[type]
-      },
-      {
-        role: 'user',
-        content: prompt
-      }
-    ];
+    const systemParts = [systemPrompts[type]];
+    if (user) systemParts.push(formatUserContextForPrompt(user));
 
-    return this.chat(messages, { temperature: 0.8 });
+    return this.chat(
+      [
+        { role: 'system', content: systemParts.join('\n\n') },
+        { role: 'user', content: prompt },
+      ],
+      { temperature: 0.8 }
+    );
   }
 
-  // Analisis comprensivo de reputacion
-  async analyzeReputation(name: string, newsData: any[]): Promise<{
+  async analyzeReputation(
+    name: string,
+    newsData: any[],
+    user?: UserContext | null
+  ): Promise<{
     overallScore: number;
     sentiment: string;
     strengths: string[];
@@ -270,116 +314,166 @@ REGLAS:
     recommendations: string[];
     summary: string;
   }> {
-    const newsContext = newsData.slice(0, 10).map(n =>
-      `- ${n.title} (${n.sentiment || 'neutral'}, fuente: ${n.source || 'desconocida'})`
-    ).join('\n');
+    const newsContext = newsData
+      .slice(0, 10)
+      .map((n) => `- ${n.title} (${n.sentiment || 'neutral'}, fuente: ${n.source || 'desconocida'})`)
+      .join('\n');
+
+    const systemParts = [
+      `Eres Julia, experta en análisis de reputación online en Colombia. Respondes SIEMPRE con JSON con las claves: overallScore (0-100), sentiment (positive|negative|neutral), strengths (array), risks (array), recommendations (array), summary (2-3 frases).`,
+    ];
+    if (user) systemParts.push(formatUserContextForPrompt(user));
 
     const messages: AIMessage[] = [
-      {
-        role: 'system',
-        content: `Eres Julia, experta en analisis de reputacion online en Colombia. Analiza la reputacion de una persona o marca basandote en noticias recientes. Devuelve SOLO JSON valido.`
-      },
+      { role: 'system', content: systemParts.join('\n\n') },
       {
         role: 'user',
-        content: `Analiza la reputacion de "${name}" basandote en estas noticias:\n${newsContext || 'No hay noticias disponibles'}\n\nDevuelve JSON con: overallScore (0-100), sentiment (positive/negative/neutral), strengths (array), risks (array), recommendations (array), summary (texto 2-3 frases).`
-      }
+        content: `Analiza la reputación de "${name}" basándote en estas noticias:\n${
+          newsContext || 'No hay noticias disponibles'
+        }`,
+      },
     ];
 
     try {
-      const response = await this.chat(messages, { temperature: 0.5 });
-      const jsonText = response.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-      const match = jsonText.match(/\{[\s\S]*\}/);
-      return JSON.parse(match ? match[0] : jsonText);
+      const response = await this.chat(messages, { temperature: 0.5, jsonMode: true });
+      return this.parseJsonResponse(response);
     } catch {
       return {
-        overallScore: 50,
+        overallScore: 0,
         sentiment: 'neutral',
-        strengths: ['Informacion insuficiente para determinar fortalezas'],
-        risks: ['Se requieren mas datos para identificar riesgos'],
+        strengths: [],
+        risks: [],
         recommendations: ['Continuar monitoreando menciones'],
-        summary: `No se pudo completar el analisis de reputacion de "${name}" en este momento.`
+        summary: `No se pudo completar el análisis de reputación de "${name}" en este momento.`,
       };
     }
   }
 
-  // Sugerir respuesta a una alerta de crisis
-  async generateCrisisResponse(alert: {
-    type: string;
-    severity: string;
-    description: string;
-    keyword?: string;
-  }): Promise<{
+  async generateCrisisResponse(
+    alert: {
+      type: string;
+      severity: string;
+      description: string;
+      keyword?: string;
+    },
+    user?: UserContext | null
+  ): Promise<{
     immediateActions: string[];
     suggestedResponse: string;
     communicationStrategy: string;
     timeline: string;
   }> {
+    const systemParts = [
+      `Eres Julia, experta en gestión de crisis de reputación en Colombia. Respondes SIEMPRE con JSON con las claves: immediateActions (array), suggestedResponse (texto de comunicado sugerido), communicationStrategy (estrategia general), timeline (línea de tiempo).`,
+    ];
+    if (user) systemParts.push(formatUserContextForPrompt(user));
+
     const messages: AIMessage[] = [
-      {
-        role: 'system',
-        content: `Eres Julia, experta en gestion de crisis de reputacion en Colombia. Genera estrategias de respuesta rapida y efectiva. Devuelve SOLO JSON valido.`
-      },
+      { role: 'system', content: systemParts.join('\n\n') },
       {
         role: 'user',
-        content: `Crisis detectada:\n- Tipo: ${alert.type}\n- Severidad: ${alert.severity}\n- Descripcion: ${alert.description}\n${alert.keyword ? `- Keyword: ${alert.keyword}` : ''}\n\nDevuelve JSON con: immediateActions (array de acciones inmediatas), suggestedResponse (texto de comunicado sugerido), communicationStrategy (estrategia general), timeline (linea de tiempo de respuesta).`
-      }
+        content: `Crisis detectada:\n- Tipo: ${alert.type}\n- Severidad: ${alert.severity}\n- Descripción: ${alert.description}${
+          alert.keyword ? `\n- Keyword: ${alert.keyword}` : ''
+        }`,
+      },
     ];
 
     try {
-      const response = await this.chat(messages, { temperature: 0.5 });
-      const jsonText = response.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-      const match = jsonText.match(/\{[\s\S]*\}/);
-      return JSON.parse(match ? match[0] : jsonText);
+      const response = await this.chat(messages, { temperature: 0.5, jsonMode: true });
+      return this.parseJsonResponse(response);
     } catch {
       return {
-        immediateActions: ['Monitorear la situacion', 'Preparar comunicado interno'],
-        suggestedResponse: 'Estamos al tanto de la situacion y trabajamos para resolverla.',
-        communicationStrategy: 'Respuesta rapida y transparente',
-        timeline: 'Responder en las proximas 2 horas'
+        immediateActions: ['Monitorear la situación', 'Preparar comunicado interno'],
+        suggestedResponse: 'Estamos al tanto de la situación y trabajamos para resolverla.',
+        communicationStrategy: 'Respuesta rápida y transparente',
+        timeline: 'Responder en las próximas 2 horas',
       };
     }
   }
 
-  // Resumir un lote de noticias
-  async summarizeNews(articles: any[]): Promise<{
+  async summarizeNews(
+    articles: any[],
+    user?: UserContext | null
+  ): Promise<{
     summary: string;
     keyTopics: string[];
     overallSentiment: string;
     notableArticles: string[];
   }> {
-    const articleList = articles.slice(0, 15).map((a, i) =>
-      `${i + 1}. "${a.title}" - ${a.source || 'Fuente desconocida'} (${a.sentiment || 'neutral'})`
-    ).join('\n');
+    const articleList = articles
+      .slice(0, 15)
+      .map(
+        (a, i) =>
+          `${i + 1}. "${a.title}" - ${a.source || 'Fuente desconocida'} (${
+            a.sentiment || 'neutral'
+          })`
+      )
+      .join('\n');
+
+    const systemParts = [
+      `Eres Julia, experta en análisis de medios colombianos. Respondes SIEMPRE con JSON con las claves: summary (3-5 frases), keyTopics (array), overallSentiment (positive|negative|neutral), notableArticles (array de títulos).`,
+    ];
+    if (user) systemParts.push(formatUserContextForPrompt(user));
 
     const messages: AIMessage[] = [
-      {
-        role: 'system',
-        content: `Eres Julia, experta en analisis de medios colombianos. Resume noticias de forma concisa y util. Devuelve SOLO JSON valido.`
-      },
+      { role: 'system', content: systemParts.join('\n\n') },
       {
         role: 'user',
-        content: `Resume estas ${articles.length} noticias:\n${articleList}\n\nDevuelve JSON con: summary (resumen ejecutivo 3-5 frases), keyTopics (array de temas principales), overallSentiment (positive/negative/neutral), notableArticles (array de titulos mas relevantes).`
-      }
+        content: `Resume estas ${articles.length} noticias:\n${articleList}`,
+      },
     ];
 
     try {
-      const response = await this.chat(messages, { temperature: 0.4 });
-      const jsonText = response.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-      const match = jsonText.match(/\{[\s\S]*\}/);
-      return JSON.parse(match ? match[0] : jsonText);
+      const response = await this.chat(messages, { temperature: 0.4, jsonMode: true });
+      return this.parseJsonResponse(response);
     } catch {
       return {
-        summary: `Se analizaron ${articles.length} noticias. No se pudo generar resumen automatico.`,
+        summary: `Se analizaron ${articles.length} noticias. No se pudo generar resumen automático.`,
         keyTopics: [],
         overallSentiment: 'neutral',
-        notableArticles: articles.slice(0, 3).map(a => a.title)
+        notableArticles: articles.slice(0, 3).map((a) => a.title),
+      };
+    }
+  }
+
+  /**
+   * Genera recomendaciones accionables personalizadas para el usuario
+   * basadas en su perfil, redes, keywords y menciones recientes.
+   */
+  async generateRecommendations(user: UserContext): Promise<{
+    recommendations: Array<{
+      title: string;
+      description: string;
+      priority: 'high' | 'medium' | 'low';
+      category: string;
+    }>;
+    summary: string;
+  }> {
+    const messages: AIMessage[] = [
+      {
+        role: 'system',
+        content: `${JULIA_PERSONALITY}\n\n${formatUserContextForPrompt(
+          user
+        )}\n\nTu tarea: generar recomendaciones accionables ESPECÍFICAS al contexto del usuario (no genéricas). Responde SIEMPRE con JSON con las claves: recommendations (array de objetos {title, description, priority: high|medium|low, category}), summary (texto 2-3 frases dirigido al usuario por su nombre).`,
+      },
+      {
+        role: 'user',
+        content: `Genera entre 3 y 6 recomendaciones accionables para mí, basadas en mis datos reales. No repitas consejos genéricos, quiero acciones concretas.`,
+      },
+    ];
+
+    try {
+      const response = await this.chat(messages, { temperature: 0.7, jsonMode: true });
+      return this.parseJsonResponse(response);
+    } catch (error) {
+      console.error('Error generando recomendaciones:', error);
+      return {
+        recommendations: [],
+        summary: `${user.firstName}, no pude generar recomendaciones en este momento. Inténtalo de nuevo en unos minutos.`,
       };
     }
   }
 }
 
-// Exportar instancia única del servicio
 export const aiService = new AIService();
-
-// Exportar también la clase por si se necesita crear instancias personalizadas
 export { AIService };

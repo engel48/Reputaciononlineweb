@@ -6,14 +6,20 @@ import { Sparkles, Brain, Bot, AlertTriangle, MessageSquare, BarChart3, FileText
 import JuliaThinkingAnimation from '@/components/dashboard/JuliaThinkingAnimation';
 import SimpleChat from '@/components/dashboard/SimpleChat';
 import { CREDIT_COSTS } from '@/lib/credit-costs';
+import { useHasMentionsData } from '@/hooks/useHasMentionsData';
+import { useUser } from '@/context/UserContext';
+import Link from 'next/link';
 
 type JuliaTab = 'chat' | 'analysis' | 'reports' | 'history';
 
 export default function JuliaPage() {
+  const { user } = useUser();
+  const { loading: hasDataLoading, hasConnections } = useHasMentionsData();
   const [activeTab, setActiveTab] = useState<JuliaTab>('chat');
   const [neuralNetworkMode, setNeuralNetworkMode] = useState<'sentiment' | 'platform' | 'engagement'>('sentiment');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [errorConexion, setErrorConexion] = useState(false);
+  const firstName = user?.name ? user.name.split(' ')[0] : null;
 
   // Analisis states
   const [analysisText, setAnalysisText] = useState('');
@@ -108,10 +114,10 @@ export default function JuliaPage() {
             </motion.div>
             <div>
               <h1 className="text-2xl font-bold text-white">
-                Julia IA - Procesamiento Cognitivo
+                {firstName ? `Hola ${firstName}, soy Julia` : 'Julia IA'}
               </h1>
               <p className="text-white/70 text-sm">
-                Analisis avanzado de reputacion con inteligencia artificial
+                Análisis de reputación personalizado — respondo con tus datos reales
               </p>
             </div>
           </div>
@@ -123,6 +129,35 @@ export default function JuliaPage() {
           </div>
         </div>
       </motion.div>
+
+      {/* Hint: sin redes conectadas */}
+      {!hasDataLoading && !hasConnections && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-xl border border-amber-200 dark:border-amber-800 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 p-4"
+        >
+          <div className="flex items-start gap-3">
+            <div className="p-2 rounded-lg bg-white dark:bg-gray-800 shadow-sm flex-shrink-0">
+              <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+            </div>
+            <div className="flex-1">
+              <h4 className="text-sm font-bold text-gray-900 dark:text-white">
+                {firstName ? `${firstName}, ` : ''}conecta tus redes para potenciar mis respuestas
+              </h4>
+              <p className="text-xs text-gray-700 dark:text-gray-300 mt-1">
+                Puedo chatear contigo ahora mismo, pero cuando conectes Facebook, Instagram, X o YouTube tendré contexto real (menciones, sentimiento, seguidores) para darte respuestas específicas a tu caso.
+              </p>
+              <Link
+                href="/dashboard/redes-sociales"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-[#01257D] dark:text-blue-400 hover:underline mt-2"
+              >
+                <Sparkles className="h-3.5 w-3.5" /> Conectar redes sociales →
+              </Link>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       {/* Tabs mejoradas */}
       <div className="flex space-x-1 bg-white dark:bg-gray-800 rounded-xl p-1.5 border border-gray-200 dark:border-gray-700 shadow-sm">

@@ -18,6 +18,8 @@ import {
 import XLogo from '@/components/icons/XLogo';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { EmptyMentionsState } from '@/components/ui/EmptyMentionsState';
+import { useHasMentionsData } from '@/hooks/useHasMentionsData';
 
 const COLORS = ['#01257D', '#013AAA', '#059669', '#DC2626', '#F59E0B', '#8B5CF6'];
 
@@ -72,6 +74,7 @@ const PlatformIcon: React.FC<PlatformIconProps> = ({ platform }) => {
 };
 
 export default function AnalisisPage() {
+  const { loading: hasDataLoading, hasAnyData } = useHasMentionsData();
   const [activeTab, setActiveTab] = useState('ia-analysis');
   const [socialData, setSocialData] = useState<any>(null);
   const [analysisData, setAnalysisData] = useState<any>(null);
@@ -172,7 +175,7 @@ export default function AnalisisPage() {
               </p>
             </div>
           </div>
-          <div className="mt-4 flex space-x-3 md:mt-0">
+          <div className="mt-4 flex space-x-3 md:mt-0" style={{ display: !hasDataLoading && !hasAnyData ? 'none' : undefined }}>
             <Button variant="outline" size="sm" className="bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-sm">
               <Filter className="mr-2 h-4 w-4" />
               Filtrar
@@ -185,7 +188,16 @@ export default function AnalisisPage() {
         </div>
       </div>
 
+      {/* Empty state si no hay datos */}
+      {!hasDataLoading && !hasAnyData && (
+        <EmptyMentionsState
+          title="Aún no hay datos para analizar"
+          description="Conecta tus redes sociales y Julia traerá menciones y sentimiento automáticamente. Los gráficos y análisis aparecerán aquí tan pronto haya actividad detectada."
+        />
+      )}
+
       {/* Pestañas de navegación */}
+      {(hasDataLoading || hasAnyData) && (
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="mb-6 bg-white/50 backdrop-blur-sm border border-gray-200 dark:border-gray-700 p-1 rounded-xl">
           <TabsTrigger value="ia-analysis" className="data-[state=active]:bg-[#01257D] data-[state=active]:text-white text-gray-600 font-medium px-6 py-2 rounded-lg transition-all">
@@ -672,6 +684,7 @@ export default function AnalisisPage() {
           </motion.div>
         </TabsContent>
       </Tabs>
+      )}
 
       {/* Disclaimer - Sobre Julia IA y las estadisticas */}
       <motion.div
