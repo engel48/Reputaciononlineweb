@@ -23,21 +23,39 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { tokenRefreshService } from '@/lib/oauth/token-refresh-service';
 
-// Clave secreta para autorizar cron jobs (configurar en .env.local)
-const CRON_SECRET = process.env.CRON_SECRET_KEY || 'dev-cron-secret-key-2025';
+function getCronSecret(): string | null {
+  const secret = process.env.CRON_SECRET_KEY;
+  return secret && secret.trim().length > 0 ? secret : null;
+}
+
+function isAuthorized(request: NextRequest): { ok: true } | { ok: false; response: NextResponse } {
+  const cronSecret = getCronSecret();
+  if (!cronSecret) {
+    return {
+      ok: false,
+      response: NextResponse.json(
+        { error: 'CRON_SECRET_KEY no configurado en el servidor' },
+        { status: 500 }
+      ),
+    };
+  }
+
+  const authHeader = request.headers.get('authorization');
+  const providedSecret = authHeader?.replace('Bearer ', '');
+  if (providedSecret !== cronSecret) {
+    return {
+      ok: false,
+      response: NextResponse.json({ error: 'No autorizado' }, { status: 401 }),
+    };
+  }
+
+  return { ok: true };
+}
 
 export async function POST(request: NextRequest) {
   try {
-    // Verificar autorización
-    const authHeader = request.headers.get('authorization');
-    const providedSecret = authHeader?.replace('Bearer ', '');
-
-    if (providedSecret !== CRON_SECRET) {
-      return NextResponse.json(
-        { error: 'No autorizado' },
-        { status: 401 }
-      );
-    }
+    const auth = isAuthorized(request);
+    if (!auth.ok) return auth.response;
 
     console.log('\n🚀 ===== INICIO: Proceso de Renovación de Tokens OAuth =====');
     console.log(`⏰ Timestamp: ${new Date().toISOString()}`);
@@ -82,16 +100,8 @@ export async function POST(request: NextRequest) {
 
 // GET para verificar que el endpoint está activo
 export async function GET(request: NextRequest) {
-  // Verificar autorización
-  const authHeader = request.headers.get('authorization');
-  const providedSecret = authHeader?.replace('Bearer ', '');
-
-  if (providedSecret !== CRON_SECRET) {
-    return NextResponse.json(
-      { error: 'No autorizado' },
-      { status: 401 }
-    );
-  }
+  const auth = isAuthorized(request);
+  if (!auth.ok) return auth.response;
 
   return NextResponse.json({
     status: 'active',

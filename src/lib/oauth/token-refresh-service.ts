@@ -183,24 +183,26 @@ export class TokenRefreshService {
    * Renueva tokens que están por expirar para todos los usuarios
    */
   async refreshExpiringTokens(hoursThreshold: number = 24): Promise<RefreshResult[]> {
-    console.log(`🔄 Buscando tokens que expiran en ${hoursThreshold}h...`);
+    console.log(`🔄 Buscando tokens expirados o que expiran en ${hoursThreshold}h...`);
 
     const thresholdDate = new Date(Date.now() + hoursThreshold * 60 * 60 * 1000);
 
+    // Incluir tokens YA expirados (token_expiry < NOW) y los que expiran pronto.
+    // Si dejamos solo "expira pronto pero no expirado", los tokens que se pasaron
+    // del vencimiento (por downtime del cron) nunca se reintentan.
     const { data: connections, error } = await supabase
       .from('social_media')
       .select('user_id, platform, username, access_token, refresh_token, token_expiry')
       .eq('connected', true)
       .not('token_expiry', 'is', null)
-      .lt('token_expiry', thresholdDate.toISOString())
-      .gt('token_expiry', new Date().toISOString()); // Not already expired
+      .lt('token_expiry', thresholdDate.toISOString());
 
     if (error || !connections || connections.length === 0) {
-      console.log('✅ No hay tokens por expirar');
+      console.log('✅ No hay tokens por refrescar');
       return [];
     }
 
-    console.log(`⚠️ ${connections.length} tokens expiran pronto`);
+    console.log(`⚠️ ${connections.length} tokens requieren refresh (expirados o por expirar)`);
 
     const results: RefreshResult[] = [];
 
