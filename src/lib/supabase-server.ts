@@ -167,6 +167,7 @@ export const userService = {
       'nextBillingDate': 'next_billing_date',
       'additionalSources': 'additional_sources',
       'updatedAt': 'updated_at',
+      'isActive': 'is_active',
       // Campos para perfil político
       'partidoPolitico': 'partido_politico',
       'cargoActual': 'cargo_actual',

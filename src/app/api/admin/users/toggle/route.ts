@@ -35,8 +35,8 @@ export async function PUT(request: NextRequest) {
     }
 
     // Actualizar el estado del usuario
-    const updated = await userService.update(userId, { 
-      isActive: isActive ? 1 : 0,
+    const updated = await userService.update(userId, {
+      isActive: !!isActive,
       updatedAt: new Date().toISOString()
     });
 
