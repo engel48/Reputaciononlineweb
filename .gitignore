@@ -33,9 +33,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# prisma
-/prisma/migrations
-/backend/node_modules
 database.sqlite
 database.sqlite-journal
 .claude/settings.local.json
