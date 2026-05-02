@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-  Shield, Home, Users, CreditCard, DollarSign, Crown, Settings, Menu, Globe, LogOut, FileText
+  Shield, Home, Users, CreditCard, DollarSign, Crown, Settings, Menu, Globe, LogOut, FileText, AlertTriangle, BarChart3
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -19,10 +19,12 @@ export default function AdminSidebar({ isCollapsed, onToggle, onLogout }: AdminS
 
   const menuItems = [
     { href: '/admin', icon: Home, label: 'Dashboard' },
+    { href: '/admin/stats', icon: BarChart3, label: 'Stats' },
     { href: '/admin/usuarios', icon: Users, label: 'Usuarios' },
     { href: '/admin/creditos', icon: CreditCard, label: 'Créditos' },
     { href: '/admin/pagos', icon: DollarSign, label: 'Pagos' },
     { href: '/admin/planes', icon: Crown, label: 'Planes' },
+    { href: '/admin/crisis-alerts', icon: AlertTriangle, label: 'Alertas' },
     { href: '/admin/logs', icon: FileText, label: 'Logs' },
     { href: '/admin/configuracion', icon: Settings, label: 'Configuración' },
   ];
