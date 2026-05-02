@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   Users, Edit, Trash2, Plus, Search, Filter, RefreshCw, X, Check, Eye, Crown,
@@ -593,6 +594,13 @@ export default function UsuariosPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex items-center space-x-1">
+                          <Link
+                            href={`/admin/usuarios/${user.id}`}
+                            className="text-cyan-600 hover:text-cyan-800 p-1.5 rounded-lg hover:bg-cyan-50 dark:hover:bg-cyan-900/20"
+                            title="Ver detalle"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Link>
                           {user.role !== 'admin' && (
                             <>
                               <button
