@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/auth-helper';
 import { createClient } from '@supabase/supabase-js';
+import { invalidatePlansCache } from '@/lib/plan-limits';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || '',
@@ -56,6 +57,7 @@ export async function PUT(request: NextRequest, { params }: RouteCtx) {
     return NextResponse.json({ success: false, error: 'Plan no encontrado' }, { status: 404 });
   }
 
+  invalidatePlansCache();
   return NextResponse.json({ success: true, plan: data });
 }
 
@@ -105,5 +107,6 @@ export async function DELETE(request: NextRequest, { params }: RouteCtx) {
     return NextResponse.json({ success: false, error: error.message }, { status: 400 });
   }
 
+  invalidatePlansCache();
   return NextResponse.json({ success: true });
 }

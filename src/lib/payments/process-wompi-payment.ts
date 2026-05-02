@@ -6,7 +6,7 @@
  */
 
 import { sendPurchaseConfirmationEmail, sendPlanChangeEmail, sendInvoiceEmail } from '@/lib/email-service';
-import { MAX_MONTHLY_CREDITS } from '@/lib/plan-limits';
+import { getMonthlyCreditLimit } from '@/lib/plan-limits';
 
 export type WompiStatus = 'APPROVED' | 'DECLINED' | 'VOIDED' | 'PENDING' | 'ERROR';
 
@@ -93,10 +93,12 @@ export async function processWompiPayment(params: {
   let newPlan = oldPlan;
   let newCredits = oldCredits;
 
+  let planMonthlyCredits = 0;
   if (planType) {
-    // Upgrade/downgrade de plan: resetea créditos al límite del nuevo plan
+    // Upgrade/downgrade de plan: resetea creditos al limite del nuevo plan
     newPlan = planType;
-    newCredits = MAX_MONTHLY_CREDITS[planType] ?? oldCredits;
+    planMonthlyCredits = await getMonthlyCreditLimit(planType);
+    newCredits = planMonthlyCredits;
   }
 
   if (creditsPurchased > 0) {
@@ -125,7 +127,7 @@ export async function processWompiPayment(params: {
     await supabase.from('credit_transactions').insert({
       user_id: userId,
       type: 'bonus',
-      amount: MAX_MONTHLY_CREDITS[planType] ?? 0,
+      amount: planMonthlyCredits,
       balance_after: newCredits,
       description: `Upgrade a plan ${planType}`,
       related_entity: 'plan_upgrade',

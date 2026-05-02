@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/auth-helper';
 import { createClient } from '@supabase/supabase-js';
+import { invalidatePlansCache } from '@/lib/plan-limits';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || '',
@@ -141,5 +142,6 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  invalidatePlansCache();
   return NextResponse.json({ success: true, plan: toApi(data as PlanRow) }, { status: 201 });
 }
