@@ -80,9 +80,9 @@ export const register = async (userData: RegisterData): Promise<LoginResponse> =
 
     console.log('✅ REGISTER: Usuario creado exitosamente:', newUser.id);
 
-    // Generar token JWT
+    // Generar token JWT (incluye role para que requireRole funcione)
     const token = jwt.sign(
-      { userId: newUser.id, email: newUser.email },
+      { userId: newUser.id, email: newUser.email, role: updateData.role },
       JWT_SECRET,
       { expiresIn: '7d' }
     );
@@ -164,13 +164,13 @@ export const login = async (email: string, password: string): Promise<LoginRespo
     await userService.updateLastLogin(user.id);
 
     console.log('🔍 AUTH: Generando token JWT...');
-    // Generar token JWT
+    // Generar token JWT (incluye role para que requireRole funcione en endpoints admin)
     const token = jwt.sign(
-      { userId: user.id, email: user.email },
+      { userId: user.id, email: user.email, role: user.role || 'user' },
       JWT_SECRET,
       { expiresIn: '7d' }
     );
-    console.log('✅ AUTH: Token JWT generado exitosamente');
+    console.log('✅ AUTH: Token JWT generado exitosamente con role:', user.role || 'user');
 
     // Obtener datos adicionales
     console.log('🔍 AUTH: Obteniendo datos de redes sociales para usuario:', user.id);

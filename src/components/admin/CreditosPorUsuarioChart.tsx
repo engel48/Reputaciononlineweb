@@ -29,10 +29,10 @@ export default function CreditosPorUsuarioChart() {
       setCargando(true);
       setError('');
 
-      // Obtener datos de créditos de usuarios
+      // Obtener datos de créditos de usuarios (la columna real es `credits`, no `credits_available`)
       const { data: usuarios, error: errorUsuarios } = await supabase
         .from('users')
-        .select('id, name, email, credits_available');
+        .select('id, name, email, credits');
 
       if (errorUsuarios) throw errorUsuarios;
 
@@ -55,8 +55,8 @@ export default function CreditosPorUsuarioChart() {
       });
 
       // Construir datos para la tabla
-      const datos = usuarios?.map((usuario) => {
-        const disponibles = usuario.credits_available || 0;
+      const datos = usuarios?.map((usuario: any) => {
+        const disponibles = usuario.credits || 0;
         const gastados = gastadosPorUsuario[usuario.id] || 0;
         const total = disponibles + gastados;
         const porcentajeUso = total > 0 ? ((gastados / total) * 100) : 0;
