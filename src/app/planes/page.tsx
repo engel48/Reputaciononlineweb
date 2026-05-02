@@ -1,105 +1,133 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { 
-  ArrowLeft, 
-  CheckCircle, 
+import {
+  ArrowLeft,
+  CheckCircle,
   ArrowRight,
   Star,
   Users,
   Shield,
-  Zap,
   Globe,
   HeadphonesIcon,
-  TrendingUp,
-  BarChart3
 } from 'lucide-react';
 
+interface PublicPlan {
+  code: string;
+  name: string;
+  description: string;
+  priceCop: number;
+  monthlyCredits: number;
+  maxSocialAccounts: number;
+  multiAccountPerPlatform: boolean;
+  features: Record<string, boolean>;
+  isPopular: boolean;
+  displayOrder: number;
+}
+
+const FEATURE_LABELS: Array<{ key: string; label: string }> = [
+  { key: 'sentimentAnalysis', label: 'Analisis de sentimiento con IA' },
+  { key: 'realTimeMonitoring', label: 'Monitoreo en tiempo real' },
+  { key: 'advancedAnalytics', label: 'Analiticas avanzadas' },
+  { key: 'competitorAnalysis', label: 'Analisis de competencia' },
+  { key: 'crisisManagement', label: 'Gestion de crisis reputacional' },
+  { key: 'influencerIdentification', label: 'Identificacion de influencers' },
+  { key: 'predictiveAnalytics', label: 'Analiticas predictivas' },
+  { key: 'customReports', label: 'Reportes personalizados' },
+  { key: 'automatedReporting', label: 'Reportes automatizados' },
+  { key: 'apiAccess', label: 'Acceso a API' },
+  { key: 'dataExport', label: 'Exportacion de datos' },
+  { key: 'customDashboards', label: 'Dashboards personalizados' },
+  { key: 'integrations', label: 'Integraciones con terceros' },
+  { key: 'teamCollaboration', label: 'Colaboracion en equipo' },
+  { key: 'mediaCoverage', label: 'Cobertura de medios colombianos' },
+  { key: 'multiLanguageSupport', label: 'Soporte multi-idioma' },
+  { key: 'whiteLabeling', label: 'White-labeling' },
+  { key: 'prioritySupport', label: 'Soporte prioritario' },
+  { key: 'dedicatedManager', label: 'Account manager dedicado' },
+];
+
+function formatCOP(value: number): string {
+  if (value === 0) return 'Gratis';
+  return new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
+function buildFeatureList(plan: PublicPlan): string[] {
+  const lines: string[] = [];
+
+  // Limites cuantitativos primero
+  lines.push(`${plan.monthlyCredits.toLocaleString('es-CO')} creditos al mes`);
+  if (plan.maxSocialAccounts > 0) {
+    const accSuffix = plan.multiAccountPerPlatform
+      ? `${plan.maxSocialAccounts} cuentas sociales (multiples por red)`
+      : `${plan.maxSocialAccounts} cuenta${plan.maxSocialAccounts !== 1 ? 's' : ''} social${plan.maxSocialAccounts !== 1 ? 'es' : ''}`;
+    lines.push(accSuffix);
+  }
+
+  // Features booleanas habilitadas
+  for (const { key, label } of FEATURE_LABELS) {
+    if (plan.features[key]) lines.push(label);
+  }
+
+  return lines;
+}
+
 export default function PlanesPage() {
-  const planes = [
-    {
-      name: "Básico",
-      price: "29",
-      period: "mes",
-      description: "Ideal para personas y pequeños negocios",
-      popular: false,
-      features: [
-        "Hasta 1,000 menciones/mes",
-        "3 plataformas sociales",
-        "Análisis de sentimientos básico",
-        "Reportes semanales",
-        "Soporte por email",
-        "Dashboard básico",
-        "Alertas por email"
-      ],
-      cta: "Comenzar Gratis",
-      href: "/register?plan=basic"
-    },
-    {
-      name: "Profesional",
-      price: "99",
-      period: "mes",
-      description: "Para empresas en crecimiento",
-      popular: true,
-      features: [
-        "Hasta 10,000 menciones/mes",
-        "Todas las plataformas",
-        "IA avanzada + análisis competitivo",
-        "Reportes diarios + alertas en tiempo real",
-        "Soporte prioritario 24/7",
-        "Dashboard político incluido",
-        "API access básico",
-        "Exportación de datos",
-        "Análisis de influencers"
-      ],
-      cta: "Comenzar Prueba Gratis",
-      href: "/register?plan=pro"
-    },
-    {
-      name: "Enterprise",
-      price: "Personalizado",
-      period: "",
-      description: "Para grandes organizaciones",
-      popular: false,
-      features: [
-        "Menciones ilimitadas",
-        "Integración API completa",
-        "IA personalizada + modelos custom",
-        "Reportes en tiempo real + white label",
-        "Account manager dedicado",
-        "SLA garantizado 99.9%",
-        "Integración SSO",
-        "Capacitación personalizada",
-        "Consultoría estratégica"
-      ],
-      cta: "Contactar Ventas",
-      href: "/contacto"
-    }
-  ];
+  const [plans, setPlans] = useState<PublicPlan[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/plans')
+      .then((r) => r.json())
+      .then((data) => {
+        if (cancelled) return;
+        setPlans(data.plans || []);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setError(err.message || 'Error cargando planes');
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, []);
+
+  // Para la tabla de comparacion, todos los keys de features que aparecen en algun plan
+  const featureKeysInUse = Array.from(
+    new Set(plans.flatMap((p) => Object.keys(p.features).filter((k) => p.features[k])))
+  );
+  const comparisonRows = FEATURE_LABELS.filter((f) => featureKeysInUse.includes(f.key));
 
   const faqs = [
     {
-      question: "¿Puedo cambiar de plan en cualquier momento?",
-      answer: "Sí, puedes actualizar o degradar tu plan en cualquier momento desde tu dashboard. Los cambios se aplican inmediatamente y se prorratea la facturación."
+      question: '¿Puedo cambiar de plan en cualquier momento?',
+      answer: 'Si, puedes actualizar o degradar tu plan en cualquier momento desde tu dashboard. Los cambios se aplican inmediatamente.',
     },
     {
-      question: "¿Ofrecen una prueba gratuita?",
-      answer: "Sí, ofrecemos una prueba gratuita de 14 días para todos los planes sin necesidad de tarjeta de crédito."
+      question: '¿Como funcionan los creditos?',
+      answer: 'Cada accion en la plataforma (analisis de sentimiento, busqueda de personas, conversaciones con la IA Julia) consume creditos. El balance se renueva automaticamente al maximo del plan el primer dia de cada mes.',
     },
     {
-      question: "¿Qué plataformas sociales monitorean?",
-      answer: "Monitoreamos X (Twitter), Facebook, Instagram, YouTube y más de 100 sitios de noticias y blogs."
+      question: '¿Que plataformas sociales monitorean?',
+      answer: 'Monitoreamos Facebook, X (Twitter), Instagram, YouTube y TikTok. Ademas hacemos scraping de los principales medios digitales colombianos: El Tiempo, El Espectador, Semana, La FM, Caracol, RCN y otros.',
     },
     {
-      question: "¿Cómo funciona el análisis de sentimientos?",
-      answer: "Utilizamos IA avanzada con modelos de lenguaje natural que analizan el contexto, sarcasmo y emociones con 95% de precisión."
+      question: '¿Como funciona el analisis de sentimiento?',
+      answer: 'Utilizamos modelos de IA (Llama 3.3 via Groq, con DeepSeek y OpenAI como fallback) para clasificar cada mencion como positiva, negativa o neutra y calcular un score de reputacion agregado por plataforma.',
     },
     {
-      question: "¿Incluyen soporte técnico?",
-      answer: "Todos los planes incluyen soporte técnico. El plan Profesional tiene soporte prioritario 24/7 y Enterprise incluye un account manager dedicado."
-    }
+      question: '¿Que metodos de pago aceptan?',
+      answer: 'Procesamos pagos via Wompi Colombia: tarjeta credito/debito, PSE, Nequi, Daviplata y transferencia bancaria.',
+    },
   ];
 
   return (
@@ -108,36 +136,21 @@ export default function PlanesPage() {
       <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
+            <Link
+              href="/"
+              className="flex items-center text-gray-600 dark:text-gray-300 hover:text-[#01257D] transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5 mr-2" />
+              Volver al Inicio
+            </Link>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+              Planes y Precios
+            </h1>
             <div className="flex items-center space-x-4">
-              <Link 
-                href="/"
-                className="flex items-center text-gray-600 dark:text-gray-300 hover:text-[#01257D] transition-colors"
-              >
-                <ArrowLeft className="w-5 h-5 mr-2" />
-                Volver al Inicio
+              <Link href="/login" className="text-gray-600 dark:text-gray-300 hover:text-[#01257D] font-medium">
+                Iniciar Sesion
               </Link>
-            </div>
-            <div className="flex items-center space-x-4">
-              <img 
-                src="/reputacion-online-logo.png" 
-                alt="Reputación Online" 
-                className="h-8 w-auto"
-              />
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                Planes y Precios
-              </h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Link 
-                href="/login"
-                className="text-gray-600 dark:text-gray-300 hover:text-[#01257D] font-medium"
-              >
-                Iniciar Sesión
-              </Link>
-              <Link 
-                href="/register"
-                className="bg-[#01257D] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#013AAA] transition-colors"
-              >
+              <Link href="/register" className="bg-[#01257D] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#013AAA] transition-colors">
                 Comenzar Gratis
               </Link>
             </div>
@@ -145,7 +158,7 @@ export default function PlanesPage() {
         </div>
       </header>
 
-      {/* Hero Section */}
+      {/* Hero */}
       <section className="py-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.h1
@@ -161,21 +174,21 @@ export default function PlanesPage() {
             transition={{ delay: 0.2 }}
             className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-8"
           >
-            Desde startups hasta grandes corporaciones, tenemos el plan perfecto para tu reputación digital
+            Desde personas y emprendedores hasta grandes organizaciones, tenemos el plan perfecto para tu reputacion digital en Colombia.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="flex justify-center items-center space-x-4 text-sm text-gray-500 dark:text-gray-400"
+            className="flex flex-wrap justify-center items-center gap-x-6 gap-y-2 text-sm text-gray-500 dark:text-gray-400"
           >
             <div className="flex items-center">
               <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
-              14 días gratis
+              Plan Free disponible
             </div>
             <div className="flex items-center">
               <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
-              Sin tarjeta de crédito
+              Pago con Wompi Colombia
             </div>
             <div className="flex items-center">
               <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
@@ -188,90 +201,90 @@ export default function PlanesPage() {
       {/* Pricing Cards */}
       <section className="pb-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {planes.map((plan, index) => (
-              <motion.div
-                key={plan.name}
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 * index }}
-                className={`relative rounded-2xl p-8 ${
-                  plan.popular
-                    ? 'bg-gradient-to-br from-[#01257D] to-blue-600 text-white transform scale-105'
-                    : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700'
-                }`}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <span className="bg-yellow-400 text-black px-4 py-1 rounded-full text-sm font-bold flex items-center">
-                      <Star className="w-4 h-4 mr-1" />
-                      Más Popular
-                    </span>
-                  </div>
-                )}
+          {loading ? (
+            <p className="text-center text-gray-600 dark:text-gray-400">Cargando planes...</p>
+          ) : error ? (
+            <p className="text-center text-red-600">{error}</p>
+          ) : plans.length === 0 ? (
+            <p className="text-center text-gray-600 dark:text-gray-400">No hay planes disponibles en este momento.</p>
+          ) : (
+            <div className={`grid gap-8 max-w-6xl mx-auto ${plans.length === 1 ? 'grid-cols-1' : plans.length === 2 ? 'grid-cols-1 md:grid-cols-2' : plans.length === 3 ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'}`}>
+              {plans.map((plan, index) => {
+                const featuresList = buildFeatureList(plan);
+                const popular = plan.isPopular;
+                const isFree = plan.priceCop === 0;
+                const cta = isFree
+                  ? { label: 'Comenzar Gratis', href: `/register?plan=${plan.code}` }
+                  : { label: 'Suscribirme', href: `/register?plan=${plan.code}` };
 
-                <div className="text-center mb-8">
-                  <h3 className={`text-2xl font-bold mb-2 ${
-                    plan.popular ? 'text-white' : 'text-gray-900 dark:text-white'
-                  }`}>
-                    {plan.name}
-                  </h3>
-                  <p className={`mb-6 ${
-                    plan.popular ? 'text-blue-100' : 'text-gray-600 dark:text-gray-400'
-                  }`}>
-                    {plan.description}
-                  </p>
-                  <div className={`mb-2 ${
-                    plan.popular ? 'text-white' : 'text-gray-900 dark:text-white'
-                  }`}>
-                    {plan.price === 'Personalizado' ? (
-                      <div className="text-3xl font-bold">Personalizado</div>
-                    ) : (
-                      <div className="text-4xl font-bold">
-                        ${plan.price}
-                        <span className={`text-lg ${
-                          plan.popular ? 'text-blue-200' : 'text-gray-500'
-                        }`}>
-                          /{plan.period}
+                return (
+                  <motion.div
+                    key={plan.code}
+                    initial={{ opacity: 0, y: 50 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 * index }}
+                    className={`relative rounded-2xl p-8 ${
+                      popular
+                        ? 'bg-gradient-to-br from-[#01257D] to-blue-600 text-white transform md:scale-105'
+                        : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700'
+                    }`}
+                  >
+                    {popular && (
+                      <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                        <span className="bg-yellow-400 text-black px-4 py-1 rounded-full text-sm font-bold flex items-center">
+                          <Star className="w-4 h-4 mr-1" />
+                          Mas Popular
                         </span>
                       </div>
                     )}
-                  </div>
-                  <p className={`text-sm ${
-                    plan.popular ? 'text-blue-200' : 'text-gray-500 dark:text-gray-400'
-                  }`}>
-                    {plan.price !== 'Personalizado' ? 'Facturación mensual' : 'Contactar para precio'}
-                  </p>
-                </div>
 
-                <ul className="space-y-4 mb-8">
-                  {plan.features.map((feature, featureIndex) => (
-                    <li key={featureIndex} className={`flex items-center ${
-                      plan.popular ? 'text-white' : 'text-gray-700 dark:text-gray-300'
-                    }`}>
-                      <CheckCircle className={`w-5 h-5 mr-3 flex-shrink-0 ${
-                        plan.popular ? 'text-yellow-300' : 'text-green-500'
-                      }`} />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
+                    <div className="text-center mb-8">
+                      <h3 className={`text-2xl font-bold mb-2 ${popular ? 'text-white' : 'text-gray-900 dark:text-white'}`}>
+                        {plan.name}
+                      </h3>
+                      <p className={`mb-6 min-h-[3rem] ${popular ? 'text-blue-100' : 'text-gray-600 dark:text-gray-400'}`}>
+                        {plan.description}
+                      </p>
+                      <div className={popular ? 'text-white' : 'text-gray-900 dark:text-white'}>
+                        <div className="text-4xl font-bold">
+                          {formatCOP(plan.priceCop)}
+                        </div>
+                        <p className={`text-sm mt-1 ${popular ? 'text-blue-200' : 'text-gray-500 dark:text-gray-400'}`}>
+                          {isFree ? 'Sin costo' : 'Facturacion mensual'}
+                        </p>
+                      </div>
+                    </div>
 
-                <Link
-                  href={plan.href}
-                  className={`w-full py-3 px-6 rounded-lg font-semibold text-center block transition-colors ${
-                    plan.popular
-                      ? 'bg-white text-[#01257D] hover:bg-gray-100'
-                      : 'bg-[#01257D] text-white hover:bg-[#013AAA] dark:bg-[#01257D] dark:hover:bg-[#013AAA]'
-                  }`}
-                >
-                  {plan.cta}
-                </Link>
-              </motion.div>
-            ))}
-          </div>
+                    <ul className="space-y-3 mb-8">
+                      {featuresList.map((feature, idx) => (
+                        <li
+                          key={idx}
+                          className={`flex items-start text-sm ${popular ? 'text-white' : 'text-gray-700 dark:text-gray-300'}`}
+                        >
+                          <CheckCircle
+                            className={`w-5 h-5 mr-3 flex-shrink-0 mt-0.5 ${popular ? 'text-yellow-300' : 'text-green-500'}`}
+                          />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
 
-          {/* Security and Trust Badges */}
+                    <Link
+                      href={cta.href}
+                      className={`w-full py-3 px-6 rounded-lg font-semibold text-center block transition-colors ${
+                        popular
+                          ? 'bg-white text-[#01257D] hover:bg-gray-100'
+                          : 'bg-[#01257D] text-white hover:bg-[#013AAA]'
+                      }`}
+                    >
+                      {cta.label}
+                    </Link>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
+
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -279,24 +292,24 @@ export default function PlanesPage() {
             className="text-center mt-16"
           >
             <p className="text-gray-600 dark:text-gray-400 mb-6">
-              🔒 Todos los planes incluyen encriptación de datos y cumplimiento GDPR
+              Todos los planes incluyen encriptacion en transito y en reposo via Supabase.
             </p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-2xl mx-auto">
               <div className="flex flex-col items-center">
                 <Shield className="w-8 h-8 text-green-500 mb-2" />
-                <span className="text-sm text-gray-600 dark:text-gray-400">Seguridad SSL</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">HTTPS / SSL</span>
               </div>
               <div className="flex flex-col items-center">
                 <Users className="w-8 h-8 text-blue-500 mb-2" />
-                <span className="text-sm text-gray-600 dark:text-gray-400">GDPR Compliant</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">RLS por usuario</span>
               </div>
               <div className="flex flex-col items-center">
                 <Globe className="w-8 h-8 text-purple-500 mb-2" />
-                <span className="text-sm text-gray-600 dark:text-gray-400">99.9% Uptime</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">Servidores en LatAm</span>
               </div>
               <div className="flex flex-col items-center">
                 <HeadphonesIcon className="w-8 h-8 text-orange-500 mb-2" />
-                <span className="text-sm text-gray-600 dark:text-gray-400">Soporte 24/7</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">Soporte por email</span>
               </div>
             </div>
           </motion.div>
@@ -304,76 +317,105 @@ export default function PlanesPage() {
       </section>
 
       {/* Comparison Table */}
-      <section className="py-20 bg-white dark:bg-gray-800">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-6">
-              Comparación Detallada
-            </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300">
-              Encuentra el plan perfecto para tus necesidades
-            </p>
-          </motion.div>
+      {!loading && plans.length > 0 && (
+        <section className="py-20 bg-white dark:bg-gray-800">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-6">
+                Comparacion Detallada
+              </h2>
+              <p className="text-xl text-gray-600 dark:text-gray-300">
+                Encuentra el plan perfecto para tus necesidades
+              </p>
+            </motion.div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse border border-gray-200 dark:border-gray-700 rounded-lg">
-              <thead>
-                <tr className="bg-gray-50 dark:bg-gray-700">
-                  <th className="border border-gray-200 dark:border-gray-600 p-4 text-left text-gray-900 dark:text-white font-semibold">
-                    Características
-                  </th>
-                  <th className="border border-gray-200 dark:border-gray-600 p-4 text-center text-gray-900 dark:text-white font-semibold">
-                    Básico
-                  </th>
-                  <th className="border border-gray-200 dark:border-gray-600 p-4 text-center bg-[#01257D] text-white font-semibold">
-                    Profesional
-                  </th>
-                  <th className="border border-gray-200 dark:border-gray-600 p-4 text-center text-gray-900 dark:text-white font-semibold">
-                    Enterprise
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  ['Menciones/mes', '1,000', '10,000', 'Ilimitadas'],
-                  ['Plataformas', '3 principales', 'Todas', 'Todas + custom'],
-                  ['IA Analysis', 'Básico', 'Avanzado', 'Personalizado'],
-                  ['Reportes', 'Semanales', 'Diarios', 'Tiempo real'],
-                  ['API Access', '✗', 'Básico', 'Completo'],
-                  ['Soporte', 'Email', '24/7 Prioritario', 'Account Manager'],
-                  ['SLA', '✗', '99%', '99.9%']
-                ].map((row, index) => (
-                  <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                    <td className="border border-gray-200 dark:border-gray-600 p-4 font-medium text-gray-900 dark:text-white">
-                      {row[0]}
-                    </td>
-                    <td className="border border-gray-200 dark:border-gray-600 p-4 text-center text-gray-700 dark:text-gray-300">
-                      {row[1]}
-                    </td>
-                    <td className="border border-gray-200 dark:border-gray-600 p-4 text-center bg-blue-50 dark:bg-blue-900/20 text-gray-900 dark:text-white font-medium">
-                      {row[2]}
-                    </td>
-                    <td className="border border-gray-200 dark:border-gray-600 p-4 text-center text-gray-700 dark:text-gray-300">
-                      {row[3]}
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse border border-gray-200 dark:border-gray-700 rounded-lg">
+                <thead>
+                  <tr className="bg-gray-50 dark:bg-gray-700">
+                    <th className="border border-gray-200 dark:border-gray-600 p-4 text-left text-gray-900 dark:text-white font-semibold">
+                      Caracteristica
+                    </th>
+                    {plans.map((p) => (
+                      <th
+                        key={p.code}
+                        className={`border border-gray-200 dark:border-gray-600 p-4 text-center font-semibold ${
+                          p.isPopular ? 'bg-[#01257D] text-white' : 'text-gray-900 dark:text-white'
+                        }`}
+                      >
+                        {p.name}
+                      </th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="border border-gray-200 dark:border-gray-600 p-4 font-medium text-gray-900 dark:text-white">Precio mensual</td>
+                    {plans.map((p) => (
+                      <td key={p.code} className={`border border-gray-200 dark:border-gray-600 p-4 text-center font-semibold ${p.isPopular ? 'bg-blue-50 dark:bg-blue-900/20 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300'}`}>
+                        {formatCOP(p.priceCop)}
+                      </td>
+                    ))}
+                  </tr>
+                  <tr>
+                    <td className="border border-gray-200 dark:border-gray-600 p-4 font-medium text-gray-900 dark:text-white">Creditos / mes</td>
+                    {plans.map((p) => (
+                      <td key={p.code} className={`border border-gray-200 dark:border-gray-600 p-4 text-center ${p.isPopular ? 'bg-blue-50 dark:bg-blue-900/20 text-gray-900 dark:text-white font-medium' : 'text-gray-700 dark:text-gray-300'}`}>
+                        {p.monthlyCredits.toLocaleString('es-CO')}
+                      </td>
+                    ))}
+                  </tr>
+                  <tr>
+                    <td className="border border-gray-200 dark:border-gray-600 p-4 font-medium text-gray-900 dark:text-white">Cuentas sociales</td>
+                    {plans.map((p) => (
+                      <td key={p.code} className={`border border-gray-200 dark:border-gray-600 p-4 text-center ${p.isPopular ? 'bg-blue-50 dark:bg-blue-900/20 text-gray-900 dark:text-white font-medium' : 'text-gray-700 dark:text-gray-300'}`}>
+                        {p.maxSocialAccounts}
+                        {p.multiAccountPerPlatform && <span className="block text-xs text-purple-600 dark:text-purple-400">multiples por red</span>}
+                      </td>
+                    ))}
+                  </tr>
+                  {comparisonRows.map((row) => (
+                    <tr key={row.key} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <td className="border border-gray-200 dark:border-gray-600 p-4 font-medium text-gray-900 dark:text-white">
+                        {row.label}
+                      </td>
+                      {plans.map((p) => (
+                        <td
+                          key={p.code}
+                          className={`border border-gray-200 dark:border-gray-600 p-4 text-center ${
+                            p.isPopular
+                              ? 'bg-blue-50 dark:bg-blue-900/20 text-gray-900 dark:text-white font-medium'
+                              : 'text-gray-700 dark:text-gray-300'
+                          }`}
+                        >
+                          {p.features[row.key] ? (
+                            <CheckCircle className="w-5 h-5 mx-auto text-green-500" />
+                          ) : (
+                            <span className="text-gray-400">—</span>
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      {/* FAQ Section */}
+      {/* FAQ */}
       <section className="py-20 bg-gray-50 dark:bg-gray-900">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
             className="text-center mb-16"
           >
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-6">
@@ -390,15 +432,14 @@ export default function PlanesPage() {
                 key={index}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
                 className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg"
               >
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
                   {faq.question}
                 </h3>
-                <p className="text-gray-600 dark:text-gray-300">
-                  {faq.answer}
-                </p>
+                <p className="text-gray-600 dark:text-gray-300">{faq.answer}</p>
               </motion.div>
             ))}
           </div>
@@ -411,27 +452,28 @@ export default function PlanesPage() {
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
             className="max-w-4xl mx-auto"
           >
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-              ¿Listo para Transformar tu Reputación Digital?
+              Empieza a gestionar tu reputacion digital hoy
             </h2>
             <p className="text-xl text-blue-100 mb-8">
-              Únete a más de 1,200 empresas que ya confían en nuestra tecnología
+              Crea tu cuenta y prueba la plataforma con el plan Free.
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
               <Link
                 href="/register"
                 className="group bg-white text-[#01257D] px-10 py-4 rounded-full font-bold text-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 inline-flex items-center justify-center"
               >
-                🚀 Comenzar Gratis
+                Comenzar Gratis
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
               <Link
-                href="/demo"
+                href="/contacto"
                 className="group border-2 border-white text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-white/10 transition-colors inline-flex items-center justify-center"
               >
-                Ver Demo
+                Hablar con Ventas
               </Link>
             </div>
           </motion.div>
