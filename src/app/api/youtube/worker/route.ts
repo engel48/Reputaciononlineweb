@@ -26,15 +26,26 @@ import { NextRequest, NextResponse } from 'next/server';
  * );
  */
 
-const WORKER_SECRET = process.env.WORKER_SECRET || 'youtube-worker-secret-key-2025';
+function getCronSecret(): string | null {
+  const secret = process.env.CRON_SECRET_KEY;
+  return secret && secret.trim().length > 0 ? secret : null;
+}
 
 export async function GET(request: NextRequest) {
   try {
     console.log('⚙️ YouTube Worker: Iniciando procesamiento de jobs...');
 
     // Verificar autenticación del worker
+    const cronSecret = getCronSecret();
+    if (!cronSecret) {
+      console.error('❌ Worker: CRON_SECRET_KEY no configurado');
+      return NextResponse.json(
+        { success: false, error: 'CRON_SECRET_KEY no configurado en el servidor' },
+        { status: 500 }
+      );
+    }
     const authHeader = request.headers.get('authorization');
-    if (authHeader !== `Bearer ${WORKER_SECRET}`) {
+    if (authHeader !== `Bearer ${cronSecret}`) {
       console.error('❌ Worker: Autenticación fallida');
       return NextResponse.json(
         { success: false, error: 'No autorizado' },
@@ -325,8 +336,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Verificar autenticación
+    const cronSecret = getCronSecret();
+    if (!cronSecret) {
+      return NextResponse.json(
+        { success: false, error: 'CRON_SECRET_KEY no configurado en el servidor' },
+        { status: 500 }
+      );
+    }
     const authHeader = request.headers.get('authorization');
-    if (authHeader !== `Bearer ${WORKER_SECRET}`) {
+    if (authHeader !== `Bearer ${cronSecret}`) {
       return NextResponse.json(
         { success: false, error: 'No autorizado' },
         { status: 401 }
