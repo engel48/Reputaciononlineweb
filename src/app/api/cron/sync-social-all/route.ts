@@ -20,10 +20,13 @@ import {
  * Serializa por usuario pero procesa plataformas en paralelo para cada uno.
  * Si una plataforma falla, no interrumpe las otras.
  */
-const CRON_SECRET = process.env.CRON_SECRET_KEY || 'dev-cron-secret-key-2025';
-
 const SUPPORTED_PLATFORMS: SocialPlatform[] = ['facebook', 'instagram', 'x', 'youtube'];
 const MAX_USERS_PER_RUN = 50;
+
+function getCronSecret(): string | null {
+  const secret = process.env.CRON_SECRET_KEY;
+  return secret && secret.trim().length > 0 ? secret : null;
+}
 
 interface CronSocialRow {
   id: string;
@@ -37,9 +40,16 @@ export async function POST(request: NextRequest) {
   const startAt = Date.now();
 
   // 1. Auth
+  const cronSecret = getCronSecret();
+  if (!cronSecret) {
+    return NextResponse.json(
+      { error: 'CRON_SECRET_KEY no configurado en el servidor' },
+      { status: 500 }
+    );
+  }
   const authHeader = request.headers.get('authorization');
   const providedSecret = authHeader?.replace('Bearer ', '');
-  if (providedSecret !== CRON_SECRET) {
+  if (providedSecret !== cronSecret) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
   }
 
@@ -181,8 +191,15 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
+  const cronSecret = getCronSecret();
+  if (!cronSecret) {
+    return NextResponse.json(
+      { error: 'CRON_SECRET_KEY no configurado en el servidor' },
+      { status: 500 }
+    );
+  }
   const authHeader = request.headers.get('authorization');
-  if (authHeader?.replace('Bearer ', '') !== CRON_SECRET) {
+  if (authHeader?.replace('Bearer ', '') !== cronSecret) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
   }
   return NextResponse.json({

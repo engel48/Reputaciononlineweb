@@ -60,12 +60,14 @@ export class TokenRefreshService {
           const newExpiry = new Date(Date.now() + data.expires_in * 1000);
 
           // Guardar nuevo access_token encriptado
+          // NO tocar last_sync — eso lo maneja el sync social. Si lo actualizamos
+          // aqui, el endpoint sync-social-all aplica su filtro de 25 min y omite
+          // la fila recien refrescada.
           await supabase
             .from('social_media')
             .update({
               access_token: encryptToken(data.access_token),
-              token_expiry: newExpiry.toISOString(),
-              last_sync: new Date().toISOString()
+              token_expiry: newExpiry.toISOString()
             })
             .eq('user_id', userId)
             .eq('platform', 'youtube');
@@ -100,8 +102,7 @@ export class TokenRefreshService {
             .from('social_media')
             .update({
               access_token: encryptToken(data.access_token),
-              token_expiry: newExpiry.toISOString(),
-              last_sync: new Date().toISOString()
+              token_expiry: newExpiry.toISOString()
             })
             .eq('user_id', userId)
             .eq('platform', platform);
@@ -147,8 +148,7 @@ export class TokenRefreshService {
 
           const updateData: any = {
             access_token: encryptToken(data.access_token),
-            token_expiry: newExpiry.toISOString(),
-            last_sync: new Date().toISOString()
+            token_expiry: newExpiry.toISOString()
           };
 
           // Twitter returns a new refresh_token on each refresh
