@@ -578,6 +578,6 @@ TikTok OAuth puede no estar disponible en todos los países. Verifica la lista d
 
 ---
 
-**Implementado por:** Claude Code
+**Implementado por:** Leandro
 **Fecha de Implementación:** 2025-11-21
 **Estado:** ✅ LISTO PARA CONFIGURAR Y USAR

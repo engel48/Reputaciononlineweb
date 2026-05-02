@@ -2,7 +2,7 @@
 
 **Fecha:** 2025-11-21
 **Componente:** LinkedIn OAuth Integration
-**Auditor:** QA Engineer (Claude Code)
+**Auditor:** Leandro
 **Severidad:** CRÍTICA
 
 ---

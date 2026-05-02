@@ -468,7 +468,7 @@ export default function YouTubeDashboard() {
 
 ---
 
-**Desarrollado por:** Claude Code
+**Desarrollado por:** Leandro
 **Tecnologías:** Next.js 13, Supabase, Google Gemini AI, YouTube Data API v3
 **Versión:** 1.0.0
 **Fecha:** 2025-01-18

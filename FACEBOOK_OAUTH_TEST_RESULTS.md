@@ -277,6 +277,6 @@ open test-facebook-oauth.html
 
 ---
 
-**Generado por:** Claude Code
+**Generado por:** Leandro
 **Servidor:** Next.js Development (http://localhost:3000)
 **Estado Final:** ✅ TODAS LAS PRUEBAS PASARON
