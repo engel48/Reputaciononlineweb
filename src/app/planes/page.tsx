@@ -118,7 +118,7 @@ export default function PlanesPage() {
     },
     {
       question: '¿Que plataformas sociales monitorean?',
-      answer: 'Monitoreamos Facebook, X (Twitter), Instagram, YouTube y TikTok. Ademas hacemos scraping de los principales medios digitales colombianos: El Tiempo, El Espectador, Semana, La FM, Caracol, RCN y otros.',
+      answer: 'Monitoreamos Facebook, X (Twitter), Instagram y YouTube. Ademas hacemos scraping de los principales medios digitales colombianos: El Tiempo, El Espectador, Semana, La FM, Caracol, RCN y otros.',
     },
     {
       question: '¿Como funciona el analisis de sentimiento?',

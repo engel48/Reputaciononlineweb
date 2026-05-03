@@ -24,7 +24,7 @@ Reputación Online permite a marcas, empresas y figuras políticas medir su pres
 ## Funcionalidades
 
 ### Monitoreo de redes sociales
-Conexión OAuth con **Facebook, X (Twitter), Instagram, YouTube y TikTok**. Sincronización automática cada 30 minutos para extraer publicaciones, métricas, comentarios y menciones. Soporte multi-cuenta de la misma red social para el plan Enterprise (hasta 8 cuentas conectadas).
+Conexión OAuth con **Facebook, X (Twitter), Instagram y YouTube**. Sincronización automática cada 30 minutos para extraer publicaciones, métricas, comentarios y menciones. Soporte multi-cuenta de la misma red social para el plan Enterprise (hasta 8 cuentas conectadas).
 
 ### Monitoreo de medios colombianos
 Scraping en vivo de los principales medios digitales del país: El Tiempo, El Espectador, Semana, La FM, Caracol, RCN, Blu Radio y otros. Detección de menciones por palabras clave configurables, con histórico de noticias para análisis de tendencias.
@@ -71,7 +71,7 @@ flowchart LR
 
     subgraph External[Servicios externos]
         Groq[Groq AI<br/>Llama 3.3 70B]
-        OAuth[OAuth providers<br/>Meta / X / Google / TikTok]
+        OAuth[OAuth providers<br/>Meta / X / Google]
         Wompi[Wompi Colombia<br/>Pagos + Webhook]
         News[Medios colombianos<br/>Web scraping]
     end
@@ -110,7 +110,7 @@ flowchart LR
 | **Base de datos** | Supabase (PostgreSQL 15) con Row-Level Security en todas las tablas, pgvector para embeddings, pg_cron para tareas programadas |
 | **Autenticación** | NextAuth.js, JWT con bcryptjs, middleware de Next.js |
 | **IA / NLP** | Groq SDK (modelo Llama 3.3 70B Versatile), DeepSeek y OpenAI como respaldo |
-| **OAuth** | Facebook Graph API, X API v2, Instagram Graph API, YouTube Data API v3, TikTok for Developers |
+| **OAuth** | Facebook Graph API, X API v2, Instagram Graph API, YouTube Data API v3 |
 | **Pagos** | Wompi Colombia (REST + webhook firmado HMAC SHA-256) |
 | **Email** | Resend |
 | **Web scraping** | Cheerio + Edge Functions |
@@ -185,7 +185,6 @@ La aplicación queda disponible en `http://localhost:3000`.
 | `TWITTER_CLIENT_ID` / `TWITTER_CLIENT_SECRET` | X Developer Platform |
 | `INSTAGRAM_CLIENT_ID` / `INSTAGRAM_CLIENT_SECRET` | Instagram Graph API |
 | `YOUTUBE_CLIENT_ID` / `YOUTUBE_CLIENT_SECRET` | Google Cloud Console |
-| `TIKTOK_CLIENT_KEY` / `TIKTOK_CLIENT_SECRET` | TikTok for Developers |
 
 Consultar `.env.example` para la lista completa.
 

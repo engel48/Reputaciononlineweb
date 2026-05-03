@@ -65,7 +65,6 @@ const PLATFORM_LABELS: Record<string, string> = {
   twitter: 'X (Twitter)',
   instagram: 'Instagram',
   youtube: 'YouTube',
-  tiktok: 'TikTok',
 };
 
 function formatNumber(num: number): string {
