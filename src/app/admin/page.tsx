@@ -776,10 +776,40 @@ function AdminDashboardContent({ onLogout }: { onLogout: () => void }) {
 // ============================================================
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
 
-  const handleLogout = () => {
+  // Al montar, verifica si ya hay sesion admin valida (cookie auth-token)
+  // antes de mostrar el formulario de login. Sin esto, F5 o navegacion
+  // hacia /admin desde otra ruta siempre mostraba el login otra vez.
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/auth/verify', { method: 'GET', credentials: 'include' })
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (cancelled) return;
+        if (data && data.success && data.user?.role === 'admin') {
+          setIsAuthenticated(true);
+        }
+      })
+      .catch(() => { /* sin sesion, mostrara el login */ })
+      .finally(() => { if (!cancelled) setCheckingSession(false); });
+    return () => { cancelled = true; };
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+    } catch { /* ignore */ }
     setIsAuthenticated(false);
   };
+
+  if (checkingSession) {
+    return (
+      <div className="min-h-screen bg-[#0B1120] flex items-center justify-center">
+        <div className="text-gray-400 text-sm">Verificando sesion...</div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return <AdminLogin onLoginSuccess={() => setIsAuthenticated(true)} />;

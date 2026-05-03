@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { userService } from '@/lib/database-adapter';
 import { createClient } from '@supabase/supabase-js';
 import { sendPlanChangeEmail, sendPurchaseConfirmationEmail, sendLowCreditsWarningEmail } from '@/lib/email-service';
+import { requireAuth } from '@/lib/auth-helper';
 
 // Supabase directo para obtener email y datos confiables del usuario
 const supabaseAdmin = createClient(
@@ -9,18 +10,49 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 );
 
+// Campos que solo admin puede modificar (un usuario regular NO debe poder
+// cambiar su propio plan ni asignarse creditos via este endpoint).
+const ADMIN_ONLY_FIELDS = new Set(['plan', 'credits', 'role', 'isActive', 'is_active']);
+
 export async function PUT(request: NextRequest) {
   try {
+    // CRITICO: validar identidad ANTES de aceptar el userId del body.
+    // Sin este check, cualquiera podria cambiar plan/creditos de cualquier
+    // usuario simplemente enviando {userId: 'X', credits: 999999}.
+    const auth = await requireAuth(request);
+    if (auth instanceof NextResponse) return auth;
+
     const body = await request.json();
     const { userId, ...updates } = body;
 
-    console.log('USERS API PUT: Datos recibidos:', { userId, updates: Object.keys(updates) });
+    console.log('USERS API PUT: Datos recibidos:', { userId, updates: Object.keys(updates), authUser: auth.userId });
 
     if (!userId) {
       return NextResponse.json(
         { success: false, message: 'ID de usuario requerido' },
         { status: 400 }
       );
+    }
+
+    // Solo el propio usuario o un admin pueden modificar el registro
+    const isAdmin = auth.role === 'admin';
+    const isOwner = auth.userId === userId;
+    if (!isAdmin && !isOwner) {
+      return NextResponse.json(
+        { success: false, message: 'No tienes permiso para modificar este usuario' },
+        { status: 403 }
+      );
+    }
+
+    // Usuarios regulares NO pueden modificar plan, creditos, role o is_active
+    if (!isAdmin) {
+      const blocked = Object.keys(updates).filter((k) => ADMIN_ONLY_FIELDS.has(k));
+      if (blocked.length > 0) {
+        return NextResponse.json(
+          { success: false, message: `Campos solo modificables por admin: ${blocked.join(', ')}` },
+          { status: 403 }
+        );
+      }
     }
 
     // Obtener datos ACTUALES del usuario directo de Supabase (email, plan, credits)

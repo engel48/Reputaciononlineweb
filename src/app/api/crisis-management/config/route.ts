@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { requireAuth } from '@/lib/auth-helper';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -8,8 +9,13 @@ const supabase = createClient(
 
 export async function GET(request: NextRequest) {
   try {
+    const auth = await requireAuth(request);
+    if (auth instanceof NextResponse) return auth;
+
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
+    const queryUserId = searchParams.get('userId');
+    // Solo permitir leer la config del propio usuario (o admin)
+    const userId = auth.role === 'admin' && queryUserId ? queryUserId : auth.userId;
 
     if (!userId) {
       return NextResponse.json(
@@ -50,8 +56,13 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await requireAuth(request);
+    if (auth instanceof NextResponse) return auth;
+
     const body = await request.json();
-    const { userId, templates, rules, emergencyContacts } = body;
+    const { userId: bodyUserId, templates, rules, emergencyContacts } = body;
+    // Solo permitir guardar config del propio usuario (o admin actuando sobre otro)
+    const userId = auth.role === 'admin' && bodyUserId ? bodyUserId : auth.userId;
 
     if (!userId) {
       return NextResponse.json(

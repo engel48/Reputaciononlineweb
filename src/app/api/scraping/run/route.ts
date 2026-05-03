@@ -3,10 +3,11 @@
  * Usa la configuración local de sites-config.ts y guarda en Supabase
  */
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getActiveSites, NEWS_SITES_CONFIG } from '@/lib/news-monitoring/sites-config';
 import { scrapeSite, ScrapingResult, MentionMatch } from '@/lib/news-monitoring/scraper';
 import { createClient } from '@supabase/supabase-js';
+import { requireRole } from '@/lib/auth-helper';
 import crypto from 'crypto';
 
 // Inicializar cliente Supabase con service role para escritura
@@ -112,11 +113,15 @@ async function scrapeSingleSite(
 /**
  * POST /api/scraping/run
  * Ejecuta scraping de todos los sitios activos o uno específico
+ * ADMIN ONLY (proceso pesado, no debe ser triggerable por usuarios)
  */
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   const startTime = Date.now();
 
   try {
+    const admin = await requireRole(request, 'admin');
+    if (admin instanceof NextResponse) return admin;
+
     const body = await request.json().catch(() => ({}));
     const { siteId, searchTerms = [], limit = 10 } = body;
 

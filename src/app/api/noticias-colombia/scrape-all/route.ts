@@ -10,6 +10,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { NoticiasColombiaScraper } from '@/lib/scraping/noticias-colombia';
+import { requireRole } from '@/lib/auth-helper';
 import {
   SITIOS_NOTICIAS_COLOMBIA,
   getSitiosActivos,
@@ -39,8 +40,9 @@ export async function POST(request: NextRequest) {
   const startTime = Date.now();
 
   try {
-    // TODO: Add admin authentication check here
-    // For now, accepting all requests
+    // Admin only — proceso pesado de scraping masivo
+    const admin = await requireRole(request, 'admin');
+    if (admin instanceof NextResponse) return admin;
 
     const body: ScrapeAllRequest = await request.json().catch(() => ({}));
     const { sitios: sitioIds, categoria, concurrency = 3 } = body;
