@@ -4,34 +4,14 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import * as jwt from 'jsonwebtoken';
 import { supabase } from '@/lib/supabase-server';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'reputacion-online-secret-key-2025';
+import { requireAuth } from '@/lib/auth-helper';
 
 export async function GET(request: NextRequest) {
   try {
-    // Obtener token de autenticacion desde cookie (JWT Local)
-    const authToken = request.cookies.get('auth-token')?.value;
-
-    if (!authToken) {
-      return NextResponse.json(
-        { success: false, error: 'No autorizado' },
-        { status: 401 }
-      );
-    }
-
-    // Verificar token JWT Local
-    let userId: string;
-    try {
-      const decoded = jwt.verify(authToken, JWT_SECRET) as { userId: string; email: string };
-      userId = decoded.userId;
-    } catch {
-      return NextResponse.json(
-        { success: false, error: 'Token invalido o expirado' },
-        { status: 401 }
-      );
-    }
+    const auth = await requireAuth(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     // Obtener datos del usuario (balance de creditos)
     const { data: user, error: userError } = await supabase

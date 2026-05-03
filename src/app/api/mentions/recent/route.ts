@@ -1,9 +1,7 @@
 // src/app/api/mentions/recent/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import * as jwt from 'jsonwebtoken';
 import { supabase } from '@/lib/supabase-server';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'reputacion-online-secret-key-2025';
+import { requireAuth } from '@/lib/auth-helper';
 
 // Interfaz para los parámetros de query
 interface QueryParams {
@@ -82,29 +80,10 @@ function mapSupabaseMention(dbMention: any): Mention {
 
 export async function GET(request: NextRequest) {
   try {
-    // 1. AUTENTICACIÓN: Obtener token desde cookie
-    const authToken = request.cookies.get('auth-token')?.value;
-
-    if (!authToken) {
-      return NextResponse.json(
-        { success: false, message: 'No autenticado. Token no encontrado.' },
-        { status: 401 }
-      );
-    }
-
-    // 2. VERIFICAR TOKEN JWT
-    let userId: string;
-    try {
-      const decoded = jwt.verify(authToken, JWT_SECRET) as { userId: string; email: string };
-      userId = decoded.userId;
-      console.log('✅ API MENTIONS: Usuario autenticado:', userId);
-    } catch (error) {
-      console.error('❌ API MENTIONS: Token inválido:', error);
-      return NextResponse.json(
-        { success: false, message: 'Token inválido o expirado.' },
-        { status: 401 }
-      );
-    }
+    const auth = await requireAuth(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
+    console.log('✅ API MENTIONS: Usuario autenticado:', userId);
 
     // 3. EXTRAER PARÁMETROS DE QUERY
     const searchParams = request.nextUrl.searchParams;
