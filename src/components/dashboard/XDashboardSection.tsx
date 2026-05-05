@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  Twitter,
   TrendingUp,
   TrendingDown,
   ThumbsUp,
@@ -18,6 +17,7 @@ import {
   FileText,
   Minus
 } from 'lucide-react';
+import { XIcon } from '@/components/icons/XIcon';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PlatformMentionsList } from './PlatformMentionsList';
@@ -160,7 +160,7 @@ export default function XDashboardSection() {
             <div className="flex items-center justify-center gap-4">
               <div className="relative">
                 <div className="w-16 h-16 rounded-xl bg-[#0B1120] flex items-center justify-center">
-                  <Twitter className="w-8 h-8 text-white" />
+                  <XIcon className="w-8 h-8 text-white" />
                 </div>
                 <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-[#00E5FF]/20 flex items-center justify-center">
                   <Loader2 className="w-4 h-4 text-[#00E5FF] animate-spin" />
@@ -198,7 +198,7 @@ export default function XDashboardSection() {
         <CardContent className="p-8">
           <div className="flex flex-col items-center justify-center text-center">
             <div className="w-20 h-20 rounded-2xl bg-[#0B1120]/10 dark:bg-[#0B1120] flex items-center justify-center mb-4">
-              <Twitter className="w-10 h-10 text-[#0B1120] dark:text-white" />
+              <XIcon className="w-10 h-10 text-[#0B1120] dark:text-white" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
               X (Twitter) no conectado
@@ -210,7 +210,7 @@ export default function XDashboardSection() {
               onClick={() => window.location.href = '/dashboard/redes-sociales'}
               className="bg-[#0B1120] hover:bg-[#1A202C] text-white"
             >
-              <Twitter className="w-4 h-4 mr-2" />
+              <XIcon className="w-4 h-4 mr-2" />
               Conectar X
             </Button>
           </div>
@@ -237,7 +237,7 @@ export default function XDashboardSection() {
             <div className="flex items-center gap-4">
               {/* X Icon */}
               <div className="w-14 h-14 rounded-xl bg-[#0B1120] flex items-center justify-center shadow-lg">
-                <Twitter className="w-7 h-7 text-white" />
+                <XIcon className="w-7 h-7 text-white" />
               </div>
 
               {/* Account Info */}

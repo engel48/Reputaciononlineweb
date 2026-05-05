@@ -2,10 +2,11 @@
 
 import React, { useState } from 'react';
 import {
-  Facebook, Instagram, Twitter, Youtube, Newspaper, Hash,
+  Facebook, Instagram, Youtube, Newspaper, Hash,
   ThumbsUp, MessageCircle, Share2, Eye, ExternalLink,
   TrendingUp, TrendingDown, Minus, Clock, Check, BookOpen
 } from 'lucide-react';
+import { XIcon } from '@/components/icons/XIcon';
 
 interface UnifiedMentionCardProps {
   id: string;
@@ -34,8 +35,8 @@ interface UnifiedMentionCardProps {
 const platformIcons: Record<string, React.ReactNode> = {
   facebook: <Facebook className="h-4 w-4" />,
   instagram: <Instagram className="h-4 w-4" />,
-  x: <Twitter className="h-4 w-4" />,
-  twitter: <Twitter className="h-4 w-4" />,
+  x: <XIcon className="h-4 w-4" />,
+  twitter: <XIcon className="h-4 w-4" />,
   youtube: <Youtube className="h-4 w-4" />,
   news: <Newspaper className="h-4 w-4" />,
   hashtag: <Hash className="h-4 w-4" />,

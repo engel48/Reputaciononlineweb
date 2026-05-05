@@ -5,10 +5,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   TrendingUp, TrendingDown, Users, Heart, MessageCircle, Share2,
   DollarSign, Eye, Star, Award, Target, Zap, BarChart3, PieChart,
-  Instagram, Youtube, Facebook, Twitter,
+  Instagram, Youtube, Facebook,
   Calendar, Clock, AlertTriangle, CheckCircle, ArrowUp, ArrowDown,
   Filter, Download, RefreshCw, Search, Bell, Settings, Shield
 } from 'lucide-react';
+import { XIcon } from '@/components/icons/XIcon';
 import { emitCreditsChanged } from '@/lib/credit-events';
 
 interface InfluenceMetrics {
@@ -163,8 +164,8 @@ export default function InfluenceTracker({ userProfile }: InfluenceTrackerProps)
     switch (platform.toLowerCase()) {
       case 'instagram': return Instagram;
       case 'youtube': return Youtube;
-      case 'twitter': return Twitter;
-      case 'x': return Twitter;
+      case 'twitter': return XIcon;
+      case 'x': return XIcon;
       case 'facebook': return Facebook;
       default: return Users;
     }

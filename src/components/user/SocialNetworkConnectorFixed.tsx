@@ -7,7 +7,6 @@ import { Badge } from '@/components/ui/badge';
 import { usePlan } from '@/context/PlanContext';
 import {
   Facebook,
-  Twitter,
   Instagram,
   Youtube,
   RefreshCw,
@@ -21,6 +20,7 @@ import {
   Plus,
   Crown
 } from 'lucide-react';
+import { XIcon } from '@/components/icons/XIcon';
 
 // X (Twitter) requiere TWITTER_CLIENT_ID configurado. Si no está, la tarjeta
 // muestra "Próximamente" y el botón Conectar queda disabled.
@@ -76,7 +76,7 @@ const socialNetworks = [
   {
     id: 'x',
     name: 'X',
-    icon: Twitter,
+    icon: XIcon,
     color: 'bg-[#0B1120]',
     iconColor: 'text-white',
     description: 'Monitorea menciones, hashtags y respuestas en X'
@@ -701,7 +701,7 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
                 </div>
                 <CardDescription className="text-sm">
                   {isXDisabled
-                    ? 'Conexión con X estará disponible cuando terminemos la aprobación con X Developer.'
+                    ? 'Activación pendiente: faltan credenciales de X Developer en la configuración del entorno.'
                     : network.description}
                 </CardDescription>
               </CardHeader>
