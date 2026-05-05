@@ -22,13 +22,6 @@ import {
 } from 'lucide-react';
 import { XIcon } from '@/components/icons/XIcon';
 
-// X (Twitter) requiere TWITTER_CLIENT_ID configurado. Si no está, la tarjeta
-// muestra "Próximamente" y el botón Conectar queda disabled.
-const X_OAUTH_AVAILABLE = !!(
-  process.env.NEXT_PUBLIC_TWITTER_CLIENT_ID &&
-  process.env.NEXT_PUBLIC_TWITTER_CLIENT_ID.trim().length > 0
-);
-
 interface SocialConnection {
   connected: boolean;
   username: string;
@@ -671,10 +664,9 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
           const isLoading = loading[network.id];
           const isSyncing = syncing[network.id];
           const IconComponent = network.icon;
-          const isXDisabled = network.id === 'x' && !X_OAUTH_AVAILABLE && !connection.connected;
 
           return (
-            <Card key={network.id} className={`relative overflow-hidden ${isXDisabled ? 'opacity-80' : ''}`}>
+            <Card key={network.id} className="relative overflow-hidden">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
@@ -683,26 +675,18 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
                     </div>
                     <div>
                       <CardTitle className="text-lg">{network.name}</CardTitle>
-                      {isXDisabled ? (
-                        <Badge variant="secondary" className="mt-1 bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
-                          <Clock className="w-3 h-3 mr-1" /> Próximamente
-                        </Badge>
-                      ) : (
-                        <Badge variant={connection.connected ? "default" : "secondary"} className="mt-1">
-                          {connection.connected ? (
-                            <><CheckCircle className="w-3 h-3 mr-1" /> Conectado</>
-                          ) : (
-                            <><XCircle className="w-3 h-3 mr-1" /> Desconectado</>
-                          )}
-                        </Badge>
-                      )}
+                      <Badge variant={connection.connected ? "default" : "secondary"} className="mt-1">
+                        {connection.connected ? (
+                          <><CheckCircle className="w-3 h-3 mr-1" /> Conectado</>
+                        ) : (
+                          <><XCircle className="w-3 h-3 mr-1" /> Desconectado</>
+                        )}
+                      </Badge>
                     </div>
                   </div>
                 </div>
                 <CardDescription className="text-sm">
-                  {isXDisabled
-                    ? 'Activación pendiente: faltan credenciales de X Developer en la configuración del entorno.'
-                    : network.description}
+                  {network.description}
                 </CardDescription>
               </CardHeader>
 
@@ -796,7 +780,7 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
                         )}
                       </Button>
                       {/* Botón "Agregar otra cuenta" solo para enterprise */}
-                      {isEnterprise && !isXDisabled && (
+                      {isEnterprise && (
                         <Button
                           onClick={() => handleConnect(network.id)}
                           disabled={isLoading}
@@ -830,18 +814,16 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
                   ) : (
                     <Button
                       onClick={() => handleConnect(network.id)}
-                      disabled={isLoading || isXDisabled}
+                      disabled={isLoading}
                       className="flex-1 bg-[#01257D] hover:bg-[#013AAA] text-white disabled:opacity-60 disabled:cursor-not-allowed"
                       size="sm"
                     >
                       {isLoading ? (
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      ) : isXDisabled ? (
-                        <Clock className="w-4 h-4 mr-2" />
                       ) : (
                         <ExternalLink className="w-4 h-4 mr-2" />
                       )}
-                      {isXDisabled ? 'No disponible' : 'Conectar'}
+                      Conectar
                     </Button>
                   )}
                 </div>
