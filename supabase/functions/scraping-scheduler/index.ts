@@ -14,35 +14,32 @@ interface UserWithPlatforms {
 }
 
 // Configuración de prioridades y frecuencias por plan
+// Planes reales en BD: free, basic, pro, enterprise (free se excluye del scraping)
 const PLAN_CONFIG = {
-  politico: {
+  enterprise: {
     priority: 1,
     lookback_hours: 1,
     frequency_minutes: 5
   },
-  empresarial: {
+  pro: {
     priority: 2,
     lookback_hours: 2,
     frequency_minutes: 15
   },
-  profesional: {
+  basic: {
     priority: 3,
     lookback_hours: 4,
     frequency_minutes: 30
-  },
-  basico: {
-    priority: 4,
-    lookback_hours: 24,
-    frequency_minutes: 60
   }
 };
 
-// Plataformas soportadas para scraping: Facebook, X, Instagram, YouTube
+// Plataformas soportadas por scraping-worker: Facebook, X (twitter), Instagram.
+// YouTube NO esta aqui porque el scraping-worker no lo implementa;
+// las menciones de YouTube se sincronizan via /api/cron/sync-social-all (jobid=12 cada 30min).
 const SUPPORTED_PLATFORMS = [
   'facebook',
   'twitter',
-  'instagram',
-  'youtube'
+  'instagram'
 ];
 
 Deno.serve(async (req: Request) => {
@@ -67,8 +64,8 @@ Deno.serve(async (req: Request) => {
           access_token
         )
       `)
-      .in('plan', ['profesional', 'empresarial', 'politico'])
-      .order('plan', { ascending: true }); // Prioridad: político > empresarial > profesional
+      .in('plan', ['basic', 'pro', 'enterprise'])
+      .order('plan', { ascending: true }); // Prioridad: enterprise > pro > basic
 
     if (usersError) {
       console.error('Error fetching users:', usersError);
