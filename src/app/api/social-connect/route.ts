@@ -22,6 +22,22 @@ export async function POST(request: NextRequest) {
 
     if (action === 'connect') {
       if (accessToken) {
+        // Respetar el limite del plan tambien en esta ruta (mismo helper
+        // que usan los callbacks OAuth) para que no sea un bypass.
+        const { checkSocialAccountLimit } = await import('@/lib/plan-limits');
+        const limitCheck = await checkSocialAccountLimit(userId, platform);
+        if (!limitCheck.allowed) {
+          return NextResponse.json(
+            {
+              error: limitCheck.reason || 'Limite de cuentas alcanzado',
+              plan: limitCheck.plan,
+              current: limitCheck.current,
+              limit: limitCheck.limit,
+            },
+            { status: 403 }
+          );
+        }
+
         // Conectar con token existente (callback de OAuth)
         const { saveOAuthConnection } = await import('@/lib/oauth-storage');
         const saved = await saveOAuthConnection({

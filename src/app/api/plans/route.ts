@@ -8,7 +8,7 @@ import { supabase } from '@/lib/supabase-server';
 export async function GET() {
   const { data, error } = await supabase
     .from('plans')
-    .select('code, name, description, price_cop, monthly_credits, max_social_accounts, multi_account_per_platform, features, is_popular, display_order')
+    .select('code, name, description, price_cop, monthly_credits, max_social_accounts, multi_account_per_platform, max_accounts_per_platform, features, is_popular, display_order')
     .eq('is_active', true)
     .order('display_order', { ascending: true });
 
@@ -25,6 +25,12 @@ export async function GET() {
     monthlyCredits: row.monthly_credits ?? 0,
     maxSocialAccounts: row.max_social_accounts ?? 0,
     multiAccountPerPlatform: !!row.multi_account_per_platform,
+    maxAccountsPerPlatform:
+      row.max_accounts_per_platform != null
+        ? row.max_accounts_per_platform
+        : row.multi_account_per_platform
+        ? (row.max_social_accounts ?? 1)
+        : 1,
     features: (row.features ?? {}) as Record<string, boolean>,
     isPopular: !!row.is_popular,
     displayOrder: row.display_order ?? 0,

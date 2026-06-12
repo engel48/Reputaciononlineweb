@@ -175,6 +175,22 @@ describe('plan-limits', () => {
     });
   });
 
+  describe('getMaxAccountsPerPlatform', () => {
+    it('deriva el maximo por red (fallback al booleano si no hay columna)', async () => {
+      const { getMaxAccountsPerPlatform } = await import('@/lib/plan-limits');
+      // free/basic: multi=false => 1 por red
+      expect(await getMaxAccountsPerPlatform('free')).toBe(1);
+      expect(await getMaxAccountsPerPlatform('basic')).toBe(1);
+      // enterprise: multi=true sin columna => cae al tope total (8)
+      expect(await getMaxAccountsPerPlatform('enterprise')).toBe(8);
+    });
+
+    it('plan inexistente hace fallback a free (1)', async () => {
+      const { getMaxAccountsPerPlatform } = await import('@/lib/plan-limits');
+      expect(await getMaxAccountsPerPlatform('phantom')).toBe(1);
+    });
+  });
+
   describe('checkSocialAccountLimit', () => {
     it('user free sin redes puede conectar la primera', async () => {
       const { checkSocialAccountLimit } = await import('@/lib/plan-limits');

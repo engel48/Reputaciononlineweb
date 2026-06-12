@@ -98,8 +98,15 @@ interface AccountItem {
 }
 
 export default function SocialNetworkConnectorFixed(props: SocialNetworkConnectorProps) {
-  const { currentPlan } = usePlan();
-  const isEnterprise = currentPlan === 'enterprise';
+  const { maxAccountsPerPlatform } = usePlan();
+  // El plan permite multiples cuentas por red si su limite por plataforma > 1.
+  const allowsMultiAccount = maxAccountsPerPlatform > 1;
+  // Cuantas cuentas hay conectadas en una red dada (para el contador X/N).
+  const connectedCountFor = (platform: string) =>
+    (accounts[platform] || []).filter((a) => a.connected).length;
+  // Si todavia se puede agregar otra cuenta de esa red segun el plan.
+  const canAddMoreFor = (platform: string) =>
+    connectedCountFor(platform) < maxAccountsPerPlatform;
 
   const [connections, setConnections] = useState<SocialConnectionsState>({
     facebook: { connected: false, username: '', displayName: '', followers: 0, profileImage: '', lastSync: null, metrics: { posts: 0, engagement: 0, reach: 0 } },
@@ -727,8 +734,8 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
                   </div>
                 )}
 
-                {/* Cuentas adicionales (solo enterprise con 2+ cuentas en esta red) */}
-                {isEnterprise && accounts[network.id] && accounts[network.id].length > 1 && (
+                {/* Cuentas adicionales (planes con multi-cuenta y 2+ en esta red) */}
+                {allowsMultiAccount && accounts[network.id] && accounts[network.id].length > 1 && (
                   <div className="space-y-2 border-t border-gray-200 dark:border-gray-700 pt-3">
                     <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300">
                       <Crown className="w-3.5 h-3.5 text-amber-500" />
@@ -779,8 +786,8 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
                           <><RefreshCw className="w-4 h-4 mr-2" /> Sincronizar ahora</>
                         )}
                       </Button>
-                      {/* Botón "Agregar otra cuenta" solo para enterprise */}
-                      {isEnterprise && (
+                      {/* "Agregar otra cuenta": si el plan permite multiples por red */}
+                      {allowsMultiAccount && canAddMoreFor(network.id) && (
                         <Button
                           onClick={() => handleConnect(network.id)}
                           disabled={isLoading}
@@ -793,8 +800,14 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
                           ) : (
                             <Plus className="w-4 h-4 mr-2" />
                           )}
-                          Agregar otra cuenta
+                          Agregar otra cuenta ({connectedCountFor(network.id)}/{maxAccountsPerPlatform})
                         </Button>
+                      )}
+                      {/* Aviso cuando ya llego al maximo por red */}
+                      {allowsMultiAccount && !canAddMoreFor(network.id) && (
+                        <p className="text-xs text-center text-gray-500 dark:text-gray-400">
+                          Maximo de {maxAccountsPerPlatform} cuentas de esta red en tu plan
+                        </p>
                       )}
                       <Button
                         onClick={() => handleDisconnect(network.id)}
@@ -808,7 +821,7 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
                         ) : (
                           <XCircle className="w-4 h-4 mr-2" />
                         )}
-                        Desconectar {isEnterprise && accounts[network.id]?.length > 1 ? 'todas' : ''}
+                        Desconectar {allowsMultiAccount && accounts[network.id]?.length > 1 ? 'todas' : ''}
                       </Button>
                     </>
                   ) : (

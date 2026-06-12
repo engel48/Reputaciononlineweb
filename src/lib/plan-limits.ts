@@ -15,8 +15,20 @@ export interface PlanDefinition {
   name: string;
   priceCop: number;
   monthlyCredits: number;
+  /** Tope TOTAL de cuentas sociales conectadas (sumando todas las redes). */
   maxSocialAccounts: number;
+  /**
+   * Si el plan permite mas de una cuenta de la misma red social.
+   * Se conserva por compatibilidad; la fuente de verdad fina es
+   * `maxAccountsPerPlatform`.
+   */
   multiAccountPerPlatform: boolean;
+  /**
+   * Maximo de cuentas conectadas POR cada red social. Ej: Pro = 3 cuentas
+   * de Facebook, 3 de X, etc. Si la columna no existe en DB se deriva de
+   * `multiAccountPerPlatform` (true => maxSocialAccounts, false => 1).
+   */
+  maxAccountsPerPlatform: number;
   features: Record<string, boolean>;
   isActive: boolean;
 }
@@ -39,7 +51,7 @@ export async function getAllPlans(): Promise<PlanDefinition[]> {
 
   const { data, error } = await supabase
     .from('plans')
-    .select('code, name, price_cop, monthly_credits, max_social_accounts, multi_account_per_platform, features, is_active');
+    .select('code, name, price_cop, monthly_credits, max_social_accounts, multi_account_per_platform, max_accounts_per_platform, features, is_active');
 
   if (error) {
     console.error('[plan-limits] Error consultando plans:', error);
@@ -48,13 +60,24 @@ export async function getAllPlans(): Promise<PlanDefinition[]> {
 
   const byCode = new Map<string, PlanDefinition>();
   for (const row of (data || []) as any[]) {
+    const maxSocialAccounts = row.max_social_accounts ?? 1;
+    const multi = !!row.multi_account_per_platform;
+    // Fallback retrocompatible si la columna aun no existe en DB:
+    // multi => permite hasta el tope total por red; si no => 1 por red.
+    const maxAccountsPerPlatform =
+      row.max_accounts_per_platform != null
+        ? row.max_accounts_per_platform
+        : multi
+        ? maxSocialAccounts
+        : 1;
     byCode.set(row.code, {
       code: row.code,
       name: row.name,
       priceCop: row.price_cop ?? 0,
       monthlyCredits: row.monthly_credits ?? 0,
-      maxSocialAccounts: row.max_social_accounts ?? 1,
-      multiAccountPerPlatform: !!row.multi_account_per_platform,
+      maxSocialAccounts,
+      multiAccountPerPlatform: multi,
+      maxAccountsPerPlatform,
       features: (row.features ?? {}) as Record<string, boolean>,
       isActive: !!row.is_active,
     });
@@ -96,8 +119,16 @@ export async function getMonthlyCreditLimit(planCode: string): Promise<number> {
 
 /** Si el plan permite multiples cuentas de la misma red social. */
 export async function allowsMultiAccountPerPlatform(planCode: string): Promise<boolean> {
+  const max = await getMaxAccountsPerPlatform(planCode);
+  return max > 1;
+}
+
+/** Maximo de cuentas conectadas por cada red social para el plan dado. */
+export async function getMaxAccountsPerPlatform(planCode: string): Promise<number> {
   const plan = await getPlanByCode(planCode);
-  return plan?.multiAccountPerPlatform ?? false;
+  if (plan) return plan.maxAccountsPerPlatform;
+  const free = await getPlanByCode('free');
+  return free?.maxAccountsPerPlatform ?? 1;
 }
 
 export interface SocialAccountCheckResult {
@@ -171,14 +202,19 @@ export async function checkSocialAccountLimit(
     };
   }
 
-  // Regla 2: si el plan NO permite multiples por plataforma y ya hay una en esa plataforma
-  if (connectedSamePlatform >= 1 && !plan.multiAccountPerPlatform) {
+  // Regla 2: no exceder el maximo de cuentas POR red social.
+  const maxPerPlatform = plan.maxAccountsPerPlatform;
+  if (connectedSamePlatform >= maxPerPlatform) {
+    const reason =
+      maxPerPlatform === 1
+        ? `Tu plan ${plan.name} solo permite una cuenta de ${platform}. Actualiza tu plan para conectar varias.`
+        : `Tu plan ${plan.name} permite hasta ${maxPerPlatform} cuentas de ${platform} y ya alcanzaste ese limite.`;
     return {
       allowed: false,
       current: connectedTotal,
       limit,
       plan: planCode,
-      reason: `Tu plan ${plan.name} solo permite una cuenta de ${platform}. Actualiza a Enterprise para conectar multiples.`,
+      reason,
     };
   }
 

@@ -13,11 +13,21 @@ const mockListConnectedAccounts = vi.fn(async () => [
   { id: 'a1', platform: 'youtube', username: 'channel1', displayName: 'C1', profileImage: null, profileUrl: null, followers: 100, connected: true, lastSync: null, metrics: { posts: 10, engagement: 4 } },
 ]);
 const mockDisconnectAccountById = vi.fn(async () => true);
+const mockCheckSocialAccountLimit = vi.fn(async () => ({
+  allowed: true,
+  current: 0,
+  limit: 12,
+  plan: 'pro',
+}));
 
 vi.mock('@/lib/oauth-storage', () => ({
   saveOAuthConnection: mockSaveOAuthConnection,
   listConnectedAccounts: mockListConnectedAccounts,
   disconnectAccountById: mockDisconnectAccountById,
+}));
+
+vi.mock('@/lib/plan-limits', () => ({
+  checkSocialAccountLimit: mockCheckSocialAccountLimit,
 }));
 
 vi.mock('@/lib/oauth/manager', () => ({
@@ -45,6 +55,12 @@ describe('POST /api/social-connect', () => {
     vi.clearAllMocks();
     mockSaveOAuthConnection.mockResolvedValue(true);
     mockDisconnectAccountById.mockResolvedValue(true);
+    mockCheckSocialAccountLimit.mockResolvedValue({
+      allowed: true,
+      current: 0,
+      limit: 12,
+      plan: 'pro',
+    });
   });
 
   it('rechaza request sin auth (401)', async () => {
@@ -92,6 +108,28 @@ describe('POST /api/social-connect', () => {
       accessToken: 'token-123',
       refreshToken: 'refresh-456',
     }));
+  });
+
+  it('action=connect con accessToken respeta el limite del plan (403)', async () => {
+    mockCheckSocialAccountLimit.mockResolvedValueOnce({
+      allowed: false,
+      current: 3,
+      limit: 3,
+      plan: 'pro',
+      reason: 'Tu plan Plan Profesional permite hasta 3 cuentas de youtube y ya alcanzaste ese limite.',
+    } as any);
+    const { POST } = await import('@/app/api/social-connect/route');
+    const req = new Request('http://localhost/api/social-connect', {
+      method: 'POST',
+      body: JSON.stringify({
+        platform: 'youtube',
+        action: 'connect',
+        accessToken: 'token-123',
+      }),
+    });
+    const res = await POST(req as any);
+    expect(res.status).toBe(403);
+    expect(mockSaveOAuthConnection).not.toHaveBeenCalled();
   });
 
   it('action=connect sin accessToken devuelve authUrl', async () => {

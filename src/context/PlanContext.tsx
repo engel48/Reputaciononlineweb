@@ -50,6 +50,7 @@ interface DbPlan {
   monthlyCredits: number;
   maxSocialAccounts: number;
   multiAccountPerPlatform: boolean;
+  maxAccountsPerPlatform?: number;
   features: Record<string, boolean>;
   isPopular: boolean;
   displayOrder: number;
@@ -141,6 +142,8 @@ function dbPlanToFeatures(plan: DbPlan): PlanFeatures {
 interface PlanContextType {
   features: PlanFeatures;
   currentPlan: string;
+  /** Maximo de cuentas conectadas por cada red social en el plan actual. */
+  maxAccountsPerPlatform: number;
   plans: DbPlan[];
   loading: boolean;
   hasFeature: (featureName: keyof PlanFeatures) => boolean;
@@ -195,6 +198,16 @@ export const PlanProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const features: PlanFeatures = planFromDb
     ? dbPlanToFeatures(planFromDb)
     : FALLBACK_FEATURES;
+
+  // Cuantas cuentas de la MISMA red puede conectar el plan actual.
+  // Fallback retrocompatible al booleano multiAccountPerPlatform.
+  const maxAccountsPerPlatform: number = planFromDb
+    ? planFromDb.maxAccountsPerPlatform != null
+      ? planFromDb.maxAccountsPerPlatform
+      : planFromDb.multiAccountPerPlatform
+      ? planFromDb.maxSocialAccounts
+      : 1
+    : 1;
 
   const hasFeature = (featureName: keyof PlanFeatures): boolean => {
     const value = features[featureName];
@@ -262,6 +275,7 @@ export const PlanProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const contextValue: PlanContextType = {
     features,
     currentPlan,
+    maxAccountsPerPlatform,
     plans,
     loading,
     hasFeature,
