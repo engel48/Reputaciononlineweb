@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useCredits } from '@/context/CreditosContext';
 import { motion } from 'framer-motion';
+import { PieChart } from 'lucide-react';
+import { formatNumber, formatPercent } from '@/lib/formatting';
 
 interface ChartData {
   label: string;
@@ -31,14 +33,11 @@ export default function CreditosUsageChart() {
         consumosPorCanal[canal] += Math.abs(tx.amount);
       });
     
-    // Si no hay datos (historial vacío), mostrar datos de ejemplo
+    // Sin historial -> array vacio (se renderiza estado vacio, NO datos falsos)
     if (Object.keys(consumosPorCanal).length === 0) {
-      consumosPorCanal['facebook'] = 150;
-      consumosPorCanal['x'] = 100;
-      consumosPorCanal['instagram'] = 75;
-      consumosPorCanal['general'] = 50;
+      return [];
     }
-    
+
     // Convertir a formato de gráfico
     return Object.entries(consumosPorCanal).map(([canal, valor]) => {
       // Colores para cada canal
@@ -157,7 +156,7 @@ export default function CreditosUsageChart() {
           fontWeight="bold"
           fill="#00B3B0"
         >
-          {totalConsumo}
+          {formatNumber(totalConsumo)}
         </text>
       </svg>
     );
@@ -204,6 +203,17 @@ export default function CreditosUsageChart() {
         ))}
       </div>
       
+      {datosCanal.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700">
+            <PieChart className="h-7 w-7 text-gray-400 dark:text-gray-500" />
+          </div>
+          <p className="font-medium text-gray-700 dark:text-gray-200">Aun no hay consumo de creditos</p>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Cuando uses funciones de la plataforma, veras aqui el desglose real por canal.
+          </p>
+        </div>
+      ) : (
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Gráfico de dona */}
         <div>
@@ -221,7 +231,7 @@ export default function CreditosUsageChart() {
                   style={{ backgroundColor: item.color }}
                 />
                 <span className="text-xs capitalize text-gray-600 dark:text-gray-300">
-                  {item.label} ({item.porcentaje && item.porcentaje > 0 ? item.porcentaje.toFixed(1) : 0}%)
+                  {item.label} ({formatPercent(item.porcentaje || 0)})
                 </span>
               </div>
             ))}
@@ -239,7 +249,7 @@ export default function CreditosUsageChart() {
             <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
               <p className="text-xs text-gray-500 dark:text-gray-400">Promedio Diario</p>
               <p className="text-lg font-semibold text-gray-700 dark:text-gray-200">
-                {Math.round(creditosUsados / 30)} créditos
+                {formatNumber(Math.round(creditosUsados / 30))} créditos
               </p>
               <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-600">
                 <div 
@@ -265,13 +275,14 @@ export default function CreditosUsageChart() {
               <p className="text-sm text-blue-800 dark:text-blue-300">
                 Con tu uso actual, tus créditos durarán aproximadamente {' '}
                 <span className="font-bold">
-                  {Math.round(currentBalance / (creditosUsados / 30))} días
+                  {creditosUsados > 0 ? formatNumber(Math.round(currentBalance / (creditosUsados / 30))) : '—'} días
                 </span>.
               </p>
             </div>
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }

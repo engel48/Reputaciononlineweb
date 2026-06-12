@@ -132,8 +132,13 @@ const JuliaThinkingAnimation: React.FC<JuliaThinkingAnimationProps> = ({
     
     const canvasWidth = canvasSize.width;
     const canvasHeight = canvasSize.height;
-    
-    for (let i = 0; i < particleCount; i++) {
+
+    // En movil o con prefers-reduced-motion, reducir partículas (menos carga GPU).
+    const reduceMotion = typeof window !== 'undefined' &&
+      (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches || window.innerWidth < 768);
+    const effectiveCount = reduceMotion ? Math.min(particleCount, 28) : particleCount;
+
+    for (let i = 0; i < effectiveCount; i++) {
       particles.push({
         x: Math.random() * canvasWidth,
         y: Math.random() * canvasHeight,

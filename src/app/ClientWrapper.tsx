@@ -1,5 +1,6 @@
 'use client';
 
+import { Toaster } from 'sonner';
 import { UserProvider } from '@/context/UserContext';
 import { CreditProvider } from '@/context/CreditosContext';
 import { PlanProvider } from '@/context/PlanContext';
@@ -16,6 +17,7 @@ export default function ClientWrapper({
         <CreditProvider>
           <PoliticalProvider>
             {children}
+            <Toaster position="top-right" richColors closeButton />
           </PoliticalProvider>
         </CreditProvider>
       </PlanProvider>

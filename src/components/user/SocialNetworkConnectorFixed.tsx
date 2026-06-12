@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
 import { usePlan } from '@/context/PlanContext';
 import {
   Facebook,
@@ -382,9 +383,15 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
     }
   };
 
-  const handleDisconnectAccount = async (accountId: string, username: string) => {
-    if (!confirm(`¿Desconectar la cuenta @${username}?`)) return;
+  const handleDisconnectAccount = (accountId: string, username: string) => {
+    // Confirmacion no bloqueante (toast con accion) en vez de confirm() nativo.
+    toast(`¿Desconectar la cuenta @${username}?`, {
+      action: { label: 'Desconectar', onClick: () => doDisconnectAccount(accountId, username) },
+      cancel: { label: 'Cancelar', onClick: () => {} },
+    });
+  };
 
+  const doDisconnectAccount = async (accountId: string, username: string) => {
     try {
       const response = await fetch('/api/social-connect', {
         method: 'POST',
@@ -394,24 +401,26 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
       });
       const data = await response.json();
       if (data.success) {
-        setMessage({ type: 'success', text: `Cuenta @${username} desconectada` });
+        toast.success(`Cuenta @${username} desconectada`);
         await loadConnections();
       } else {
-        setMessage({ type: 'error', text: data.error || 'Error al desconectar cuenta' });
+        toast.error(data.error || 'Error al desconectar cuenta');
       }
     } catch (error) {
       console.error('Error disconnecting account:', error);
-      setMessage({ type: 'error', text: 'Error de red al desconectar cuenta' });
+      toast.error('Error de red al desconectar cuenta');
     }
   };
 
-  const handleDisconnect = async (platform: string) => {
+  const handleDisconnect = (platform: string) => {
     if (loading[platform]) return;
-    
-    if (!confirm(`¿Estás seguro de que quieres desconectar ${platform}?`)) {
-      return;
-    }
-    
+    toast(`¿Desconectar ${platform}?`, {
+      action: { label: 'Desconectar', onClick: () => doDisconnect(platform) },
+      cancel: { label: 'Cancelar', onClick: () => {} },
+    });
+  };
+
+  const doDisconnect = async (platform: string) => {
     setLoading(prev => ({ ...prev, [platform]: true }));
     
     try {

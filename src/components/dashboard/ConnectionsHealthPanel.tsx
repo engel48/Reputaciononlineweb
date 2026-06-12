@@ -15,6 +15,7 @@
 
 import { useState, useEffect } from 'react';
 import { RefreshCw, AlertTriangle, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface Connection {
   platform: string;
@@ -81,7 +82,9 @@ export default function ConnectionsHealthPanel() {
       const data = await response.json();
 
       if (data.success) {
-        alert(`✅ Renovación completada:\n- Exitosos: ${data.refreshed}\n- Fallidos: ${data.failed}`);
+        toast.success('Renovación completada', {
+          description: `Exitosos: ${data.refreshed} · Fallidos: ${data.failed}`,
+        });
         await loadConnectionsStatus(); // Recargar estado
       } else {
         setError(data.error || 'Error renovando tokens');

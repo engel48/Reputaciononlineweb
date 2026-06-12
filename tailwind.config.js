@@ -34,6 +34,13 @@ module.exports = {
           800: '#151C2E',
           900: '#0B1120', // Principal (más oscuro)
         },
+        // Azul de acento usado en botones/encabezados (#01257D). Antes estaba
+        // hardcodeado en ~15 lugares; ahora se puede usar como `accent-navy`.
+        'accent-navy': {
+          DEFAULT: '#01257D',
+          600: '#01257D',
+          700: '#013AAA', // hover usado en el codigo
+        },
         // Colores legacy (mantener compatibilidad)
         primary: {
           DEFAULT: '#00E5FF', // Actualizado a cyan del logo

@@ -104,12 +104,17 @@ const NeuralNetworkAnimation: React.FC<NeuralNetworkAnimationProps> = ({
     // Crear neuronas con distribución más estética
     const neurons: Neuron[] = [];
     
+    // En movil o con prefers-reduced-motion, reducir neuronas (menos carga GPU).
+    const reduceMotion = typeof window !== 'undefined' &&
+      (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches || window.innerWidth < 768);
+    const effectiveNeuronCount = reduceMotion ? Math.min(neuronCount, 24) : neuronCount;
+
     // Crear una distribución más uniforme para las neuronas
-    const gridSize = Math.sqrt(neuronCount);
+    const gridSize = Math.sqrt(effectiveNeuronCount);
     const cellWidth = width / gridSize;
     const cellHeight = height / gridSize;
-    
-    for (let i = 0; i < neuronCount; i++) {
+
+    for (let i = 0; i < effectiveNeuronCount; i++) {
       // Posición base en la cuadrícula
       const gridX = i % gridSize;
       const gridY = Math.floor(i / gridSize);

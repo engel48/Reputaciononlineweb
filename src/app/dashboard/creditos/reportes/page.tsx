@@ -6,6 +6,7 @@ import { useUser } from '@/context/UserContext';
 import { FileText, ChevronRight, Download, BarChart2, User, Calendar, CreditCard, RefreshCw, TrendingUp, Activity, Newspaper } from 'lucide-react';
 import { ReportGenerator, ReportData } from '@/lib/reportGenerator';
 import Image from 'next/image';
+import { toast } from 'sonner';
 
 export default function ReportesCreditosPage() {
   const { user } = useUser();
@@ -113,10 +114,11 @@ export default function ReportesCreditosPage() {
       
       // Generar y descargar usando el servicio real
       await ReportGenerator.generateAndDownload(reportData);
-      
+      toast.success('Reporte generado', { description: 'La descarga comenzará en un momento.' });
+
     } catch (error) {
       console.error('Error generando reporte:', error);
-      alert('Error al generar el reporte. Por favor, inténtalo de nuevo.');
+      toast.error('No se pudo generar el reporte', { description: 'Por favor, inténtalo de nuevo.' });
     } finally {
       setIsGenerating(false);
       setSelectedReport(null);
