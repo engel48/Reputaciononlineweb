@@ -6,6 +6,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { scrapeSiteWithRateLimit } from './scraper';
 import type { ScrapingResult } from './scraper';
+import { getSiteById } from './sites-config';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!; // Service role para operaciones de sistema
@@ -50,6 +51,18 @@ async function processSite(job: MonitoredSiteJob): Promise<void> {
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   console.log(`[QUEUE] Processing site: ${job.siteId} for user: ${job.userId}`);
+
+  // Saltar sitios sin config o inactivos (ej: feed roto/bloqueado): NO crear un
+  // job fallido. Solo se marca last_checked_at para no re-seleccionarlo de inmediato.
+  const siteConfig = getSiteById(job.siteId);
+  if (!siteConfig || !siteConfig.isActive) {
+    console.warn(`[QUEUE] Skipping ${job.siteId}: sitio inexistente o inactivo en config`);
+    await supabase
+      .from('monitored_news_sites')
+      .update({ last_checked_at: new Date().toISOString() })
+      .eq('id', job.id);
+    return;
+  }
 
   // Si no hay términos de búsqueda, obtener el nombre del usuario
   let searchTerms = job.searchTerms || [];

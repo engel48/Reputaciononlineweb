@@ -48,7 +48,7 @@ export const NEWS_SITES_CONFIG: NewsSiteConfig[] = [
     category: 'nacional',
     scrapingMethod: 'rss',
     rssUrl: 'https://www.elespectador.com/arc/outboundfeeds/rss/',
-    isActive: true,
+    isActive: false, // feed roto (404/err) verificado
     maxRequestsPerHour: 12,
   },
   {
@@ -79,7 +79,7 @@ export const NEWS_SITES_CONFIG: NewsSiteConfig[] = [
     category: 'nacional',
     scrapingMethod: 'rss',
     rssUrl: 'https://caracol.com.co/rss/radio/portada.xml',
-    isActive: true,
+    isActive: false, // feed roto (404/err) verificado
     maxRequestsPerHour: 12,
   },
   {
@@ -99,7 +99,7 @@ export const NEWS_SITES_CONFIG: NewsSiteConfig[] = [
     category: 'nacional',
     scrapingMethod: 'rss',
     rssUrl: 'https://www.wradio.com.co/arc/outboundfeeds/rss/',
-    isActive: true,
+    isActive: false, // feed roto (404/err) verificado
     maxRequestsPerHour: 12,
   },
   {
@@ -129,7 +129,7 @@ export const NEWS_SITES_CONFIG: NewsSiteConfig[] = [
     category: 'nacional',
     scrapingMethod: 'rss',
     rssUrl: 'https://www.noticiasrcn.com/rss',
-    isActive: true,
+    isActive: false, // feed roto (404/err) verificado
     maxRequestsPerHour: 12,
   },
 
@@ -141,7 +141,7 @@ export const NEWS_SITES_CONFIG: NewsSiteConfig[] = [
     category: 'regional',
     scrapingMethod: 'rss',
     rssUrl: 'https://www.elcolombiano.com/rss',
-    isActive: true,
+    isActive: false, // feed roto (404/err) verificado
     maxRequestsPerHour: 12,
   },
   {
@@ -161,7 +161,7 @@ export const NEWS_SITES_CONFIG: NewsSiteConfig[] = [
     category: 'regional',
     scrapingMethod: 'rss',
     rssUrl: 'https://www.eluniversal.com.co/rss',
-    isActive: true,
+    isActive: false, // feed roto (404/err) verificado
     maxRequestsPerHour: 12,
   },
   {
@@ -171,7 +171,7 @@ export const NEWS_SITES_CONFIG: NewsSiteConfig[] = [
     category: 'regional',
     scrapingMethod: 'rss',
     rssUrl: 'https://www.vanguardia.com/rss',
-    isActive: true,
+    isActive: false, // feed roto (404/err) verificado
     maxRequestsPerHour: 12,
   },
   {
@@ -181,7 +181,7 @@ export const NEWS_SITES_CONFIG: NewsSiteConfig[] = [
     category: 'regional',
     scrapingMethod: 'rss',
     rssUrl: 'https://www.elpais.com.co/rss',
-    isActive: true,
+    isActive: false, // feed roto (404/err) verificado
     maxRequestsPerHour: 12,
   },
   {
@@ -191,7 +191,7 @@ export const NEWS_SITES_CONFIG: NewsSiteConfig[] = [
     category: 'regional',
     scrapingMethod: 'rss',
     rssUrl: 'https://www.lapatria.com/rss',
-    isActive: true,
+    isActive: false, // feed roto (404/err) verificado
     maxRequestsPerHour: 10,
   },
   {
@@ -211,7 +211,7 @@ export const NEWS_SITES_CONFIG: NewsSiteConfig[] = [
     category: 'regional',
     scrapingMethod: 'rss',
     rssUrl: 'https://www.elnuevosiglo.com.co/rss',
-    isActive: true,
+    isActive: false, // feed roto (404/err) verificado
     maxRequestsPerHour: 10,
   },
   {
@@ -221,7 +221,7 @@ export const NEWS_SITES_CONFIG: NewsSiteConfig[] = [
     category: 'regional',
     scrapingMethod: 'rss',
     rssUrl: 'https://www.laopinion.com.co/rss',
-    isActive: true,
+    isActive: false, // feed roto (404/err) verificado
     maxRequestsPerHour: 10,
   },
   {
@@ -231,7 +231,7 @@ export const NEWS_SITES_CONFIG: NewsSiteConfig[] = [
     category: 'regional',
     scrapingMethod: 'sitemap',
     sitemapUrl: 'https://www.elinformador.com.co/sitemap.xml',
-    isActive: true,
+    isActive: false, // feed roto (404/err) verificado
     maxRequestsPerHour: 8,
   },
   {
@@ -251,7 +251,7 @@ export const NEWS_SITES_CONFIG: NewsSiteConfig[] = [
     category: 'regional',
     scrapingMethod: 'sitemap',
     sitemapUrl: 'https://www.elmeridianodecordoba.com.co/sitemap.xml',
-    isActive: true,
+    isActive: false, // feed roto (404/err) verificado
     maxRequestsPerHour: 8,
   },
 
@@ -283,7 +283,7 @@ export const NEWS_SITES_CONFIG: NewsSiteConfig[] = [
     category: 'politico',
     scrapingMethod: 'rss',
     rssUrl: 'https://www.lasillavacia.com/rss.xml',
-    isActive: true,
+    isActive: false, // Desactivado: rss.xml 404 + bloqueo anti-bots (429/408). Sin feed accesible.
     maxRequestsPerHour: 12,
   },
   {
@@ -343,7 +343,7 @@ export const NEWS_SITES_CONFIG: NewsSiteConfig[] = [
     category: 'politico',
     scrapingMethod: 'rss',
     rssUrl: 'https://colombiacheck.com/feed',
-    isActive: true,
+    isActive: false, // feed roto (404/err) verificado
     maxRequestsPerHour: 8,
   },
   {
@@ -353,7 +353,7 @@ export const NEWS_SITES_CONFIG: NewsSiteConfig[] = [
     category: 'digital',
     scrapingMethod: 'rss',
     rssUrl: 'https://pacifista.tv/feed/',
-    isActive: true,
+    isActive: false, // feed roto (404/err) verificado
     maxRequestsPerHour: 10,
   },
 
@@ -385,7 +385,7 @@ export const NEWS_SITES_CONFIG: NewsSiteConfig[] = [
     category: 'economico',
     scrapingMethod: 'rss',
     rssUrl: 'https://www.dinero.com/rss',
-    isActive: true,
+    isActive: false, // feed roto (404/err) verificado
     maxRequestsPerHour: 12,
   },
   {
@@ -405,7 +405,7 @@ export const NEWS_SITES_CONFIG: NewsSiteConfig[] = [
     category: 'economico',
     scrapingMethod: 'rss',
     rssUrl: 'https://www.bloomberglinea.com/feed/colombia',
-    isActive: true,
+    isActive: false, // feed roto (404/err) verificado
     maxRequestsPerHour: 10,
   },
   {
@@ -425,7 +425,7 @@ export const NEWS_SITES_CONFIG: NewsSiteConfig[] = [
     category: 'economico',
     scrapingMethod: 'sitemap',
     sitemapUrl: 'https://www.empresario.com.co/sitemap.xml',
-    isActive: true,
+    isActive: false, // feed roto (404/err) verificado
     maxRequestsPerHour: 8,
   },
   {
@@ -435,7 +435,7 @@ export const NEWS_SITES_CONFIG: NewsSiteConfig[] = [
     category: 'economico',
     scrapingMethod: 'rss',
     rssUrl: 'https://www.finanzaspersonales.co/rss',
-    isActive: true,
+    isActive: false, // feed roto (404/err) verificado
     maxRequestsPerHour: 8,
   },
 
@@ -457,7 +457,7 @@ export const NEWS_SITES_CONFIG: NewsSiteConfig[] = [
     category: 'deportivo',
     scrapingMethod: 'rss',
     rssUrl: 'https://www.golcaracol.com/rss',
-    isActive: true,
+    isActive: false, // feed roto (404/err) verificado
     maxRequestsPerHour: 12,
   },
   {
@@ -477,7 +477,7 @@ export const NEWS_SITES_CONFIG: NewsSiteConfig[] = [
     category: 'deportivo',
     scrapingMethod: 'rss',
     rssUrl: 'https://www.marca.com/claro-co/rss.xml',
-    isActive: true,
+    isActive: false, // feed roto (404/err) verificado
     maxRequestsPerHour: 10,
   },
   {
@@ -499,7 +499,7 @@ export const NEWS_SITES_CONFIG: NewsSiteConfig[] = [
     category: 'digital',
     scrapingMethod: 'rss',
     rssUrl: 'https://elpalpitar.com/feed/',
-    isActive: true,
+    isActive: false, // feed roto (404/err) verificado
     maxRequestsPerHour: 8,
   },
   {
@@ -519,7 +519,7 @@ export const NEWS_SITES_CONFIG: NewsSiteConfig[] = [
     category: 'nacional',
     scrapingMethod: 'sitemap',
     sitemapUrl: 'https://www.canaluno.com.co/sitemap.xml',
-    isActive: true,
+    isActive: false, // feed roto (404/err) verificado
     maxRequestsPerHour: 10,
   },
   {
