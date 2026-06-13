@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Search, Check, User, Plus } from 'lucide-react';
+import { toast } from 'sonner';
 import type { AvailableSite, ScanFrequency } from '@/types/news-monitoring';
 import { COLOMBIAN_NEWS_SITES, SCAN_FREQUENCY_LABELS } from '@/types/news-monitoring';
 import { useUser } from '@/context/UserContext';
@@ -65,7 +66,7 @@ export default function AgregarSitioModal({
       onClose();
     } catch (error) {
       console.error('Error al agregar sitio:', error);
-      alert('Error al agregar el sitio. Por favor intenta nuevamente.');
+      toast.error('No se pudo agregar el sitio', { description: 'Por favor intenta nuevamente.' });
     } finally {
       setIsSubmitting(false);
     }

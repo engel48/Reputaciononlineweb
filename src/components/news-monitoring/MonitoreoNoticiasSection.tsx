@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 import {
   Search,
   Plus,
@@ -205,9 +206,15 @@ export default function MonitoreoNoticiasSection() {
     }
   };
 
-  const handleDeleteKeyword = async (keywordId: string) => {
-    if (!confirm('¿Eliminar esta palabra clave y todas sus menciones?')) return;
+  const handleDeleteKeyword = (keywordId: string) => {
+    // Confirmacion no bloqueante (toast con accion) en vez de confirm() nativo.
+    toast('¿Eliminar esta palabra clave y todas sus menciones?', {
+      action: { label: 'Eliminar', onClick: () => doDeleteKeyword(keywordId) },
+      cancel: { label: 'Cancelar', onClick: () => {} },
+    });
+  };
 
+  const doDeleteKeyword = async (keywordId: string) => {
     try {
       const response = await fetch(`/api/news-monitoring/keywords?id=${keywordId}`, {
         method: 'DELETE',
@@ -221,11 +228,14 @@ export default function MonitoreoNoticiasSection() {
           setSelectedKeyword(null);
         }
         await loadKeywords();
+        toast.success('Palabra clave eliminada');
       } else {
         setError(data.error);
+        toast.error(data.error || 'Error eliminando palabra clave');
       }
     } catch (error) {
       setError('Error eliminando palabra clave');
+      toast.error('Error eliminando palabra clave');
     }
   };
 

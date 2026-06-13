@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Trash2, Save, BarChart3, Clock, TrendingUp } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { toast } from 'sonner';
 import type { MonitoredSite, ScanFrequency } from '@/types/news-monitoring';
 import { SCAN_FREQUENCY_LABELS } from '@/types/news-monitoring';
 
@@ -72,7 +73,7 @@ export default function ConfigurarSitioModal({
       onClose();
     } catch (error) {
       console.error('Error al guardar configuración:', error);
-      alert('Error al guardar la configuración. Por favor intenta nuevamente.');
+      toast.error('No se pudo guardar la configuración', { description: 'Por favor intenta nuevamente.' });
     } finally {
       setIsSaving(false);
     }
