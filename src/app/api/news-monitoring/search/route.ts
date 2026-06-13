@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { searchNews } from '@/lib/services/newsSearchService';
+import { analyzeSentiment as analyzeSentimentAI } from '@/lib/news-monitoring/sentiment';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
@@ -29,19 +30,13 @@ async function getUserFromCookie(): Promise<string | null> {
   }
 }
 
-// Analiza sentimiento basico
-function analyzeSentiment(text: string): { type: 'positive' | 'negative' | 'neutral'; score: number } {
-  const lowerText = text.toLowerCase();
-  const positiveWords = ['éxito', 'exito', 'logro', 'avance', 'mejora', 'crecimiento', 'positivo', 'bueno', 'gana', 'victoria', 'beneficio', 'oportunidad', 'progreso', 'aumento'];
-  const negativeWords = ['crisis', 'problema', 'escándalo', 'escandalo', 'corrupción', 'corrupcion', 'muerte', 'violencia', 'protesta', 'caída', 'caida', 'pierde', 'derrota', 'fracaso', 'riesgo', 'peligro', 'denuncia'];
-
-  let positive = 0, negative = 0;
-  for (const w of positiveWords) if (lowerText.includes(w)) positive++;
-  for (const w of negativeWords) if (lowerText.includes(w)) negative++;
-
-  if (positive > negative) return { type: 'positive', score: Math.min(positive * 0.2, 1) };
-  if (negative > positive) return { type: 'negative', score: Math.min(negative * 0.2, 1) };
-  return { type: 'neutral', score: 0 };
+// Sentimiento con Groq REAL (vía aiService). Si Groq falla, type/score quedan
+// null (pendiente) — nunca matching de palabras.
+async function analyzeSentiment(
+  text: string
+): Promise<{ type: 'positive' | 'negative' | 'neutral' | null; score: number | null }> {
+  const ai = await analyzeSentimentAI(text);
+  return { type: ai.sentiment, score: ai.score };
 }
 
 // Limpia HTML
@@ -216,7 +211,7 @@ export async function POST(request: NextRequest) {
       let newsId = existing?.id;
 
       if (!existing) {
-        const sentiment = analyzeSentiment(`${article.title} ${article.content}`);
+        const sentiment = await analyzeSentiment(`${article.title} ${article.content}`);
 
         const { data: newNews, error } = await supabase
           .from('scraped_news')
@@ -249,7 +244,7 @@ export async function POST(request: NextRequest) {
 
       // Crear mencion si tenemos keywordId
       if (keywordId && newsId) {
-        const sentiment = analyzeSentiment(`${article.title} ${article.content}`);
+        const sentiment = await analyzeSentiment(`${article.title} ${article.content}`);
 
         const { error } = await supabase
           .from('keyword_mentions')

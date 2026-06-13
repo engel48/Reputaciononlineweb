@@ -4,7 +4,7 @@
  */
 
 import { scrapeSite } from '../src/lib/news-monitoring/scraper';
-import { analyzeSentiment, detectReputationCrisis } from '../src/lib/news-monitoring/sentiment';
+import { analyzeSentiment } from '../src/lib/news-monitoring/sentiment';
 import { NEWS_SITES_CONFIG, getSitesStats } from '../src/lib/news-monitoring/sites-config';
 
 async function testSitesConfig() {
@@ -46,16 +46,13 @@ async function testSentimentAnalysis() {
   ];
 
   for (const testCase of testCases) {
-    const result = analyzeSentiment(testCase.text, testCase.term);
+    const result = await analyzeSentiment(testCase.text, testCase.term);
 
     console.log(`Text: "${testCase.text.substring(0, 80)}..."`);
     console.log(`Term: "${testCase.term}"`);
     console.log(`Sentiment: ${result.sentiment} (score: ${result.score})`);
     console.log(`Expected: ${testCase.expectedSentiment}`);
-    console.log(`Matched keywords:`, {
-      positive: result.matchedKeywords.positive.length,
-      negative: result.matchedKeywords.negative.length,
-    });
+    console.log(`Explanation: ${result.explanation ?? '(pendiente)'}`);
 
     if (result.sentiment === testCase.expectedSentiment) {
       console.log('✓ PASS\n');
@@ -65,39 +62,6 @@ async function testSentimentAnalysis() {
   }
 
   console.log('✓ Sentiment analysis test completed\n');
-}
-
-async function testCrisisDetection() {
-  console.log('\n=== TEST: Crisis Detection ===\n');
-
-  const crisisText = `
-    El alcalde fue acusado formalmente de corrupción y fraude en el escándalo
-    de contratación ilegal. La fiscalía investiga múltiples casos de sobornos
-    y malversación de fondos públicos. La controversia política crece.
-  `;
-
-  const normalText = `
-    El alcalde presentó su plan de desarrollo para la ciudad en el concejo municipal.
-    La iniciativa incluye mejoras en transporte y educación.
-  `;
-
-  const crisisResult = detectReputationCrisis(crisisText, 'alcalde');
-  const normalResult = detectReputationCrisis(normalText, 'alcalde');
-
-  console.log('Crisis text analysis:');
-  console.log('  Is crisis:', crisisResult.isCrisis);
-  console.log('  Severity:', crisisResult.severity);
-  console.log('  Reasons:', crisisResult.reasons);
-
-  console.log('\nNormal text analysis:');
-  console.log('  Is crisis:', normalResult.isCrisis);
-  console.log('  Severity:', normalResult.severity);
-
-  if (crisisResult.isCrisis && !normalResult.isCrisis) {
-    console.log('\n✓ Crisis detection test passed\n');
-  } else {
-    console.log('\n✗ Crisis detection test failed\n');
-  }
 }
 
 async function testScraping() {
@@ -145,7 +109,6 @@ async function main() {
   try {
     await testSitesConfig();
     await testSentimentAnalysis();
-    await testCrisisDetection();
 
     // Comentar esta línea si no quieres hacer requests reales
     // await testScraping();

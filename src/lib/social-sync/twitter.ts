@@ -1,6 +1,6 @@
 import { decryptToken, isEncrypted } from '@/lib/encryption';
 import { DEFAULT_SYNC_OPTIONS, SyncOptions, SyncResult } from './types';
-import { analyzeSentimentBasic } from './sentiment';
+import { analyzeSentimentAI } from './sentiment';
 import { notifyFromMentions } from './notifications';
 
 const TWITTER_API = 'https://api.twitter.com/2';
@@ -122,7 +122,7 @@ export async function syncTwitterMentions(
       if (existing) continue;
 
       const author = authorMap.get(m.author_id);
-      const sentiment = analyzeSentimentBasic(m.text || '');
+      const sentiment = await analyzeSentimentAI(m.text || '');
       const metrics = m.public_metrics || {};
 
       const { error } = await supabase.from('mentions').insert({
@@ -145,6 +145,7 @@ export async function syncTwitterMentions(
           target_handle: username,
           sentiment: sentiment.label,
           sentiment_score: sentiment.score,
+          sentiment_explanation: sentiment.explanation,
         },
       });
       if (!error) result.external_mentions_created++;

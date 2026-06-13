@@ -1,8 +1,9 @@
 /**
  * API Endpoint: Análisis de Sentimiento en Tiempo Real
  *
- * Analiza el sentimiento de menciones usando Gemini AI con fallback a keywords
- * Actualiza la tabla mentions en Supabase si se proporciona mentionId
+ * Analiza el sentimiento de menciones SOLO con Groq (IA real). Si Groq no está
+ * disponible, NO se simula con keywords: se responde 503 y la mención queda
+ * pendiente para reanalizar (vía /api/mentions/analyze-batch).
  *
  * @route POST /api/mentions/analyze-sentiment
  */
@@ -15,70 +16,8 @@ import { aiService } from '@/lib/ai-service';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
-// Rate limiting simple en memoria (60 requests/min para Gemini)
+// Rate limiting simple en memoria (60 requests/min para Groq)
 const rateLimiter = new Map<string, { count: number; resetAt: number }>();
-
-// Fallback: Análisis de sentimiento basado en keywords
-function keywordBasedSentiment(text: string): {
-  sentiment: 'positive' | 'negative' | 'neutral';
-  score: number;
-  explanation: string;
-} {
-  const positiveKeywords = [
-    'excelente', 'bueno', 'genial', 'increíble', 'fantástico', 'maravilloso',
-    'éxito', 'logro', 'feliz', 'alegre', 'positivo', 'amor', 'felicidades',
-    'gracias', 'apoyo', 'admiro', 'respeto', 'calidad', 'mejor', 'orgullo'
-  ];
-
-  const negativeKeywords = [
-    'malo', 'pésimo', 'terrible', 'horrible', 'desastre', 'fracaso',
-    'triste', 'enojo', 'odio', 'corrupto', 'ladrón', 'mentiroso',
-    'problema', 'crisis', 'escándalo', 'crítica', 'denuncia', 'peor',
-    'incompetente', 'vergüenza', 'decepción', 'indignante'
-  ];
-
-  const lowerText = text.toLowerCase();
-
-  let positiveCount = 0;
-  let negativeCount = 0;
-
-  positiveKeywords.forEach(keyword => {
-    const matches = lowerText.split(keyword).length - 1;
-    positiveCount += matches;
-  });
-
-  negativeKeywords.forEach(keyword => {
-    const matches = lowerText.split(keyword).length - 1;
-    negativeCount += matches;
-  });
-
-  const totalMatches = positiveCount + negativeCount;
-
-  if (totalMatches === 0) {
-    return {
-      sentiment: 'neutral',
-      score: 0,
-      explanation: 'No se detectaron palabras clave de sentimiento'
-    };
-  }
-
-  const score = (positiveCount - negativeCount) / totalMatches;
-
-  let sentiment: 'positive' | 'negative' | 'neutral';
-  if (score > 0.2) {
-    sentiment = 'positive';
-  } else if (score < -0.2) {
-    sentiment = 'negative';
-  } else {
-    sentiment = 'neutral';
-  }
-
-  return {
-    sentiment,
-    score: Math.max(-1, Math.min(1, score)), // Normalizar a -1 a +1
-    explanation: `Análisis basado en keywords: ${positiveCount} positivas, ${negativeCount} negativas`
-  };
-}
 
 // Verificar rate limit
 function checkRateLimit(identifier: string): boolean {
@@ -130,19 +69,22 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    console.log('🤖 Iniciando análisis de sentimiento para:', content.substring(0, 100) + '...');
+    console.log('🤖 Iniciando análisis de sentimiento (Groq) para:', content.substring(0, 100) + '...');
 
+    // SOLO Groq. Si falla, NO se simula: queda pendiente (503).
     let sentimentResult;
-    let usedFallback = false;
-
-    // Intentar con Gemini AI primero
     try {
       sentimentResult = await aiService.analyzeSentiment(content);
-      console.log('✅ Análisis completado con Gemini AI:', sentimentResult);
-    } catch (error) {
-      console.warn('⚠️ Gemini AI falló, usando análisis de keywords como fallback:', error);
-      sentimentResult = keywordBasedSentiment(content);
-      usedFallback = true;
+    } catch (error: any) {
+      console.warn('⚠️ Groq no disponible; la mención queda pendiente:', error?.message);
+      return NextResponse.json(
+        {
+          success: false,
+          pending: true,
+          error: 'Groq no disponible en este momento. La mención quedará pendiente y se reanalizará.',
+        },
+        { status: 503 }
+      );
     }
 
     // Normalizar score a -1 a +1 para consistencia
@@ -174,7 +116,7 @@ export async function POST(req: NextRequest) {
             sentiment_score: normalizedScore,
             sentiment_explanation: sentimentResult.explanation,
             sentiment_analyzed_at: new Date().toISOString(),
-            sentiment_method: usedFallback ? 'keywords' : 'gemini_ai'
+            sentiment_method: 'groq'
           };
 
           const { error: updateError } = await supabase
@@ -194,10 +136,10 @@ export async function POST(req: NextRequest) {
                 mention_id: mentionId,
                 user_id: mention.metadata?.user_id || null,
                 sentiment_score: normalizedScore * 100, // -100 a +100 para esta tabla
-                confidence: usedFallback ? 60 : 85,
+                confidence: 85,
                 analyzed_at: new Date().toISOString(),
                 analysis_metadata: {
-                  method: usedFallback ? 'keywords' : 'gemini_ai',
+                  method: 'groq',
                   sentiment: sentimentResult.sentiment,
                   explanation: sentimentResult.explanation
                 }
@@ -221,7 +163,7 @@ export async function POST(req: NextRequest) {
         score: normalizedScore,
         explanation: sentimentResult.explanation,
         updated,
-        method: usedFallback ? 'keywords' : 'gemini_ai'
+        method: 'groq'
       }
     });
 

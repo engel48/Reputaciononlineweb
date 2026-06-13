@@ -1,6 +1,6 @@
 import { decryptToken, isEncrypted } from '@/lib/encryption';
 import { DEFAULT_SYNC_OPTIONS, SyncOptions, SyncResult } from './types';
-import { analyzeSentimentBasic } from './sentiment';
+import { analyzeSentimentAI } from './sentiment';
 import { notifyFromMentions } from './notifications';
 
 const GRAPH_API = 'https://graph.facebook.com/v18.0';
@@ -105,7 +105,7 @@ export async function syncInstagramMentions(
           .maybeSingle();
         if (existing) continue;
 
-        const sentiment = analyzeSentimentBasic(c.text || '');
+        const sentiment = await analyzeSentimentAI(c.text || '');
         const { error } = await supabase.from('mentions').insert({
           user_id: userId,
           platform: 'instagram',
@@ -125,6 +125,7 @@ export async function syncInstagramMentions(
             media_url: post.media_url,
             sentiment: sentiment.label,
             sentiment_score: sentiment.score,
+            sentiment_explanation: sentiment.explanation,
           },
         });
         if (!error) result.mentions_created++;
@@ -152,7 +153,7 @@ export async function syncInstagramMentions(
             .maybeSingle();
           if (existing) continue;
 
-          const sentiment = analyzeSentimentBasic(t.caption || '');
+          const sentiment = await analyzeSentimentAI(t.caption || '');
           const { error } = await supabase.from('mentions').insert({
             user_id: userId,
             platform: 'instagram',
@@ -169,6 +170,7 @@ export async function syncInstagramMentions(
               media_type: t.media_type,
               sentiment: sentiment.label,
               sentiment_score: sentiment.score,
+              sentiment_explanation: sentiment.explanation,
             },
           });
           if (!error) result.external_mentions_created++;

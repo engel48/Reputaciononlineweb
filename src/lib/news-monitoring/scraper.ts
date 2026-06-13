@@ -21,8 +21,9 @@ export interface MentionMatch {
   matchedTerms: string[];
   context: string;
   sentiment: {
-    type: 'positive' | 'negative' | 'neutral';
-    score: number;
+    // null = pendiente (Groq no disponible al momento del scraping)
+    type: 'positive' | 'negative' | 'neutral' | null;
+    score: number | null;
     confidence: number;
   };
 }
@@ -173,7 +174,7 @@ async function scrapeRSS(
       if (searchTerms.length === 0) {
         // Analizar sentimiento del artículo completo
         const context = article.content.substring(0, 300);
-        const sentimentAnalysis = analyzeSentiment(context, article.title);
+        const sentimentAnalysis = await analyzeSentiment(context, article.title);
 
         result.mentions.push({
           article,
@@ -194,7 +195,7 @@ async function scrapeRSS(
         if (matches) {
           // Analizar sentimiento
           const context = extractContext(article.content, matchedTerms[0], 300);
-          const sentimentAnalysis = analyzeSentiment(context, matchedTerms[0]);
+          const sentimentAnalysis = await analyzeSentiment(context, matchedTerms[0]);
 
           result.mentions.push({
             article,

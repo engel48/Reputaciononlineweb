@@ -17,69 +17,7 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 // Límites de procesamiento en batch
 const MAX_BATCH_SIZE = 50; // Máximo 50 menciones por request
-const RATE_LIMIT_DELAY = 1000; // 1 segundo entre requests a Gemini (60/min)
-
-// Fallback: Análisis de sentimiento basado en keywords
-function keywordBasedSentiment(text: string): {
-  sentiment: 'positive' | 'negative' | 'neutral';
-  score: number;
-  explanation: string;
-} {
-  const positiveKeywords = [
-    'excelente', 'bueno', 'genial', 'increíble', 'fantástico', 'maravilloso',
-    'éxito', 'logro', 'feliz', 'alegre', 'positivo', 'amor', 'felicidades',
-    'gracias', 'apoyo', 'admiro', 'respeto', 'calidad', 'mejor', 'orgullo'
-  ];
-
-  const negativeKeywords = [
-    'malo', 'pésimo', 'terrible', 'horrible', 'desastre', 'fracaso',
-    'triste', 'enojo', 'odio', 'corrupto', 'ladrón', 'mentiroso',
-    'problema', 'crisis', 'escándalo', 'crítica', 'denuncia', 'peor',
-    'incompetente', 'vergüenza', 'decepción', 'indignante'
-  ];
-
-  const lowerText = text.toLowerCase();
-
-  let positiveCount = 0;
-  let negativeCount = 0;
-
-  positiveKeywords.forEach(keyword => {
-    const matches = lowerText.split(keyword).length - 1;
-    positiveCount += matches;
-  });
-
-  negativeKeywords.forEach(keyword => {
-    const matches = lowerText.split(keyword).length - 1;
-    negativeCount += matches;
-  });
-
-  const totalMatches = positiveCount + negativeCount;
-
-  if (totalMatches === 0) {
-    return {
-      sentiment: 'neutral',
-      score: 0,
-      explanation: 'No se detectaron palabras clave de sentimiento'
-    };
-  }
-
-  const score = (positiveCount - negativeCount) / totalMatches;
-
-  let sentiment: 'positive' | 'negative' | 'neutral';
-  if (score > 0.2) {
-    sentiment = 'positive';
-  } else if (score < -0.2) {
-    sentiment = 'negative';
-  } else {
-    sentiment = 'neutral';
-  }
-
-  return {
-    sentiment,
-    score: Math.max(-1, Math.min(1, score)), // Normalizar a -1 a +1
-    explanation: `Análisis basado en keywords: ${positiveCount} positivas, ${negativeCount} negativas`
-  };
-}
+const RATE_LIMIT_DELAY = 1000; // 1 segundo entre requests a Groq (60/min)
 
 // Función para esperar (rate limiting)
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -97,23 +35,9 @@ async function analyzeMention(
   error?: string;
 }> {
   try {
-    let sentimentResult;
-    let usedFallback = false;
-
-    // Intentar con Gemini AI
-    try {
-      sentimentResult = await aiService.analyzeSentiment(content);
-    } catch (error) {
-      if (retries > 0) {
-        console.warn(`⚠️ Reintentando análisis para ${mentionId}... (${retries} intentos restantes)`);
-        await delay(2000); // Esperar 2 segundos antes de reintentar
-        return analyzeMention(mentionId, content, retries - 1);
-      }
-
-      console.warn('⚠️ Gemini AI falló, usando keywords fallback');
-      sentimentResult = keywordBasedSentiment(content);
-      usedFallback = true;
-    }
+    // SOLO Groq (con reintentos). Si agota reintentos, queda PENDIENTE
+    // (success:false → no se escribe en DB, se reanaliza luego). Sin keywords.
+    const sentimentResult = await aiService.analyzeSentiment(content);
 
     // Normalizar score
     let normalizedScore = sentimentResult.score;
@@ -129,12 +53,18 @@ async function analyzeMention(
     };
 
   } catch (error: any) {
+    if (retries > 0) {
+      console.warn(`⚠️ Reintentando análisis Groq para ${mentionId}... (${retries} restantes)`);
+      await delay(2000);
+      return analyzeMention(mentionId, content, retries - 1);
+    }
+    // Groq no disponible: queda pendiente (no se simula).
     return {
       mentionId,
       sentiment: 'neutral',
       score: 0,
       success: false,
-      error: error?.message || 'Error desconocido'
+      error: error?.message || 'Groq no disponible'
     };
   }
 }
@@ -258,7 +188,7 @@ export async function POST(req: NextRequest) {
                 confidence: 80,
                 analyzed_at: new Date().toISOString(),
                 analysis_metadata: {
-                  method: 'batch_gemini_ai',
+                  method: 'batch_groq',
                   sentiment: analysisResult.sentiment,
                   batch_processing: true
                 }

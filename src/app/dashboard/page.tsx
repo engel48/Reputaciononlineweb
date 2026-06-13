@@ -102,29 +102,9 @@ export default function Dashboard() {
   const [nuevasMenciones, setNuevasMenciones] = useState(0);
   const [cargandoMenciones, setCargandoMenciones] = useState(true);
 
-  // Red neuronal simulada para análisis de sentimientos
-  const analizarSentimientoConIA = useCallback((contenido: string) => {
-    // Simulación de análisis de sentimiento con IA
-    const palabrasPositivas = ['excelente', 'genial', 'increíble', 'recomendado', 'amor', 'fantástico', '👍', '❤️', '✨'];
-    const palabrasNegativas = ['malo', 'terrible', 'pésimo', 'horrible', 'odio', 'problema', '👎', '😠'];
-    
-    const contenidoLower = contenido.toLowerCase();
-    let scorePositivo = 0;
-    let scoreNegativo = 0;
-    
-    palabrasPositivas.forEach(palabra => {
-      if (contenidoLower.includes(palabra)) scorePositivo++;
-    });
-    
-    palabrasNegativas.forEach(palabra => {
-      if (contenidoLower.includes(palabra)) scoreNegativo++;
-    });
-    
-    if (scorePositivo > scoreNegativo) return 'positive';
-    if (scoreNegativo > scorePositivo) return 'negative';
-    return 'neutral';
-  }, []);
-  
+  // ❌ ELIMINADO: análisis de sentimiento simulado por keywords.
+  //    El sentimiento real se calcula con Groq (aiService.analyzeSentiment).
+
   // ❌ ELIMINADO: Función que generaba menciones FALSAS/INVENTADAS
   // Las menciones reales ahora se cargan desde /api/mentions/recent
   /*

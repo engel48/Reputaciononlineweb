@@ -1,8 +1,7 @@
 import { decryptToken, isEncrypted } from '@/lib/encryption';
 import { youtubeOAuth } from '@/lib/oauth/youtube';
-import { aiService } from '@/lib/ai-service';
 import { DEFAULT_SYNC_OPTIONS, SyncOptions, SyncResult } from './types';
-import { analyzeSentimentBasic } from './sentiment';
+import { analyzeSentimentAI } from './sentiment';
 import { notifyFromMentions } from './notifications';
 
 /**
@@ -74,21 +73,12 @@ export async function syncYoutubeMentions(
           .maybeSingle();
         if (existing) continue;
 
-        let sentimentLabel: 'positive' | 'negative' | 'neutral' = 'neutral';
-        let sentimentScore = 0;
-        let aiExplanation = '';
-        let aiPowered = false;
-        try {
-          const ai = await aiService.analyzeSentiment(comment.snippet.textDisplay);
-          sentimentLabel = ai.sentiment;
-          sentimentScore = ai.score * 100;
-          aiExplanation = ai.explanation || '';
-          aiPowered = true;
-        } catch {
-          const basic = analyzeSentimentBasic(comment.snippet.textDisplay);
-          sentimentLabel = basic.label;
-          sentimentScore = basic.score;
-        }
+        // Sentimiento con Groq REAL; si falla queda pendiente (null), nunca simulado.
+        const ai = await analyzeSentimentAI(comment.snippet.textDisplay);
+        const sentimentLabel = ai.label;
+        const sentimentScore = ai.score;
+        const aiExplanation = ai.explanation || '';
+        const aiPowered = ai.label !== null;
 
         const { error } = await supabase.from('mentions').insert({
           user_id: userId,
@@ -142,17 +132,10 @@ export async function syncYoutubeMentions(
           if (existing) continue;
 
           const text = `${v.snippet?.title || ''} ${v.snippet?.description || ''}`.trim();
-          let sentimentLabel: 'positive' | 'negative' | 'neutral' = 'neutral';
-          let sentimentScore = 0;
-          try {
-            const ai = await aiService.analyzeSentiment(text);
-            sentimentLabel = ai.sentiment;
-            sentimentScore = ai.score * 100;
-          } catch {
-            const basic = analyzeSentimentBasic(text);
-            sentimentLabel = basic.label;
-            sentimentScore = basic.score;
-          }
+          // Sentimiento con Groq REAL; si falla queda pendiente (null), nunca simulado.
+          const ai = await analyzeSentimentAI(text);
+          const sentimentLabel = ai.label;
+          const sentimentScore = ai.score;
 
           const { error } = await supabase.from('mentions').insert({
             user_id: userId,

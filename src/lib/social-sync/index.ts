@@ -3,7 +3,7 @@ export { syncFacebookMentions } from './facebook';
 export { syncInstagramMentions } from './instagram';
 export { syncTwitterMentions } from './twitter';
 export { syncYoutubeMentions } from './youtube';
-export { analyzeSentimentBasic } from './sentiment';
+export { analyzeSentimentAI } from './sentiment';
 
 import type { SocialPlatform, SyncOptions, SyncResult } from './types';
 import { syncFacebookMentions } from './facebook';

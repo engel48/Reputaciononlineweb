@@ -1,39 +1,29 @@
-const POSITIVE_WORDS = [
-  'excelente', 'genial', 'increíble', 'amor', 'feliz', 'gracias', 'bueno',
-  'mejor', 'perfecto', 'brillante', 'espectacular', 'fantástico', 'útil',
-  'great', 'awesome', 'amazing', 'love', 'wonderful', 'perfect', 'nice',
-  '❤️', '👍', '😊', '🔥', '✨',
-];
+import { aiService } from '@/lib/ai-service';
 
-const NEGATIVE_WORDS = [
-  'malo', 'terrible', 'horrible', 'odio', 'pésimo', 'peor', 'nunca',
-  'decepción', 'aburrido', 'basura',
-  'hate', 'worst', 'awful', 'stupid', 'boring', 'trash', 'garbage',
-  '👎', '😠', '😡',
-];
-
-export interface BasicSentiment {
-  label: 'positive' | 'negative' | 'neutral';
-  score: number;
+export interface AISentiment {
+  /** null = pendiente (Groq no pudo analizar; se reanaliza luego, NO se simula). */
+  label: 'positive' | 'negative' | 'neutral' | null;
+  /** -100..100, null si pendiente. */
+  score: number | null;
+  explanation: string | null;
 }
 
-export function analyzeSentimentBasic(text: string): BasicSentiment {
-  const lower = (text || '').toLowerCase();
-  let positive = 0;
-  let negative = 0;
-
-  for (const word of POSITIVE_WORDS) {
-    if (lower.includes(word)) positive++;
+/**
+ * Análisis de sentimiento con Groq REAL (vía aiService.analyzeSentiment).
+ *
+ * Política "solo Groq, nada simulado": si Groq falla (rate-limit, caída, etc.)
+ * devuelve label/score null para que la mención quede PENDIENTE y se reanalice
+ * con /api/mentions/analyze-batch. Nunca se inventan valores por keywords.
+ */
+export async function analyzeSentimentAI(text: string): Promise<AISentiment> {
+  try {
+    const ai = await aiService.analyzeSentiment(text || '');
+    return {
+      label: ai.sentiment,
+      score: Math.round(ai.score * 100),
+      explanation: ai.explanation || null,
+    };
+  } catch {
+    return { label: null, score: null, explanation: null };
   }
-  for (const word of NEGATIVE_WORDS) {
-    if (lower.includes(word)) negative++;
-  }
-
-  if (positive > negative) {
-    return { label: 'positive', score: Math.min(positive * 25, 100) };
-  }
-  if (negative > positive) {
-    return { label: 'negative', score: -Math.min(negative * 25, 100) };
-  }
-  return { label: 'neutral', score: 0 };
 }

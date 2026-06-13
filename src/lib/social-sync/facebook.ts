@@ -1,6 +1,6 @@
 import { decryptToken, isEncrypted } from '@/lib/encryption';
 import { DEFAULT_SYNC_OPTIONS, SyncOptions, SyncResult } from './types';
-import { analyzeSentimentBasic } from './sentiment';
+import { analyzeSentimentAI } from './sentiment';
 import { notifyFromMentions } from './notifications';
 
 const GRAPH_API = 'https://graph.facebook.com/v18.0';
@@ -85,7 +85,7 @@ export async function syncFacebookMentions(
           .maybeSingle();
         if (existing) continue;
 
-        const sentiment = analyzeSentimentBasic(c.message || '');
+        const sentiment = await analyzeSentimentAI(c.message || '');
         const { error } = await supabase.from('mentions').insert({
           user_id: userId,
           platform: 'facebook',
@@ -104,6 +104,7 @@ export async function syncFacebookMentions(
             post_url: post.permalink_url || null,
             sentiment: sentiment.label,
             sentiment_score: sentiment.score,
+            sentiment_explanation: sentiment.explanation,
           },
         });
         if (!error) result.mentions_created++;
@@ -131,7 +132,7 @@ export async function syncFacebookMentions(
             .maybeSingle();
           if (existing) continue;
 
-          const sentiment = analyzeSentimentBasic(t.message || '');
+          const sentiment = await analyzeSentimentAI(t.message || '');
           const { error } = await supabase.from('mentions').insert({
             user_id: userId,
             platform: 'facebook',
@@ -147,6 +148,7 @@ export async function syncFacebookMentions(
               source_type: 'external_tagged_post',
               sentiment: sentiment.label,
               sentiment_score: sentiment.score,
+              sentiment_explanation: sentiment.explanation,
             },
           });
           if (!error) result.external_mentions_created++;
