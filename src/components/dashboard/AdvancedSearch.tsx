@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Filter, TrendingUp, TrendingDown, Users, Building, Crown, MapPin, Clock, BarChart3, MessageCircle, ThumbsUp, ThumbsDown, Minus, Sparkles, Brain, RefreshCw, Calendar, Download, Shield, ShieldCheck, ShieldAlert, Coins } from 'lucide-react';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { toast } from 'sonner';
 
 interface SearchResult {
   id: string;
@@ -170,7 +171,7 @@ export default function AdvancedSearch() {
         // Verificar si el motor de búsqueda está habilitado
         if (!data.searchEngineEnabled) {
           console.log('🚫 BÚSQUEDA BLOQUEADA - Motor deshabilitado');
-          alert(data.maintenanceMessage || 'El motor de búsqueda está temporalmente deshabilitado.');
+          toast.warning(data.maintenanceMessage || 'El motor de búsqueda está temporalmente deshabilitado.');
           return;
         }
       }
@@ -226,7 +227,7 @@ export default function AdvancedSearch() {
         // Verificar si el motor de búsqueda está habilitado
         if (!data.searchEngineEnabled) {
           console.log('🚫 ANÁLISIS BLOQUEADO - Motor deshabilitado');
-          alert(data.maintenanceMessage || 'El motor de búsqueda está temporalmente deshabilitado.');
+          toast.warning(data.maintenanceMessage || 'El motor de búsqueda está temporalmente deshabilitado.');
           return;
         }
       }

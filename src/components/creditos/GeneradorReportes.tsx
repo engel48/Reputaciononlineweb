@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { FileText, Download, Calendar, Filter, BarChart3, ChevronDown, RefreshCw, Target, TrendingUp, Activity } from 'lucide-react';
 import { ReportGenerator, ReportData } from '@/lib/reportGenerator';
 import { useUser } from '@/context/UserContext';
+import { toast } from 'sonner';
 
 type FormatoReporte = 'pdf' | 'excel' | 'csv';
 type PeriodoReporte = 'semana' | 'mes' | 'trimestre' | 'personalizado';
@@ -132,7 +133,7 @@ export default function GeneradorReportes() {
       
     } catch (error) {
       console.error('Error generando reporte:', error);
-      alert('Error al generar el reporte. Por favor, inténtalo de nuevo.');
+      toast.error('No se pudo generar el reporte', { description: 'Por favor, inténtalo de nuevo.' });
     } finally {
       setIsGenerating(false);
     }

@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Search, User, Crown, Building, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AnalysisModal from './AnalysisModal';
+import { toast } from 'sonner';
 
 interface SearchResult {
   id: string;
@@ -88,7 +89,7 @@ export default function HeaderSearch() {
         
         // Verificar si el motor de búsqueda está habilitado
         if (!data.searchEngineEnabled) {
-          alert(data.maintenanceMessage || 'El motor de búsqueda está temporalmente deshabilitado.');
+          toast.warning(data.maintenanceMessage || 'El motor de búsqueda está temporalmente deshabilitado.');
           setResults([]);
           setIsOpen(false);
           setPreparing(false);
@@ -183,7 +184,7 @@ export default function HeaderSearch() {
         
         // Verificar si el motor de búsqueda está habilitado
         if (!data.searchEngineEnabled) {
-          alert(data.maintenanceMessage || 'El motor de búsqueda está temporalmente deshabilitado.');
+          toast.warning(data.maintenanceMessage || 'El motor de búsqueda está temporalmente deshabilitado.');
           throw new Error('Motor de búsqueda deshabilitado');
         }
       }

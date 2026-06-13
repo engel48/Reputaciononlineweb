@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '@/context/UserContext';
 import { usePlan } from '@/context/PlanContext';
 import { ArrowLeft, Check, CreditCard, Shield, Clock, Award, Smartphone, Building2, Banknote } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface PlanInfo {
   id: string;
@@ -150,7 +151,7 @@ export default function PagoPage() {
       const result = await response.json();
 
       if (!result.success) {
-        alert(result.error || 'Error creando sesion de pago');
+        toast.error(result.error || 'Error creando sesion de pago');
         return;
       }
 
@@ -182,7 +183,7 @@ export default function PagoPage() {
       window.location.href = result.data.wompiCheckoutUrl;
 
     } catch (error) {
-      alert('Error procesando el pago. Intenta nuevamente.');
+      toast.error('Error procesando el pago', { description: 'Intenta nuevamente.' });
     } finally {
       setProcessing(false);
     }
