@@ -3,6 +3,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { callGroq, parseGroqJson } from '../_shared/groq.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -87,88 +88,24 @@ serve(async (req) => {
 // FUNCIONES HELPER
 // ================================================
 
+// Análisis SOLO con Groq (IA real). Si falla, lanza (no se simula con keywords).
 async function analyzeSentiment(text: string): Promise<SentimentResult> {
-  const openaiKey = Deno.env.get('OPENAI_API_KEY')
-  const deepseekKey = Deno.env.get('DEEPSEEK_API_KEY')
-
-  if (!openaiKey && !deepseekKey) {
-    return keywordBasedSentiment(text)
+  const content = await callGroq(
+    [
+      {
+        role: 'system',
+        content: 'Eres un experto en análisis de sentimientos en español colombiano (detectas ironía, sarcasmo y emojis). Devuelve SOLO un JSON válido: {"sentiment": "positive|negative|neutral", "score": 0.0-1.0, "explanation": "breve explicación"} donde 0.0=muy negativo, 0.5=neutral, 1.0=muy positivo.'
+      },
+      { role: 'user', content: `Analiza el sentimiento de este texto: "${text}"` }
+    ],
+    { temperature: 0.3, maxTokens: 300, jsonMode: true }
+  )
+  const parsed = parseGroqJson(content)
+  return {
+    sentiment: ['positive', 'negative', 'neutral'].includes(parsed.sentiment) ? parsed.sentiment : 'neutral',
+    score: typeof parsed.score === 'number' ? Math.max(0, Math.min(1, parsed.score)) : 0.5,
+    explanation: parsed.explanation || '',
   }
-
-  try {
-    // Intentar con OpenAI
-    if (openaiKey) {
-      const messages = [
-        {
-          role: 'system',
-          content: 'Eres un experto en análisis de sentimientos. Analiza el texto y devuelve SOLO un JSON válido con el formato: {"sentiment": "positive|negative|neutral", "score": 0.0-1.0, "explanation": "breve explicación"}'
-        },
-        {
-          role: 'user',
-          content: `Analiza el sentimiento de este texto: "${text}"`
-        }
-      ]
-
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${openaiKey}`
-        },
-        body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
-          messages,
-          temperature: 0.3,
-          max_tokens: 200
-        })
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        const content = data.choices[0].message.content
-        return JSON.parse(content)
-      }
-    }
-
-    // Fallback a DeepSeek
-    if (deepseekKey) {
-      const messages = [
-        {
-          role: 'system',
-          content: 'Analiza sentimientos y devuelve JSON con formato: {"sentiment": "positive|negative|neutral", "score": 0.0-1.0, "explanation": "texto"}'
-        },
-        {
-          role: 'user',
-          content: `Analiza: "${text}"`
-        }
-      ]
-
-      const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${deepseekKey}`
-        },
-        body: JSON.stringify({
-          model: 'deepseek-chat',
-          messages,
-          temperature: 0.3
-        })
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        const content = data.choices[0].message.content
-        return JSON.parse(content)
-      }
-    }
-
-  } catch (error) {
-    console.error('IA sentiment analysis failed, using keyword-based:', error)
-  }
-
-  // Fallback a análisis basado en keywords
-  return keywordBasedSentiment(text)
 }
 
 async function analyzeSentimentBatch(texts: string[]): Promise<SentimentResult[]> {
@@ -177,55 +114,6 @@ async function analyzeSentimentBatch(texts: string[]): Promise<SentimentResult[]
     texts.map(text => analyzeSentiment(text))
   )
   return results
-}
-
-function keywordBasedSentiment(text: string): SentimentResult {
-  const lowerText = text.toLowerCase()
-
-  const positiveWords = [
-    'excelente', 'bueno', 'genial', 'increíble', 'fantástico',
-    'maravilloso', 'perfecto', 'mejor', 'éxito', 'feliz',
-    'alegre', 'positivo', 'favorable', 'bien', 'gran'
-  ]
-
-  const negativeWords = [
-    'malo', 'terrible', 'horrible', 'pésimo', 'desastre',
-    'fracaso', 'problema', 'error', 'negativo', 'triste',
-    'mal', 'peor', 'crítica', 'queja', 'deficiente'
-  ]
-
-  let positiveCount = 0
-  let negativeCount = 0
-
-  positiveWords.forEach(word => {
-    if (lowerText.includes(word)) positiveCount++
-  })
-
-  negativeWords.forEach(word => {
-    if (lowerText.includes(word)) negativeCount++
-  })
-
-  if (positiveCount > negativeCount) {
-    return {
-      sentiment: 'positive',
-      score: Math.min(0.5 + (positiveCount * 0.1), 0.95),
-      explanation: 'Análisis basado en palabras clave positivas detectadas'
-    }
-  }
-
-  if (negativeCount > positiveCount) {
-    return {
-      sentiment: 'negative',
-      score: Math.max(0.5 - (negativeCount * 0.1), 0.05),
-      explanation: 'Análisis basado en palabras clave negativas detectadas'
-    }
-  }
-
-  return {
-    sentiment: 'neutral',
-    score: 0.5,
-    explanation: 'No se detectaron indicadores claros de sentimiento'
-  }
 }
 
 /* Uso desde el cliente:

@@ -4,6 +4,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { callGroqStream, GroqMessage } from '../_shared/groq.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -56,15 +57,12 @@ serve(async (req) => {
       throw new Error('Message is required')
     }
 
-    // Determinar qué API usar (OpenAI o DeepSeek)
-    const openaiKey = Deno.env.get('OPENAI_API_KEY')
-    const deepseekKey = Deno.env.get('DEEPSEEK_API_KEY')
-
-    if (!openaiKey && !deepseekKey) {
-      throw new Error('No AI API keys configured')
+    // SOLO Groq (IA real, con streaming)
+    const groqKey = Deno.env.get('GROQ_API_KEY')
+    if (!groqKey) {
+      throw new Error('GROQ_API_KEY no configurada')
     }
 
-    // Preparar mensajes para la AI
     const systemPrompt = `Eres Julia, una asistente de IA especializada en análisis de reputación online y monitoreo de redes sociales.
 
 Eres amigable, profesional y experta en:
@@ -76,81 +74,27 @@ Eres amigable, profesional y experta en:
 
 ${context ? `\nContexto adicional: ${context}` : ''}`
 
-    const messages = [
+    const messages: GroqMessage[] = [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: message }
     ]
 
-    // Intentar con OpenAI primero (con streaming)
-    if (openaiKey) {
-      console.log('🤖 Usando OpenAI para respuesta...')
+    console.log('🤖 Usando Groq para respuesta...')
+    const response = await callGroqStream(messages, { apiKey: groqKey, temperature: 0.8, maxTokens: 2000 })
 
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${openaiKey}`
-        },
-        body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
-          messages,
-          temperature: 0.8,
-          max_tokens: 2000,
-          stream: true // Habilitar streaming
-        })
-      })
-
-      if (!response.ok) {
-        console.error('OpenAI error:', await response.text())
-        throw new Error('OpenAI API error')
-      }
-
-      // Retornar stream de respuestas
-      return new Response(response.body, {
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'text/event-stream',
-          'Cache-Control': 'no-cache',
-          'Connection': 'keep-alive',
-        }
-      })
+    if (!response.ok) {
+      console.error('Groq error:', await response.text())
+      throw new Error('Groq API error')
     }
 
-    // Fallback a DeepSeek (con streaming)
-    if (deepseekKey) {
-      console.log('🤖 Usando DeepSeek para respuesta...')
-
-      const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${deepseekKey}`
-        },
-        body: JSON.stringify({
-          model: 'deepseek-chat',
-          messages,
-          temperature: 0.8,
-          max_tokens: 2000,
-          stream: true
-        })
-      })
-
-      if (!response.ok) {
-        console.error('DeepSeek error:', await response.text())
-        throw new Error('DeepSeek API error')
+    return new Response(response.body, {
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
       }
-
-      return new Response(response.body, {
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'text/event-stream',
-          'Cache-Control': 'no-cache',
-          'Connection': 'keep-alive',
-        }
-      })
-    }
-
-    throw new Error('No AI service available')
+    })
 
   } catch (error) {
     console.error('❌ Error en Julia Chat:', error)

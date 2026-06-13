@@ -1,15 +1,11 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from 'jsr:@supabase/supabase-js@2';
+import { callGroq, GroqMessage } from '../_shared/groq.ts';
 
 interface ChatRequest {
   message: string;
   conversation_id?: string;
   user_id: string;
-}
-
-interface GeminiMessage {
-  role: 'user' | 'model';
-  parts: { text: string }[];
 }
 
 const AMELIA_SYSTEM_PROMPT = `Eres Amelia, una asistente de inteligencia artificial experta en reputación digital y análisis de medios en Colombia.
@@ -49,51 +45,6 @@ Ayudar a usuarios a entender y mejorar su reputación online, detectar crisis te
 
 Recuerda: Eres parte de la plataforma "Reputación Online", una herramienta colombiana líder en monitoreo reputacional.`;
 
-async function callGeminiAPI(messages: GeminiMessage[], apiKey: string): Promise<string> {
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${apiKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: messages,
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 8192,
-          topK: 40,
-          topP: 0.95,
-        },
-        safetySettings: [
-          {
-            category: 'HARM_CATEGORY_HARASSMENT',
-            threshold: 'BLOCK_MEDIUM_AND_ABOVE'
-          },
-          {
-            category: 'HARM_CATEGORY_HATE_SPEECH',
-            threshold: 'BLOCK_MEDIUM_AND_ABOVE'
-          },
-          {
-            category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
-            threshold: 'BLOCK_MEDIUM_AND_ABOVE'
-          },
-          {
-            category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
-            threshold: 'BLOCK_MEDIUM_AND_ABOVE'
-          }
-        ]
-      })
-    }
-  );
-
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Gemini API error: ${error}`);
-  }
-
-  const data = await response.json();
-  return data.candidates[0].content.parts[0].text;
-}
-
 Deno.serve(async (req: Request) => {
   try {
     if (req.method !== 'POST') {
@@ -105,10 +56,10 @@ Deno.serve(async (req: Request) => {
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const geminiApiKey = Deno.env.get('GEMINI_API_KEY');
+    const groqApiKey = Deno.env.get('GROQ_API_KEY');
 
-    if (!geminiApiKey) {
-      throw new Error('GEMINI_API_KEY not configured');
+    if (!groqApiKey) {
+      throw new Error('GROQ_API_KEY not configured');
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -175,39 +126,26 @@ Deno.serve(async (req: Request) => {
       throw historyError;
     }
 
-    // Construir mensajes para Gemini
-    const geminiMessages: GeminiMessage[] = [
-      {
-        role: 'user',
-        parts: [{ text: AMELIA_SYSTEM_PROMPT }]
-      },
-      {
-        role: 'model',
-        parts: [{ text: '¡Hola! Soy Amelia, tu asistente de reputación digital. Estoy aquí para ayudarte a monitorear y mejorar tu presencia online en Colombia. ¿En qué puedo ayudarte hoy?' }]
-      }
+    // Construir mensajes para Groq (system + historial; el historial ya incluye
+    // el mensaje actual del usuario, guardado arriba).
+    const groqMessages: GroqMessage[] = [
+      { role: 'system', content: AMELIA_SYSTEM_PROMPT },
+      ...(history || []).map((m: { role: string; content: string }) => ({
+        role: (m.role === 'assistant' ? 'assistant' : 'user') as 'assistant' | 'user',
+        content: m.content,
+      })),
     ];
 
-    // Agregar historial (excepto el último mensaje que ya está incluido)
-    for (let i = 0; i < history.length - 1; i++) {
-      const msg = history[i];
-      geminiMessages.push({
-        role: msg.role === 'user' ? 'user' : 'model',
-        parts: [{ text: msg.content }]
-      });
-    }
+    console.log(`Calling Groq with ${groqMessages.length} messages`);
 
-    // Agregar mensaje actual
-    geminiMessages.push({
-      role: 'user',
-      parts: [{ text: message }]
+    // Llamar a Groq (IA real)
+    const ameliaResponse = await callGroq(groqMessages, {
+      apiKey: groqApiKey,
+      temperature: 0.7,
+      maxTokens: 4096,
     });
 
-    console.log(`Calling Gemini with ${geminiMessages.length} messages`);
-
-    // Llamar a Gemini API
-    const ameliaResponse = await callGeminiAPI(geminiMessages, geminiApiKey);
-
-    console.log(`Gemini response received: ${ameliaResponse.slice(0, 100)}...`);
+    console.log(`Groq response received: ${ameliaResponse.slice(0, 100)}...`);
 
     // Guardar respuesta de Amelia
     const { error: ameliaMessageError } = await supabase
@@ -255,7 +193,7 @@ Deno.serve(async (req: Request) => {
   } catch (error) {
     console.error('Amelia chat error:', error);
 
-    // Respuesta de fallback si Gemini falla
+    // Mensaje de error si Groq no responde (no se simula la respuesta)
     const fallbackResponse = 'Lo siento, estoy teniendo problemas técnicos en este momento. Por favor intenta nuevamente en unos momentos. Si el problema persiste, contacta a soporte.';
 
     return new Response(JSON.stringify({

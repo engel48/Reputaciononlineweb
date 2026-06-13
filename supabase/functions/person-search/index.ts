@@ -3,6 +3,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { callGroq, parseGroqJson } from '../_shared/groq.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -37,18 +38,16 @@ serve(async (req) => {
     const { name, context } = await req.json()
     if (!name) throw new Error('name is required')
 
-    // Call AI
-    const openaiKey = Deno.env.get('OPENAI_API_KEY')
-    const deepseekKey = Deno.env.get('DEEPSEEK_API_KEY')
-
-    const messages = [
-      {
-        role: 'system',
-        content: 'Eres un experto en investigación de perfiles públicos. Proporciona información profesional en formato JSON.'
-      },
-      {
-        role: 'user',
-        content: `Busca información sobre: ${name}${context ? `. Contexto: ${context}` : ''}
+    // SOLO Groq (IA real)
+    const content = await callGroq(
+      [
+        {
+          role: 'system',
+          content: 'Eres un experto en investigación de perfiles públicos. Proporciona información profesional en formato JSON.'
+        },
+        {
+          role: 'user',
+          content: `Busca información sobre: ${name}${context ? `. Contexto: ${context}` : ''}
 
 Devuelve JSON con:
 {
@@ -57,34 +56,14 @@ Devuelve JSON con:
   "socialPresence": ["red social 1", "red social 2"],
   "reputationInsights": "análisis de reputación"
 }`
-      }
-    ]
-
-    const apiUrl = openaiKey
-      ? 'https://api.openai.com/v1/chat/completions'
-      : 'https://api.deepseek.com/v1/chat/completions'
-
-    const apiKey = openaiKey || deepseekKey
-
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: openaiKey ? 'gpt-3.5-turbo' : 'deepseek-chat',
-        messages,
-        temperature: 0.5
-      })
-    })
-
-    const data = await response.json()
-    const content = data.choices[0].message.content
+        }
+      ],
+      { temperature: 0.5, maxTokens: 1024, jsonMode: true }
+    )
 
     let result: PersonInfo
     try {
-      result = JSON.parse(content)
+      result = parseGroqJson(content)
     } catch {
       result = {
         bio: content,

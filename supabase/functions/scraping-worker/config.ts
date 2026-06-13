@@ -102,9 +102,9 @@ export const API_URLS = {
   youtube: 'https://www.googleapis.com/youtube/v3'
 }
 
-// Configuración de Gemini
-export const GEMINI_CONFIG = {
-  model: 'gemini-1.5-flash',
+// Configuración de Groq (IA real para análisis de sentimiento)
+export const GROQ_CONFIG = {
+  model: 'llama-3.3-70b-versatile',
   temperature: 0.3, // Determinístico para análisis
   max_tokens: 1024
 }

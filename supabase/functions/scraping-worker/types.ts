@@ -71,7 +71,7 @@ export interface SentimentResult {
   confidence: number // 0.0 - 1.0
   keywords: string[]
   explanation: string
-  method: 'gemini' | 'keyword'
+  method: 'groq'
 }
 
 export interface User {

@@ -23,7 +23,7 @@ import {
 // Configuración de Supabase
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-const geminiApiKey = Deno.env.get('GEMINI_API_KEY')!
+const groqApiKey = Deno.env.get('GROQ_API_KEY')!
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
@@ -154,7 +154,7 @@ async function processJob(job: ScrapingJob): Promise<JobResult> {
     }
 
     // 5. Análisis de sentimiento
-    const analyzer = new SentimentAnalyzer(geminiApiKey)
+    const analyzer = new SentimentAnalyzer(groqApiKey)
     const sentiments = await analyzer.analyzeBatch(rawItems)
     console.log(`  🎯 Analizados ${sentiments.length} sentimientos`)
 
