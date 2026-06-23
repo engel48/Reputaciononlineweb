@@ -119,16 +119,20 @@ export async function GET(request: NextRequest) {
         // 2. Buscar en news_mentions (menciones de noticias de usuarios)
         let newsMentionMatches: any[] = [];
         try {
+          // news_mentions usa full_content/mention_context/discovered_at (NO article_content/created_at).
           const nmResult = await supabase
             .from('news_mentions')
             .select('*')
             .eq('user_id', kw.user_id)
-            .or(`article_title.ilike.%${words[0]}%,article_content.ilike.%${words[0]}%`)
-            .gte('created_at', oneMonthAgo.toISOString())
+            .or(`article_title.ilike.%${words[0]}%,full_content.ilike.%${words[0]}%,mention_context.ilike.%${words[0]}%`)
+            .gte('discovered_at', oneMonthAgo.toISOString())
             .limit(50);
+          if (nmResult.error) {
+            console.error('  Error consultando news_mentions:', nmResult.error.message);
+          }
           newsMentionMatches = nmResult.data || [];
-        } catch {
-          // Tabla puede no existir o tener estructura diferente
+        } catch (e: any) {
+          console.error('  Excepción consultando news_mentions:', e?.message);
         }
 
         // Guardar menciones nuevas de scraped_news
@@ -159,13 +163,15 @@ export async function GET(request: NextRequest) {
             .from('keyword_mentions')
             .insert({
               keyword_id: kw.id,
-              article_title: nm.article_title || nm.title,
-              article_url: nm.article_url || nm.url,
-              article_content: (nm.article_content || nm.content || '').substring(0, 500),
+              article_title: nm.article_title,
+              article_url: nm.article_url,
+              article_content: (nm.full_content || nm.mention_context || '').substring(0, 500),
               source: nm.source || 'news_mention',
-              published_at: nm.published_at || nm.created_at,
-              sentiment: nm.sentiment || 'neutral',
-              sentiment_score: nm.sentiment_score || 0,
+              published_at: nm.published_date || nm.discovered_at,
+              // Sentimiento ya calculado por Groq en news_mentions (puede ser null = pendiente).
+              // No se fabrica: se copia tal cual para no introducir valores simulados.
+              sentiment: nm.sentiment ?? null,
+              sentiment_score: nm.sentiment_score ?? null,
               source_type: 'social',
             })
             .single();
