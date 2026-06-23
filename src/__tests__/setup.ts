@@ -7,6 +7,11 @@ import '@testing-library/jest-dom'
 import { afterAll, afterEach, beforeAll, vi } from 'vitest'
 import { cleanup } from '@testing-library/react'
 
+// Secretos de prueba: los módulos de auth hacen fail-fast si JWT_SECRET/NEXTAUTH_SECRET
+// no están definidos (comportamiento de seguridad en prod). En tests los proveemos aquí.
+process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-jwt-secret-not-for-production'
+process.env.NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET || 'test-nextauth-secret-not-for-production'
+
 // Limpiar después de cada test
 afterEach(() => {
   cleanup()

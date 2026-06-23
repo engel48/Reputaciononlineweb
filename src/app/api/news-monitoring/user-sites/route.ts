@@ -8,7 +8,7 @@ import * as jwt from 'jsonwebtoken';
 import { supabase } from '@/lib/supabase-server';
 import { getSiteById } from '@/lib/news-monitoring/sites-config';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'reputacion-online-secret-key-2025';
+const JWT_SECRET = process.env.JWT_SECRET || (() => { throw new Error('FATAL: JWT_SECRET no está configurado en el entorno') })();
 
 export async function GET(request: NextRequest) {
   try {

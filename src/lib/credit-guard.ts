@@ -100,7 +100,7 @@ export async function checkBalance(userId: string, requiredAmount: number): Prom
 export function extractUserIdFromToken(authToken: string): string | null {
   try {
     const jwt = require('jsonwebtoken');
-    const JWT_SECRET = process.env.JWT_SECRET || 'reputacion-online-secret-key-2025';
+    const JWT_SECRET = process.env.JWT_SECRET || (() => { throw new Error('FATAL: JWT_SECRET no está configurado en el entorno') })();
     const decoded = jwt.verify(authToken, JWT_SECRET) as { userId: string };
     return decoded.userId;
   } catch {

@@ -90,16 +90,15 @@ if (process.env.DATABASE_URL) {
   console.log('🔍 DATABASE_URL final: NO DEFINIDA (usando SQLite)');
 }
 
-// Configurar NEXTAUTH_SECRET
-if (!process.env.NEXTAUTH_SECRET) {
-  process.env.NEXTAUTH_SECRET = 'reputacion-online-super-secret-key-2025';
-  console.log('🔧 NEXTAUTH_SECRET configurada automáticamente');
-}
-
-// Configurar JWT_SECRET
+// Seguridad: JWT_SECRET / NEXTAUTH_SECRET deben venir del entorno. NO usar valores por
+// defecto hardcodeados (permitirían forjar tokens). Si faltan, abortar el arranque.
 if (!process.env.JWT_SECRET) {
-  process.env.JWT_SECRET = 'reputacion-online-secret-key-2025';
-  console.log('🔧 JWT_SECRET configurada automáticamente');
+  console.error('❌ FATAL: JWT_SECRET no está configurada. Definí JWT_SECRET en el entorno (Coolify) antes de arrancar.');
+  process.exit(1);
+}
+if (!process.env.NEXTAUTH_SECRET) {
+  console.error('❌ FATAL: NEXTAUTH_SECRET no está configurada. Definí NEXTAUTH_SECRET en el entorno.');
+  process.exit(1);
 }
 
 // Configurar NEXTAUTH_URL automáticamente

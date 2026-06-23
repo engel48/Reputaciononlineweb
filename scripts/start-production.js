@@ -102,10 +102,10 @@ function configureEnvironmentVariables() {
     console.log('🔗 START-PRODUCTION: NEXTAUTH_URL configurada:', selectedUrl);
   }
   
-  // Configurar JWT_SECRET
+  // Seguridad: JWT_SECRET debe venir del entorno. No usar default hardcodeado.
   if (!process.env.JWT_SECRET) {
-    process.env.JWT_SECRET = 'reputacion-online-secret-key-2025';
-    console.log('🔧 START-PRODUCTION: JWT_SECRET configurada');
+    console.error('❌ START-PRODUCTION: JWT_SECRET no está configurada en el entorno. Abortando.');
+    process.exit(1);
   }
   
   // Configurar variables de contenedor

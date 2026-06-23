@@ -22,7 +22,7 @@ async function getUserFromCookie(): Promise<string | null> {
     const cookieStore = await cookies();
     const token = cookieStore.get('auth-token')?.value;
     if (!token) return null;
-    const secret = process.env.JWT_SECRET || 'reputacion-online-secret-key-2025';
+    const secret = process.env.JWT_SECRET || (() => { throw new Error('FATAL: JWT_SECRET no está configurado en el entorno') })();
     const decoded = jwt.verify(token, secret) as { userId: string };
     return decoded.userId;
   } catch {

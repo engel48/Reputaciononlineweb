@@ -74,11 +74,13 @@ function configureEnvironmentVariables() {
     }
   }
   
-  // Configurar otras variables críticas
-  process.env.NEXTAUTH_SECRET = 'reputacion-online-super-secret-key-2025';
-  process.env.JWT_SECRET = 'reputacion-online-secret-key-2025';
+  // Seguridad: los secretos deben venir del entorno, no hardcodeados.
+  if (!process.env.JWT_SECRET || !process.env.NEXTAUTH_SECRET) {
+    console.error('❌ SETUP-PRODUCTION: JWT_SECRET y NEXTAUTH_SECRET deben estar definidas en el entorno.');
+    process.exit(1);
+  }
   process.env.NODE_ENV = 'production';
-  
+
   console.log('✅ SETUP-PRODUCTION: Variables de entorno configuradas');
 }
 

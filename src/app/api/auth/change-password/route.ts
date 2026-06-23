@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { userService } from '@/lib/database-adapter';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'reputacion-online-secret-key-2025';
+const JWT_SECRET = process.env.JWT_SECRET || (() => { throw new Error('FATAL: JWT_SECRET no está configurado en el entorno') })();
 
 export async function POST(request: NextRequest) {
   try {

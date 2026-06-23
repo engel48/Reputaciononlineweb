@@ -13,7 +13,7 @@ function getUserIdFromRequest(request: NextRequest): string | null {
   if (!token) return null;
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'reputacion-online-secret-key-2025') as any;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || (() => { throw new Error('FATAL: JWT_SECRET no está configurado en el entorno') })()) as any;
     return decoded.userId || decoded.id;
   } catch {
     return null;

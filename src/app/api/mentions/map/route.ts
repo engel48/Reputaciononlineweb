@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import * as jwt from 'jsonwebtoken';
 import { supabase } from '@/lib/supabase-server';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'reputacion-online-secret-key-2025';
+const JWT_SECRET = process.env.JWT_SECRET || (() => { throw new Error('FATAL: JWT_SECRET no está configurado en el entorno') })();
 
 interface MapMention {
   id: string;

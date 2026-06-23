@@ -9,7 +9,7 @@ import * as jwt from 'jsonwebtoken';
 import { supabase } from '@/lib/supabase-server';
 import crypto from 'crypto';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'reputacion-online-secret-key-2025';
+const JWT_SECRET = process.env.JWT_SECRET || (() => { throw new Error('FATAL: JWT_SECRET no está configurado en el entorno') })();
 const WOMPI_PRIVATE_KEY = process.env.WOMPI_PRIVATE_KEY || '';
 const WOMPI_PUBLIC_KEY = process.env.WOMPI_PUBLIC_KEY || '';
 const WOMPI_API_URL = process.env.WOMPI_API_URL || 'https://sandbox.wompi.co/v1';
