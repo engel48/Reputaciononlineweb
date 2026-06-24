@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../shared/widgets/coming_soon.dart';
+import '../creditos/creditos_screen.dart';
 import '../dashboard/dashboard_screen.dart';
+import '../mentions/mentions_screen.dart';
 import '../perfil/perfil_screen.dart';
 
 /// Contenedor principal con navegación inferior (bottom nav).
@@ -18,9 +20,9 @@ class _HomeShellState extends ConsumerState<HomeShell> {
 
   static const _tabs = <Widget>[
     DashboardScreen(),
-    _TabScaffold(title: 'Menciones', child: ComingSoon(title: 'Social Listening', icon: Icons.hearing)),
+    MentionsScreen(),
     _TabScaffold(title: 'Julia IA', child: ComingSoon(title: 'Asistente Julia', icon: Icons.auto_awesome)),
-    _TabScaffold(title: 'Créditos', child: ComingSoon(title: 'Créditos y planes', icon: Icons.bolt)),
+    CreditosScreen(),
     PerfilScreen(),
   ];
 
