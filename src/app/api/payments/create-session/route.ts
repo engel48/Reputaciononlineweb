@@ -9,7 +9,7 @@ import * as jwt from 'jsonwebtoken';
 import { supabase } from '@/lib/supabase-server';
 import crypto from 'crypto';
 
-const JWT_SECRET = process.env.JWT_SECRET || (() => { throw new Error('FATAL: JWT_SECRET no está configurado en el entorno') })();
+import { getJwtSecret } from '@/lib/jwt-secret';
 const WOMPI_PRIVATE_KEY = process.env.WOMPI_PRIVATE_KEY || '';
 const WOMPI_PUBLIC_KEY = process.env.WOMPI_PUBLIC_KEY || '';
 const WOMPI_API_URL = process.env.WOMPI_API_URL || 'https://sandbox.wompi.co/v1';
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
 
     let userId: string;
     try {
-      const decoded = jwt.verify(authToken, JWT_SECRET) as { userId: string; email: string };
+      const decoded = jwt.verify(authToken, getJwtSecret()) as { userId: string; email: string };
       userId = decoded.userId;
     } catch {
       return NextResponse.json({ success: false, error: 'Token invalido' }, { status: 401 });

@@ -9,7 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import type { StringValue } from 'ms';
 
-const JWT_SECRET = process.env.JWT_SECRET || (() => { throw new Error('FATAL: JWT_SECRET no está configurado en el entorno') })();
+import { getJwtSecret } from '@/lib/jwt-secret';
 
 export interface AuthUser {
   userId: string;
@@ -50,7 +50,7 @@ export async function verifyAuthToken(request: NextRequest): Promise<AuthUser | 
     }
 
     // Verificar y decodificar token
-    const decoded = jwt.verify(token, JWT_SECRET) as AuthUser;
+    const decoded = jwt.verify(token, getJwtSecret()) as AuthUser;
 
     return decoded;
 
@@ -141,5 +141,5 @@ export function generateToken(
     role: user.role || 'user',
   };
 
-  return jwt.sign(payload, JWT_SECRET, { expiresIn });
+  return jwt.sign(payload, getJwtSecret(), { expiresIn });
 }

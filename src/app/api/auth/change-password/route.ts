@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { userService } from '@/lib/database-adapter';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || (() => { throw new Error('FATAL: JWT_SECRET no está configurado en el entorno') })();
+import { getJwtSecret } from '@/lib/jwt-secret';
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     // Verificar y decodificar token
     let decoded;
     try {
-      decoded = jwt.verify(token, JWT_SECRET) as { userId: string; email: string };
+      decoded = jwt.verify(token, getJwtSecret()) as { userId: string; email: string };
     } catch (error) {
       return NextResponse.json(
         { success: false, message: 'Token inválido' },

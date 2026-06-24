@@ -9,7 +9,7 @@ import * as jwt from 'jsonwebtoken';
 import { supabase } from '@/lib/supabase-server';
 import { getSiteById } from '@/lib/news-monitoring/sites-config';
 
-const JWT_SECRET = process.env.JWT_SECRET || (() => { throw new Error('FATAL: JWT_SECRET no está configurado en el entorno') })();
+import { getJwtSecret } from '@/lib/jwt-secret';
 
 interface ActivateSiteRequest {
   siteId: string;
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     // Verificar token JWT Local
     let userId: string;
     try {
-      const decoded = jwt.verify(authToken, JWT_SECRET) as { userId: string; email: string };
+      const decoded = jwt.verify(authToken, getJwtSecret()) as { userId: string; email: string };
       userId = decoded.userId;
     } catch (error) {
       return NextResponse.json(

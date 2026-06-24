@@ -4,7 +4,7 @@ import { userService, socialMediaService, statsService } from '@/lib/database-ad
 import jwt from 'jsonwebtoken';
 import { User } from '@/context/UserContext';
 
-const JWT_SECRET = process.env.JWT_SECRET || (() => { throw new Error('FATAL: JWT_SECRET no está configurado en el entorno') })();
+import { getJwtSecret } from '@/lib/jwt-secret';
 
 export interface LoginResponse {
   success: boolean;
@@ -83,7 +83,7 @@ export const register = async (userData: RegisterData): Promise<LoginResponse> =
     // Generar token JWT (incluye role para que requireRole funcione)
     const token = jwt.sign(
       { userId: newUser.id, email: newUser.email, role: updateData.role },
-      JWT_SECRET,
+      getJwtSecret(),
       { expiresIn: '7d' }
     );
 
@@ -167,7 +167,7 @@ export const login = async (email: string, password: string): Promise<LoginRespo
     // Generar token JWT (incluye role para que requireRole funcione en endpoints admin)
     const token = jwt.sign(
       { userId: user.id, email: user.email, role: user.role || 'user' },
-      JWT_SECRET,
+      getJwtSecret(),
       { expiresIn: '7d' }
     );
     console.log('✅ AUTH: Token JWT generado exitosamente con role:', user.role || 'user');
@@ -220,7 +220,7 @@ export const login = async (email: string, password: string): Promise<LoginRespo
 export const getUserByToken = async (token: string): Promise<User | null> => {
   try {
     console.log('🔍 TOKEN: Verificando token JWT...');
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; email: string };
+    const decoded = jwt.verify(token, getJwtSecret()) as { userId: string; email: string };
     console.log('🔍 TOKEN: Token decodificado para usuario:', decoded.userId);
     
     const user = await userService.findById(decoded.userId);

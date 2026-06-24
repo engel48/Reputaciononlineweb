@@ -8,13 +8,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import * as jwt from 'jsonwebtoken';
 import { supabase } from '@/lib/supabase-server';
 
-const JWT_SECRET = process.env.JWT_SECRET || (() => { throw new Error('FATAL: JWT_SECRET no está configurado en el entorno') })();
+import { getJwtSecret } from '@/lib/jwt-secret';
 
 function getUserId(request: NextRequest): string | null {
   const authToken = request.cookies.get('auth-token')?.value;
   if (!authToken) return null;
   try {
-    const decoded = jwt.verify(authToken, JWT_SECRET) as { userId: string };
+    const decoded = jwt.verify(authToken, getJwtSecret()) as { userId: string };
     return decoded.userId;
   } catch {
     return null;
