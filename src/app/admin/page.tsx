@@ -677,6 +677,16 @@ function AdminDashboardContent({ onLogout }: { onLogout: () => void }) {
             </div>
           )}
         </main>
+
+        {/* Footer */}
+        <footer className="border-t border-gray-200 bg-white px-6 py-3 flex flex-col sm:flex-row items-center justify-between gap-1 text-xs text-gray-500">
+          <span>© {new Date().getFullYear()} Reputación Online · Panel de Administración</span>
+          <span className="flex items-center gap-3">
+            <a href="/dashboard" className="hover:text-[#01257D]">Ir al sitio</a>
+            <a href="/politica-de-privacidad" className="hover:text-[#01257D]">Privacidad</a>
+            <a href="/terminos-de-servicio" className="hover:text-[#01257D]">Términos</a>
+          </span>
+        </footer>
       </div>
 
       {/* Edit Modal */}
