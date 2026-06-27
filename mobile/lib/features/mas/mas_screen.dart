@@ -73,9 +73,7 @@ class MasScreen extends ConsumerWidget {
                 subtitle: const Text('Gestión de la plataforma y la app',
                     style: TextStyle(color: Colors.white70)),
                 trailing: const Icon(Icons.chevron_right, color: Colors.white54),
-                onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('El panel admin in-app llega en la Fase 4.')),
-                ),
+                onTap: () => context.push('/admin-app'),
               ),
             ),
           ],

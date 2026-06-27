@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-  Shield, Home, Users, CreditCard, DollarSign, Crown, Settings, Menu, Globe, LogOut, FileText, AlertTriangle, BarChart3
+  Shield, Home, Users, CreditCard, DollarSign, Crown, Settings, Menu, Globe, LogOut, FileText, AlertTriangle, BarChart3, Smartphone
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -25,6 +25,7 @@ export default function AdminSidebar({ isCollapsed, onToggle, onLogout }: AdminS
     { href: '/admin/pagos', icon: DollarSign, label: 'Pagos' },
     { href: '/admin/planes', icon: Crown, label: 'Planes' },
     { href: '/admin/crisis-alerts', icon: AlertTriangle, label: 'Alertas' },
+    { href: '/admin/app', icon: Smartphone, label: 'App Móvil' },
     { href: '/admin/logs', icon: FileText, label: 'Logs' },
     { href: '/admin/configuracion', icon: Settings, label: 'Configuración' },
   ];

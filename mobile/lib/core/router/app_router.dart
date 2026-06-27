@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/auth_controller.dart';
 import '../../features/auth/forgot_password_screen.dart';
 import '../../features/auth/login_screen.dart';
+import '../../features/admin/admin_app_screen.dart';
 import '../../features/auth/register_screen.dart';
 import '../../features/busqueda/busqueda_screen.dart';
 import '../../features/crisis/crisis_screen.dart';
@@ -51,6 +52,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/redes', builder: (_, __) => const RedesScreen()),
       GoRoute(path: '/planes', builder: (_, __) => const PlanesScreen()),
       GoRoute(path: '/perfil', builder: (_, __) => const PerfilScreen()),
+      GoRoute(path: '/admin-app', builder: (_, __) => const AdminAppScreen()),
     ],
   );
 });
