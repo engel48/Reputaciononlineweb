@@ -21,7 +21,7 @@ vi.mock('@/lib/auth-helper', () => ({
 function makeBuilder(table: string) {
   const b: any = {};
   const ret = () => b;
-  ['select', 'order', 'eq', 'lt', 'gte', 'or', 'ilike', 'like', 'in', 'range', 'delete', 'limit', 'not'].forEach((m) => {
+  ['select', 'order', 'eq', 'lt', 'gte', 'or', 'ilike', 'like', 'in', 'range', 'delete', 'limit', 'not', 'update', 'insert'].forEach((m) => {
     b[m] = vi.fn(ret);
   });
   b.then = (resolve: any) => resolve(mockResults[table] ?? { data: [], count: 0, error: null });
@@ -79,6 +79,60 @@ describe('/api/admin/communications', () => {
   it('DELETE rechaza subscriptions (no borrable)', async () => {
     const { DELETE } = await import('@/app/api/admin/communications/route');
     const res = await DELETE(new Request('http://localhost/api/admin/communications?type=subscriptions&id=1', { method: 'DELETE' }) as any);
+    expect(res.status).toBe(400);
+  });
+
+  it('PATCH alerts togglea is_active', async () => {
+    mockResults['alerts'] = { error: null };
+    const { PATCH } = await import('@/app/api/admin/communications/route');
+    const req = new Request('http://localhost/api/admin/communications', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'alerts', id: 'a1', isActive: false }),
+    });
+    const res = await PATCH(req as any);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.isActive).toBe(false);
+  });
+
+  it('PATCH subscriptions cambia estado a cancelled', async () => {
+    mockResults['subscriptions'] = { error: null };
+    const { PATCH } = await import('@/app/api/admin/communications/route');
+    const req = new Request('http://localhost/api/admin/communications', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'subscriptions', id: 's1', status: 'cancelled' }),
+    });
+    const res = await PATCH(req as any);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.status).toBe('cancelled');
+  });
+
+  it('POST broadcast inserta una notificación por usuario del segmento', async () => {
+    mockResults['users'] = { data: [{ id: 'u1' }, { id: 'u2' }] };
+    mockResults['notifications'] = { error: null };
+    const { POST } = await import('@/app/api/admin/communications/route');
+    const req = new Request('http://localhost/api/admin/communications', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'broadcast', segment: 'all', title: 'Hola', message: 'Aviso' }),
+    });
+    const res = await POST(req as any);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.sent).toBe(2);
+  });
+
+  it('POST broadcast rechaza sin título/mensaje', async () => {
+    const { POST } = await import('@/app/api/admin/communications/route');
+    const req = new Request('http://localhost/api/admin/communications', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'broadcast', segment: 'all' }),
+    });
+    const res = await POST(req as any);
     expect(res.status).toBe(400);
   });
 });

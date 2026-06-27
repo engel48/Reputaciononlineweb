@@ -94,8 +94,54 @@ export async function DELETE(request: NextRequest) {
 }
 
 /**
- * POST /api/admin/communications  body: { action: 'purge', olderThanDays }
- * Purga notificaciones leídas más antiguas que N días.
+ * PATCH /api/admin/communications  body: { type, id, ... }
+ *  - type='alerts': { id, isActive } → activa/desactiva una alerta de usuario.
+ *  - type='subscriptions': { id, status } → cambia estado; 'cancelled' marca
+ *    cancelled_at + cancel_at_period_end.
+ */
+export async function PATCH(request: NextRequest) {
+  const admin = await requireRole(request, 'admin');
+  if (admin instanceof NextResponse) return admin;
+
+  let body: any;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ success: false, error: 'JSON inválido' }, { status: 400 });
+  }
+
+  const { type, id } = body || {};
+  if (!id) return NextResponse.json({ success: false, error: 'id requerido' }, { status: 400 });
+
+  if (type === 'alerts') {
+    const isActive = !!body.isActive;
+    const { error } = await supabaseAdmin.from('alerts').update({ is_active: isActive }).eq('id', id);
+    if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: true, id, isActive });
+  }
+
+  if (type === 'subscriptions') {
+    const status = String(body.status || '');
+    if (!status) return NextResponse.json({ success: false, error: 'status requerido' }, { status: 400 });
+    const update: Record<string, any> = { status, updated_at: new Date().toISOString() };
+    if (status === 'cancelled' || status === 'canceled') {
+      update.cancelled_at = new Date().toISOString();
+      update.cancel_at_period_end = true;
+    }
+    const { error } = await supabaseAdmin.from('subscriptions').update(update).eq('id', id);
+    if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: true, id, status });
+  }
+
+  return NextResponse.json({ success: false, error: 'type inválido' }, { status: 400 });
+}
+
+/**
+ * POST /api/admin/communications
+ *  - { action: 'purge', olderThanDays }          → purga notificaciones leídas viejas.
+ *  - { action: 'broadcast', segment, plan?, userIds?, title, message, type?, priority? }
+ *      → crea una notificación in-app para un segmento de usuarios
+ *        (segment: 'all' | 'plan' | 'users').
  */
 export async function POST(request: NextRequest) {
   const admin = await requireRole(request, 'admin');
@@ -108,20 +154,50 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, error: 'JSON inválido' }, { status: 400 });
   }
 
-  const { action, olderThanDays } = body || {};
-  if (action !== 'purge') {
-    return NextResponse.json({ success: false, error: 'action no soportada' }, { status: 400 });
+  const { action } = body || {};
+
+  if (action === 'purge') {
+    const days = Math.max(1, parseInt(String(body.olderThanDays || 30), 10));
+    const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+    const { error, count } = await supabaseAdmin
+      .from('notifications')
+      .delete({ count: 'exact' })
+      .eq('is_read', true)
+      .lt('created_at', cutoff);
+    if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: true, purged: count || 0, olderThanDays: days });
   }
 
-  const days = Math.max(1, parseInt(String(olderThanDays || 30), 10));
-  const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+  if (action === 'broadcast') {
+    const { segment = 'all', plan, userIds, title, message } = body;
+    const type = String(body.type || 'admin');
+    const priority = String(body.priority || 'normal');
+    if (!title || !message) {
+      return NextResponse.json({ success: false, error: 'title y message son requeridos' }, { status: 400 });
+    }
 
-  const { error, count } = await supabaseAdmin
-    .from('notifications')
-    .delete({ count: 'exact' })
-    .eq('is_read', true)
-    .lt('created_at', cutoff);
+    // Resolver destinatarios
+    let targetIds: string[] = [];
+    if (segment === 'users') {
+      targetIds = Array.isArray(userIds) ? userIds.filter(Boolean) : [];
+    } else if (segment === 'plan') {
+      if (!plan) return NextResponse.json({ success: false, error: 'plan requerido' }, { status: 400 });
+      const { data } = await supabaseAdmin.from('users').select('id').eq('plan', plan);
+      targetIds = (data || []).map((u: any) => u.id);
+    } else {
+      const { data } = await supabaseAdmin.from('users').select('id').eq('is_active', true);
+      targetIds = (data || []).map((u: any) => u.id);
+    }
 
-  if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
-  return NextResponse.json({ success: true, purged: count || 0, olderThanDays: days });
+    if (targetIds.length === 0) {
+      return NextResponse.json({ success: false, error: 'Sin destinatarios para el segmento' }, { status: 400 });
+    }
+
+    const rows = targetIds.map((uid) => ({ user_id: uid, title, message, type, priority }));
+    const { error } = await supabaseAdmin.from('notifications').insert(rows);
+    if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: true, sent: rows.length });
+  }
+
+  return NextResponse.json({ success: false, error: 'action no soportada' }, { status: 400 });
 }

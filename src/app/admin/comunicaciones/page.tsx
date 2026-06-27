@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { RefreshCw, Filter, Trash2, ChevronLeft, ChevronRight, Bell, BellRing, CreditCard, Eraser } from 'lucide-react';
+import { RefreshCw, Filter, Trash2, ChevronLeft, ChevronRight, Bell, BellRing, CreditCard, Eraser, Send, Power, Ban } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { AdminPageWrapper } from '@/components/admin';
@@ -22,6 +22,7 @@ export default function AdminComunicacionesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [showBroadcast, setShowBroadcast] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -58,6 +59,31 @@ export default function AdminComunicacionesPage() {
     }
   };
 
+  const patch = async (payload: any, id: string) => {
+    setBusy(id);
+    try {
+      const res = await fetch('/api/admin/communications', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json.error || `HTTP ${res.status}`);
+      await load();
+    } catch (err: any) {
+      alert(err.message || 'Error en la acción');
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const toggleAlert = (it: any) => patch({ type: 'alerts', id: it.id, isActive: !it.is_active }, it.id);
+  const cancelSub = (it: any) => {
+    if (!window.confirm('¿Cancelar esta suscripción?')) return;
+    patch({ type: 'subscriptions', id: it.id, status: 'cancelled' }, it.id);
+  };
+
   const purge = async () => {
     if (!window.confirm('¿Purgar notificaciones LEÍDAS de más de 30 días?')) return;
     setBusy('purge');
@@ -90,9 +116,14 @@ export default function AdminComunicacionesPage() {
           <TabBtn active={tab === 'alerts'} onClick={() => setTab('alerts')} icon={<BellRing className="w-4 h-4" />}>Alertas</TabBtn>
           <TabBtn active={tab === 'subscriptions'} onClick={() => setTab('subscriptions')} icon={<CreditCard className="w-4 h-4" />}>Suscripciones</TabBtn>
           {tab === 'notifications' && (
-            <button onClick={purge} disabled={busy === 'purge'} className="ml-auto px-3 py-2 rounded-md bg-amber-900/40 text-amber-300 text-sm font-medium flex items-center gap-1 hover:bg-amber-900/60 disabled:opacity-50">
-              <Eraser className="w-4 h-4" /> Purgar leídas +30d
-            </button>
+            <div className="ml-auto flex gap-2">
+              <button onClick={() => setShowBroadcast(true)} className="px-3 py-2 rounded-md bg-cyan-500 text-white text-sm font-medium flex items-center gap-1 hover:bg-cyan-600">
+                <Send className="w-4 h-4" /> Difundir
+              </button>
+              <button onClick={purge} disabled={busy === 'purge'} className="px-3 py-2 rounded-md bg-amber-900/40 text-amber-300 text-sm font-medium flex items-center gap-1 hover:bg-amber-900/60 disabled:opacity-50">
+                <Eraser className="w-4 h-4" /> Purgar leídas +30d
+              </button>
+            </div>
           )}
         </div>
 
@@ -124,10 +155,10 @@ export default function AdminComunicacionesPage() {
                     <tr><th className="px-3 py-2 text-left">Usuario</th><th className="px-3 py-2 text-left">Título</th><th className="px-3 py-2 text-left">Mensaje</th><th className="px-3 py-2 text-center">Leída</th><th className="px-3 py-2 text-left">Fecha</th><th className="px-3 py-2 text-right">Acción</th></tr>
                   )}
                   {tab === 'alerts' && (
-                    <tr><th className="px-3 py-2 text-left">Usuario</th><th className="px-3 py-2 text-left">Nombre</th><th className="px-3 py-2 text-left">Keywords</th><th className="px-3 py-2 text-center">Activa</th><th className="px-3 py-2 text-left">Últim. disparo</th><th className="px-3 py-2 text-right">Acción</th></tr>
+                    <tr><th className="px-3 py-2 text-left">Usuario</th><th className="px-3 py-2 text-left">Nombre</th><th className="px-3 py-2 text-left">Keywords</th><th className="px-3 py-2 text-center">Activa</th><th className="px-3 py-2 text-left">Últim. disparo</th><th className="px-3 py-2 text-right">Acciones</th></tr>
                   )}
                   {tab === 'subscriptions' && (
-                    <tr><th className="px-3 py-2 text-left">Usuario</th><th className="px-3 py-2 text-left">Plan</th><th className="px-3 py-2 text-center">Estado</th><th className="px-3 py-2 text-left">Período</th><th className="px-3 py-2 text-center">Cancela fin período</th></tr>
+                    <tr><th className="px-3 py-2 text-left">Usuario</th><th className="px-3 py-2 text-left">Plan</th><th className="px-3 py-2 text-center">Estado</th><th className="px-3 py-2 text-left">Período</th><th className="px-3 py-2 text-center">Cancela fin período</th><th className="px-3 py-2 text-right">Acción</th></tr>
                   )}
                 </thead>
                 <tbody className="divide-y divide-gray-700 text-gray-300">
@@ -147,9 +178,18 @@ export default function AdminComunicacionesPage() {
                         <>
                           <td className="px-3 py-2 text-xs">{it.name}</td>
                           <td className="px-3 py-2 text-xs text-gray-400 max-w-xs">{it.keywords}</td>
-                          <td className="px-3 py-2 text-center text-xs">{it.is_active ? '✓' : '—'}</td>
+                          <td className="px-3 py-2 text-center text-xs">
+                            <span className={`px-2 py-0.5 rounded text-xs ${it.is_active ? 'bg-green-900/30 text-green-300' : 'bg-gray-700 text-gray-400'}`}>{it.is_active ? 'activa' : 'inactiva'}</span>
+                          </td>
                           <td className="px-3 py-2 text-xs whitespace-nowrap">{fmt(it.last_triggered)}</td>
-                          <td className="px-3 py-2 text-right"><DelBtn busy={busy === it.id} onClick={() => del(it.id)} /></td>
+                          <td className="px-3 py-2">
+                            <div className="flex items-center justify-end gap-2">
+                              <button onClick={() => toggleAlert(it)} disabled={busy === it.id} className="px-2 py-1 rounded bg-gray-700 text-xs hover:bg-gray-600 inline-flex items-center gap-1 disabled:opacity-50">
+                                <Power className="w-3 h-3" /> {it.is_active ? 'Desactivar' : 'Activar'}
+                              </button>
+                              <DelBtn busy={busy === it.id} onClick={() => del(it.id)} />
+                            </div>
+                          </td>
                         </>
                       )}
                       {tab === 'subscriptions' && (
@@ -158,6 +198,13 @@ export default function AdminComunicacionesPage() {
                           <td className="px-3 py-2 text-center"><span className="px-2 py-0.5 rounded text-xs bg-gray-700">{it.status}</span></td>
                           <td className="px-3 py-2 text-xs whitespace-nowrap">{fmt(it.current_period_start)} → {fmt(it.current_period_end)}</td>
                           <td className="px-3 py-2 text-center text-xs">{it.cancel_at_period_end ? '✓' : '—'}</td>
+                          <td className="px-3 py-2 text-right">
+                            {it.status !== 'cancelled' && it.status !== 'canceled' ? (
+                              <button onClick={() => cancelSub(it)} disabled={busy === it.id} className="px-2 py-1 rounded bg-red-900/40 text-red-300 text-xs hover:bg-red-900/60 inline-flex items-center gap-1 disabled:opacity-50">
+                                <Ban className="w-3 h-3" /> Cancelar
+                              </button>
+                            ) : <span className="text-xs text-gray-500">—</span>}
+                          </td>
                         </>
                       )}
                     </tr>
@@ -176,7 +223,67 @@ export default function AdminComunicacionesPage() {
           )}
         </div>
       </div>
+
+      {showBroadcast && <BroadcastModal onClose={() => setShowBroadcast(false)} onSent={() => { setShowBroadcast(false); load(); }} />}
     </AdminPageWrapper>
+  );
+}
+
+function BroadcastModal({ onClose, onSent }: { onClose: () => void; onSent: () => void }) {
+  const [segment, setSegment] = useState<'all' | 'plan'>('all');
+  const [plan, setPlan] = useState('free');
+  const [title, setTitle] = useState('');
+  const [message, setMessage] = useState('');
+  const [sending, setSending] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  const send = async () => {
+    if (!title.trim() || !message.trim()) { setErr('Título y mensaje son requeridos'); return; }
+    setSending(true);
+    setErr(null);
+    try {
+      const body: any = { action: 'broadcast', segment, title: title.trim(), message: message.trim() };
+      if (segment === 'plan') body.plan = plan;
+      const res = await fetch('/api/admin/communications', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(body),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json.error || `HTTP ${res.status}`);
+      alert(`Notificación enviada a ${json.sent} usuario(s).`);
+      onSent();
+    } catch (e: any) {
+      setErr(e.message || 'Error al enviar');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
+      <div className="bg-[#151C2E] border border-gray-700 rounded-xl w-full max-w-md p-5 space-y-3" onClick={(e) => e.stopPropagation()}>
+        <h3 className="text-white font-semibold flex items-center gap-2"><Send className="w-4 h-4 text-cyan-400" /> Difundir notificación</h3>
+        <div className="flex gap-2">
+          <select value={segment} onChange={(e) => setSegment(e.target.value as any)} className="px-3 py-2 rounded-md bg-[#0B1120] border border-gray-700 text-white text-sm">
+            <option value="all">Todos los usuarios activos</option>
+            <option value="plan">Por plan</option>
+          </select>
+          {segment === 'plan' && (
+            <select value={plan} onChange={(e) => setPlan(e.target.value)} className="px-3 py-2 rounded-md bg-[#0B1120] border border-gray-700 text-white text-sm">
+              {['free', 'basico', 'pro', 'enterprise'].map((p) => <option key={p} value={p}>{p}</option>)}
+            </select>
+          )}
+        </div>
+        <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Título" className="w-full px-3 py-2 rounded-md bg-[#0B1120] border border-gray-700 text-white text-sm placeholder-gray-500" />
+        <textarea value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Mensaje" rows={3} className="w-full px-3 py-2 rounded-md bg-[#0B1120] border border-gray-700 text-white text-sm placeholder-gray-500" />
+        {err && <div className="text-red-300 text-xs">{err}</div>}
+        <div className="flex justify-end gap-2 pt-1">
+          <button onClick={onClose} className="px-3 py-2 rounded-md bg-gray-700 text-white text-sm">Cancelar</button>
+          <button onClick={send} disabled={sending} className="px-3 py-2 rounded-md bg-cyan-500 text-white text-sm font-medium flex items-center gap-1 disabled:opacity-50">
+            <Send className="w-4 h-4" /> {sending ? 'Enviando...' : 'Enviar'}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
