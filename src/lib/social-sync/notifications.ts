@@ -66,7 +66,7 @@ export async function notifyFromMentions({
       if (isVeryNeg) veryNegative.push(m);
     }
 
-    const { supabase } = await import('@/lib/supabase-server');
+    const { createNotification } = await import('@/lib/notifications/create');
     const label = PLATFORM_LABELS[platform] || platform;
     const now = new Date().toISOString();
 
@@ -74,8 +74,8 @@ export async function notifyFromMentions({
     if (veryNegative.length > 0) {
       const sample = veryNegative[0];
       const previewText = String(sample.content || '').slice(0, 160);
-      await supabase.from('notifications').insert({
-        user_id: userId,
+      await createNotification({
+        userId,
         type: 'crisis',
         priority: 'high',
         title: `⚠️ Mención muy negativa en ${label}`,
@@ -97,36 +97,26 @@ export async function notifyFromMentions({
 
     // 2) Tendencia negativa acumulada
     if (totalNegative >= 5) {
-      await supabase.from('notifications').insert({
-        user_id: userId,
+      await createNotification({
+        userId,
         type: 'warning',
         priority: 'medium',
         title: `Varias menciones negativas en ${label}`,
         message: `Se detectaron ${totalNegative} menciones negativas en ${label} durante el último sync. Te recomendamos revisarlas.`,
-        metadata: {
-          platform,
-          count: totalNegative,
-          detected_at: now,
-          source: 'social_sync',
-        },
+        metadata: { platform, count: totalNegative, detected_at: now, source: 'social_sync' },
       });
       return;
     }
 
     // 3) Buena noticia: pico de positivas
     if (totalPositive >= 20) {
-      await supabase.from('notifications').insert({
-        user_id: userId,
+      await createNotification({
+        userId,
         type: 'success',
         priority: 'low',
         title: `✨ Buena recepción en ${label}`,
         message: `${totalPositive} menciones positivas detectadas en ${label}. Tu reputación está mejorando.`,
-        metadata: {
-          platform,
-          count: totalPositive,
-          detected_at: now,
-          source: 'social_sync',
-        },
+        metadata: { platform, count: totalPositive, detected_at: now, source: 'social_sync' },
       });
     }
   } catch (err) {

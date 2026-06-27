@@ -66,9 +66,26 @@ function AdminLogin({ onLoginSuccess }: { onLoginSuccess: () => void }) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-[#f4f6f9]">
-      <div className="w-full max-w-md">
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-[#f4f6f9] relative overflow-hidden">
+      {/* Fondo animado sutil (profesional) */}
+      <style>{`
+        @keyframes adminBlob {
+          0%,100% { transform: translate(0,0) scale(1); }
+          50% { transform: translate(24px,-18px) scale(1.12); }
+        }
+        @keyframes adminBlob2 {
+          0%,100% { transform: translate(0,0) scale(1.05); }
+          50% { transform: translate(-22px,16px) scale(0.92); }
+        }
+      `}</style>
+      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -top-24 -left-24 w-[30rem] h-[30rem] rounded-full bg-[#01257D]/10 blur-3xl" style={{ animation: 'adminBlob 14s ease-in-out infinite' }} />
+        <div className="absolute -bottom-28 -right-24 w-[32rem] h-[32rem] rounded-full bg-[#00E5FF]/10 blur-3xl" style={{ animation: 'adminBlob2 18s ease-in-out infinite' }} />
+        <div className="absolute top-1/3 right-1/4 w-72 h-72 rounded-full bg-[#013AAA]/5 blur-3xl" style={{ animation: 'adminBlob 22s ease-in-out infinite' }} />
+      </div>
+
+      <div className="w-full max-w-md relative">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-md overflow-hidden">
           {/* Acento superior sobrio */}
           <div className="h-1 bg-[#01257D]" />
 
@@ -149,9 +166,16 @@ function AdminLogin({ onLoginSuccess }: { onLoginSuccess: () => void }) {
           </div>
         </div>
 
-        <p className="text-center text-gray-400 text-xs mt-6">
-          Panel de Administración • Reputación Online
-        </p>
+        <footer className="mt-6 text-center text-xs text-gray-400 space-y-1.5">
+          <div className="flex items-center justify-center gap-3">
+            <a href="/politica-de-privacidad" className="hover:text-[#01257D] transition-colors">Privacidad</a>
+            <span>·</span>
+            <a href="/terminos-de-servicio" className="hover:text-[#01257D] transition-colors">Términos</a>
+            <span>·</span>
+            <a href="/login" className="hover:text-[#01257D] transition-colors">Ir al sitio</a>
+          </div>
+          <p>© {new Date().getFullYear()} Reputación Online · Panel de Administración</p>
+        </footer>
       </div>
     </div>
   );

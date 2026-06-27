@@ -288,6 +288,18 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
             </div>
           </div>
         </main>
+
+        {/* Footer */}
+        <footer className="border-t border-gray-100 dark:border-[#1A202C] bg-white dark:bg-[#151C2E] px-4 sm:px-8 py-4">
+          <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-500 dark:text-gray-400">
+            <span>© {new Date().getFullYear()} Reputación Online · Monitoreo de reputación con IA</span>
+            <span className="flex items-center gap-4">
+              <Link href="/dashboard/creditos/comprar" className="hover:text-[#00E5FF]">Planes</Link>
+              <a href="/politica-de-privacidad" className="hover:text-[#00E5FF]">Privacidad</a>
+              <a href="/terminos-de-servicio" className="hover:text-[#00E5FF]">Términos</a>
+            </span>
+          </div>
+        </footer>
       </div>
     </div>
   );

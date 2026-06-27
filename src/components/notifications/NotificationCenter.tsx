@@ -18,14 +18,6 @@ interface Notification {
   actionUrl?: string;
 }
 
-// Tipado para menciones simuladas
-interface SimulatedMention {
-  source: string;
-  content: string;
-  date: string;
-  url: string;
-}
-
 const NotificationCenter: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -34,96 +26,27 @@ const NotificationCenter: React.FC = () => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  // Datos de menciones simulados para cuando no hay datos disponibles
-  const simulatedMentions: SimulatedMention[] = [
-    {
-      source: 'x',
-      content: 'Excelente servicio de atención al cliente. Muy satisfecha con la rapidez de respuesta.',
-      date: new Date().toISOString(),
-      url: 'https://x.com/example/status/123456789'
-    },
-    {
-      source: 'facebook',
-      content: 'Me encantó el producto, aunque podrían mejorar el envoltorio para hacerlo más ecológico.',
-      date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-      url: 'https://facebook.com/example/posts/987654321'
-    },
-    {
-      source: 'instagram',
-      content: 'Totalmente recomendable. No cambiaría por ninguna otra marca.',
-      date: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
-      url: 'https://instagram.com/p/example123'
-    }
-  ];
-
-  // Generar notificaciones basadas en el usuario actual
+  // Cargar notificaciones REALES desde la API + polling cada 60s
   useEffect(() => {
-    // Crear notificaciones del sistema
-    const systemNotifications: Notification[] = [
-      {
-        id: 'notification_system_1',
-        type: 'system',
-        title: 'Actualización de la plataforma',
-        message: 'Nuevas funcionalidades disponibles en el módulo de Análisis.',
-        timestamp: new Date(new Date().getTime() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-        read: false
-      },
-      {
-        id: 'notification_alert_1',
-        type: 'alert',
-        title: 'Alerta de reputación',
-        message: 'Se ha detectado un incremento en menciones negativas en las últimas 24 horas.',
-        timestamp: new Date(new Date().getTime() - 12 * 60 * 60 * 1000).toISOString(),
-        read: false,
-        actionUrl: '/dashboard/analytics'
-      },
-      {
-        id: 'notification_update_1',
-        type: 'update',
-        title: 'Plan Pro activado',
-        message: 'Tu suscripción al Plan Pro ha sido activada correctamente.',
-        timestamp: new Date(new Date().getTime() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-        read: true,
-        actionUrl: '/dashboard/credito'
+    let alive = true;
+    const load = async () => {
+      try {
+        const res = await fetch('/api/notifications', { credentials: 'include' });
+        if (!res.ok) return;
+        const json = await res.json();
+        if (!alive || !json.success) return;
+        setNotifications(json.notifications || []);
+        setUnreadCount(json.unreadCount || 0);
+      } catch {
+        /* silencioso: no romper el dashboard por una notificación */
       }
-    ];
-    
-    // Crear notificaciones basadas en menciones
-    let mentionNotifications: Notification[] = [];
-    
-    // Verificar si tenemos menciones reales para usar
-    if (user?.reputation?.recentMentions && Array.isArray(user.reputation.recentMentions) && user.reputation.recentMentions.length > 0) {
-      mentionNotifications = user.reputation.recentMentions.slice(0, 3).map((mention, index) => ({
-        id: `notification_mention_${index}`,
-        type: 'mention' as const,
-        title: `Nueva mención en ${mention.source}`,
-        message: mention.content.length > 80 ? mention.content.substring(0, 80) + '...' : mention.content,
-        source: mention.source,
-        timestamp: mention.date,
-        read: false,
-        actionUrl: mention.url
-      }));
-    } else {
-      // Usar menciones simuladas si no hay reales
-      mentionNotifications = simulatedMentions.map((mention, index) => ({
-        id: `notification_mention_${index}`,
-        type: 'mention' as const,
-        title: `Nueva mención en ${mention.source}`,
-        message: mention.content.length > 80 ? mention.content.substring(0, 80) + '...' : mention.content,
-        source: mention.source,
-        timestamp: mention.date,
-        read: false,
-        actionUrl: mention.url
-      }));
-    }
-
-    // Combinar todas las notificaciones y ordenarlas por fecha
-    const allNotifications = [...mentionNotifications, ...systemNotifications].sort(
-      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-    );
-
-    setNotifications(allNotifications);
-    setUnreadCount(allNotifications.filter(notif => !notif.read).length);
+    };
+    load();
+    const interval = setInterval(load, 60000);
+    return () => {
+      alive = false;
+      clearInterval(interval);
+    };
   }, [user]);
 
   const toggleDropdown = () => {
@@ -169,24 +92,30 @@ const NotificationCenter: React.FC = () => {
     }
   }, [isOpen]);
 
-  // Marcar una notificación como leída
+  // Marcar una notificación como leída (optimista + persistir en BD)
   const markAsRead = (notificationId: string) => {
-    setNotifications(prevNotifications =>
-      prevNotifications.map(notification => 
-        notification.id === notificationId 
-          ? { ...notification, read: true } 
-          : notification
-      )
+    setNotifications(prev =>
+      prev.map(n => (n.id === notificationId ? { ...n, read: true } : n))
     );
     setUnreadCount(prev => Math.max(0, prev - 1));
+    fetch('/api/notifications', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ action: 'markRead', id: notificationId }),
+    }).catch(() => {});
   };
 
-  // Marcar todas las notificaciones como leídas
+  // Marcar todas como leídas (optimista + persistir en BD)
   const markAllAsRead = () => {
-    setNotifications(prevNotifications =>
-      prevNotifications.map(notification => ({ ...notification, read: true }))
-    );
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
     setUnreadCount(0);
+    fetch('/api/notifications', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ action: 'markAllRead' }),
+    }).catch(() => {});
   };
 
   // Renderizar icono basado en fuente
