@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-  Shield, Home, Users, CreditCard, DollarSign, Crown, Settings, Menu, Globe, LogOut, FileText, AlertTriangle, BarChart3, Smartphone, Share2, Newspaper, Bot, Bell
+  Shield, Home, Users, CreditCard, DollarSign, Crown, Settings, Menu, Globe, LogOut, FileText, AlertTriangle, BarChart3, Smartphone, Share2, Newspaper, Bot, Bell, SlidersHorizontal
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -28,6 +28,7 @@ export default function AdminSidebar({ isCollapsed, onToggle, onLogout }: AdminS
     { href: '/admin/redes', icon: Share2, label: 'Redes' },
     { href: '/admin/contenido', icon: Newspaper, label: 'Contenido' },
     { href: '/admin/julia', icon: Bot, label: 'Julia IA' },
+    { href: '/admin/ia', icon: SlidersHorizontal, label: 'Calibración IA' },
     { href: '/admin/comunicaciones', icon: Bell, label: 'Comunicaciones' },
     { href: '/admin/app', icon: Smartphone, label: 'App Móvil' },
     { href: '/admin/logs', icon: FileText, label: 'Logs' },

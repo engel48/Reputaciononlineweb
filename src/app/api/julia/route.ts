@@ -4,6 +4,7 @@ import { buildUserContext } from '@/lib/user-context';
 import { deductCreditsForAction, extractUserIdFromToken, checkBalance } from '@/lib/credit-guard';
 import { CREDIT_COSTS, CreditAction } from '@/lib/credit-costs';
 import { searchGoogleNewsLive } from '@/lib/news-search/google-news-rss';
+import { getAiConfig } from '@/lib/ai-config';
 
 // Runtime Node.js (necesario para groq-sdk + supabase-server)
 // maxDuration extendido porque la llamada a Groq + buildUserContext + deduct
@@ -11,6 +12,9 @@ import { searchGoogleNewsLive } from '@/lib/news-search/google-news-rss';
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
+
+/** Token que Julia antepone cuando detecta un mensaje fuera de contexto. */
+const OFF_CONTEXT_TOKEN = '[FUERA_DE_CONTEXTO]';
 
 /**
  * POST /api/julia — Asistente Julia (Groq llama-3.3-70b-versatile + fallback DeepSeek).
@@ -207,14 +211,47 @@ export async function POST(request: NextRequest) {
       }
       response = JSON.stringify(await aiService.generateRecommendations(userContext));
     } else {
-      // Chat general con persona Julia + contexto del usuario + HISTORIAL.
-      // Carga los últimos 20 mensajes del usuario para que Julia recuerde
-      // conversaciones previas (incluso de días anteriores).
+      // Chat general con persona Julia + contexto del usuario + HISTORIAL,
+      // aplicando la calibración del admin (temperatura, penalizaciones) y el
+      // protocolo de reincidencia fuera de contexto.
+      const aiConfig = await getAiConfig();
       const history = userId ? await loadRecentHistory(userId, 20) : [];
 
-      response = await aiService.chatWithHistory(history, message || context || '', {
+      // Protocolo de reincidencia: si hay umbral, instruimos a Julia para que
+      // marque los mensajes fuera de contexto con un token detectable.
+      const guardActive = !!userId && aiConfig.maxOffContextAttempts > 0;
+      const systemExtra = guardActive
+        ? `Si el mensaje del usuario NO está relacionado con reputación online, monitoreo de redes/medios, tu rol como Julia o el uso de la plataforma, comenzá tu respuesta EXACTAMENTE con el token ${OFF_CONTEXT_TOKEN} (en mayúsculas, entre corchetes) y luego reconducí amablemente. Si SÍ está relacionado, respondé normal y NO incluyas ese token.`
+        : undefined;
+
+      const raw = await aiService.chatWithHistory(history, message || context || '', {
         user: userContext,
+        temperature: aiConfig.temperature,
+        maxTokens: aiConfig.maxTokens,
+        frequencyPenalty: aiConfig.frequencyPenalty,
+        presencePenalty: aiConfig.presencePenalty,
+        systemExtra,
       });
+
+      const offTopic = raw.trimStart().startsWith(OFF_CONTEXT_TOKEN);
+      response = offTopic ? raw.replace(OFF_CONTEXT_TOKEN, '').trimStart() : raw;
+
+      // Contador de reincidencia por conversación (en amelia_conversations.context).
+      if (guardActive && userId) {
+        try {
+          const convId = await getOrCreateJuliaConversation(userId);
+          const prev = await getOffContextCount(convId);
+          const next = offTopic ? prev + 1 : 0;
+          if (offTopic && next >= aiConfig.maxOffContextAttempts) {
+            response = aiConfig.redirectMessage;
+            await setOffContextCount(convId, 0); // se reinicia tras redirigir
+          } else {
+            await setOffContextCount(convId, next);
+          }
+        } catch (guardErr) {
+          console.warn('[julia] protocolo de reincidencia:', guardErr);
+        }
+      }
 
       if (userId && message) {
         try {
@@ -323,6 +360,30 @@ async function appendToActiveConversation(
     .eq('id', conversationId);
 
   return conversationId;
+}
+
+/** Lee el contador de mensajes fuera de contexto seguidos de la conversación. */
+async function getOffContextCount(conversationId: string): Promise<number> {
+  const { supabase } = await import('@/lib/supabase-server');
+  const { data } = await supabase
+    .from('amelia_conversations')
+    .select('context')
+    .eq('id', conversationId)
+    .maybeSingle();
+  const n = Number((data as any)?.context?.offContextCount);
+  return isFinite(n) ? n : 0;
+}
+
+/** Guarda el contador de reincidencia en amelia_conversations.context (merge). */
+async function setOffContextCount(conversationId: string, count: number): Promise<void> {
+  const { supabase } = await import('@/lib/supabase-server');
+  const { data } = await supabase
+    .from('amelia_conversations')
+    .select('context')
+    .eq('id', conversationId)
+    .maybeSingle();
+  const ctx = { ...(((data as any)?.context as Record<string, unknown>) || {}), offContextCount: count };
+  await supabase.from('amelia_conversations').update({ context: ctx }).eq('id', conversationId);
 }
 
 /**

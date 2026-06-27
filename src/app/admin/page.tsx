@@ -7,7 +7,7 @@ import {
   Eye, EyeOff, Users, Database, BarChart3, Shield, Search, RefreshCw,
   Edit, Trash2, DollarSign, Crown, UserPlus, X, Check, Settings, Power,
   MessageSquare, Home, CreditCard, Bell, Menu, LogOut, Globe,
-  AlertTriangle, Share2, Newspaper, Bot, Smartphone, FileText
+  AlertTriangle, Share2, Newspaper, Bot, Smartphone, FileText, SlidersHorizontal
 } from 'lucide-react';
 
 interface User {
@@ -66,123 +66,110 @@ function AdminLogin({ onLoginSuccess }: { onLoginSuccess: () => void }) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-gradient-to-br from-[#0B1120] via-[#01257D] to-[#0B1120]">
       {/* Patrón de fondo - Grilla sutil */}
       <div
-        className="absolute inset-0 opacity-[0.03]"
+        className="absolute inset-0 opacity-[0.06]"
         style={{
           backgroundImage: `
-            linear-gradient(rgba(0, 229, 255, 0.1) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0, 229, 255, 0.1) 1px, transparent 1px)
+            linear-gradient(rgba(0, 229, 255, 0.4) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0, 229, 255, 0.4) 1px, transparent 1px)
           `,
-          backgroundSize: '50px 50px'
+          backgroundSize: '48px 48px',
         }}
       />
-
-      {/* Glow decorativo */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#00E5FF]/5 rounded-full blur-3xl" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#00E5FF]/3 rounded-full blur-3xl" />
+      {/* Glows decorativos */}
+      <div className="absolute -top-20 -left-20 w-[28rem] h-[28rem] bg-[#00E5FF]/20 rounded-full blur-3xl" />
+      <div className="absolute -bottom-24 -right-16 w-[26rem] h-[26rem] bg-[#01257D]/40 rounded-full blur-3xl" />
 
       {/* Tarjeta de Login */}
       <div className="relative w-full max-w-md">
-        {/* Glow detrás de la tarjeta */}
-        <div className="absolute -inset-1 bg-gradient-to-r from-[#00E5FF]/20 via-[#00E5FF]/10 to-[#00E5FF]/20 rounded-2xl blur-xl opacity-50" />
+        <div className="absolute -inset-0.5 bg-gradient-to-r from-[#00E5FF] via-[#00E5FF]/40 to-[#01257D] rounded-2xl blur opacity-40" />
 
-        <div className="relative bg-white rounded-2xl border border-gray-200/50 shadow-2xl p-8">
-          {/* Logo */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#00E5FF]/10 mb-4">
-              <Shield className="w-8 h-8 text-cyan-600" />
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Bienvenido de nuevo
-            </h1>
-            <p className="text-gray-500 text-sm">
-              Ingresa al panel de administración
-            </p>
-          </div>
+        <div className="relative bg-white rounded-2xl shadow-2xl overflow-hidden">
+          {/* Acento superior */}
+          <div className="h-1.5 bg-gradient-to-r from-[#00E5FF] to-[#01257D]" />
 
-          {/* Error */}
-          {error && (
-            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
-              <p className="text-red-600 text-sm text-center">{error}</p>
-            </div>
-          )}
-
-          {/* Formulario */}
-          <form onSubmit={handleLogin} className="space-y-5">
-            {/* Email */}
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-2">
-                Correo electrónico
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-600 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:border-[#00E5FF] focus:ring-1 focus:ring-[#00E5FF] transition-all duration-200"
-                placeholder="admin@ejemplo.com"
-                required
-              />
+          <div className="p-8">
+            {/* Logo */}
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[#00E5FF] to-[#01257D] shadow-lg shadow-cyan-500/20 mb-4">
+                <Shield className="w-8 h-8 text-white" />
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900">Panel de Administración</h1>
+              <p className="text-gray-500 text-sm mt-1">Reputación Online · acceso restringido</p>
             </div>
 
-            {/* Contraseña */}
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-2">
-                Contraseña
-              </label>
-              <div className="relative">
+            {/* Error */}
+            {error && (
+              <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-xl">
+                <p className="text-red-600 text-sm text-center">{error}</p>
+              </div>
+            )}
+
+            {/* Formulario */}
+            <form onSubmit={handleLogin} className="space-y-5">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Correo electrónico</label>
                 <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 pr-12 bg-gray-50 border border-gray-600 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:border-[#00E5FF] focus:ring-1 focus:ring-[#00E5FF] transition-all duration-200"
-                  placeholder="••••••••"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#00E5FF] focus:ring-2 focus:ring-[#00E5FF]/30 transition-all"
+                  placeholder="admin@ejemplo.com"
                   required
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-cyan-600 transition-colors"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Contraseña</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full px-4 py-3 pr-12 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#00E5FF] focus:ring-2 focus:ring-[#00E5FF]/30 transition-all"
+                    placeholder="••••••••"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#01257D] transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3.5 bg-gradient-to-r from-[#01257D] to-[#013AAA] text-white font-semibold rounded-xl shadow-lg shadow-blue-900/20 hover:from-[#013AAA] hover:to-[#01257D] focus:outline-none focus:ring-2 focus:ring-[#00E5FF] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {loading ? (
+                  <>
+                    <RefreshCw className="w-5 h-5 animate-spin" />
+                    Verificando...
+                  </>
+                ) : (
+                  <>
+                    <Shield className="w-5 h-5" />
+                    Ingresar al Panel
+                  </>
+                )}
+              </button>
+            </form>
+
+            <div className="mt-6 text-center">
+              <Link href="/login" className="text-sm text-gray-500 hover:text-[#01257D] transition-colors">
+                ← Volver al login de usuarios
+              </Link>
             </div>
-
-            {/* Botón Submit */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3.5 bg-[#00E5FF] text-[#0B1120] font-semibold rounded-xl hover:bg-[#00D4ED] focus:outline-none focus:ring-2 focus:ring-[#00E5FF] focus:ring-offset-2 focus:ring-offset-[#1F2937] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <RefreshCw className="w-5 h-5 animate-spin" />
-                  Verificando...
-                </>
-              ) : (
-                <>
-                  <Shield className="w-5 h-5" />
-                  Ingresar al Panel
-                </>
-              )}
-            </button>
-          </form>
-
-          {/* Link inferior */}
-          <div className="mt-6 text-center">
-            <Link
-              href="/login"
-              className="text-sm text-gray-500 hover:text-cyan-600 transition-colors"
-            >
-              ← Volver al login de usuarios
-            </Link>
           </div>
         </div>
 
-        {/* Texto inferior */}
-        <p className="text-center text-gray-500 text-xs mt-6">
+        <p className="text-center text-white/60 text-xs mt-6">
           Panel de Administración • Reputación Online
         </p>
       </div>
@@ -207,6 +194,7 @@ function AdminSidebar({ isCollapsed, onToggle }: { isCollapsed: boolean; onToggl
     { href: '/admin/redes', icon: Share2, label: 'Redes' },
     { href: '/admin/contenido', icon: Newspaper, label: 'Contenido' },
     { href: '/admin/julia', icon: Bot, label: 'Julia IA' },
+    { href: '/admin/ia', icon: SlidersHorizontal, label: 'Calibración IA' },
     { href: '/admin/comunicaciones', icon: Bell, label: 'Comunicaciones' },
     { href: '/admin/app', icon: Smartphone, label: 'App Móvil' },
     { href: '/admin/logs', icon: FileText, label: 'Logs' },

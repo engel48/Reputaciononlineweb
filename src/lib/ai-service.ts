@@ -14,6 +14,8 @@ interface ChatOptions {
   temperature?: number;
   max_tokens?: number;
   jsonMode?: boolean;
+  frequencyPenalty?: number;
+  presencePenalty?: number;
 }
 
 const GROQ_MODEL = 'llama-3.3-70b-versatile';
@@ -69,6 +71,8 @@ class AIService {
       model: GROQ_MODEL,
       temperature: options.temperature ?? 0.7,
       max_tokens: options.max_tokens ?? 2048,
+      ...(options.frequencyPenalty != null ? { frequency_penalty: options.frequencyPenalty } : {}),
+      ...(options.presencePenalty != null ? { presence_penalty: options.presencePenalty } : {}),
       ...(options.jsonMode ? { response_format: { type: 'json_object' as const } } : {}),
     });
 
@@ -168,9 +172,18 @@ class AIService {
   async chatWithHistory(
     history: AIMessage[],
     newUserMessage: string,
-    options: { user?: UserContext | null; persona?: string; temperature?: number } = {}
+    options: {
+      user?: UserContext | null;
+      persona?: string;
+      temperature?: number;
+      maxTokens?: number;
+      frequencyPenalty?: number;
+      presencePenalty?: number;
+      systemExtra?: string;
+    } = {}
   ): Promise<string> {
     const systemParts = [options.persona || JULIA_PERSONALITY];
+    if (options.systemExtra) systemParts.push(options.systemExtra);
     if (options.user) systemParts.push(formatUserContextForPrompt(options.user));
 
     return this.chat(
@@ -179,7 +192,12 @@ class AIService {
         ...history,
         { role: 'user', content: newUserMessage },
       ],
-      { temperature: options.temperature ?? 0.7 }
+      {
+        temperature: options.temperature ?? 0.7,
+        max_tokens: options.maxTokens,
+        frequencyPenalty: options.frequencyPenalty,
+        presencePenalty: options.presencePenalty,
+      }
     );
   }
 
