@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../auth/auth_controller.dart';
@@ -59,12 +60,46 @@ class PerfilScreen extends ConsumerWidget {
                     _planLabels[user.plan] ?? user.plan),
                 const Divider(height: 1),
                 _row(Icons.bolt, 'Créditos', '${user.credits}'),
-                if (user.company != null) ...[
+                if (user.company != null && user.company!.isNotEmpty) ...[
                   const Divider(height: 1),
                   _row(Icons.business_outlined, 'Empresa', user.company!),
                 ],
+                if (user.phone != null && user.phone!.isNotEmpty) ...[
+                  const Divider(height: 1),
+                  _row(Icons.phone_outlined, 'Teléfono', user.phone!),
+                ],
               ],
             ),
+          ),
+          if (user.bio != null && user.bio!.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Bio',
+                        style: TextStyle(
+                            color: AppColors.muted, fontSize: 12)),
+                    const SizedBox(height: 4),
+                    Text(user.bio!),
+                  ],
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(height: 16),
+          FilledButton.tonalIcon(
+            onPressed: () => context.push('/perfil/editar'),
+            icon: const Icon(Icons.edit_outlined),
+            label: const Text('Editar perfil'),
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            onPressed: () => context.push('/configuracion'),
+            icon: const Icon(Icons.settings_outlined),
+            label: const Text('Ajustes'),
           ),
           const SizedBox(height: 24),
           OutlinedButton.icon(

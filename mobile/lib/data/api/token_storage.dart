@@ -11,6 +11,7 @@ class TokenStorage {
 
   static const _kToken = 'auth_token';
   static const _kUser = 'auth_user';
+  static const _kTheme = 'theme_mode';
 
   Future<void> save(String token, Map<String, dynamic> user) async {
     await _storage.write(key: _kToken, value: token);
@@ -31,6 +32,11 @@ class TokenStorage {
 
   Future<void> updateUser(Map<String, dynamic> user) =>
       _storage.write(key: _kUser, value: jsonEncode(user));
+
+  /// Preferencia de tema del dispositivo (no se borra al cerrar sesión).
+  Future<String?> readThemeMode() => _storage.read(key: _kTheme);
+  Future<void> writeThemeMode(String value) =>
+      _storage.write(key: _kTheme, value: value);
 
   Future<void> clear() async {
     await _storage.delete(key: _kToken);

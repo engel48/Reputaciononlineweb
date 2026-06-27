@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/ajustes/ajustes_screen.dart';
 import '../../features/auth/auth_controller.dart';
 import '../../features/auth/forgot_password_screen.dart';
 import '../../features/auth/login_screen.dart';
@@ -9,6 +10,8 @@ import '../../features/auth/register_screen.dart';
 import '../../features/busqueda/busqueda_screen.dart';
 import '../../features/crisis/crisis_screen.dart';
 import '../../features/noticias/noticias_screen.dart';
+import '../../features/notificaciones/notificaciones_screen.dart';
+import '../../features/perfil/edit_profile_screen.dart';
 import '../../features/perfil/perfil_screen.dart';
 import '../../features/planes/planes_screen.dart';
 import '../../features/redes/redes_screen.dart';
@@ -51,6 +54,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/redes', builder: (_, __) => const RedesScreen()),
       GoRoute(path: '/planes', builder: (_, __) => const PlanesScreen()),
       GoRoute(path: '/perfil', builder: (_, __) => const PerfilScreen()),
+      GoRoute(path: '/perfil/editar', builder: (_, __) => const EditProfileScreen()),
+      GoRoute(path: '/configuracion', builder: (_, __) => const AjustesScreen()),
+      GoRoute(path: '/notificaciones', builder: (_, __) => const NotificacionesScreen()),
     ],
   );
 });

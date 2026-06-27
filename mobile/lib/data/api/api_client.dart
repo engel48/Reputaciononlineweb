@@ -62,6 +62,9 @@ class ApiClient {
   Future<dynamic> post(String path, {Object? body, Map<String, dynamic>? query}) =>
       _send(() => _dio.post(path, data: body, queryParameters: query));
 
+  Future<dynamic> put(String path, {Object? body}) =>
+      _send(() => _dio.put(path, data: body));
+
   Future<dynamic> patch(String path, {Object? body}) =>
       _send(() => _dio.patch(path, data: body));
 

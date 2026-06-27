@@ -6,6 +6,7 @@ class AppUser {
     this.name,
     this.company,
     this.phone,
+    this.bio,
     this.plan = 'free',
     this.credits = 0,
     this.role = 'user',
@@ -21,6 +22,7 @@ class AppUser {
   final String? name;
   final String? company;
   final String? phone;
+  final String? bio;
   final String plan;
   final int credits;
   final String role;
@@ -54,6 +56,7 @@ class AppUser {
         name: j['name'] as String?,
         company: j['company'] as String?,
         phone: j['phone'] as String?,
+        bio: j['bio'] as String?,
         plan: '${j['plan'] ?? 'free'}',
         credits: _toInt(j['credits']),
         role: '${j['role'] ?? 'user'}',
@@ -84,6 +87,7 @@ class AppUser {
         name: name ?? this.name,
         company: company,
         phone: phone,
+        bio: bio,
         plan: plan ?? this.plan,
         credits: credits ?? this.credits,
         role: role,

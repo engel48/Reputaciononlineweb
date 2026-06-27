@@ -3,6 +3,29 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers.dart';
 import '../../data/api/api_client.dart';
 import '../../data/models/julia.dart';
+import '../auth/auth_controller.dart';
+
+/// Refresca el saldo de créditos en sesión a partir de la respuesta de /julia.
+void _applyCredits(Ref ref, dynamic res) {
+  final credits = (res is Map ? res['credits'] as Map? : null)?.cast<String, dynamic>();
+  final newBalance = (credits?['newBalance'] as num?)?.toInt();
+  if (newBalance == null) return;
+  final user = ref.read(authControllerProvider).user;
+  if (user != null) {
+    ref.read(authControllerProvider.notifier).setUser(user.copyWith(credits: newBalance));
+  }
+}
+
+/// Mensaje de error legible para acciones de Julia (incluye 402 créditos).
+String _juliaError(ApiException e) {
+  if (e.isPaymentRequired) {
+    if (e.data is Map && (e.data as Map)['response'] != null) {
+      return (e.data as Map)['response'].toString();
+    }
+    return 'No tenés créditos suficientes para esta acción.';
+  }
+  return e.message;
+}
 
 /// Estado del chat con Julia: lista de mensajes + saldo de créditos conocido.
 class JuliaState {
@@ -95,3 +118,59 @@ class JuliaController extends AsyncNotifier<JuliaState> {
 
 final juliaControllerProvider =
     AsyncNotifierProvider<JuliaController, JuliaState>(JuliaController.new);
+
+/// ── Análisis de sentimiento de un texto (pestaña "Análisis") ──────────────
+class JuliaAnalysisController extends Notifier<AsyncValue<SentimentResult?>> {
+  @override
+  AsyncValue<SentimentResult?> build() => const AsyncData(null);
+
+  Future<void> analyze(String text) async {
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) return;
+    state = const AsyncLoading();
+    try {
+      final res = await ref.read(apiClientProvider).post('/julia', body: {
+        'action': 'analyze',
+        'message': trimmed,
+      });
+      _applyCredits(ref, res);
+      state = AsyncData(SentimentResult.fromResponse((res as Map)['response']));
+    } on ApiException catch (e) {
+      state = AsyncError(_juliaError(e), StackTrace.current);
+    }
+  }
+
+  void reset() => state = const AsyncData(null);
+}
+
+final juliaAnalysisProvider =
+    NotifierProvider<JuliaAnalysisController, AsyncValue<SentimentResult?>>(
+        JuliaAnalysisController.new);
+
+/// ── Informe de reputación (pestaña "Reportes") ────────────────────────────
+class JuliaReportController extends Notifier<AsyncValue<ReputationReport?>> {
+  @override
+  AsyncValue<ReputationReport?> build() => const AsyncData(null);
+
+  Future<void> generate(String name) async {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return;
+    state = const AsyncLoading();
+    try {
+      final res = await ref.read(apiClientProvider).post('/julia', body: {
+        'action': 'reputation',
+        'message': trimmed,
+      });
+      _applyCredits(ref, res);
+      state = AsyncData(ReputationReport.fromResponse((res as Map)['response']));
+    } on ApiException catch (e) {
+      state = AsyncError(_juliaError(e), StackTrace.current);
+    }
+  }
+
+  void reset() => state = const AsyncData(null);
+}
+
+final juliaReportProvider =
+    NotifierProvider<JuliaReportController, AsyncValue<ReputationReport?>>(
+        JuliaReportController.new);

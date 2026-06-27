@@ -22,7 +22,9 @@ class MasScreen extends ConsumerWidget {
     _Entry('Búsqueda', 'Analizá la reputación de alguien', Icons.travel_explore, '/busqueda', AppColors.accentNavy),
     _Entry('Crisis', 'Alertas y respuesta con IA', Icons.warning_amber_rounded, '/crisis', AppColors.warning),
     _Entry('Redes sociales', 'Conectá tus cuentas', Icons.hub_outlined, '/redes', AppColors.success),
+    _Entry('Notificaciones', 'Tus alertas y avisos', Icons.notifications_outlined, '/notificaciones', AppColors.accentNavy),
     _Entry('Planes', 'Mejorá tu suscripción', Icons.workspace_premium_outlined, '/planes', AppColors.cyanHover),
+    _Entry('Ajustes', 'Contraseña y tema', Icons.settings_outlined, '/configuracion', AppColors.cyan),
     _Entry('Mi perfil', 'Cuenta y sesión', Icons.person_outline, '/perfil', AppColors.muted),
   ];
 

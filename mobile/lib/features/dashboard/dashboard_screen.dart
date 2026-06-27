@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../data/models/dashboard.dart';
@@ -10,6 +11,7 @@ import '../../shared/widgets/mini_line_chart.dart';
 import '../../shared/widgets/sentiment_chip.dart';
 import '../../shared/widgets/stat_card.dart';
 import '../auth/auth_controller.dart';
+import '../notificaciones/notificaciones_providers.dart';
 import 'dashboard_providers.dart';
 
 class DashboardScreen extends ConsumerWidget {
@@ -24,6 +26,7 @@ class DashboardScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text('Hola, ${user?.displayName.split(' ').first ?? ''}'),
         actions: [
+          const _NotifBell(),
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: Chip(
@@ -51,6 +54,29 @@ class DashboardScreen extends ConsumerWidget {
               : _DashboardBody(d),
         ),
       ),
+    );
+  }
+}
+
+/// Campana de notificaciones con badge de no leídas (lee /api/notifications).
+class _NotifBell extends ConsumerWidget {
+  const _NotifBell();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final count =
+        ref.watch(notificationsProvider).asData?.value.unreadCount ?? 0;
+    final icon = const Icon(Icons.notifications_outlined);
+    return IconButton(
+      tooltip: 'Notificaciones',
+      onPressed: () => context.push('/notificaciones'),
+      icon: count > 0
+          ? Badge(
+              label: Text('$count'),
+              backgroundColor: AppColors.danger,
+              child: icon,
+            )
+          : icon,
     );
   }
 }
