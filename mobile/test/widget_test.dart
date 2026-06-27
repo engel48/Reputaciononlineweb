@@ -2,7 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:reputacion_online/data/api/jwt.dart';
 import 'package:reputacion_online/data/models/app_config.dart';
 import 'package:reputacion_online/data/models/user.dart';
-import 'package:reputacion_online/features/admin/admin_providers.dart';
 
 void main() {
   group('AppUser.fromJson', () {
@@ -63,21 +62,6 @@ void main() {
     test('ok no bloquea por defecto', () {
       expect(AppConfigData.ok.forceUpdate, isFalse);
       expect(AppConfigData.ok.maintenanceMode, isFalse);
-    });
-  });
-
-  group('AdminAnalytics', () {
-    test('fromResponse parsea dispositivos y sesiones', () {
-      final a = AdminAnalytics.fromResponse({
-        'data': {
-          'devices': {'total': 10, 'android': 7, 'ios': 3, 'active7d': 5},
-          'sessions': {'last7d': 20, 'last30d': 80},
-        }
-      });
-      expect(a.devicesTotal, 10);
-      expect(a.android, 7);
-      expect(a.ios, 3);
-      expect(a.sessions30d, 80);
     });
   });
 }

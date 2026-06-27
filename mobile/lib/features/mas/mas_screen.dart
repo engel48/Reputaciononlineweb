@@ -62,21 +62,6 @@ class MasScreen extends ConsumerWidget {
             childAspectRatio: 1.05,
             children: _entries.map((e) => _Tile(e)).toList(),
           ),
-          if (user?.isAdmin == true) ...[
-            const SizedBox(height: 16),
-            Card(
-              color: AppColors.accentNavy,
-              child: ListTile(
-                leading: const Icon(Icons.admin_panel_settings, color: AppColors.cyan),
-                title: const Text('Panel de administración',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-                subtitle: const Text('Gestión de la plataforma y la app',
-                    style: TextStyle(color: Colors.white70)),
-                trailing: const Icon(Icons.chevron_right, color: Colors.white54),
-                onTap: () => context.push('/admin-app'),
-              ),
-            ),
-          ],
         ],
       ),
     );
