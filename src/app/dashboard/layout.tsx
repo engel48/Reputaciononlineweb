@@ -59,8 +59,12 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 
   // Animar apertura/cierre del menú
   useEffect(() => {
+    // El sidebar/main-content solo existen cuando el layout autenticado ya montó.
+    // Evita los warnings "GSAP target .sidebar not found" durante el estado de carga.
+    if (typeof document === 'undefined' || !document.querySelector('.sidebar')) return;
+
     const isExpanded = isMobile ? menuOpen : (menuOpen || menuHovered);
-    
+
     if (isMobile) {
       if (menuOpen) {
         gsap.to('.sidebar', {
