@@ -1,0 +1,11 @@
+# Copiá este archivo a `key.properties` (mismo directorio) y completá tus datos.
+# NO se versiona (está en .gitignore). Se usa para firmar el APK/AAB de release.
+#
+# Generar el keystore (una sola vez):
+#   keytool -genkey -v -keystore upload-keystore.jks -keyalg RSA -keysize 2048 \
+#     -validity 10000 -alias upload
+#
+storePassword=TU_PASSWORD_DEL_STORE
+keyPassword=TU_PASSWORD_DE_LA_KEY
+keyAlias=upload
+storeFile=../upload-keystore.jks

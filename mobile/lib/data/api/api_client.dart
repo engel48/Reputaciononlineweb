@@ -75,11 +75,24 @@ class ApiClient {
     } on DioException catch (e) {
       final code = e.response?.statusCode;
       final data = e.response?.data;
-      String msg = 'Error de conexión. Revisá tu internet e intentá de nuevo.';
+      String msg;
       if (data is Map && (data['error'] != null || data['message'] != null)) {
         msg = (data['error'] ?? data['message']).toString();
       } else if (code != null) {
         msg = 'Error $code';
+      } else {
+        switch (e.type) {
+          case DioExceptionType.connectionTimeout:
+          case DioExceptionType.sendTimeout:
+          case DioExceptionType.receiveTimeout:
+            msg = 'La conexión tardó demasiado. Intentá de nuevo.';
+            break;
+          case DioExceptionType.connectionError:
+            msg = 'Sin conexión a internet. Revisá tu red e intentá de nuevo.';
+            break;
+          default:
+            msg = 'Error de conexión. Revisá tu internet e intentá de nuevo.';
+        }
       }
       throw ApiException(msg, statusCode: code, data: data);
     }

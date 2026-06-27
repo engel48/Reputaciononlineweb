@@ -12,3 +12,7 @@ GeneratedPluginRegistrant.java
 key.properties
 **/*.keystore
 **/*.jks
+
+# Configuración de Firebase (se agrega localmente, no se versiona)
+google-services.json
+app/google-services.json

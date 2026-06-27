@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../data/models/julia.dart';
 import '../../shared/format.dart';
+import '../../shared/widgets/neural_background.dart';
 import 'julia_providers.dart';
 
 class JuliaScreen extends ConsumerStatefulWidget {
@@ -127,16 +128,23 @@ class _Welcome extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
-        const SizedBox(height: 40),
-        Center(
-          child: Container(
-            width: 76,
-            height: 76,
-            decoration: const BoxDecoration(
-              gradient: AppColors.brandGradient,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.auto_awesome, color: Colors.white, size: 38),
+        const SizedBox(height: 24),
+        SizedBox(
+          height: 150,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              const Positioned.fill(child: NeuralBackground(nodeCount: 18)),
+              Container(
+                width: 76,
+                height: 76,
+                decoration: const BoxDecoration(
+                  gradient: AppColors.brandGradient,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.auto_awesome, color: Colors.white, size: 38),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 18),
