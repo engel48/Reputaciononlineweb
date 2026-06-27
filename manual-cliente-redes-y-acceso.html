@@ -5,33 +5,43 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Reputación Online · Guía para el cliente</title>
 <style>
-  :root{ --navy:#01257D; --navy2:#013AAA; --ink:#1f2937; --muted:#5b6b80; --line:#e6eaf0; --bg:#ffffff; --soft:#f5f8fc; }
+  :root{
+    --navy:#01257D; --navy2:#013AAA; --cyan:#00B8D4; --cyan2:#00E5FF;
+    --ink:#1f2937; --muted:#5b6b80; --line:#e6eaf0; --bg:#ffffff; --soft:#f3f7fd;
+  }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.62;font-size:15px}
-  .wrap{max-width:880px;margin:0 auto;padding:36px 22px 72px}
-  header.top{border-bottom:3px solid var(--navy);padding-bottom:18px;margin-bottom:8px}
-  header.top h1{margin:0 0 4px;font-size:25px;color:#0b2545}
-  header.top .by{color:var(--muted);font-size:14px}
-  header.top .by b{color:var(--navy)}
-  h2{display:flex;align-items:center;gap:10px;margin:34px 0 8px;font-size:19px;color:#0b2545}
-  h3{margin:18px 0 6px;font-size:15px;color:#0b2545}
-  .ico{flex:0 0 auto;color:var(--navy)}
+  body{margin:0;background:#eef2f8;color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.62;font-size:15px}
+  .wrap{max-width:880px;margin:0 auto;padding:0 0 60px;background:#fff}
+  /* Encabezado con color */
+  header.top{background:linear-gradient(135deg,#01257D 0%,#013AAA 55%,#00B8D4 130%);color:#fff;padding:30px 30px 26px}
+  header.top .pill{display:inline-block;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:999px;padding:3px 12px;font-size:12px;font-weight:700;margin-bottom:12px}
+  header.top h1{margin:0 0 4px;font-size:25px}
+  header.top .by{color:#dce9fb;font-size:14px}
+  header.top .by b{color:#fff}
+  .body{padding:8px 30px 10px}
   p{margin:8px 0}
-  .card{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-top:14px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
-  .soft{background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:12px 0}
+  h2{display:flex;align-items:center;gap:12px;margin:30px 0 6px;font-size:19px;color:#0b2545}
+  h2 .chip{flex:0 0 auto;width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#01257D,#00B8D4);display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 4px 10px rgba(1,37,125,.22)}
+  h3{margin:18px 0 6px;font-size:15px;color:var(--navy)}
+  .card{background:#fff;border:1px solid var(--line);border-left:5px solid var(--navy);border-radius:12px;padding:18px 20px;margin-top:14px;box-shadow:0 2px 8px rgba(16,24,40,.05)}
+  a{color:var(--navy2);font-weight:600;word-break:break-word}
   ol,ul{margin:8px 0 8px 2px;padding-left:22px}
   li{margin:6px 0}
-  a{color:var(--navy2);font-weight:600;word-break:break-word}
-  code,.url{font-family:"JetBrains Mono",Consolas,monospace;background:#eef3fb;color:#0b3a72;padding:2px 7px;border-radius:5px;font-size:13px}
-  .kv{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:5px 0}
-  .kv .k{color:var(--muted);min-width:120px}
-  .kv .v{font-family:"JetBrains Mono",Consolas,monospace;background:#eef3fb;color:#0b3a72;padding:3px 9px;border-radius:6px}
-  .pill{display:inline-block;background:#eef3fb;color:var(--navy);border:1px solid #d6e2f5;border-radius:999px;padding:3px 12px;font-size:12px;font-weight:700}
-  .note{border-left:4px solid var(--navy);background:var(--soft);padding:10px 14px;border-radius:0 8px 8px 0;margin:12px 0;font-size:14px}
-  .step{display:flex;gap:12px;align-items:flex-start;margin:10px 0}
-  .num{flex:0 0 auto;width:26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center}
-  footer{margin-top:40px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);font-size:13px}
+  code{font-family:"JetBrains Mono",Consolas,monospace;background:#e9f1fc;color:#0b3a72;padding:2px 7px;border-radius:5px;font-size:13px;font-weight:600}
+  .kv{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:7px 0}
+  .kv .k{color:var(--muted);min-width:120px;font-size:14px}
+  .kv .v{font-family:"JetBrains Mono",Consolas,monospace;background:linear-gradient(90deg,#eaf2fd,#e6f8fc);color:#06335f;padding:5px 11px;border-radius:7px;border:1px solid #d6e6f7;font-weight:700}
+  .console{display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;border-radius:999px;padding:6px 14px;font-size:13px;font-weight:700;margin:6px 0}
+  .console a{color:#bfe6ff}
+  /* Pasos numerados con color */
+  .step{display:flex;gap:13px;align-items:flex-start;margin:11px 0}
+  .num{flex:0 0 auto;width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#00B8D4,#01257D);color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 7px rgba(1,37,125,.25)}
+  .note{border-left:4px solid var(--cyan);background:#e9f8fc;padding:11px 15px;border-radius:0 9px 9px 0;margin:12px 0;font-size:14px}
+  .warn{border-left:4px solid #f59e0b;background:#fff7e9;padding:11px 15px;border-radius:0 9px 9px 0;margin:12px 0;font-size:14px}
+  .soft{background:var(--soft);border:1px solid #dbe7f6;border-radius:11px;padding:14px 18px;margin:12px 0}
+  .badge{display:inline-block;background:#e9f1fc;color:var(--navy);border:1px solid #d6e2f5;border-radius:7px;padding:2px 9px;font-size:12px;font-weight:700}
   strong{color:#0b2545}
+  footer{margin-top:34px;background:#f6f9fd;border-top:1px solid var(--line);padding:18px 30px;color:var(--muted);font-size:13px}
 </style>
 </head>
 <body>
@@ -43,24 +53,25 @@
     <div class="by">Preparado por <b>Leandro Ardavar</b> · Junio de 2026</div>
   </header>
 
-  <p>Hola. Te dejo en una sola hoja lo que hace falta de <strong>tu lado</strong> para terminar de
-  habilitar la plataforma, y los accesos para que puedas administrarla. El desarrollo ya está listo y
-  desplegado; lo que sigue son <strong>trámites en las consolas de Facebook y X</strong> (que ninguna empresa
-  puede saltarse) y una recarga en X.</p>
+  <div class="body">
+  <p>Hola. Te dejo en una sola hoja lo que hace falta de <strong>tu lado</strong> para terminar de habilitar
+  la plataforma, y los accesos para que puedas administrarla. El desarrollo ya está listo y desplegado; lo que
+  sigue son <strong>trámites en las consolas de Facebook y X</strong> (que ninguna empresa puede saltarse) y una
+  recarga en X.</p>
 
   <!-- NOVEDADES -->
-  <h2><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg> Novedades entregadas</h2>
+  <h2><span class="chip"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v3M12 19v3M5 12H2M22 12h-3M5.6 5.6l-2 -2M20.4 5.6l2 -2M5.6 18.4l-2 2M20.4 18.4l2 2"/><circle cx="12" cy="12" r="4"/></svg></span> Novedades entregadas</h2>
   <div class="card">
-    <p>Además de lo ya conocido (panel del usuario, app móvil, monitoreo y conexión de redes), en esta
-    etapa dejé funcionando:</p>
+    <p>Además de lo ya conocido (panel del usuario, app móvil, monitoreo y conexión de redes), en esta etapa
+    dejé funcionando:</p>
     <ul>
       <li><strong>Módulo de configuración de la IA (Julia)</strong>, de uso exclusivo del administrador, con:
         <ul>
           <li><strong>Calibración del comportamiento</strong>: control del tono (más estructurado o más fluido)
             y de la longitud de las respuestas.</li>
           <li><strong>Anti‑repetición</strong>: evita que el asistente caiga en bucles o respuestas redundantes.</li>
-          <li><strong>Control de alcance</strong>: si el usuario se sale del tema, el asistente lo reconduce
-            con un mensaje configurable y, si insiste, lo redirige al menú principal.</li>
+          <li><strong>Control de alcance</strong>: si el usuario se sale del tema, lo reconduce con un mensaje
+            configurable y, si insiste, lo redirige al menú principal.</li>
           <li><strong>Cortafuegos de seguridad</strong>: un diccionario de palabras/frases (editable por el
             administrador) que, ante una coincidencia, suspende la respuesta libre y muestra un mensaje
             prioritario.</li>
@@ -72,73 +83,75 @@
   </div>
 
   <!-- ACCESO ADMIN -->
-  <h2><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Acceso al Panel de Administración</h2>
+  <h2><span class="chip"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span> Acceso al Panel de Administración</h2>
   <div class="card">
     <p>Desde acá administrás <strong>todo</strong>: usuarios, créditos, pagos, planes, redes conectadas de cada
     usuario, contenido, comunicaciones, la app móvil, los logs y la <strong>configuración de la IA</strong>.</p>
     <div class="kv"><span class="k">Dirección</span> <span class="v">https://reputaciononline.com.co/admin</span></div>
     <div class="kv"><span class="k">Usuario</span> <span class="v">admin@reputaciononline.com</span></div>
     <div class="kv"><span class="k">Contraseña</span> <span class="v">RepOnline2026.Admin</span></div>
-    <div class="note">Por seguridad, <strong>cambiá la contraseña</strong> apenas ingreses (desde la gestión de
+    <div class="warn">Por seguridad, <strong>cambiá la contraseña</strong> apenas ingreses (desde la gestión de
     usuarios del propio panel).</div>
   </div>
 
   <!-- FACEBOOK / INSTAGRAM -->
-  <h2><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg> Facebook e Instagram</h2>
+  <h2><span class="chip"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></span> Facebook e Instagram</h2>
   <div class="card">
     <p>La cuenta de <strong>Facebook for Developers</strong> y la app ya están creadas con el correo
-    <code>admin@reputaciononline.com</code> (tenés vos la contraseña). Hoy la app está en
-    <strong>“modo desarrollo”</strong>: solo conectan las cuentas del equipo. Para que <strong>cualquier
-    usuario</strong> conecte su cuenta y traigamos sus datos, Meta exige tres trámites. Son obligatorios para
-    todas las apps (los hacen Spotify, Canva, etc.).</p>
+    <code>desarrollo@reputaciononline.co</code> (tenés vos la contraseña). Hoy la app está en
+    <span class="badge">modo desarrollo</span>: solo conectan las cuentas del equipo. Para que
+    <strong>cualquier usuario</strong> conecte su cuenta y traigamos sus datos, Meta exige tres trámites
+    (obligatorios para todas las apps).</p>
 
-    <p class="pill">Consola: <a href="https://developers.facebook.com/apps/" target="_blank">developers.facebook.com/apps</a> → abrí la app <strong>ROL</strong></p>
+    <div class="console">🔗 Consola: <a href="https://developers.facebook.com/apps/" target="_blank">developers.facebook.com/apps</a> → abrí la app <strong>ROL</strong></div>
 
     <h3>1) Verificación de Negocio (Business Verification)</h3>
     <p>Confirma que sos una empresa/persona real. Se hace en el Centro de Seguridad de Meta:</p>
     <div class="step"><span class="num">1</span><div>Entrá a <a href="https://business.facebook.com/settings/security-center" target="_blank">business.facebook.com/settings/security-center</a> (Configuración del negocio → Centro de seguridad).</div></div>
-    <div class="step"><span class="num">2</span><div>Tocá <strong>“Iniciar verificación”</strong> y subí los datos/documentos de la empresa que te pida (nombre legal, dirección, teléfono, y un documento o sitio web que lo respalde).</div></div>
+    <div class="step"><span class="num">2</span><div>Tocá <strong>“Iniciar verificación”</strong> y subí los datos/documentos de la empresa que pida (nombre legal, dirección, teléfono y un documento o sitio web que lo respalde).</div></div>
 
-    <h3>2) App Review — solicitar los permisos (acá va el video)</h3>
-    <p>Es donde Meta aprueba que la app lea los datos. <strong>Acá te pide un video</strong> mostrando cómo se usan
-    los permisos.</p>
+    <h3>2) App Review — solicitar los permisos <span class="badge">acá va el video</span></h3>
+    <p>Es donde Meta aprueba que la app lea los datos. <strong>Acá te pide un video</strong> mostrando cómo se
+    usan los permisos.</p>
     <div class="step"><span class="num">1</span><div>En la app <strong>ROL</strong> → menú izquierdo → <strong>“Revisión de la app” → “Permisos y funciones”</strong>.</div></div>
     <div class="step"><span class="num">2</span><div>Solicitá <strong>Acceso Avanzado</strong> a estos cuatro permisos:
       <code>pages_show_list</code>, <code>pages_read_engagement</code>, <code>instagram_basic</code>, <code>instagram_manage_insights</code>.</div></div>
-    <div class="step"><span class="num">3</span><div>En el formulario de cada permiso, Meta pide: (a) <strong>una explicación</strong> de para qué se usa y (b) <strong>subir un video de pantalla (screencast)</strong> donde se vea a un usuario iniciar sesión con Facebook en la plataforma y cómo se muestran sus datos. <strong>El botón para subir el video está dentro de ese mismo formulario de cada permiso.</strong></div></div>
-    <div class="note">Para el video: grabá la pantalla entrando a <code>reputaciononline.com.co</code>, mostrá el botón “Conectar Facebook/Instagram”, el inicio de sesión, y cómo después aparecen los datos del usuario. Subí ese mismo archivo en cada permiso.</div>
+    <div class="step"><span class="num">3</span><div>En el formulario de cada permiso, Meta pide: (a) <strong>una explicación</strong> de para qué se usa y (b) <strong>subir un video de pantalla (screencast)</strong>. <strong>El botón para subir el video está dentro de ese mismo formulario de cada permiso.</strong></div></div>
+    <div class="note">📹 <strong>Para el video:</strong> grabá la pantalla entrando a <code>reputaciononline.com.co</code>, mostrá el botón “Conectar Facebook/Instagram”, el inicio de sesión, y cómo después aparecen los datos del usuario. Subí ese mismo archivo en cada permiso.</div>
 
     <h3>3) Publicar la app (pasar a “En vivo”)</h3>
     <div class="step"><span class="num">1</span><div>En la app <strong>ROL</strong>, arriba, cambiá el interruptor de <strong>“En desarrollo” → “En vivo”</strong> (o el botón “Publicar”).</div></div>
     <div class="step"><span class="num">2</span><div>Completá lo que pida: <strong>ícono</strong> de la app (1024×1024) y <strong>categoría</strong> (la política de privacidad ya está cargada).</div></div>
 
-    <div class="note"><strong>Importante para Instagram:</strong> cada usuario que quiera conectar Instagram debe
+    <div class="warn"><strong>Importante para Instagram:</strong> cada usuario que quiera conectar Instagram debe
     tener una cuenta de Instagram <strong>Business o Creator</strong> vinculada a una <strong>página de
-    Facebook</strong>. Una cuenta personal de Instagram no se puede conectar (es una regla de Meta).</div>
+    Facebook</strong>. Una cuenta personal de Instagram no se puede conectar (es regla de Meta).</div>
   </div>
 
   <!-- X -->
-  <h2><svg class="ico" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg> X (Twitter)</h2>
+  <h2><span class="chip"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></span> X (Twitter)</h2>
   <div class="card">
-    <p>La cuenta de desarrollador de X también está creada con <code>admin@reputaciononline.com</code> y la app
-    ya quedó configurada (login OK). X <strong>no pide video ni revisión</strong> como Meta — pero sí tiene un
-    detalle: funciona con <strong>pago por uso</strong> y la cuenta está en <strong>$0</strong>.</p>
+    <p>La cuenta de desarrollador de X también está creada con <code>desarrollo@reputaciononline.co</code> y la
+    app ya quedó configurada (login OK). X <strong>no pide video ni revisión</strong> como Meta — pero sí tiene
+    un detalle: funciona con <strong>pago por uso</strong> y la cuenta está en <span class="badge">$0</span>.</p>
 
-    <p class="pill">Consola: <a href="https://console.x.com" target="_blank">console.x.com</a></p>
+    <div class="console">🔗 Consola: <a href="https://console.x.com" target="_blank">console.x.com</a></div>
 
     <h3>Recargar saldo (necesario para que traiga datos)</h3>
     <div class="step"><span class="num">1</span><div>Entrá a <a href="https://console.x.com" target="_blank">console.x.com</a> → menú izquierdo → <strong>“Facturación” → “Créditos”</strong>.</div></div>
     <div class="step"><span class="num">2</span><div>Cargá saldo (con unos pocos dólares alcanza para empezar) o activá la <strong>“recarga automática”</strong> que ofrece el panel.</div></div>
-    <div class="note">El inicio de sesión con X puede funcionar sin saldo, pero <strong>leer el perfil, tweets y
-    menciones tiene costo</strong> (es el modelo nuevo de X). Sin saldo, la lectura de datos falla.</div>
+    <div class="note">💳 El inicio de sesión con X puede funcionar sin saldo, pero <strong>leer el perfil, tweets
+    y menciones tiene costo</strong> (es el modelo nuevo de X). Sin saldo, la lectura de datos falla.</div>
   </div>
 
   <!-- RESUMEN -->
-  <h2><svg class="ico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg> En una línea</h2>
+  <h2><span class="chip"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span> En una línea</h2>
   <div class="soft">
-    <p style="margin:4px 0"><strong>Facebook/Instagram:</strong> Verificación de Negocio + App Review (con video) + Publicar la app.</p>
-    <p style="margin:4px 0"><strong>X:</strong> recargar saldo en Facturación → Créditos.</p>
-    <p style="margin:4px 0"><strong>Admin:</strong> <code>reputaciononline.com.co/admin</code> con el usuario y contraseña de arriba.</p>
+    <p style="margin:5px 0"><strong>Facebook / Instagram:</strong> Verificación de Negocio + App Review (con video) + Publicar la app.</p>
+    <p style="margin:5px 0"><strong>X:</strong> recargar saldo en Facturación → Créditos.</p>
+    <p style="margin:5px 0"><strong>Cuentas de developer:</strong> creadas con <code>desarrollo@reputaciononline.co</code>.</p>
+    <p style="margin:5px 0"><strong>Panel admin:</strong> <code>reputaciononline.com.co/admin</code> con el usuario y contraseña de arriba.</p>
+  </div>
   </div>
 
   <footer>
