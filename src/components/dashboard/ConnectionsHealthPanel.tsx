@@ -14,8 +14,19 @@
  */
 
 import { useState, useEffect } from 'react';
-import { RefreshCw, AlertTriangle, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { RefreshCw, AlertTriangle, CheckCircle, XCircle, Clock, Facebook, Instagram, Youtube } from 'lucide-react';
+import XLogo from '@/components/icons/XLogo';
 import { toast } from 'sonner';
+
+/** Devuelve el logo real de la red (no emoji). */
+function PlatformIcon({ platform }: { platform: string }) {
+  const p = (platform || '').toLowerCase();
+  if (p === 'facebook') return <Facebook className="w-6 h-6 text-[#1877F2]" />;
+  if (p === 'instagram') return <Instagram className="w-6 h-6 text-[#E1306C]" />;
+  if (p === 'youtube') return <Youtube className="w-6 h-6 text-[#FF0000]" />;
+  if (p === 'x' || p === 'twitter') return <XLogo className="w-5 h-5" />;
+  return <Clock className="w-6 h-6 text-gray-400" />;
+}
 
 interface Connection {
   platform: string;
@@ -214,8 +225,10 @@ export default function ConnectionsHealthPanel() {
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  {/* Icono y Nombre */}
-                  <div className="text-3xl">{conn.icon}</div>
+                  {/* Logo real de la red */}
+                  <div className="w-11 h-11 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm">
+                    <PlatformIcon platform={conn.platform} />
+                  </div>
                   <div>
                     <div className="font-semibold text-gray-900">
                       {conn.display_name}
@@ -257,7 +270,7 @@ export default function ConnectionsHealthPanel() {
                   {/* Acción */}
                   {conn.needs_reconnection && (
                     <a
-                      href={`/api/auth/${conn.platform}`}
+                      href={`/api/auth/${conn.platform === 'x' ? 'twitter' : conn.platform}?redirect=/dashboard/redes-sociales`}
                       className="px-3 py-1 text-sm bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
                     >
                       Reconectar
