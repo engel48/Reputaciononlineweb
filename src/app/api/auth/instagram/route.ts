@@ -22,14 +22,18 @@ import jwt from 'jsonwebtoken';
 export const dynamic = 'force-dynamic';
 
 const NEXTAUTH_URL = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-const IG_SCOPES = [
-  'email',
-  'public_profile',
-  'pages_read_engagement',
-  'pages_show_list',
-  'instagram_basic',
-  'instagram_manage_insights',
-];
+
+/**
+ * Scopes de Instagram configurables por env. Default `public_profile` (lo único
+ * aprobado sin App Review). Tras aprobar el App Review, setear en Coolify:
+ *   INSTAGRAM_SCOPES=email,public_profile,pages_read_engagement,pages_show_list,instagram_basic,instagram_manage_insights
+ */
+function getInstagramScopes(): string[] {
+  return (process.env.INSTAGRAM_SCOPES || 'public_profile')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
 
 /**
  * Instagram OAuth — inicio del flujo (GET)
@@ -42,6 +46,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const redirect = searchParams.get('redirect') || APP_SUCCESS_PATH;
   const appId = getFacebookAppId();
+  const IG_SCOPES = getInstagramScopes();
 
   if (!appId) {
     const dest = isAppRedirect(redirect)

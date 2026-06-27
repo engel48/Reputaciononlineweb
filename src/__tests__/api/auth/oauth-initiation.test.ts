@@ -49,7 +49,7 @@ describe('GET /api/auth/youtube (inicio)', () => {
 });
 
 describe('GET /api/auth/facebook (inicio)', () => {
-  it('redirige al diálogo de Facebook con client_id y scopes (state web = no-app)', async () => {
+  it('redirige al diálogo de Facebook con client_id y scope por defecto public_profile', async () => {
     vi.stubEnv('NEXT_PUBLIC_FACEBOOK_APP_ID', 'FBID-123');
     const { GET } = await import('@/app/api/auth/facebook/route');
     const res = await GET(reqFor('facebook'));
@@ -60,8 +60,19 @@ describe('GET /api/auth/facebook (inicio)', () => {
     expect(loc).toContain('dialog/oauth');
     expect(loc).toContain('client_id=FBID-123');
     expect(loc).toContain(encodeURIComponent('https://reputaciononline.com.co/api/auth/facebook/callback'));
+    // Default sin App Review: solo public_profile (evita "Invalid Scopes")
+    expect(new URL(loc).searchParams.get('scope')).toBe('public_profile');
     // Flujo web: el state NO debe marcar app:true
     expect(decodeState(loc).app).toBeUndefined();
+  });
+
+  it('usa FACEBOOK_SCOPES cuando está definido (tras App Review)', async () => {
+    vi.stubEnv('NEXT_PUBLIC_FACEBOOK_APP_ID', 'FBID-123');
+    vi.stubEnv('FACEBOOK_SCOPES', 'email,public_profile,pages_show_list');
+    const { GET } = await import('@/app/api/auth/facebook/route');
+    const res = await GET(reqFor('facebook'));
+    const scope = new URL(res.headers.get('location')!).searchParams.get('scope');
+    expect(scope).toBe('email,public_profile,pages_show_list');
   });
 
   it('sin credenciales redirige a /oauth-callback?error=config_missing (no 500)', async () => {
@@ -85,7 +96,7 @@ describe('GET /api/auth/facebook (inicio)', () => {
 });
 
 describe('GET /api/auth/instagram (inicio)', () => {
-  it('redirige al diálogo de Facebook con scopes de Instagram', async () => {
+  it('redirige al diálogo de Facebook con el callback de Instagram (scope default public_profile)', async () => {
     vi.stubEnv('NEXT_PUBLIC_FACEBOOK_APP_ID', 'FBID-123');
     const { GET } = await import('@/app/api/auth/instagram/route');
     const res = await GET(reqFor('instagram'));
@@ -93,9 +104,18 @@ describe('GET /api/auth/instagram (inicio)', () => {
     expect(res.status).toBeLessThan(400);
     const loc = res.headers.get('location')!;
     expect(loc).toContain('facebook.com');
-    expect(loc).toContain('instagram_basic');
     expect(loc).toContain(encodeURIComponent('https://reputaciononline.com.co/api/auth/instagram/callback'));
+    expect(new URL(loc).searchParams.get('scope')).toBe('public_profile');
     expect(decodeState(loc).app).toBeUndefined();
+  });
+
+  it('usa INSTAGRAM_SCOPES cuando está definido (tras App Review)', async () => {
+    vi.stubEnv('NEXT_PUBLIC_FACEBOOK_APP_ID', 'FBID-123');
+    vi.stubEnv('INSTAGRAM_SCOPES', 'public_profile,instagram_basic,instagram_manage_insights');
+    const { GET } = await import('@/app/api/auth/instagram/route');
+    const res = await GET(reqFor('instagram'));
+    const scope = new URL(res.headers.get('location')!).searchParams.get('scope');
+    expect(scope).toContain('instagram_basic');
   });
 
   it('sin credenciales redirige a config_missing (no 500)', async () => {

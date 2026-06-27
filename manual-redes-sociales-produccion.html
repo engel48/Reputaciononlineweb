@@ -155,6 +155,13 @@ https://reputaciononline.com.co/api/auth/instagram/callback</div></li>
     <div class="copy">NEXT_PUBLIC_FACEBOOK_APP_ID=...      # App ID de la app de Meta
 FACEBOOK_APP_SECRET=...              # App Secret
 NEXT_PUBLIC_INSTAGRAM_CLIENT_ID=... # mismo App ID de Facebook</div>
+    <div class="note"><b>Scopes (permisos) configurables:</b> una app de Meta nueva solo trae
+    <code>public_profile</code> aprobado, así que por defecto la conexión pide solo eso (alcanza para
+    vincular la cuenta). <b>Después de aprobar el App Review</b>, activá los datos de página/Instagram
+    seteando en Coolify (sin tocar código):
+    <div class="copy">FACEBOOK_SCOPES=email,public_profile,pages_read_engagement,pages_show_list
+INSTAGRAM_SCOPES=email,public_profile,pages_read_engagement,pages_show_list,instagram_basic,instagram_manage_insights</div>
+    Si pedís un permiso que aún no está aprobado, Facebook bloquea con <b>"Invalid Scopes"</b>.</div>
   </section>
 
   <h2>4 · X (Twitter) — <span class="tag bad">acción requerida: faltan credenciales</span></h2>

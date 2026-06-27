@@ -14,12 +14,25 @@ export const dynamic = 'force-dynamic';
  */
 
 const NEXTAUTH_URL = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-const SCOPES = ['email', 'public_profile', 'pages_read_engagement', 'pages_show_list'];
+
+/**
+ * Scopes configurables por env. Default `public_profile` porque es lo único que
+ * una app de Meta nueva (flujo de "casos de uso") tiene aprobado sin App Review.
+ * Tras aprobar el App Review, setear en Coolify, ej:
+ *   FACEBOOK_SCOPES=email,public_profile,pages_read_engagement,pages_show_list
+ */
+function getFacebookScopes(): string[] {
+  return (process.env.FACEBOOK_SCOPES || 'public_profile')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const redirect = searchParams.get('redirect') || APP_SUCCESS_PATH;
   const appId = getFacebookAppId();
+  const SCOPES = getFacebookScopes();
 
   // Si falta la credencial en el entorno, devolvemos un error "amigable":
   // redirigimos a la pantalla de retorno con ?error=config_missing en vez de un
