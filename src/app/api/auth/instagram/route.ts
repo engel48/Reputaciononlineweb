@@ -16,12 +16,11 @@ import { saveOAuthConnection } from '@/lib/oauth-storage';
 import { checkSocialAccountLimit } from '@/lib/plan-limits';
 import { facebookOAuth } from '@/lib/oauth/facebook';
 import { encodeAppState, isAppRedirect, APP_SUCCESS_PATH } from '@/lib/oauth/app-flow';
+import { getFacebookAppId, getFacebookAppSecret } from '@/lib/oauth/meta-credentials';
 import jwt from 'jsonwebtoken';
 
 export const dynamic = 'force-dynamic';
 
-const FACEBOOK_APP_ID = process.env.NEXT_PUBLIC_FACEBOOK_APP_ID;
-const FACEBOOK_APP_SECRET = process.env.FACEBOOK_APP_SECRET;
 const NEXTAUTH_URL = process.env.NEXTAUTH_URL || 'http://localhost:3000';
 const IG_SCOPES = [
   'email',
@@ -40,21 +39,23 @@ const IG_SCOPES = [
  * callback termine en `/oauth-app-success`.
  */
 export async function GET(request: NextRequest) {
-  if (!FACEBOOK_APP_ID) {
-    return NextResponse.json(
-      { success: false, error: 'Instagram OAuth no está configurado' },
-      { status: 500 },
-    );
-  }
-
   const { searchParams } = new URL(request.url);
   const redirect = searchParams.get('redirect') || APP_SUCCESS_PATH;
+  const appId = getFacebookAppId();
+
+  if (!appId) {
+    const dest = isAppRedirect(redirect)
+      ? `${NEXTAUTH_URL}${redirect}?error=config_missing`
+      : `${NEXTAUTH_URL}/oauth-callback?error=config_missing`;
+    return NextResponse.redirect(dest);
+  }
+
   const state = isAppRedirect(redirect)
     ? encodeAppState(redirect)
     : Buffer.from(JSON.stringify({ redirect, timestamp: Date.now() })).toString('base64');
 
   const authUrl = new URL('https://www.facebook.com/v21.0/dialog/oauth');
-  authUrl.searchParams.set('client_id', FACEBOOK_APP_ID);
+  authUrl.searchParams.set('client_id', appId);
   authUrl.searchParams.set('redirect_uri', `${NEXTAUTH_URL}/api/auth/instagram/callback`);
   authUrl.searchParams.set('response_type', 'code');
   authUrl.searchParams.set('scope', IG_SCOPES.join(','));
@@ -65,6 +66,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const FACEBOOK_APP_ID = getFacebookAppId();
+    const FACEBOOK_APP_SECRET = getFacebookAppSecret();
     const { code } = await request.json();
 
     if (!code) {

@@ -12,20 +12,21 @@ export const dynamic = 'force-dynamic';
  * El `state` marca el flujo "app" para terminar en `/oauth-app-success`.
  */
 
-const TWITTER_CLIENT_ID = process.env.TWITTER_CLIENT_ID || process.env.NEXT_PUBLIC_TWITTER_CLIENT_ID;
 const NEXTAUTH_URL = process.env.NEXTAUTH_URL || 'http://localhost:3000';
 const SCOPES = ['tweet.read', 'users.read', 'follows.read', 'offline.access'];
 
 export async function GET(request: NextRequest) {
-  if (!TWITTER_CLIENT_ID) {
-    return NextResponse.json(
-      { success: false, error: 'Twitter/X OAuth no está configurado' },
-      { status: 500 },
-    );
-  }
-
   const { searchParams } = new URL(request.url);
   const redirect = searchParams.get('redirect') || APP_SUCCESS_PATH;
+  const clientId = process.env.TWITTER_CLIENT_ID || process.env.NEXT_PUBLIC_TWITTER_CLIENT_ID || '';
+
+  if (!clientId) {
+    const dest = isAppRedirect(redirect)
+      ? `${NEXTAUTH_URL}${redirect}?error=config_missing`
+      : `${NEXTAUTH_URL}/oauth-callback?error=config_missing`;
+    return NextResponse.redirect(dest);
+  }
+
   const state = isAppRedirect(redirect)
     ? encodeAppState(redirect)
     : Buffer.from(JSON.stringify({ redirect, timestamp: Date.now() })).toString('base64');
@@ -36,7 +37,7 @@ export async function GET(request: NextRequest) {
 
   const authUrl = new URL('https://twitter.com/i/oauth2/authorize');
   authUrl.searchParams.set('response_type', 'code');
-  authUrl.searchParams.set('client_id', TWITTER_CLIENT_ID);
+  authUrl.searchParams.set('client_id', clientId);
   authUrl.searchParams.set('redirect_uri', `${NEXTAUTH_URL}/api/auth/twitter/callback`);
   authUrl.searchParams.set('scope', SCOPES.join(' '));
   authUrl.searchParams.set('state', state);

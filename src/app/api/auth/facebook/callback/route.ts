@@ -14,14 +14,15 @@ import { cookies } from 'next/headers';
 import { saveOAuthConnection } from '@/lib/oauth-storage';
 import { checkSocialAccountLimit } from '@/lib/plan-limits';
 import { parseAppState, appResultUrl } from '@/lib/oauth/app-flow';
+import { getFacebookAppId, getFacebookAppSecret } from '@/lib/oauth/meta-credentials';
 import jwt from 'jsonwebtoken';
 
-const FACEBOOK_APP_ID = process.env.NEXT_PUBLIC_FACEBOOK_APP_ID;
-const FACEBOOK_APP_SECRET = process.env.FACEBOOK_APP_SECRET;
 const BASE_URL = process.env.NEXTAUTH_URL || 'http://localhost:3000';
 const REDIRECT_URI = `${BASE_URL}/api/auth/facebook/callback`;
 
 export async function GET(request: NextRequest) {
+  const FACEBOOK_APP_ID = getFacebookAppId();
+  const FACEBOOK_APP_SECRET = getFacebookAppSecret();
   const { searchParams } = new URL(request.url);
   const code = searchParams.get('code');
   const error = searchParams.get('error');

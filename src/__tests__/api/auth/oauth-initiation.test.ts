@@ -64,11 +64,15 @@ describe('GET /api/auth/facebook (inicio)', () => {
     expect(decodeState(loc).app).toBeUndefined();
   });
 
-  it('sin credenciales devuelve 500', async () => {
+  it('sin credenciales redirige a /oauth-callback?error=config_missing (no 500)', async () => {
     vi.stubEnv('NEXT_PUBLIC_FACEBOOK_APP_ID', '');
+    vi.stubEnv('FACEBOOK_APP_ID', '');
+    vi.stubEnv('FACEBOOK_CLIENT_ID', '');
     const { GET } = await import('@/app/api/auth/facebook/route');
     const res = await GET(reqFor('facebook'));
-    expect(res.status).toBe(500);
+    expect(res.status).toBeGreaterThanOrEqual(300);
+    expect(res.status).toBeLessThan(400);
+    expect(res.headers.get('location')).toContain('/oauth-callback?error=config_missing');
   });
 
   it('flujo app (redirect=/oauth-app-success) marca state app:true', async () => {
@@ -94,11 +98,15 @@ describe('GET /api/auth/instagram (inicio)', () => {
     expect(decodeState(loc).app).toBeUndefined();
   });
 
-  it('sin credenciales devuelve 500', async () => {
+  it('sin credenciales redirige a config_missing (no 500)', async () => {
     vi.stubEnv('NEXT_PUBLIC_FACEBOOK_APP_ID', '');
+    vi.stubEnv('FACEBOOK_APP_ID', '');
+    vi.stubEnv('FACEBOOK_CLIENT_ID', '');
     const { GET } = await import('@/app/api/auth/instagram/route');
     const res = await GET(reqFor('instagram'));
-    expect(res.status).toBe(500);
+    expect(res.status).toBeGreaterThanOrEqual(300);
+    expect(res.status).toBeLessThan(400);
+    expect(res.headers.get('location')).toContain('config_missing');
   });
 });
 
@@ -119,11 +127,13 @@ describe('GET /api/auth/twitter (inicio)', () => {
     expect(decodeState(loc).app).toBeUndefined();
   });
 
-  it('sin credenciales devuelve 500', async () => {
+  it('sin credenciales redirige a config_missing (no 500)', async () => {
     vi.stubEnv('TWITTER_CLIENT_ID', '');
     vi.stubEnv('NEXT_PUBLIC_TWITTER_CLIENT_ID', '');
     const { GET } = await import('@/app/api/auth/twitter/route');
     const res = await GET(reqFor('twitter'));
-    expect(res.status).toBe(500);
+    expect(res.status).toBeGreaterThanOrEqual(300);
+    expect(res.status).toBeLessThan(400);
+    expect(res.headers.get('location')).toContain('config_missing');
   });
 });

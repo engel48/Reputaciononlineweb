@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { encodeAppState, isAppRedirect, APP_SUCCESS_PATH } from '@/lib/oauth/app-flow';
+import { getFacebookAppId } from '@/lib/oauth/meta-credentials';
 
 // Usa cookies/redirecciones dinámicas
 export const dynamic = 'force-dynamic';
@@ -7,27 +8,29 @@ export const dynamic = 'force-dynamic';
 /**
  * Facebook OAuth — inicio del flujo (GET)
  *
- * Pensado para la app móvil (WebView): arma la URL de autorización de Facebook
- * server-side y redirige. El `state` marca el flujo como "app" para que el
- * callback termine en `/oauth-app-success` en vez de usar `window.opener`.
- *
- * El flujo web sigue iniciándose desde `src/app/oauth-login/page.tsx`.
+ * Arma la URL de autorización de Facebook server-side y redirige (lee las
+ * credenciales en runtime, no en build). Lo usan tanto la web (popup) como la
+ * app (WebView); el `state` distingue ambos flujos.
  */
 
-const FACEBOOK_APP_ID = process.env.NEXT_PUBLIC_FACEBOOK_APP_ID;
 const NEXTAUTH_URL = process.env.NEXTAUTH_URL || 'http://localhost:3000';
 const SCOPES = ['email', 'public_profile', 'pages_read_engagement', 'pages_show_list'];
 
 export async function GET(request: NextRequest) {
-  if (!FACEBOOK_APP_ID) {
-    return NextResponse.json(
-      { success: false, error: 'Facebook OAuth no está configurado' },
-      { status: 500 },
-    );
-  }
-
   const { searchParams } = new URL(request.url);
   const redirect = searchParams.get('redirect') || APP_SUCCESS_PATH;
+  const appId = getFacebookAppId();
+
+  // Si falta la credencial en el entorno, devolvemos un error "amigable":
+  // redirigimos a la pantalla de retorno con ?error=config_missing en vez de un
+  // 500 crudo, así el popup web (o el WebView) muestra un mensaje claro.
+  if (!appId) {
+    const dest = isAppRedirect(redirect)
+      ? `${NEXTAUTH_URL}${redirect}?error=config_missing`
+      : `${NEXTAUTH_URL}/oauth-callback?error=config_missing`;
+    return NextResponse.redirect(dest);
+  }
+
   // App (WebView) → state app:true (callback redirige a /oauth-app-success).
   // Web (popup) → state simple (callback usa el flujo postMessage de /oauth-callback).
   const state = isAppRedirect(redirect)
@@ -35,7 +38,7 @@ export async function GET(request: NextRequest) {
     : Buffer.from(JSON.stringify({ redirect, timestamp: Date.now() })).toString('base64');
 
   const authUrl = new URL('https://www.facebook.com/v21.0/dialog/oauth');
-  authUrl.searchParams.set('client_id', FACEBOOK_APP_ID);
+  authUrl.searchParams.set('client_id', appId);
   authUrl.searchParams.set('redirect_uri', `${NEXTAUTH_URL}/api/auth/facebook/callback`);
   authUrl.searchParams.set('response_type', 'code');
   authUrl.searchParams.set('scope', SCOPES.join(','));

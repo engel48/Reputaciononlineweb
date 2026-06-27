@@ -5,9 +5,8 @@ import { saveOAuthConnection } from '@/lib/oauth-storage';
 import { checkSocialAccountLimit } from '@/lib/plan-limits';
 import { facebookOAuth } from '@/lib/oauth/facebook';
 import { parseAppState, appResultUrl } from '@/lib/oauth/app-flow';
+import { getFacebookAppId, getFacebookAppSecret } from '@/lib/oauth/meta-credentials';
 
-const FACEBOOK_APP_ID = process.env.NEXT_PUBLIC_FACEBOOK_APP_ID;
-const FACEBOOK_APP_SECRET = process.env.FACEBOOK_APP_SECRET;
 const BASE_URL = process.env.NEXTAUTH_URL || 'http://localhost:3000';
 
 /**
@@ -20,6 +19,8 @@ async function handleAppFlow(
   error: string | null,
   redirect: string,
 ): Promise<NextResponse> {
+  const FACEBOOK_APP_ID = getFacebookAppId();
+  const FACEBOOK_APP_SECRET = getFacebookAppSecret();
   const ok = (platform: string) =>
     NextResponse.redirect(appResultUrl(BASE_URL, redirect, { platform }));
   const fail = (reason: string) =>
