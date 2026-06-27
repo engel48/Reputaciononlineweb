@@ -5,7 +5,7 @@ vi.mock('@/lib/database-adapter', () => ({
   systemSettingsService: { get: vi.fn(), set: vi.fn() },
 }));
 
-import { normalizeAiConfig, DEFAULT_AI_CONFIG } from '@/lib/ai-config';
+import { normalizeAiConfig, DEFAULT_AI_CONFIG, detectCrisisKeyword } from '@/lib/ai-config';
 
 describe('normalizeAiConfig', () => {
   it('acota valores fuera de rango', () => {
@@ -46,5 +46,31 @@ describe('normalizeAiConfig', () => {
     expect(c.maxTokens).toBe(1024);
     expect(c.maxOffContextAttempts).toBe(2);
     expect(c.redirectMessage).toBe('Volvamos al tema, por favor.');
+  });
+
+  it('normaliza crisisKeywords (string o array, dedup, sin vacíos)', () => {
+    const fromString = normalizeAiConfig({ crisisKeywords: 'me quiero morir\nME QUIERO MORIR\n\n  emergencia  ' });
+    expect(fromString.crisisKeywords).toEqual(['me quiero morir', 'emergencia']);
+
+    const fromArray = normalizeAiConfig({ crisisKeywords: ['daño', 'daño', ''] });
+    expect(fromArray.crisisKeywords).toEqual(['daño']);
+
+    expect(normalizeAiConfig({}).crisisKeywords).toEqual([]);
+  });
+});
+
+describe('detectCrisisKeyword', () => {
+  const kws = ['me quiero morir', 'hacerme daño', 'emergencia'];
+
+  it('detecta sin importar acentos ni mayúsculas', () => {
+    expect(detectCrisisKeyword('Creo que ME QUIERO MORIR hoy', kws)).toBe('me quiero morir');
+    expect(detectCrisisKeyword('quiero hacerme daño', kws)).toBe('hacerme daño');
+    expect(detectCrisisKeyword('es una EMERGENCIA médica', kws)).toBe('emergencia');
+  });
+
+  it('devuelve null si no hay coincidencia o no hay keywords', () => {
+    expect(detectCrisisKeyword('cómo mejoro mi reputación', kws)).toBeNull();
+    expect(detectCrisisKeyword('me quiero morir', [])).toBeNull();
+    expect(detectCrisisKeyword('', kws)).toBeNull();
   });
 });

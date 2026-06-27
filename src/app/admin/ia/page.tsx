@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { RefreshCw, Save, Sliders, Repeat, RotateCcw, Bot, Thermometer, Shuffle } from 'lucide-react';
+import { RefreshCw, Save, Sliders, Repeat, RotateCcw, Bot, Thermometer, Shuffle, ShieldAlert } from 'lucide-react';
 import { AdminPageWrapper } from '@/components/admin';
 
 interface AiConfig {
@@ -10,7 +10,10 @@ interface AiConfig {
   frequencyPenalty: number;
   presencePenalty: number;
   maxOffContextAttempts: number;
+  outOfScopeMessage: string;
   redirectMessage: string;
+  crisisKeywords: string[];
+  crisisMessage: string;
 }
 
 const DEFAULTS: AiConfig = {
@@ -19,8 +22,13 @@ const DEFAULTS: AiConfig = {
   frequencyPenalty: 0.3,
   presencePenalty: 0.3,
   maxOffContextAttempts: 3,
+  outOfScopeMessage:
+    'Soy Julia, tu asistente de reputación online. Ese tema está fuera de mi alcance. ¿Querés que te ayude con tus menciones, sentimiento, crisis o redes?',
   redirectMessage:
     'Parece que nos estamos desviando del tema. Te regreso al menú principal para ayudarte mejor con tu reputación online. 🧭',
+  crisisKeywords: [],
+  crisisMessage:
+    'Detectamos un mensaje delicado. Julia no puede ayudarte con esto. Si estás en peligro o en crisis, comunicate con la línea de ayuda de tu país o con un profesional de inmediato.',
 };
 
 export default function AdminIaPage() {
@@ -141,13 +149,55 @@ export default function AdminIaPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Mensaje de redirección</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Mensaje de salida de contexto</label>
                 <textarea
-                  rows={3}
+                  rows={2}
+                  value={config.outOfScopeMessage}
+                  onChange={(e) => set('outOfScopeMessage', e.target.value)}
+                  className="w-full px-3 py-2 rounded-md bg-gray-50 border border-gray-300 text-gray-900 text-sm"
+                  placeholder="Respuesta estandarizada cuando el usuario se sale del tema (antes de llegar al umbral)"
+                />
+                <p className="text-xs text-gray-500 mt-1">Se muestra en cada desvío del tema, reconduciendo a las funciones de la plataforma.</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Mensaje de redirección (al superar el umbral)</label>
+                <textarea
+                  rows={2}
                   value={config.redirectMessage}
                   onChange={(e) => set('redirectMessage', e.target.value)}
                   className="w-full px-3 py-2 rounded-md bg-gray-50 border border-gray-300 text-gray-900 text-sm"
                   placeholder="Mensaje que verá el usuario al superar el umbral"
+                />
+              </div>
+            </section>
+
+            {/* Cortafuegos de seguridad / crisis */}
+            <section className="bg-white rounded-lg border border-gray-200 shadow-sm p-5 space-y-4">
+              <h3 className="font-semibold text-gray-900 flex items-center gap-2"><ShieldAlert className="w-4 h-4 text-red-600" /> Cortafuegos de seguridad (crisis)</h3>
+              <p className="text-sm text-gray-500">
+                Diccionario de palabras/frases de alta prioridad. Si el mensaje del usuario coincide con
+                alguna, <b>se suspende la IA</b> y se muestra el mensaje de crisis de inmediato (no llama al
+                modelo ni descuenta créditos). Comparación sin acentos ni mayúsculas.
+              </p>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Palabras / frases clave (una por línea)</label>
+                <textarea
+                  rows={5}
+                  value={config.crisisKeywords.join('\n')}
+                  onChange={(e) => set('crisisKeywords', e.target.value.split('\n').map((s) => s.trim()).filter(Boolean))}
+                  className="w-full px-3 py-2 rounded-md bg-gray-50 border border-gray-300 text-gray-900 text-sm font-mono"
+                  placeholder={'me quiero morir\nhacerme daño\nemergencia médica'}
+                />
+                <p className="text-xs text-gray-500 mt-1">{config.crisisKeywords.length} término(s) configurado(s).</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Mensaje de crisis</label>
+                <textarea
+                  rows={3}
+                  value={config.crisisMessage}
+                  onChange={(e) => set('crisisMessage', e.target.value)}
+                  className="w-full px-3 py-2 rounded-md bg-gray-50 border border-gray-300 text-gray-900 text-sm"
+                  placeholder="Mensaje prioritario que se muestra ante una palabra de crisis"
                 />
               </div>
             </section>

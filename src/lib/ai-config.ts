@@ -17,8 +17,14 @@ export interface AiConfig {
   presencePenalty: number;
   /** Umbral de reincidencia: tras N mensajes fuera de contexto seguidos, redirige. 0 = desactivado. */
   maxOffContextAttempts: number;
-  /** Mensaje de redirección al superar el umbral. */
+  /** Mensaje estandarizado de salida de contexto (cada desvío, antes de llegar al umbral). */
+  outOfScopeMessage: string;
+  /** Mensaje de redirección al menú principal al superar el umbral. */
   redirectMessage: string;
+  /** Cortafuegos de seguridad: frases/palabras de alta prioridad que suspenden el LLM. */
+  crisisKeywords: string[];
+  /** Banner/mensaje prioritario a mostrar cuando se detecta una palabra de crisis. */
+  crisisMessage: string;
 }
 
 export const DEFAULT_AI_CONFIG: AiConfig = {
@@ -27,8 +33,13 @@ export const DEFAULT_AI_CONFIG: AiConfig = {
   frequencyPenalty: 0.3,
   presencePenalty: 0.3,
   maxOffContextAttempts: 3,
+  outOfScopeMessage:
+    'Soy Julia, tu asistente de reputación online. Ese tema está fuera de mi alcance. ¿Querés que te ayude con tus menciones, sentimiento, crisis o redes? Elegí una de las sugerencias para empezar. 🙂',
   redirectMessage:
     'Parece que nos estamos desviando del tema. Te regreso al menú principal para ayudarte mejor con tu reputación online. 🧭',
+  crisisKeywords: [],
+  crisisMessage:
+    'Detectamos un mensaje delicado. Julia no puede ayudarte con esto, pero no estás solo/a. Si estás en peligro o en crisis, comunicate con la línea de ayuda de tu país o con un profesional de salud de inmediato. En Colombia podés llamar a la Línea 106 o al 123.',
 };
 
 export const AI_CONFIG_KEY = 'ai_config';
@@ -39,18 +50,63 @@ function clampNum(v: unknown, min: number, max: number, def: number): number {
   return Math.min(max, Math.max(min, n));
 }
 
+function cleanMsg(v: unknown, def: string, max = 800): string {
+  const s = typeof v === 'string' ? v.trim() : '';
+  return s ? s.slice(0, max) : def;
+}
+
+/** Normaliza una lista de palabras/frases clave (dedup, trim, sin vacíos, tope 200). */
+function normalizeKeywords(v: unknown): string[] {
+  let arr: string[] = [];
+  if (Array.isArray(v)) arr = v.map((x) => String(x));
+  else if (typeof v === 'string') arr = v.split(/\r?\n|,/);
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const raw of arr) {
+    const k = raw.trim();
+    if (!k) continue;
+    const key = k.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(k.slice(0, 120));
+    if (out.length >= 200) break;
+  }
+  return out;
+}
+
 /** Sanea/acota cualquier objeto entrante a un AiConfig válido. */
 export function normalizeAiConfig(raw: unknown): AiConfig {
   const r = (raw || {}) as Record<string, unknown>;
-  const msg = typeof r.redirectMessage === 'string' ? r.redirectMessage.trim() : '';
   return {
     temperature: clampNum(r.temperature, 0, 1.5, DEFAULT_AI_CONFIG.temperature),
     maxTokens: Math.round(clampNum(r.maxTokens, 256, 4096, DEFAULT_AI_CONFIG.maxTokens)),
     frequencyPenalty: clampNum(r.frequencyPenalty, 0, 2, DEFAULT_AI_CONFIG.frequencyPenalty),
     presencePenalty: clampNum(r.presencePenalty, 0, 2, DEFAULT_AI_CONFIG.presencePenalty),
     maxOffContextAttempts: Math.round(clampNum(r.maxOffContextAttempts, 0, 10, DEFAULT_AI_CONFIG.maxOffContextAttempts)),
-    redirectMessage: msg ? msg.slice(0, 500) : DEFAULT_AI_CONFIG.redirectMessage,
+    outOfScopeMessage: cleanMsg(r.outOfScopeMessage, DEFAULT_AI_CONFIG.outOfScopeMessage),
+    redirectMessage: cleanMsg(r.redirectMessage, DEFAULT_AI_CONFIG.redirectMessage, 500),
+    crisisKeywords: normalizeKeywords(r.crisisKeywords),
+    crisisMessage: cleanMsg(r.crisisMessage, DEFAULT_AI_CONFIG.crisisMessage),
   };
+}
+
+/** Quita acentos y pasa a minúsculas para comparar de forma robusta. */
+function normalizeForMatch(s: string): string {
+  return s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+}
+
+/**
+ * Cortafuegos: ¿el mensaje contiene alguna palabra/frase de crisis?
+ * Compara sin acentos ni mayúsculas (substring). Devuelve la coincidencia o null.
+ */
+export function detectCrisisKeyword(message: string, keywords: string[]): string | null {
+  if (!message || !keywords?.length) return null;
+  const m = normalizeForMatch(message);
+  for (const kw of keywords) {
+    const k = normalizeForMatch(kw).trim();
+    if (k && m.includes(k)) return kw;
+  }
+  return null;
 }
 
 /** Lee la config guardada (system_settings) con fallback a defaults. */

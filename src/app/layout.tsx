@@ -8,8 +8,27 @@ import { SWRProvider } from '@/lib/swr-config';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Reputacion Online',
-  description: 'Plataforma de monitoreo de redes sociales y gestion de reputacion',
+  metadataBase: new URL('https://reputaciononline.com.co'),
+  title: {
+    default: 'Reputación Online — Monitoreo y reputación digital con IA',
+    template: '%s · Reputación Online',
+  },
+  description:
+    'Monitoreá menciones, sentimiento y crisis de tu marca o figura pública en redes sociales y medios, con la asistente de IA Julia.',
+  applicationName: 'Reputación Online',
+  icons: {
+    icon: '/heart-logo.svg',
+    shortcut: '/heart-logo.svg',
+    apple: '/rol-logo.png',
+  },
+  openGraph: {
+    title: 'Reputación Online',
+    description: 'Monitoreo de reputación digital con IA.',
+    url: 'https://reputaciononline.com.co',
+    siteName: 'Reputación Online',
+    locale: 'es_CO',
+    type: 'website',
+  },
 };
 
 export default function RootLayout({

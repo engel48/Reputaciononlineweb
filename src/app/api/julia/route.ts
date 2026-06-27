@@ -4,7 +4,7 @@ import { buildUserContext } from '@/lib/user-context';
 import { deductCreditsForAction, extractUserIdFromToken, checkBalance } from '@/lib/credit-guard';
 import { CREDIT_COSTS, CreditAction } from '@/lib/credit-costs';
 import { searchGoogleNewsLive } from '@/lib/news-search/google-news-rss';
-import { getAiConfig } from '@/lib/ai-config';
+import { getAiConfig, detectCrisisKeyword } from '@/lib/ai-config';
 
 // Runtime Node.js (necesario para groq-sdk + supabase-server)
 // maxDuration extendido porque la llamada a Groq + buildUserContext + deduct
@@ -215,6 +215,30 @@ export async function POST(request: NextRequest) {
       // aplicando la calibración del admin (temperatura, penalizaciones) y el
       // protocolo de reincidencia fuera de contexto.
       const aiConfig = await getAiConfig();
+
+      // CORTAFUEGOS DE SEGURIDAD (módulo 2): si el mensaje contiene una frase/palabra
+      // de crisis configurada por el admin, suspendemos la generación del LLM y
+      // respondemos el mensaje prioritario. No se llama a Groq ni se descuentan créditos.
+      const crisisHit = detectCrisisKeyword(message || '', aiConfig.crisisKeywords);
+      if (crisisHit) {
+        const crisisResponse = aiConfig.crisisMessage;
+        if (userId && message) {
+          try {
+            conversationId = await appendToActiveConversation(userId, message, crisisResponse);
+          } catch (saveErr) {
+            console.warn('[julia] no se pudo guardar historial (crisis):', saveErr);
+          }
+        }
+        return NextResponse.json({
+          success: true,
+          response: crisisResponse,
+          isCrisis: true,
+          credits: { cost: 0 },
+          conversationId,
+          timestamp: new Date().toISOString(),
+        });
+      }
+
       const history = userId ? await loadRecentHistory(userId, 20) : [];
 
       // Protocolo de reincidencia: si hay umbral, instruimos a Julia para que
@@ -234,7 +258,8 @@ export async function POST(request: NextRequest) {
       });
 
       const offTopic = raw.trimStart().startsWith(OFF_CONTEXT_TOKEN);
-      response = offTopic ? raw.replace(OFF_CONTEXT_TOKEN, '').trimStart() : raw;
+      // En tema → respuesta del LLM. Fuera de tema → mensaje estandarizado (módulo 1).
+      response = offTopic ? aiConfig.outOfScopeMessage : raw;
 
       // Contador de reincidencia por conversación (en amelia_conversations.context).
       if (guardActive && userId) {
@@ -243,6 +268,7 @@ export async function POST(request: NextRequest) {
           const prev = await getOffContextCount(convId);
           const next = offTopic ? prev + 1 : 0;
           if (offTopic && next >= aiConfig.maxOffContextAttempts) {
+            // Al superar el umbral, se escala a la redirección al menú principal (módulo 3).
             response = aiConfig.redirectMessage;
             await setOffContextCount(convId, 0); // se reinicia tras redirigir
           } else {

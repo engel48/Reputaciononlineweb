@@ -11,8 +11,9 @@ import FacebookDashboardSection from '@/components/dashboard/FacebookDashboardSe
 import InstagramDashboardSection from '@/components/dashboard/InstagramDashboardSection';
 import XDashboardSection from '@/components/dashboard/XDashboardSection';
 import ConnectionsHealthPanel from '@/components/dashboard/ConnectionsHealthPanel';
+import SocialNetworkConnector from '@/components/user/SocialNetworkConnectorFixed';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowUpRight, RefreshCw, TrendingUp, TrendingDown, Facebook, Instagram, CreditCard, Brain, Sparkles, Wifi, WifiOff, AlertTriangle, Search, Zap, BarChart3, Users, MessageSquare, Activity, Target, Award, Globe, Clock, Newspaper, Bot, X } from 'lucide-react';
+import { ArrowUpRight, RefreshCw, TrendingUp, TrendingDown, Facebook, Instagram, CreditCard, Brain, Sparkles, Wifi, WifiOff, AlertTriangle, Search, Zap, BarChart3, Users, MessageSquare, Activity, Target, Award, Globe, Clock, Newspaper, Bot, X, Link2, ChevronDown } from 'lucide-react';
 import XLogo from '@/components/icons/XLogo';
 import dynamic from 'next/dynamic';
 import JuliaThinkingAnimation from '@/components/dashboard/JuliaThinkingAnimation';
@@ -96,6 +97,8 @@ export default function Dashboard() {
   // Estado para métricas consolidadas REALES de redes sociales
   const [consolidatedMetrics, setConsolidatedMetrics] = useState<any>(null);
   const [loadingConsolidated, setLoadingConsolidated] = useState(true);
+  // Panel de conexión de redes desde el home
+  const [showConnector, setShowConnector] = useState(false);
   
   // Estados para menciones en tiempo real - AHORA CON DATOS REALES
   const [mencionesRecientes, setMencionesRecientes] = useState<Mention[]>([]);
@@ -447,16 +450,37 @@ export default function Dashboard() {
                 </p>
               </div>
             </div>
-            <Link
-              href="/dashboard/redes-sociales"
+            <button
+              onClick={() => setShowConnector(true)}
               className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#01257D] hover:bg-[#013AAA] text-white font-semibold rounded-xl transition-all shadow-md hover:shadow-lg whitespace-nowrap"
             >
               Conectar ahora
               <ArrowUpRight className="h-4 w-4" />
-            </Link>
+            </button>
           </div>
         </motion.div>
       )}
+
+      {/* Conectar / gestionar redes directamente desde el home */}
+      <div className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden">
+        <button
+          onClick={() => setShowConnector((v) => !v)}
+          className="w-full flex items-center justify-between gap-3 px-5 py-4 hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors"
+        >
+          <span className="flex items-center gap-2 text-base font-bold text-gray-900 dark:text-white">
+            <span className="p-2 rounded-lg bg-gradient-to-br from-[#00E5FF] to-[#01257D]">
+              <Link2 className="h-4 w-4 text-white" />
+            </span>
+            Conectá tus redes sociales
+          </span>
+          <ChevronDown className={`h-5 w-5 text-gray-400 transition-transform ${showConnector ? 'rotate-180' : ''}`} />
+        </button>
+        {showConnector && (
+          <div className="px-3 sm:px-5 pb-5 border-t border-gray-100 dark:border-gray-700">
+            <SocialNetworkConnector isOnboarding={false} allowSkip={false} onComplete={() => cargarMetricasConsolidadas()} />
+          </div>
+        )}
+      </div>
 
       {/* Sentimiento - TARJETAS PROMINENTES */}
       <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
