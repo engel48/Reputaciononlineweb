@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/push/push_service.dart';
 import '../creditos/creditos_screen.dart';
 import '../dashboard/dashboard_screen.dart';
 import '../julia/julia_screen.dart';
@@ -17,6 +18,15 @@ class HomeShell extends ConsumerStatefulWidget {
 
 class _HomeShellState extends ConsumerState<HomeShell> {
   int _index = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // Registrar el dispositivo para push (no-op si Firebase no está configurado).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(pushServiceProvider).registerForUser();
+    });
+  }
 
   static const _tabs = <Widget>[
     DashboardScreen(),

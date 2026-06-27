@@ -13,4 +13,8 @@ class Env {
   static const String deepLinkScheme = 'reputaciononline';
 
   static const String appName = 'Reputación Online';
+
+  /// Versión actual de la app (debe coincidir con pubspec.yaml `version`).
+  /// Se envía a `/api/app/config` para el control de actualización forzada.
+  static const String appVersion = '1.0.0';
 }
