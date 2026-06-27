@@ -6,44 +6,41 @@
 <title>Reputación Online · Manual de redes sociales en producción</title>
 <style>
   :root{
-    --cyan:#00E5FF; --navy:#0B1120; --navy2:#151C2E; --accent:#01257D;
-    --green:#10B981; --amber:#F59E0B; --red:#EF4444; --muted:#94a3b8; --line:#243049;
+    --cyan:#00B8CC; --cyan2:#00E5FF; --navy:#0B1120; --accent:#01257D;
+    --green:#0f9d63; --amber:#b97900; --red:#dc2626; --muted:#5b6b80;
+    --line:#e3e9f1; --bg:#ffffff; --panel:#f6f9fc; --ink:#1f2937;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--navy);color:#e7edf5;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.6}
-  a{color:var(--cyan)}
-  .wrap{max-width:960px;margin:0 auto;padding:32px 20px 80px}
-  header.top{background:linear-gradient(135deg,#01257D 0%,#0B1120 70%);border-radius:18px;padding:32px 28px;border:1px solid var(--line)}
-  header.top h1{margin:0 0 6px;font-size:26px}
-  header.top p{margin:0;color:var(--muted)}
-  .pill{display:inline-block;background:rgba(0,229,255,.12);color:var(--cyan);border:1px solid rgba(0,229,255,.3);border-radius:999px;padding:3px 12px;font-size:12px;font-weight:600;margin-bottom:14px}
-  h2{margin:38px 0 10px;font-size:21px;border-left:4px solid var(--cyan);padding-left:12px}
-  h3{margin:22px 0 8px;font-size:16px;color:#fff}
-  section.card{background:var(--navy2);border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin-top:16px}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.62}
+  a{color:#0077a3}
+  .wrap{max-width:980px;margin:0 auto;padding:28px 20px 80px}
+  header.top{background:linear-gradient(135deg,#01257D 0%,#0B1120 90%);color:#fff;border-radius:16px;padding:30px 28px}
+  header.top h1{margin:0 0 6px;font-size:25px}
+  header.top p{margin:0;color:#cfe0f5}
+  .pill{display:inline-block;background:rgba(0,229,255,.18);color:#aef4ff;border:1px solid rgba(0,229,255,.4);border-radius:999px;padding:3px 12px;font-size:12px;font-weight:600;margin-bottom:12px}
+  h2{margin:34px 0 8px;font-size:20px;border-left:4px solid var(--cyan);padding-left:12px;color:#0b2545}
+  h3{margin:20px 0 6px;font-size:15px;color:#0b2545}
+  section.card{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-top:14px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
   table{width:100%;border-collapse:collapse;margin:10px 0;font-size:14px}
   th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
-  th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
-  code,.copy{font-family:"JetBrains Mono",Consolas,monospace}
-  .copy{display:block;background:var(--navy);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin:6px 0;font-size:13px;color:#cfe9ff;overflow-x:auto;white-space:pre}
-  .kv{font-size:13px}
-  .kv b{color:#fff}
+  th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em;background:var(--panel)}
+  code{font-family:"JetBrains Mono",Consolas,monospace;background:#eef3f8;color:#0b3a52;padding:1px 5px;border-radius:4px;font-size:13px}
+  .copy{display:block;background:#0b1120;color:#d7f3ff;border-radius:8px;padding:11px 13px;margin:6px 0;font-size:13px;overflow-x:auto;white-space:pre;font-family:"JetBrains Mono",Consolas,monospace}
   .tag{display:inline-block;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700}
-  .ok{background:rgba(16,185,129,.15);color:#6ee7b7}
-  .warn{background:rgba(245,158,11,.15);color:#fcd34d}
-  .bad{background:rgba(239,68,68,.15);color:#fca5a5}
+  .ok{background:#e7f7ef;color:#0f9d63}
+  .warn{background:#fdf3e3;color:#b97900}
+  .bad{background:#fde8e8;color:#dc2626}
   ol,ul{margin:8px 0 8px 4px;padding-left:22px}
   li{margin:5px 0}
-  .note{border-left:3px solid var(--amber);background:rgba(245,158,11,.08);padding:10px 14px;border-radius:0 8px 8px 0;margin:12px 0;font-size:14px}
-  .danger{border-left:3px solid var(--red);background:rgba(239,68,68,.08);padding:10px 14px;border-radius:0 8px 8px 0;margin:12px 0;font-size:14px}
-  .tip{border-left:3px solid var(--green);background:rgba(16,185,129,.08);padding:10px 14px;border-radius:0 8px 8px 0;margin:12px 0;font-size:14px}
-  .step{counter-reset:none}
-  .toc a{display:block;padding:4px 0;text-decoration:none}
+  .note{border-left:3px solid var(--amber);background:#fdf6ea;padding:10px 14px;border-radius:0 8px 8px 0;margin:12px 0;font-size:14px}
+  .danger{border-left:3px solid var(--red);background:#fdeaea;padding:10px 14px;border-radius:0 8px 8px 0;margin:12px 0;font-size:14px}
+  .tip{border-left:3px solid var(--green);background:#e9f8f1;padding:10px 14px;border-radius:0 8px 8px 0;margin:12px 0;font-size:14px}
   .checklist{list-style:none;padding-left:4px}
   .checklist li::before{content:"☐ ";color:var(--cyan);font-weight:700}
-  footer{margin-top:40px;color:var(--muted);font-size:12px;text-align:center}
-  .logo{font-weight:800;letter-spacing:.02em}
-  .logo span{color:var(--cyan)}
-  @media print{body{background:#fff;color:#111}section.card,header.top{border:1px solid #ccc}.copy{background:#f4f7fb;color:#0b3}}
+  footer{margin-top:38px;color:var(--muted);font-size:12px;text-align:center;border-top:1px solid var(--line);padding-top:16px}
+  .logo{font-weight:800}
+  .logo span{color:var(--cyan2)}
+  @media print{header.top{background:#0B1120 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.copy{background:#0b1120 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 </style>
 </head>
 <body>
@@ -53,11 +50,22 @@
     <div class="pill">Manual de configuración · Verificado online (junio 2026)</div>
     <h1 class="logo">Reputación <span>Online</span> · Redes sociales en producción</h1>
     <p>Qué tenés que hacer <b>vos</b> (consolas de desarrollador + Coolify) para que las 4 redes
-    queden funcionando en producción y se puedan probar. El código ya está listo y desplegado.</p>
+    queden conectando en producción. El código ya está corregido y desplegado.</p>
   </header>
 
   <section class="card">
-    <h3>📍 Cómo está hoy</h3>
+    <h3>📍 Qué se arregló (por qué antes solo funcionaba YouTube)</h3>
+    <p>Antes, Facebook/Instagram/X iniciaban el login <b>en el navegador</b>, leyendo unas variables
+    (<code>NEXT_PUBLIC_*</code>) que Next.js "hornea" al compilar. En el servidor de producción esas variables
+    no estaban en la compilación, así que quedaban vacías y esas 3 redes fallaban con "no está configurado".
+    YouTube funcionaba porque iniciaba <b>en el servidor</b>.</p>
+    <div class="tip"><b>Ahora las 4 redes inician en el servidor</b> y leen las credenciales en tiempo de
+    ejecución. Resultado: alcanza con cargar las credenciales como <b>variables de entorno en Coolify</b>
+    (runtime) y <b>Redeploy</b>. Ya no hace falta tocar el build ni pasar <code>NEXT_PUBLIC_*</code> de forma especial.</div>
+  </section>
+
+  <section class="card">
+    <h3>Estado actual</h3>
     <table>
       <tr><th>Red</th><th>Código</th><th>Credenciales</th><th>Qué te falta</th></tr>
       <tr><td><b>YouTube</b> (Google)</td><td><span class="tag ok">Listo</span></td><td><span class="tag ok">Cargadas</span></td><td>Habilitar API + verificar pantalla de consentimiento + redirect URI</td></tr>
@@ -66,30 +74,26 @@
       <tr><td><b>X (Twitter)</b></td><td><span class="tag ok">Listo</span></td><td><span class="tag bad">FALTAN</span></td><td><b>Crear la app en X</b> y cargar Client ID/Secret + redirect URI</td></tr>
     </table>
     <div class="note"><b>Importante:</b> el documento viejo <code>supabase/OAUTH_CONFIG.md</code> está desactualizado
-    (apunta a Supabase Auth y al dominio <code>.com</code> sin <code>.co</code>). <b>Ignoralo.</b> La implementación real
-    usa rutas propias y el dominio <code>reputaciononline.com.co</code>. Usá las URLs de este manual.</div>
+    (apunta a Supabase Auth y al dominio <code>.com</code> sin <code>.co</code>). <b>Ignoralo.</b> Usá las URLs de este manual.</div>
   </section>
 
-  <h2>0 · Antes que nada: dejar el servidor arriba (Coolify)</h2>
+  <h2>0 · Servidor arriba (Coolify)</h2>
   <section class="card">
-    <div class="danger"><b>Hoy producción está caída</b> en bucle de reinicio porque falta la variable
-    <code>JWT_SECRET</code>. Hasta arreglar esto no se puede probar nada (ni login, ni redes).</div>
-    <p>En Coolify → tu app → pestaña <b>Environment Variables</b>, asegurá estas (y luego <b>Redeploy</b>):</p>
+    <p>En Coolify → tu app → <b>Environment Variables</b>, asegurá estas y luego <b>Redeploy</b>:</p>
     <div class="copy">NEXTAUTH_URL=https://reputaciononline.com.co
 JWT_SECRET=&lt;secreto largo y aleatorio&gt;          # obligatoria: sin esto la app no arranca
 NEXTAUTH_SECRET=&lt;secreto largo y aleatorio&gt;
 ENCRYPTION_SECRET=&lt;secreto largo y aleatorio&gt;     # cifra los tokens de las redes</div>
-    <div class="tip">Para generar un secreto fuerte: en una terminal con Node corré
-    <code>node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"</code> y pegá el resultado.</div>
+    <div class="tip">Para generar un secreto fuerte, en una terminal con Node:
+    <code>node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"</code></div>
     <div class="note"><b>Ojo:</b> <code>NEXTAUTH_URL</code> debe ser exactamente <code>https://reputaciononline.com.co</code>
-    (con <code>.co</code>, sin barra final). Ese valor define <b>todas</b> las URLs de callback que registres abajo.
-    Si lo cambiás, hay que volver a registrar los callbacks.</div>
+    (con <code>.co</code>, sin barra final). Ese valor define todas las URLs de callback de abajo.</div>
   </section>
 
   <h2>1 · URLs de callback que vas a registrar</h2>
   <section class="card">
-    <p>Cada consola te pide una "URL de redirección / callback autorizada". Son <b>estas exactas</b>
-    (copialas tal cual; deben coincidir carácter por carácter):</p>
+    <p>Cada consola pide una "URL de redirección / callback autorizada". Son <b>estas exactas</b>
+    (deben coincidir carácter por carácter):</p>
     <div class="copy">https://reputaciononline.com.co/api/auth/youtube/callback
 https://reputaciononline.com.co/api/auth/facebook/callback
 https://reputaciononline.com.co/api/auth/instagram/callback
@@ -101,28 +105,25 @@ https://reputaciononline.com.co/api/auth/twitter/callback</div>
   <h2>2 · Google / YouTube</h2>
   <section class="card">
     <p><b>Consola:</b> <a href="https://console.cloud.google.com/apis/credentials" target="_blank">console.cloud.google.com/apis/credentials</a></p>
-    <h3>Pasos</h3>
     <ol>
-      <li>Entrá al proyecto de Google Cloud (o creá uno: "Reputación Online").</li>
+      <li>Entrá al proyecto de Google Cloud (o creá uno).</li>
       <li>Habilitá la <b>YouTube Data API v3</b>:
         <a href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank">activar aquí</a>.</li>
-      <li>En <b>Credenciales</b> → tu "OAuth 2.0 Client ID" de tipo <b>Web application</b> → en
+      <li>En <b>Credenciales</b> → tu "OAuth 2.0 Client ID" tipo <b>Web application</b> → en
         <b>Authorized redirect URIs</b> agregá:
         <div class="copy">https://reputaciononline.com.co/api/auth/youtube/callback</div></li>
-      <li>En <b>OAuth consent screen</b> (pantalla de consentimiento):
-        <a href="https://console.cloud.google.com/apis/credentials/consent" target="_blank">configurar aquí</a>
-        → tipo <b>External</b>, completá nombre de la app, logo, dominio, email de soporte y enlaces de
-        privacidad/términos.</li>
+      <li>En <b>OAuth consent screen</b>
+        (<a href="https://console.cloud.google.com/apis/credentials/consent" target="_blank">configurar</a>):
+        tipo <b>External</b>, completá nombre, logo, dominio, email de soporte y privacidad/términos.</li>
       <li>Pasá la app de <b>Testing</b> a <b>In production</b> y enviá a verificación.</li>
     </ol>
-    <div class="note"><b>Verificación de Google (scope sensible):</b> el scope que usamos es
-    <code>https://www.googleapis.com/auth/youtube.readonly</code>, clasificado como <b>sensible</b>.
-    <span class="tag ok">Buena noticia</span> los scopes sensibles requieren revisión de Google
-    (verificación de marca ~2–3 días + justificación del scope, puede tardar días), pero <b>NO</b> exigen la
-    costosa auditoría anual de seguridad de terceros (eso es solo para scopes "restringidos" tipo Gmail/Drive).</div>
-    <div class="tip">Mientras esperás la verificación podés probar agregando hasta 100 usuarios en
-    "Test users": esas cuentas ya pueden conectar YouTube aunque la app diga "no verificada".</div>
-    <h3>Variables en Coolify (ya las tenés cargadas, verificá)</h3>
+    <div class="note"><b>Verificación de Google:</b> el scope <code>youtube.readonly</code> es <b>sensible</b>.
+    Requiere revisión de Google (verificación de marca ~2–3 días + justificación del scope), pero
+    <span class="tag ok">NO</span> exige la costosa auditoría anual de seguridad de terceros (eso es solo para
+    scopes "restringidos" tipo Gmail/Drive).</div>
+    <div class="tip">Mientras esperás, agregá hasta 100 cuentas en "Test users": ya pueden conectar aunque
+    la app figure "no verificada".</div>
+    <h3>Variables en Coolify (runtime)</h3>
     <div class="copy">GOOGLE_CLIENT_ID=...
 GOOGLE_CLIENT_SECRET=...
 NEXT_PUBLIC_GOOGLE_CLIENT_ID=...   # mismo valor que GOOGLE_CLIENT_ID
@@ -132,37 +133,33 @@ YOUTUBE_API_KEY=...</div>
   <h2>3 · Meta — Facebook + Instagram</h2>
   <section class="card">
     <p><b>Consola:</b> <a href="https://developers.facebook.com/apps/" target="_blank">developers.facebook.com/apps</a>
-    · Instagram <b>reutiliza la misma app</b> de Facebook (no creás credenciales aparte).</p>
-    <h3>Pasos</h3>
+    · Instagram <b>reutiliza la misma app</b> de Facebook.</p>
     <ol>
-      <li>Abrí tu app (o creá una de tipo <b>Business</b>).</li>
-      <li>Agregá el producto <b>Facebook Login</b> → Settings → <b>Valid OAuth Redirect URIs</b>:
+      <li>Abrí tu app (o creá una tipo <b>Business</b>).</li>
+      <li>Agregá <b>Facebook Login</b> → Settings → <b>Valid OAuth Redirect URIs</b>:
         <div class="copy">https://reputaciononline.com.co/api/auth/facebook/callback
 https://reputaciononline.com.co/api/auth/instagram/callback</div></li>
-      <li>Pasá la app a <b>modo Live</b> (interruptor arriba, al lado del nombre de la app).</li>
-      <li>Completá la <b>Verificación de Negocio</b> (Business Verification) en Meta Business Suite.</li>
+      <li>Pasá la app a <b>modo Live</b> (interruptor arriba).</li>
+      <li>Completá la <b>Verificación de Negocio</b> en Meta Business Suite.</li>
       <li>Enviá a <b>App Review</b> los permisos que usamos (Advanced Access):
         <code>pages_show_list</code>, <code>pages_read_engagement</code>,
-        <code>instagram_basic</code>, <code>instagram_manage_insights</code>.
-        (<code>email</code> y <code>public_profile</code> ya vienen por defecto.)</li>
+        <code>instagram_basic</code>, <code>instagram_manage_insights</code>.</li>
     </ol>
     <div class="danger"><b>Este es el trámite más lento.</b> Meta exige <b>App Review + Verificación de Negocio</b>
-    para que cualquier usuario (que no seas vos) pueda conectar su cuenta. Sin la review aprobada, solo las cuentas
-    con rol en la app pueden conectar (modo desarrollo).</div>
-    <div class="note"><b>Instagram (importante):</b> la "Instagram Basic Display API" fue <b>discontinuada</b>.
-    Hoy se accede vía <b>Instagram API con Facebook Login</b>: el usuario debe tener una cuenta de Instagram
-    <b>Business o Creator</b> <b>vinculada a una página de Facebook</b>. Una cuenta personal de Instagram no se
-    puede conectar.</div>
-    <h3>Variables en Coolify (ya cargadas, verificá)</h3>
+    para que cualquier usuario (que no seas vos) pueda conectar. Sin la review, solo las cuentas con rol en la
+    app pueden conectar (modo desarrollo).</div>
+    <div class="note"><b>Instagram:</b> la "Instagram Basic Display API" fue <b>discontinuada</b>. Hoy se accede
+    vía <b>Instagram con Facebook Login</b>: el usuario debe tener una cuenta de Instagram <b>Business o Creator</b>
+    <b>vinculada a una página de Facebook</b>. Una cuenta personal no se puede conectar.</div>
+    <h3>Variables en Coolify (runtime)</h3>
     <div class="copy">NEXT_PUBLIC_FACEBOOK_APP_ID=...      # App ID de la app de Meta
 FACEBOOK_APP_SECRET=...              # App Secret
 NEXT_PUBLIC_INSTAGRAM_CLIENT_ID=... # mismo App ID de Facebook</div>
   </section>
 
-  <h2>4 · X (Twitter) — <span class="tag bad">requiere acción: credenciales faltan</span></h2>
+  <h2>4 · X (Twitter) — <span class="tag bad">acción requerida: faltan credenciales</span></h2>
   <section class="card">
     <p><b>Consola:</b> <a href="https://developer.x.com/en/portal/dashboard" target="_blank">developer.x.com/en/portal/dashboard</a></p>
-    <h3>Pasos</h3>
     <ol>
       <li>Creá un <b>Project</b> y dentro una <b>App</b>.</li>
       <li>En la app → <b>User authentication settings</b> → <b>Set up / Edit</b>:
@@ -174,28 +171,26 @@ NEXT_PUBLIC_INSTAGRAM_CLIENT_ID=... # mismo App ID de Facebook</div>
           <li><b>Website URL:</b> https://reputaciononline.com.co</li>
         </ul>
       </li>
-      <li>Guardá. X te muestra el <b>OAuth 2.0 Client ID</b> y <b>Client Secret</b> (el secret se ve una sola vez:
+      <li>Guardá. X muestra el <b>OAuth 2.0 Client ID</b> y <b>Client Secret</b> (el secret se ve una sola vez:
         copialo ahí mismo).</li>
-      <li>Verificá que en "Keys and Tokens" tengas el OAuth 2.0 Client ID y Secret.</li>
     </ol>
     <h3>Variables en Coolify — <b>cargar estas (hoy están vacías)</b></h3>
     <div class="copy">NEXT_PUBLIC_TWITTER_CLIENT_ID=...   # el OAuth 2.0 Client ID
 TWITTER_CLIENT_ID=...               # mismo Client ID
 TWITTER_CLIENT_SECRET=...           # el Client Secret</div>
-    <div class="note">Los scopes que pedimos son <code>tweet.read users.read follows.read offline.access</code>
-    y usamos PKCE. El <b>tier gratuito</b> de X permite el login OAuth igual; lo que está muy limitado son las
-    <i>lecturas</i> posteriores de la API (cantidad de tweets/menciones por mes).</div>
+    <div class="note">Usamos scopes <code>tweet.read users.read follows.read offline.access</code> con PKCE.
+    El <b>tier gratuito</b> de X permite el login OAuth; lo limitado son las <i>lecturas</i> posteriores de la API.</div>
   </section>
 
-  <h2>5 · Cómo probar (después de configurar y redeploy)</h2>
+  <h2>5 · Cómo probar (después de configurar y Redeploy)</h2>
   <section class="card">
     <h3>A · Que el inicio del OAuth responde</h3>
     <p>En el navegador (logueado en la plataforma), abrí estas URLs: deben <b>redirigir a la pantalla de permiso</b>
     de cada red (no dar 404 ni "config_missing"):</p>
-    <div class="copy">https://reputaciononline.com.co/api/auth/youtube?redirect=/oauth-app-success
-https://reputaciononline.com.co/api/auth/facebook?redirect=/oauth-app-success
-https://reputaciononline.com.co/api/auth/instagram?redirect=/oauth-app-success
-https://reputaciononline.com.co/api/auth/twitter?redirect=/oauth-app-success</div>
+    <div class="copy">https://reputaciononline.com.co/api/auth/youtube?redirect=/dashboard/redes-sociales
+https://reputaciononline.com.co/api/auth/facebook?redirect=/dashboard/redes-sociales
+https://reputaciononline.com.co/api/auth/instagram?redirect=/dashboard/redes-sociales
+https://reputaciononline.com.co/api/auth/twitter?redirect=/dashboard/redes-sociales</div>
     <h3>B · Conectar desde la web</h3>
     <ol>
       <li>Entrá a <b>Dashboard → Redes sociales</b> y tocá <b>Conectar</b> en cada red.</li>
@@ -203,24 +198,24 @@ https://reputaciononline.com.co/api/auth/twitter?redirect=/oauth-app-success</di
     </ol>
     <h3>C · Conectar desde la app móvil</h3>
     <ol>
-      <li>En la app, andá a <b>Más → Redes sociales</b> y tocá <b>Conectar</b>.</li>
-      <li>Se abre el WebView con el permiso; al autorizar, el WebView se cierra solo y la tarjeta queda "conectada".</li>
+      <li>En la app: <b>Más → Redes sociales</b> → <b>Conectar</b>.</li>
+      <li>Se abre el permiso en un WebView; al autorizar, se cierra solo y la tarjeta queda "conectada".</li>
     </ol>
     <h3>D · Verificar en el panel admin</h3>
-    <p>En el portal web → <b>/admin/redes</b> deberías ver la cuenta recién conectada, con su estado de token
-    (válido/vencido). Ahí también podés <b>desconectar</b> o <b>forzar refresh</b>.</p>
+    <p>En el portal web → <b>/admin/redes</b> deberías ver la cuenta conectada, con su estado de token
+    (válido/vencido), y podés <b>desconectar</b> o <b>forzar refresh</b>.</p>
     <div class="tip">Si algo falla, el motivo viaja en la URL de retorno como <code>?error=...</code>
-    (ej. <code>redirect_uri_mismatch</code> = el callback no coincide exactamente con el registrado en la consola;
-    <code>config_missing</code> = falta la variable de entorno de esa red).</div>
+    (ej. <code>redirect_uri_mismatch</code> = el callback no coincide con el registrado en la consola;
+    <code>config_missing</code> = falta la variable de entorno de esa red en Coolify).</div>
   </section>
 
   <h2>6 · Checklist final</h2>
   <section class="card">
     <ul class="checklist">
-      <li>Coolify: <code>JWT_SECRET</code>, <code>NEXTAUTH_SECRET</code>, <code>ENCRYPTION_SECRET</code>, <code>NEXTAUTH_URL</code> seteadas → <b>Redeploy</b> (app arriba)</li>
+      <li>Coolify: <code>JWT_SECRET</code>, <code>NEXTAUTH_SECRET</code>, <code>ENCRYPTION_SECRET</code>, <code>NEXTAUTH_URL</code> seteadas → Redeploy (app arriba)</li>
       <li>Google: YouTube Data API v3 habilitada</li>
       <li>Google: redirect URI de YouTube registrado</li>
-      <li>Google: pantalla de consentimiento "In production" + verificación enviada (o test users agregados)</li>
+      <li>Google: consentimiento "In production" + verificación enviada (o test users agregados)</li>
       <li>Meta: redirect URIs de Facebook e Instagram registrados</li>
       <li>Meta: app en modo Live</li>
       <li>Meta: Verificación de Negocio completada</li>
@@ -247,7 +242,7 @@ https://reputaciononline.com.co/api/auth/twitter?redirect=/oauth-app-success</di
   </section>
 
   <footer>
-    Reputación Online · Manual generado y verificado online en junio 2026 · Dominio de producción
+    Reputación Online · Manual verificado online en junio 2026 · Dominio de producción
     <code>https://reputaciononline.com.co</code>
   </footer>
 

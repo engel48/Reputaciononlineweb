@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { encodeAppState, APP_SUCCESS_PATH } from '@/lib/oauth/app-flow';
+import { encodeAppState, isAppRedirect, APP_SUCCESS_PATH } from '@/lib/oauth/app-flow';
 
 // Usa cookies/redirecciones dinámicas
 export const dynamic = 'force-dynamic';
@@ -28,7 +28,11 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url);
   const redirect = searchParams.get('redirect') || APP_SUCCESS_PATH;
-  const state = encodeAppState(redirect);
+  // App (WebView) → state app:true (callback redirige a /oauth-app-success).
+  // Web (popup) → state simple (callback usa el flujo postMessage de /oauth-callback).
+  const state = isAppRedirect(redirect)
+    ? encodeAppState(redirect)
+    : Buffer.from(JSON.stringify({ redirect, timestamp: Date.now() })).toString('base64');
 
   const authUrl = new URL('https://www.facebook.com/v21.0/dialog/oauth');
   authUrl.searchParams.set('client_id', FACEBOOK_APP_ID);

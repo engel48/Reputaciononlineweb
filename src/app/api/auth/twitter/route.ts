@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { encodeAppState, APP_SUCCESS_PATH } from '@/lib/oauth/app-flow';
+import { encodeAppState, isAppRedirect, APP_SUCCESS_PATH } from '@/lib/oauth/app-flow';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,7 +26,9 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url);
   const redirect = searchParams.get('redirect') || APP_SUCCESS_PATH;
-  const state = encodeAppState(redirect);
+  const state = isAppRedirect(redirect)
+    ? encodeAppState(redirect)
+    : Buffer.from(JSON.stringify({ redirect, timestamp: Date.now() })).toString('base64');
 
   // PKCE: usamos método "plain" (el callback lee el verifier de la cookie).
   // base64url de 32 bytes = 43 chars (dentro del rango 43–128 que exige X).

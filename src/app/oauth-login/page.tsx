@@ -96,32 +96,6 @@ const logos: Record<string, JSX.Element> = {
   )
 };
 
-// Generate PKCE code verifier and challenge
-function generatePKCE(): { verifier: string; challenge: string } {
-  const array = new Uint8Array(32);
-  crypto.getRandomValues(array);
-  const verifier = btoa(String.fromCharCode(...array))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=/g, '');
-
-  // For S256, we need SHA-256 hash. Since we're client-side, use a simpler approach
-  // and store the verifier to pass to the server
-  const challenge = verifier; // plain method for now, server will handle
-  return { verifier, challenge };
-}
-
-function generateState(): string {
-  const array = new Uint8Array(16);
-  crypto.getRandomValues(array);
-  const state = btoa(String.fromCharCode(...array))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=/g, '');
-  sessionStorage.setItem('oauth_state', state);
-  return state;
-}
-
 function OAuthLoginContent() {
   const searchParams = useSearchParams();
   const platform = searchParams.get('platform') || 'facebook';
@@ -136,60 +110,16 @@ function OAuthLoginContent() {
     setError(null);
 
     try {
-      const state = generateState();
-      const redirectUri = `${window.location.origin}/api/auth/${platform === 'twitter' ? 'twitter' : platform}/callback`;
-
-      let authUrl = '';
-
-      switch (platform) {
-        case 'facebook': {
-          const fbClientId = process.env.NEXT_PUBLIC_FACEBOOK_APP_ID;
-          if (!fbClientId) {
-            throw new Error('Facebook OAuth no esta configurado. Contacta al administrador.');
-          }
-          authUrl = `${config.authUrl}?client_id=${fbClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${config.scopes.join(',')}&response_type=code&state=${state}&display=popup`;
-          break;
-        }
-
-        case 'instagram': {
-          const fbClientId = process.env.NEXT_PUBLIC_FACEBOOK_APP_ID;
-          if (!fbClientId) {
-            throw new Error('Instagram OAuth no esta configurado. Contacta al administrador.');
-          }
-          // Instagram uses Facebook OAuth with instagram scopes
-          authUrl = `${config.authUrl}?client_id=${fbClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${config.scopes.join(',')}&response_type=code&state=${state}&display=popup`;
-          break;
-        }
-
-        case 'twitter':
-        case 'x': {
-          const twitterClientId = process.env.NEXT_PUBLIC_TWITTER_CLIENT_ID;
-          if (!twitterClientId) {
-            throw new Error('Twitter/X OAuth no esta configurado. Contacta al administrador.');
-          }
-          // Generate PKCE and store verifier in cookie
-          const pkce = generatePKCE();
-          // Store verifier in cookie for server to read
-          document.cookie = `pkce_verifier=${pkce.verifier}; path=/; max-age=600; SameSite=Lax`;
-
-          const twitterRedirectUri = `${window.location.origin}/api/auth/twitter/callback`;
-          authUrl = `https://twitter.com/i/oauth2/authorize?client_id=${twitterClientId}&redirect_uri=${encodeURIComponent(twitterRedirectUri)}&scope=${config.scopes.join('%20')}&response_type=code&code_challenge=${pkce.challenge}&code_challenge_method=plain&state=${state}`;
-          break;
-        }
-
-        case 'youtube': {
-          // YouTube uses server-side initiation
-          window.location.href = '/api/auth/youtube?redirect=/dashboard/redes-sociales';
-          return;
-        }
-
-        default:
-          throw new Error(`Plataforma ${platform} no soportada`);
+      // TODAS las redes inician el OAuth del lado del servidor (/api/auth/{provider}),
+      // que lee las credenciales en runtime. Así no dependemos de variables
+      // NEXT_PUBLIC_* horneadas en build (que en producción quedaban undefined y
+      // hacían fallar Facebook/Instagram/X). X usa la ruta 'twitter'.
+      const provider = platform === 'x' ? 'twitter' : platform;
+      const supported = ['facebook', 'instagram', 'twitter', 'youtube'];
+      if (!supported.includes(provider)) {
+        throw new Error(`Plataforma ${platform} no soportada`);
       }
-
-      // Redirect to real OAuth
-      window.location.href = authUrl;
-
+      window.location.href = `/api/auth/${provider}?redirect=/dashboard/redes-sociales`;
     } catch (err) {
       console.error('OAuth error:', err);
       setError(err instanceof Error ? err.message : 'Error al conectar con la plataforma');
