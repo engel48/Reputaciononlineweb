@@ -651,12 +651,12 @@ export default function Dashboard() {
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 sm:p-6 border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-3">
-              <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-600 rounded-lg">
+              <div className="p-2 bg-gradient-to-r from-[#00E5FF] to-[#01257D] rounded-lg">
                 <BarChart3 className="w-5 h-5 text-white" />
               </div>
               <div>
                 <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
-                  📊 Análisis de Engagement
+                  Análisis de Engagement
                 </h2>
                 <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                   Métricas de interacción en tiempo real por plataforma

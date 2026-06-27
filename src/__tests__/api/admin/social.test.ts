@@ -99,4 +99,30 @@ describe('/api/admin/social', () => {
     expect(res.status).toBe(200);
     expect(refreshMock).toHaveBeenCalledWith('u1');
   });
+
+  it('POST delete elimina el registro', async () => {
+    mockResults['social_media'] = { error: null };
+    const { POST } = await import('@/app/api/admin/social/route');
+    const req = new Request('http://localhost/api/admin/social', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'delete', id: 's1', userId: 'u1' }),
+    });
+    const res = await POST(req as any);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.success).toBe(true);
+    expect(body.deleted).toBe('s1');
+  });
+
+  it('POST delete sin id devuelve 400', async () => {
+    const { POST } = await import('@/app/api/admin/social/route');
+    const req = new Request('http://localhost/api/admin/social', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'delete', userId: 'u1' }),
+    });
+    const res = await POST(req as any);
+    expect(res.status).toBe(400);
+  });
 });

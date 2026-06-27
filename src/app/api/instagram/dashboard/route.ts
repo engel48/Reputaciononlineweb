@@ -38,12 +38,16 @@ export async function GET(request: NextRequest) {
     const { supabase } = await import('@/lib/supabase-server');
 
     // 1. Obtener datos de social_media
-    const { data: socialMedia } = await supabase
+    // Cuenta conectada más reciente. Evita `.single()` (falla con 0 o varias filas).
+    const { data: socialRows } = await supabase
       .from('social_media')
       .select('*')
       .eq('user_id', userId)
       .eq('platform', 'instagram')
-      .single();
+      .eq('connected', true)
+      .order('last_sync', { ascending: false, nullsFirst: false });
+
+    const socialMedia = (socialRows || [])[0];
 
     if (!socialMedia) {
       return NextResponse.json(

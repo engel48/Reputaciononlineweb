@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { RefreshCw, Filter, Share2, Unplug, ChevronLeft, ChevronRight } from 'lucide-react';
+import { RefreshCw, Filter, Share2, Unplug, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { AdminPageWrapper } from '@/components/admin';
@@ -77,9 +77,14 @@ export default function AdminRedesPage() {
   useEffect(() => { load(); }, [load]);
   useEffect(() => { setPage(0); }, [platform, connected, tokenStatus, search]);
 
-  const act = async (action: 'disconnect' | 'refresh', a: Account) => {
-    const label = action === 'disconnect' ? `Desconectar ${a.platform} de ${a.user?.email || a.username}?` : null;
-    if (label && !window.confirm(label)) return;
+  const act = async (action: 'disconnect' | 'refresh' | 'delete', a: Account) => {
+    const confirmMsg =
+      action === 'disconnect'
+        ? `¿Desconectar ${a.platform} de ${a.user?.email || a.username}?`
+        : action === 'delete'
+          ? `¿ELIMINAR por completo la cuenta de ${a.platform} de ${a.user?.email || a.username}? Esta acción no se puede deshacer.`
+          : null;
+    if (confirmMsg && !window.confirm(confirmMsg)) return;
     setBusy(a.id);
     try {
       const res = await fetch('/api/admin/social', {
@@ -187,10 +192,13 @@ export default function AdminRedesPage() {
                             <RefreshCw className={`w-3 h-3 ${busy === a.id ? 'animate-spin' : ''}`} /> Refresh
                           </button>
                           {a.connected && (
-                            <button onClick={() => act('disconnect', a)} disabled={busy === a.id} className="px-2 py-1 rounded bg-red-900/40 text-red-300 text-xs hover:bg-red-900/60 flex items-center gap-1 disabled:opacity-50">
+                            <button onClick={() => act('disconnect', a)} disabled={busy === a.id} className="px-2 py-1 rounded bg-amber-900/40 text-amber-300 text-xs hover:bg-amber-900/60 flex items-center gap-1 disabled:opacity-50">
                               <Unplug className="w-3 h-3" /> Desconectar
                             </button>
                           )}
+                          <button onClick={() => act('delete', a)} disabled={busy === a.id} className="px-2 py-1 rounded bg-red-700 text-white text-xs hover:bg-red-800 flex items-center gap-1 disabled:opacity-50">
+                            <Trash2 className="w-3 h-3" /> Eliminar
+                          </button>
                         </div>
                       </td>
                     </tr>

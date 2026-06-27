@@ -122,9 +122,10 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * POST /api/admin/social  body: { action: 'disconnect'|'refresh', id?, userId }
- *  - disconnect: desconecta una cuenta concreta (limpia tokens).
+ * POST /api/admin/social  body: { action: 'disconnect'|'refresh'|'delete', id?, userId }
+ *  - disconnect: desconecta una cuenta concreta (limpia tokens, conserva el registro).
  *  - refresh: fuerza el chequeo/refresh de tokens del usuario.
+ *  - delete: elimina por completo el registro de la cuenta.
  */
 export async function POST(request: NextRequest) {
   const admin = await requireRole(request, 'admin');
@@ -152,6 +153,20 @@ export async function POST(request: NextRequest) {
   if (action === 'refresh') {
     const results = await tokenRefreshService.refreshUserTokens(userId);
     return NextResponse.json({ success: true, action: 'refresh', results });
+  }
+
+  if (action === 'delete') {
+    if (!id) return NextResponse.json({ success: false, error: 'id requerido' }, { status: 400 });
+    const { error } = await supabaseAdmin
+      .from('social_media')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', userId);
+    if (error) {
+      console.error('[POST /api/admin/social delete] error:', error);
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    }
+    return NextResponse.json({ success: true, action: 'delete', deleted: id });
   }
 
   return NextResponse.json({ success: false, error: 'action no soportada' }, { status: 400 });
