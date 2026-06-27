@@ -16,11 +16,6 @@ export const metadata: Metadata = {
   description:
     'Monitoreá menciones, sentimiento y crisis de tu marca o figura pública en redes sociales y medios, con la asistente de IA Julia.',
   applicationName: 'Reputación Online',
-  icons: {
-    icon: '/heart-logo.svg',
-    shortcut: '/heart-logo.svg',
-    apple: '/rol-logo.png',
-  },
   openGraph: {
     title: 'Reputación Online',
     description: 'Monitoreo de reputación digital con IA.',

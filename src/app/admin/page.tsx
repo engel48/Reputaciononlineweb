@@ -66,38 +66,18 @@ function AdminLogin({ onLoginSuccess }: { onLoginSuccess: () => void }) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-gradient-to-br from-[#0B1120] via-[#01257D] to-[#0B1120]">
-      {/* Patrón de fondo - Grilla sutil */}
-      <div
-        className="absolute inset-0 opacity-[0.06]"
-        style={{
-          backgroundImage: `
-            linear-gradient(rgba(0, 229, 255, 0.4) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0, 229, 255, 0.4) 1px, transparent 1px)
-          `,
-          backgroundSize: '48px 48px',
-        }}
-      />
-      {/* Glows decorativos */}
-      <div className="absolute -top-20 -left-20 w-[28rem] h-[28rem] bg-[#00E5FF]/20 rounded-full blur-3xl" />
-      <div className="absolute -bottom-24 -right-16 w-[26rem] h-[26rem] bg-[#01257D]/40 rounded-full blur-3xl" />
+    <div className="min-h-screen flex items-center justify-center p-4 bg-[#f4f6f9]">
+      <div className="w-full max-w-md">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          {/* Acento superior sobrio */}
+          <div className="h-1 bg-[#01257D]" />
 
-      {/* Tarjeta de Login */}
-      <div className="relative w-full max-w-md">
-        <div className="absolute -inset-0.5 bg-gradient-to-r from-[#00E5FF] via-[#00E5FF]/40 to-[#01257D] rounded-2xl blur opacity-40" />
-
-        <div className="relative bg-white rounded-2xl shadow-2xl overflow-hidden">
-          {/* Acento superior */}
-          <div className="h-1.5 bg-gradient-to-r from-[#00E5FF] to-[#01257D]" />
-
-          <div className="p-8">
-            {/* Logo */}
+          <div className="p-8 sm:p-10">
+            {/* Logo de marca */}
             <div className="text-center mb-8">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[#00E5FF] to-[#01257D] shadow-lg shadow-cyan-500/20 mb-4">
-                <Shield className="w-8 h-8 text-white" />
-              </div>
-              <h1 className="text-2xl font-bold text-gray-900">Panel de Administración</h1>
-              <p className="text-gray-500 text-sm mt-1">Reputación Online · acceso restringido</p>
+              <img src="/reputacion-online-logo.png" alt="Reputación Online" className="h-11 mx-auto mb-5 object-contain" />
+              <h1 className="text-xl font-semibold text-gray-900">Panel de Administración</h1>
+              <p className="text-gray-500 text-sm mt-1">Acceso restringido al equipo autorizado</p>
             </div>
 
             {/* Error */}
@@ -145,7 +125,7 @@ function AdminLogin({ onLoginSuccess }: { onLoginSuccess: () => void }) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3.5 bg-gradient-to-r from-[#01257D] to-[#013AAA] text-white font-semibold rounded-xl shadow-lg shadow-blue-900/20 hover:from-[#013AAA] hover:to-[#01257D] focus:outline-none focus:ring-2 focus:ring-[#00E5FF] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full py-3 bg-[#01257D] text-white font-semibold rounded-lg hover:bg-[#013AAA] focus:outline-none focus:ring-2 focus:ring-[#01257D]/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>
@@ -169,7 +149,7 @@ function AdminLogin({ onLoginSuccess }: { onLoginSuccess: () => void }) {
           </div>
         </div>
 
-        <p className="text-center text-white/60 text-xs mt-6">
+        <p className="text-center text-gray-400 text-xs mt-6">
           Panel de Administración • Reputación Online
         </p>
       </div>

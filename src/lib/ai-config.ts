@@ -39,7 +39,7 @@ export const DEFAULT_AI_CONFIG: AiConfig = {
     'Parece que nos estamos desviando del tema. Te regreso al menú principal para ayudarte mejor con tu reputación online. 🧭',
   crisisKeywords: [],
   crisisMessage:
-    'Detectamos un mensaje delicado. Julia no puede ayudarte con esto, pero no estás solo/a. Si estás en peligro o en crisis, comunicate con la línea de ayuda de tu país o con un profesional de salud de inmediato. En Colombia podés llamar a la Línea 106 o al 123.',
+    'Ese tema está fuera de las funciones de Reputación Online. Puedo ayudarte con monitoreo de menciones, análisis de sentimiento, gestión de crisis de reputación, conexión de redes y reportes. ¿Con cuál querés seguir?',
 };
 
 export const AI_CONFIG_KEY = 'ai_config';

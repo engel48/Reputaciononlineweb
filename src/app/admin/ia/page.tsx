@@ -28,7 +28,7 @@ const DEFAULTS: AiConfig = {
     'Parece que nos estamos desviando del tema. Te regreso al menú principal para ayudarte mejor con tu reputación online. 🧭',
   crisisKeywords: [],
   crisisMessage:
-    'Detectamos un mensaje delicado. Julia no puede ayudarte con esto. Si estás en peligro o en crisis, comunicate con la línea de ayuda de tu país o con un profesional de inmediato.',
+    'Ese tema está fuera de las funciones de Reputación Online. Puedo ayudarte con monitoreo de menciones, análisis de sentimiento, gestión de crisis de reputación, conexión de redes y reportes. ¿Con cuál querés seguir?',
 };
 
 export default function AdminIaPage() {
@@ -173,25 +173,27 @@ export default function AdminIaPage() {
 
             {/* Cortafuegos de seguridad / crisis */}
             <section className="bg-white rounded-lg border border-gray-200 shadow-sm p-5 space-y-4">
-              <h3 className="font-semibold text-gray-900 flex items-center gap-2"><ShieldAlert className="w-4 h-4 text-red-600" /> Cortafuegos de seguridad (crisis)</h3>
+              <h3 className="font-semibold text-gray-900 flex items-center gap-2"><ShieldAlert className="w-4 h-4 text-[#01257D]" /> Cortafuegos: temas bloqueados</h3>
               <p className="text-sm text-gray-500">
-                Diccionario de palabras/frases de alta prioridad. Si el mensaje del usuario coincide con
-                alguna, <b>se suspende la IA</b> y se muestra el mensaje de crisis de inmediato (no llama al
-                modelo ni descuenta créditos). Comparación sin acentos ni mayúsculas.
+                Diccionario de palabras/frases que <b>no corresponden a las funciones de la plataforma</b>.
+                Si el mensaje del usuario coincide con alguna, <b>se suspende la IA al instante</b> y se
+                muestra el mensaje de abajo (no llama al modelo ni descuenta créditos). Comparación sin
+                acentos ni mayúsculas. Útil para bloquear de forma dura pedidos ajenos (recetas, tareas,
+                código, etc.) o contenido no permitido.
               </p>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Palabras / frases clave (una por línea)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Palabras / frases a bloquear (una por línea)</label>
                 <textarea
                   rows={5}
                   value={config.crisisKeywords.join('\n')}
                   onChange={(e) => set('crisisKeywords', e.target.value.split('\n').map((s) => s.trim()).filter(Boolean))}
                   className="w-full px-3 py-2 rounded-md bg-gray-50 border border-gray-300 text-gray-900 text-sm font-mono"
-                  placeholder={'me quiero morir\nhacerme daño\nemergencia médica'}
+                  placeholder={'receta de cocina\ntarea escolar\ncódigo de programación\nhoróscopo'}
                 />
-                <p className="text-xs text-gray-500 mt-1">{config.crisisKeywords.length} término(s) configurado(s).</p>
+                <p className="text-xs text-gray-500 mt-1">{config.crisisKeywords.length} término(s) configurado(s). Dejalo vacío para no bloquear nada.</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Mensaje de crisis</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Mensaje a mostrar</label>
                 <textarea
                   rows={3}
                   value={config.crisisMessage}
