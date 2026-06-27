@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { syncFacebookMentions } from '@/lib/social-sync/facebook';
+import { syncFailureResponse } from '@/lib/social-sync/sync-response';
 
 /**
  * POST /api/facebook/sync
@@ -45,10 +46,9 @@ export async function POST(request: NextRequest) {
     });
 
     if (!result.success) {
-      return NextResponse.json(
-        { success: false, error: result.error, data: result },
-        { status: 500 }
-      );
+      // Falla por configuración/permisos (p. ej. "no hay páginas vinculadas")
+      // → 200 con mensaje claro; error real → 500. (ver sync-response.ts)
+      return syncFailureResponse(result.error, result);
     }
 
     return NextResponse.json({
@@ -57,9 +57,6 @@ export async function POST(request: NextRequest) {
       message: `Sincronización exitosa: ${result.mentions_created} comentarios + ${result.external_mentions_created} menciones externas`,
     });
   } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error?.message || 'Error desconocido' },
-      { status: 500 }
-    );
+    return syncFailureResponse(error?.message);
   }
 }
