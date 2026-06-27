@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../data/models/credit.dart';
@@ -49,9 +50,7 @@ class CreditosScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               ElevatedButton.icon(
-                onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('La compra de créditos llega en la próxima fase.')),
-                ),
+                onPressed: () => context.push('/planes'),
                 icon: const Icon(Icons.bolt),
                 label: const Text('Recargar créditos'),
               ),

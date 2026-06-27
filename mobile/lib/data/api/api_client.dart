@@ -34,6 +34,11 @@ class ApiClient {
           final token = await tokenStorage.readToken();
           if (token != null && token.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $token';
+            // Algunas rutas de la API (julia, news-monitoring, crisis, search,
+            // payments) leen el token desde la cookie `auth-token` en lugar del
+            // header Bearer. Lo enviamos también como cookie para cubrir ambos
+            // estilos sin tocar el backend.
+            options.headers['Cookie'] = 'auth-token=$token';
           }
           handler.next(options);
         },

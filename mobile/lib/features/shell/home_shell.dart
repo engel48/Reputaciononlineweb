@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../shared/widgets/coming_soon.dart';
 import '../creditos/creditos_screen.dart';
 import '../dashboard/dashboard_screen.dart';
+import '../julia/julia_screen.dart';
 import '../mentions/mentions_screen.dart';
-import '../perfil/perfil_screen.dart';
+import '../mas/mas_screen.dart';
 
 /// Contenedor principal con navegación inferior (bottom nav).
 class HomeShell extends ConsumerStatefulWidget {
@@ -21,9 +21,9 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   static const _tabs = <Widget>[
     DashboardScreen(),
     MentionsScreen(),
-    _TabScaffold(title: 'Julia IA', child: ComingSoon(title: 'Asistente Julia', icon: Icons.auto_awesome)),
+    JuliaScreen(),
     CreditosScreen(),
-    PerfilScreen(),
+    MasScreen(),
   ];
 
   @override
@@ -51,25 +51,11 @@ class _HomeShellState extends ConsumerState<HomeShell> {
               selectedIcon: Icon(Icons.bolt),
               label: 'Créditos'),
           NavigationDestination(
-              icon: Icon(Icons.person_outline),
-              selectedIcon: Icon(Icons.person),
-              label: 'Perfil'),
+              icon: Icon(Icons.grid_view_outlined),
+              selectedIcon: Icon(Icons.grid_view),
+              label: 'Más'),
         ],
       ),
-    );
-  }
-}
-
-class _TabScaffold extends StatelessWidget {
-  const _TabScaffold({required this.title, required this.child});
-  final String title;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: child,
     );
   }
 }

@@ -28,6 +28,9 @@ class Fmt {
     return date(d);
   }
 
+  /// Moneda colombiana, p. ej. "$ 49.900".
+  static String cop(num v) => '\$ ${number(v)}';
+
   static String date(DateTime d) =>
       '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
 

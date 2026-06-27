@@ -6,6 +6,12 @@ import '../../features/auth/auth_controller.dart';
 import '../../features/auth/forgot_password_screen.dart';
 import '../../features/auth/login_screen.dart';
 import '../../features/auth/register_screen.dart';
+import '../../features/busqueda/busqueda_screen.dart';
+import '../../features/crisis/crisis_screen.dart';
+import '../../features/noticias/noticias_screen.dart';
+import '../../features/perfil/perfil_screen.dart';
+import '../../features/planes/planes_screen.dart';
+import '../../features/redes/redes_screen.dart';
 import '../../features/shell/home_shell.dart';
 import '../../features/splash/splash_screen.dart';
 
@@ -39,6 +45,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/register', builder: (_, __) => const RegisterScreen()),
       GoRoute(path: '/forgot', builder: (_, __) => const ForgotPasswordScreen()),
       GoRoute(path: '/home', builder: (_, __) => const HomeShell()),
+      GoRoute(path: '/noticias', builder: (_, __) => const NoticiasScreen()),
+      GoRoute(path: '/crisis', builder: (_, __) => const CrisisScreen()),
+      GoRoute(path: '/busqueda', builder: (_, __) => const BusquedaScreen()),
+      GoRoute(path: '/redes', builder: (_, __) => const RedesScreen()),
+      GoRoute(path: '/planes', builder: (_, __) => const PlanesScreen()),
+      GoRoute(path: '/perfil', builder: (_, __) => const PerfilScreen()),
     ],
   );
 });
