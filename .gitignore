@@ -39,3 +39,6 @@ database.sqlite-journal
 
 # Documentacion local de auditoria - NO commitear
 documentacion/
+
+# Notas internas con credenciales - NO commitear
+NOTAS-SESION-INTERNO.md
