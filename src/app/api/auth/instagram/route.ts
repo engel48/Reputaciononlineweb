@@ -15,10 +15,51 @@ import { cookies } from 'next/headers';
 import { saveOAuthConnection } from '@/lib/oauth-storage';
 import { checkSocialAccountLimit } from '@/lib/plan-limits';
 import { facebookOAuth } from '@/lib/oauth/facebook';
+import { encodeAppState, APP_SUCCESS_PATH } from '@/lib/oauth/app-flow';
 import jwt from 'jsonwebtoken';
+
+export const dynamic = 'force-dynamic';
 
 const FACEBOOK_APP_ID = process.env.NEXT_PUBLIC_FACEBOOK_APP_ID;
 const FACEBOOK_APP_SECRET = process.env.FACEBOOK_APP_SECRET;
+const NEXTAUTH_URL = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+const IG_SCOPES = [
+  'email',
+  'public_profile',
+  'pages_read_engagement',
+  'pages_show_list',
+  'instagram_basic',
+  'instagram_manage_insights',
+];
+
+/**
+ * Instagram OAuth — inicio del flujo (GET)
+ *
+ * Para la app móvil (WebView). Instagram reutiliza el OAuth de Facebook con
+ * scopes adicionales de Instagram. El `state` marca el flujo "app" para que el
+ * callback termine en `/oauth-app-success`.
+ */
+export async function GET(request: NextRequest) {
+  if (!FACEBOOK_APP_ID) {
+    return NextResponse.json(
+      { success: false, error: 'Instagram OAuth no está configurado' },
+      { status: 500 },
+    );
+  }
+
+  const { searchParams } = new URL(request.url);
+  const redirect = searchParams.get('redirect') || APP_SUCCESS_PATH;
+  const state = encodeAppState(redirect);
+
+  const authUrl = new URL('https://www.facebook.com/v21.0/dialog/oauth');
+  authUrl.searchParams.set('client_id', FACEBOOK_APP_ID);
+  authUrl.searchParams.set('redirect_uri', `${NEXTAUTH_URL}/api/auth/instagram/callback`);
+  authUrl.searchParams.set('response_type', 'code');
+  authUrl.searchParams.set('scope', IG_SCOPES.join(','));
+  authUrl.searchParams.set('state', state);
+
+  return NextResponse.redirect(authUrl.toString());
+}
 
 export async function POST(request: NextRequest) {
   try {

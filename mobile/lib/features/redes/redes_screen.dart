@@ -128,18 +128,22 @@ class _PlatformCard extends ConsumerWidget {
     final token = await ref.read(tokenStorageProvider).readToken();
     if (token == null || token.isEmpty) return;
     if (!context.mounted) return;
-    final ok = await Navigator.of(context).push<bool>(
+    // Resultado: 'ok' = conectada, null = cancelado, cualquier otra cosa = error.
+    final result = await Navigator.of(context).push<String>(
       MaterialPageRoute(
         builder: (_) => OAuthWebView(provider: oauthKey, label: label, token: token),
       ),
     );
-    if (ok == true) {
+    if (!context.mounted) return;
+    if (result == 'ok') {
       onChanged();
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$label conectada correctamente.')),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('$label conectada correctamente.')),
+      );
+    } else if (result != null && result.isNotEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No se pudo conectar $label: $result')),
+      );
     }
   }
 }
@@ -193,10 +197,17 @@ class _OAuthWebViewState extends State<OAuthWebView> {
             if (mounted) setState(() => _loading = false);
           },
           onNavigationRequest: (req) {
-            // Éxito: el backend redirige al dashboard / a nuestra ruta de éxito.
-            if (req.url.contains('/oauth-app-success') ||
-                req.url.contains('/dashboard')) {
-              if (mounted) Navigator.of(context).pop(true);
+            // Ruta terminal del flujo app: leer ?platform (éxito) o ?error (fallo).
+            if (req.url.contains('/oauth-app-success')) {
+              final err = Uri.tryParse(req.url)?.queryParameters['error'];
+              if (mounted) {
+                Navigator.of(context).pop((err != null && err.isNotEmpty) ? err : 'ok');
+              }
+              return NavigationDecision.prevent;
+            }
+            // Compatibilidad: si el backend redirige al dashboard, lo tomamos como éxito.
+            if (req.url.contains('/dashboard')) {
+              if (mounted) Navigator.of(context).pop('ok');
               return NavigationDecision.prevent;
             }
             return NavigationDecision.navigate;
@@ -214,7 +225,7 @@ class _OAuthWebViewState extends State<OAuthWebView> {
         title: Text('Conectar ${widget.label}'),
         leading: IconButton(
           icon: const Icon(Icons.close),
-          onPressed: () => Navigator.of(context).pop(false),
+          onPressed: () => Navigator.of(context).pop(),
         ),
       ),
       body: _controller == null

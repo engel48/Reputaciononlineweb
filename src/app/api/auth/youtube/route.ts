@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
+import { encodeAppState, isAppRedirect } from '@/lib/oauth/app-flow';
 
 // Forzar renderizado dinámico porque usa cookies
 export const dynamic = 'force-dynamic';
@@ -24,11 +25,15 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const redirectUrl = searchParams.get('redirect') || '/dashboard';
 
-    // Generar state para CSRF protection
-    const state = Buffer.from(JSON.stringify({
-      redirect: redirectUrl,
-      timestamp: Date.now()
-    })).toString('base64');
+    // Generar state para CSRF protection. Si el redirect es el de la app
+    // (WebView), marcamos el flujo "app" para que el callback resuelva
+    // server-side en vez de devolver HTML con postMessage.
+    const state = isAppRedirect(redirectUrl)
+      ? encodeAppState(redirectUrl)
+      : Buffer.from(JSON.stringify({
+          redirect: redirectUrl,
+          timestamp: Date.now()
+        })).toString('base64');
 
     // Construir URL de autorización de Google
     const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');

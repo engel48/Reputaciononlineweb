@@ -3,50 +3,59 @@
  *
  * Procesa el callback de autenticación de Facebook y guarda
  * los tokens de forma segura en Supabase.
+ *
+ * Soporta dos flujos:
+ * - Web (popup): redirige a `/oauth-callback?success|error` (lo lee la página con postMessage).
+ * - App (WebView): si el `state` marca flujo app, redirige a `/oauth-app-success` (sin postMessage).
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { saveOAuthConnection } from '@/lib/oauth-storage';
 import { checkSocialAccountLimit } from '@/lib/plan-limits';
+import { parseAppState, appResultUrl } from '@/lib/oauth/app-flow';
 import jwt from 'jsonwebtoken';
 
 const FACEBOOK_APP_ID = process.env.NEXT_PUBLIC_FACEBOOK_APP_ID;
 const FACEBOOK_APP_SECRET = process.env.FACEBOOK_APP_SECRET;
-const REDIRECT_URI = process.env.NEXTAUTH_URL
-  ? `${process.env.NEXTAUTH_URL}/api/auth/facebook/callback`
-  : 'http://localhost:3000/api/auth/facebook/callback';
+const BASE_URL = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+const REDIRECT_URI = `${BASE_URL}/api/auth/facebook/callback`;
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get('code');
   const error = searchParams.get('error');
   const errorDescription = searchParams.get('error_description');
+  const appState = parseAppState(searchParams.get('state'));
 
-  console.log('📱 Facebook OAuth Callback recibido');
+  // Helpers de resultado: rutean al flujo app o al flujo web según el state.
+  const ok = (platform: string) =>
+    appState
+      ? NextResponse.redirect(appResultUrl(BASE_URL, appState.redirect, { platform }))
+      : NextResponse.redirect(`${BASE_URL}/oauth-callback?success=${platform}`);
+  const fail = (reason: string, extra = '') =>
+    appState
+      ? NextResponse.redirect(appResultUrl(BASE_URL, appState.redirect, { error: reason }))
+      : NextResponse.redirect(`${BASE_URL}/oauth-callback?error=${reason}${extra}`);
+
+  console.log('📱 Facebook OAuth Callback recibido', appState ? '(app)' : '(web)');
 
   // Manejar errores de OAuth
   if (error) {
     console.error('❌ Facebook OAuth error:', error, errorDescription);
-    return NextResponse.redirect(
-      `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/oauth-callback?error=${error}&description=${encodeURIComponent(errorDescription || '')}`
-    );
+    return fail(error, `&description=${encodeURIComponent(errorDescription || '')}`);
   }
 
   // Validar que tenemos el código de autorización
   if (!code) {
     console.error('❌ No se recibió código de autorización');
-    return NextResponse.redirect(
-      `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/oauth-callback?error=no_code`
-    );
+    return fail('no_code');
   }
 
   // Validar configuración
   if (!FACEBOOK_APP_ID || !FACEBOOK_APP_SECRET) {
     console.error('❌ Facebook credentials no configuradas en .env');
-    return NextResponse.redirect(
-      `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/oauth-callback?error=config_missing`
-    );
+    return fail('config_missing');
   }
 
   try {
@@ -56,18 +65,14 @@ export async function GET(request: NextRequest) {
 
     if (!authToken) {
       console.error('❌ Usuario no autenticado');
-      return NextResponse.redirect(
-        `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/login?error=not_authenticated`
-      );
+      return appState ? fail('not_authenticated') : NextResponse.redirect(`${BASE_URL}/login?error=not_authenticated`);
     }
 
     // Decodificar JWT para obtener userId
     const decoded = jwt.decode(authToken) as { userId: string } | null;
     if (!decoded || !decoded.userId) {
       console.error('❌ Token JWT inválido');
-      return NextResponse.redirect(
-        `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/login?error=invalid_token`
-      );
+      return appState ? fail('invalid_token') : NextResponse.redirect(`${BASE_URL}/login?error=invalid_token`);
     }
 
     const userId = decoded.userId;
@@ -87,9 +92,7 @@ export async function GET(request: NextRequest) {
     if (!tokenResponse.ok) {
       const errorData = await tokenResponse.json();
       console.error('❌ Error obteniendo access token:', errorData);
-      return NextResponse.redirect(
-        `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/oauth-callback?error=token_exchange_failed`
-      );
+      return fail('token_exchange_failed');
     }
 
     const tokenData = await tokenResponse.json();
@@ -104,9 +107,7 @@ export async function GET(request: NextRequest) {
     const profileResponse = await fetch(profileUrl);
     if (!profileResponse.ok) {
       console.error('❌ Error obteniendo perfil de Facebook');
-      return NextResponse.redirect(
-        `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/oauth-callback?error=profile_fetch_failed`
-      );
+      return fail('profile_fetch_failed');
     }
 
     const profile = await profileResponse.json();
@@ -116,9 +117,7 @@ export async function GET(request: NextRequest) {
     const limitCheck = await checkSocialAccountLimit(userId, 'facebook');
     if (!limitCheck.allowed) {
       console.warn(`⚠️ Facebook conexión rechazada por límite de plan: ${limitCheck.reason}`);
-      return NextResponse.redirect(
-        `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/oauth-callback?error=plan_limit&plan=${limitCheck.plan}&reason=${encodeURIComponent(limitCheck.reason || 'Límite alcanzado')}`
-      );
+      return fail('plan_limit', `&plan=${limitCheck.plan}&reason=${encodeURIComponent(limitCheck.reason || 'Límite alcanzado')}`);
     }
 
     // PASO 4: Guardar en Supabase con encriptación
@@ -141,20 +140,14 @@ export async function GET(request: NextRequest) {
 
     if (!saved) {
       console.error('❌ Error guardando conexión en Supabase');
-      return NextResponse.redirect(
-        `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/oauth-callback?error=save_failed`
-      );
+      return fail('save_failed');
     }
 
     console.log('✅ Facebook conectado exitosamente');
-    return NextResponse.redirect(
-      `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/oauth-callback?success=facebook`
-    );
+    return ok('facebook');
 
   } catch (error) {
     console.error('❌ Error en Facebook OAuth callback:', error);
-    return NextResponse.redirect(
-      `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/oauth-callback?error=oauth_failed`
-    );
+    return fail('oauth_failed');
   }
 }
