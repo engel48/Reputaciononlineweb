@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/auth-helper';
 import { createClient } from '@supabase/supabase-js';
+import { sanitizeSearch } from '@/lib/admin/search';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || '',
@@ -20,7 +21,7 @@ export async function GET(request: NextRequest) {
   if (admin instanceof NextResponse) return admin;
 
   const { searchParams } = new URL(request.url);
-  const search = searchParams.get('search') || '';
+  const search = sanitizeSearch(searchParams.get('search'));
   const limit = Math.min(MAX_LIMIT, Math.max(1, parseInt(searchParams.get('limit') || '50', 10)));
   const offset = Math.max(0, parseInt(searchParams.get('offset') || '0', 10));
 
