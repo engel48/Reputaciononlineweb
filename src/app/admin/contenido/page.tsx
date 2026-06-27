@@ -16,9 +16,9 @@ function fmt(iso: string | null): string {
 }
 
 const sentBadge: Record<string, string> = {
-  positive: 'bg-green-900/30 text-green-300',
-  negative: 'bg-red-900/30 text-red-300',
-  neutral: 'bg-gray-700 text-gray-300',
+  positive: 'bg-green-100 text-green-700',
+  negative: 'bg-red-100 text-red-700',
+  neutral: 'bg-gray-100 text-gray-600',
 };
 
 export default function AdminContenidoPage() {
@@ -78,12 +78,12 @@ export default function AdminContenidoPage() {
           <TabBtn active={tab === 'news'} onClick={() => setTab('news')} icon={<Newspaper className="w-4 h-4" />}>Noticias</TabBtn>
         </div>
 
-        <div className="bg-[#151C2E] rounded-lg p-4 border border-gray-800 flex flex-wrap items-center gap-3">
+        <div className="bg-white rounded-lg p-4 border border-gray-200 flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2 flex-1 min-w-[200px]">
-            <Filter className="w-4 h-4 text-gray-400" />
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={tab === 'mentions' ? 'Buscar contenido o @autor...' : 'Buscar título o resumen...'} className="flex-1 px-3 py-2 rounded-md bg-[#0B1120] border border-gray-700 text-white text-sm placeholder-gray-500" />
+            <Filter className="w-4 h-4 text-gray-500" />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={tab === 'mentions' ? 'Buscar contenido o @autor...' : 'Buscar título o resumen...'} className="flex-1 px-3 py-2 rounded-md bg-gray-50 border border-gray-200 text-gray-900 text-sm placeholder-gray-500" />
           </div>
-          <select value={sentiment} onChange={(e) => setSentiment(e.target.value)} className="px-3 py-2 rounded-md bg-[#0B1120] border border-gray-700 text-white text-sm">
+          <select value={sentiment} onChange={(e) => setSentiment(e.target.value)} className="px-3 py-2 rounded-md bg-gray-50 border border-gray-200 text-gray-900 text-sm">
             {SENTIMENTS.map((s) => <option key={s} value={s}>{s ? s : 'Sentimiento: todos'}</option>)}
           </select>
           <button onClick={load} disabled={loading} className="px-3 py-2 rounded-md bg-cyan-500 text-white text-sm font-medium flex items-center gap-1 hover:bg-cyan-600">
@@ -91,20 +91,20 @@ export default function AdminContenidoPage() {
           </button>
         </div>
 
-        <div className="bg-[#151C2E] rounded-lg border border-gray-800 overflow-hidden">
-          <div className="px-4 py-2 border-b border-gray-800 text-xs text-gray-400">
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <div className="px-4 py-2 border-b border-gray-200 text-xs text-gray-500">
             {loading ? 'Cargando...' : data ? `${data.total.toLocaleString('es-CO')} registros` : ''}
           </div>
           {error ? (
-            <div className="p-6 bg-red-900/20 text-red-300 text-sm">{error}</div>
+            <div className="p-6 bg-red-50 text-red-700 text-sm">{error}</div>
           ) : loading ? (
-            <div className="p-12 text-center text-gray-400"><RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2" />Cargando...</div>
+            <div className="p-12 text-center text-gray-500"><RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2" />Cargando...</div>
           ) : items.length === 0 ? (
-            <div className="p-12 text-center text-gray-400 text-sm">No hay {tab === 'mentions' ? 'menciones' : 'noticias'} que coincidan.</div>
+            <div className="p-12 text-center text-gray-500 text-sm">No hay {tab === 'mentions' ? 'menciones' : 'noticias'} que coincidan.</div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-700 text-sm">
-                <thead className="bg-[#0B1120] text-xs uppercase text-gray-400">
+              <table className="min-w-full divide-y divide-gray-200 text-sm">
+                <thead className="bg-gray-50 text-xs uppercase text-gray-500">
                   {tab === 'mentions' ? (
                     <tr>
                       <th className="px-3 py-2 text-left">Usuario</th>
@@ -124,18 +124,18 @@ export default function AdminContenidoPage() {
                     </tr>
                   )}
                 </thead>
-                <tbody className="divide-y divide-gray-700 text-gray-300">
+                <tbody className="divide-y divide-gray-200 text-gray-600">
                   {items.map((m) => (
-                    <tr key={m.id} className="hover:bg-gray-800 align-top">
+                    <tr key={m.id} className="hover:bg-gray-100 align-top">
                       {tab === 'mentions' ? (
                         <>
-                          <td className="px-3 py-2"><div className="text-white text-xs">{m.user?.name || '—'}</div><div className="text-xs text-gray-500">{m.user?.email || ''}</div></td>
-                          <td className="px-3 py-2"><span className="px-2 py-0.5 rounded text-xs bg-gray-700 font-mono">{m.platform}</span></td>
+                          <td className="px-3 py-2"><div className="text-gray-900 text-xs">{m.user?.name || '—'}</div><div className="text-xs text-gray-500">{m.user?.email || ''}</div></td>
+                          <td className="px-3 py-2"><span className="px-2 py-0.5 rounded text-xs bg-gray-100 font-mono">{m.platform}</span></td>
                           <td className="px-3 py-2 text-xs max-w-md">
-                            <div className="text-gray-300">{m.content}</div>
-                            {m.url && <a href={m.url} target="_blank" rel="noreferrer" className="text-cyan-400 text-xs">ver →</a>}
+                            <div className="text-gray-600">{m.content}</div>
+                            {m.url && <a href={m.url} target="_blank" rel="noreferrer" className="text-cyan-600 text-xs">ver →</a>}
                           </td>
-                          <td className="px-3 py-2 text-center">{m.sentiment ? <span className={`px-2 py-0.5 rounded text-xs ${sentBadge[m.sentiment] || 'bg-gray-700'}`}>{m.sentiment}</span> : '—'}</td>
+                          <td className="px-3 py-2 text-center">{m.sentiment ? <span className={`px-2 py-0.5 rounded text-xs ${sentBadge[m.sentiment] || 'bg-gray-100'}`}>{m.sentiment}</span> : '—'}</td>
                           <td className="px-3 py-2 text-xs whitespace-nowrap">{fmt(m.publishedAt || m.scrapedAt)}</td>
                           <td className="px-3 py-2 text-right"><DelBtn busy={busy === m.id} onClick={() => del(m.id)} /></td>
                         </>
@@ -143,10 +143,10 @@ export default function AdminContenidoPage() {
                         <>
                           <td className="px-3 py-2 text-xs max-w-md">
                             <div className="text-gray-200">{m.title}</div>
-                            {m.article_url && <a href={m.article_url} target="_blank" rel="noreferrer" className="text-cyan-400 text-xs">abrir artículo →</a>}
+                            {m.article_url && <a href={m.article_url} target="_blank" rel="noreferrer" className="text-cyan-600 text-xs">abrir artículo →</a>}
                           </td>
                           <td className="px-3 py-2 text-xs">{m.source}</td>
-                          <td className="px-3 py-2 text-center">{m.sentiment ? <span className={`px-2 py-0.5 rounded text-xs ${sentBadge[m.sentiment] || 'bg-gray-700'}`}>{m.sentiment}</span> : '—'}</td>
+                          <td className="px-3 py-2 text-center">{m.sentiment ? <span className={`px-2 py-0.5 rounded text-xs ${sentBadge[m.sentiment] || 'bg-gray-100'}`}>{m.sentiment}</span> : '—'}</td>
                           <td className="px-3 py-2 text-xs whitespace-nowrap">{fmt(m.published_at || m.scraped_at)}</td>
                           <td className="px-3 py-2 text-right"><DelBtn busy={busy === m.id} onClick={() => del(m.id)} /></td>
                         </>
@@ -159,10 +159,10 @@ export default function AdminContenidoPage() {
           )}
 
           {data && data.total > PAGE_SIZE && (
-            <div className="border-t border-gray-800 px-4 py-3 flex items-center justify-between">
-              <button onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0 || loading} className="flex items-center gap-1 px-3 py-1 rounded-md bg-gray-700 text-white text-xs disabled:opacity-50"><ChevronLeft className="w-3 h-3" /> Anterior</button>
-              <span className="text-xs text-gray-400">Página {page + 1} de {totalPages || 1}</span>
-              <button onClick={() => setPage((p) => p + 1)} disabled={page >= totalPages - 1 || loading} className="flex items-center gap-1 px-3 py-1 rounded-md bg-gray-700 text-white text-xs disabled:opacity-50">Siguiente <ChevronRight className="w-3 h-3" /></button>
+            <div className="border-t border-gray-200 px-4 py-3 flex items-center justify-between">
+              <button onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0 || loading} className="flex items-center gap-1 px-3 py-1 rounded-md bg-gray-100 text-gray-900 text-xs disabled:opacity-50"><ChevronLeft className="w-3 h-3" /> Anterior</button>
+              <span className="text-xs text-gray-500">Página {page + 1} de {totalPages || 1}</span>
+              <button onClick={() => setPage((p) => p + 1)} disabled={page >= totalPages - 1 || loading} className="flex items-center gap-1 px-3 py-1 rounded-md bg-gray-100 text-gray-900 text-xs disabled:opacity-50">Siguiente <ChevronRight className="w-3 h-3" /></button>
             </div>
           )}
         </div>
@@ -173,13 +173,13 @@ export default function AdminContenidoPage() {
 
 function TabBtn({ active, onClick, icon, children }: { active: boolean; onClick: () => void; icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <button onClick={onClick} className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-1 ${active ? 'bg-cyan-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}>{icon}{children}</button>
+    <button onClick={onClick} className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-1 ${active ? 'bg-cyan-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>{icon}{children}</button>
   );
 }
 
 function DelBtn({ busy, onClick }: { busy: boolean; onClick: () => void }) {
   return (
-    <button onClick={onClick} disabled={busy} className="px-2 py-1 rounded bg-red-900/40 text-red-300 text-xs hover:bg-red-900/60 inline-flex items-center gap-1 disabled:opacity-50">
+    <button onClick={onClick} disabled={busy} className="px-2 py-1 rounded bg-red-100 text-red-700 text-xs hover:bg-red-200 inline-flex items-center gap-1 disabled:opacity-50">
       <Trash2 className="w-3 h-3" /> Borrar
     </button>
   );

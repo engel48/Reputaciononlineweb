@@ -84,7 +84,7 @@ export default function LogsPage() {
             className={`px-4 py-2 rounded-lg text-sm font-medium ${
               source === 'system'
                 ? 'bg-cyan-500 text-white'
-                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                : 'bg-gray-200 dark:bg-gray-100 text-gray-700 dark:text-gray-600'
             }`}
           >
             <Activity className="w-4 h-4 inline mr-1" /> System logs
@@ -94,7 +94,7 @@ export default function LogsPage() {
             className={`px-4 py-2 rounded-lg text-sm font-medium ${
               source === 'oauth'
                 ? 'bg-cyan-500 text-white'
-                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                : 'bg-gray-200 dark:bg-gray-100 text-gray-700 dark:text-gray-600'
             }`}
           >
             <AlertTriangle className="w-4 h-4 inline mr-1" /> OAuth logs
@@ -102,16 +102,16 @@ export default function LogsPage() {
         </div>
 
         {/* Filtros */}
-        <div className="bg-[#151C2E] rounded-lg p-4 border border-gray-800">
+        <div className="bg-white rounded-lg p-4 border border-gray-200">
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2 flex-1 min-w-[200px]">
-              <Filter className="w-4 h-4 text-gray-400" />
+              <Filter className="w-4 h-4 text-gray-500" />
               <input
                 type="text"
                 value={eventTypeFilter}
                 onChange={(e) => setEventTypeFilter(e.target.value)}
                 placeholder={source === 'system' ? 'Filtrar por event_type...' : 'Filtrar por action...'}
-                className="flex-1 px-3 py-2 rounded-md bg-[#0B1120] border border-gray-700 text-white text-sm placeholder-gray-500"
+                className="flex-1 px-3 py-2 rounded-md bg-gray-50 border border-gray-200 text-gray-900 text-sm placeholder-gray-500"
               />
             </div>
             <button
@@ -135,7 +135,7 @@ export default function LogsPage() {
                   className={`px-2 py-1 text-xs rounded-full transition-colors ${
                     eventTypeFilter === t.type
                       ? 'bg-cyan-500 text-white'
-                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                      : 'bg-gray-200 dark:bg-gray-100 text-gray-700 dark:text-gray-600 hover:bg-gray-300 dark:hover:bg-gray-200'
                   }`}
                 >
                   {t.type} <span className="opacity-60">({t.count})</span>
@@ -144,7 +144,7 @@ export default function LogsPage() {
               {eventTypeFilter && (
                 <button
                   onClick={() => setEventTypeFilter('')}
-                  className="px-2 py-1 text-xs rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
+                  className="px-2 py-1 text-xs rounded-full bg-red-100 text-red-700 dark:bg-red-100 dark:text-red-700"
                 >
                   Limpiar filtro
                 </button>
@@ -154,9 +154,9 @@ export default function LogsPage() {
         </div>
 
         {/* Resultados */}
-        <div className="bg-[#151C2E] rounded-lg border border-gray-800 overflow-hidden">
-          <div className="px-4 py-2 border-b border-gray-800 flex items-center justify-between text-xs">
-            <span className="text-gray-400">
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <div className="px-4 py-2 border-b border-gray-200 flex items-center justify-between text-xs">
+            <span className="text-gray-500">
               {loading ? 'Cargando...' : data ? `${data.total.toLocaleString('es-CO')} registros totales` : ''}
             </span>
             <span className="text-gray-500">
@@ -165,20 +165,20 @@ export default function LogsPage() {
           </div>
 
           {error ? (
-            <div className="p-6 bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-300 text-sm">
+            <div className="p-6 bg-red-100 dark:bg-red-50 text-red-800 dark:text-red-700 text-sm">
               {error}
             </div>
           ) : loading ? (
-            <div className="p-12 text-center text-gray-400">
+            <div className="p-12 text-center text-gray-500">
               <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2" />
               Cargando logs...
             </div>
           ) : !data || data.logs.length === 0 ? (
-            <div className="p-12 text-center text-gray-400 text-sm">No hay logs que coincidan con el filtro.</div>
+            <div className="p-12 text-center text-gray-500 text-sm">No hay logs que coincidan con el filtro.</div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-700 text-sm">
-                <thead className="bg-[#0B1120] text-xs uppercase text-gray-400">
+              <table className="min-w-full divide-y divide-gray-200 text-sm">
+                <thead className="bg-gray-50 text-xs uppercase text-gray-500">
                   <tr>
                     <th className="px-3 py-2 text-left whitespace-nowrap">Fecha</th>
                     {source === 'system' ? (
@@ -196,13 +196,13 @@ export default function LogsPage() {
                     )}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-700 text-gray-300">
+                <tbody className="divide-y divide-gray-200 text-gray-600">
                   {data.logs.map((log) => {
                     const isExpanded = expandedRow === log.id;
                     return (
                       <React.Fragment key={log.id}>
                         <tr
-                          className="hover:bg-gray-800 cursor-pointer"
+                          className="hover:bg-gray-100 cursor-pointer"
                           onClick={() => setExpandedRow(isExpanded ? null : log.id)}
                         >
                           <td className="px-3 py-2 text-xs whitespace-nowrap font-mono">
@@ -211,9 +211,9 @@ export default function LogsPage() {
                           {source === 'system' ? (
                             <>
                               <td className="px-3 py-2">
-                                <span className="px-2 py-0.5 rounded text-xs bg-gray-700 font-mono">{log.event_type}</span>
+                                <span className="px-2 py-0.5 rounded text-xs bg-gray-100 font-mono">{log.event_type}</span>
                               </td>
-                              <td className="px-3 py-2 text-xs text-gray-400 truncate max-w-xs">
+                              <td className="px-3 py-2 text-xs text-gray-500 truncate max-w-xs">
                                 {log.details ? JSON.stringify(log.details).slice(0, 80) : '—'}
                                 {log.details && JSON.stringify(log.details).length > 80 ? '...' : ''}
                               </td>
@@ -221,19 +221,19 @@ export default function LogsPage() {
                           ) : (
                             <>
                               <td className="px-3 py-2">
-                                <span className="px-2 py-0.5 rounded text-xs bg-gray-700 font-mono">{log.action}</span>
+                                <span className="px-2 py-0.5 rounded text-xs bg-gray-100 font-mono">{log.action}</span>
                               </td>
                               <td className="px-3 py-2 text-center">
                                 <span className={`px-2 py-0.5 rounded text-xs ${
                                   log.success
-                                    ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-                                    : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                                    ? 'bg-green-100 text-green-800 dark:bg-green-100 dark:text-green-700'
+                                    : 'bg-red-100 text-red-800 dark:bg-red-100 dark:text-red-700'
                                 }`}>
                                   {log.success ? 'OK' : 'FAIL'}
                                 </span>
                               </td>
                               <td className="px-3 py-2 text-xs">{log.platform || '—'}</td>
-                              <td className="px-3 py-2 text-xs text-gray-400 truncate max-w-xs">
+                              <td className="px-3 py-2 text-xs text-gray-500 truncate max-w-xs">
                                 {log.error_message || (log.metadata ? JSON.stringify(log.metadata).slice(0, 80) : '—')}
                               </td>
                             </>
@@ -241,8 +241,8 @@ export default function LogsPage() {
                         </tr>
                         {isExpanded && (
                           <tr>
-                            <td colSpan={source === 'system' ? 3 : 5} className="px-3 py-3 bg-[#0B1120]">
-                              <pre className="text-xs text-gray-300 whitespace-pre-wrap break-words">
+                            <td colSpan={source === 'system' ? 3 : 5} className="px-3 py-3 bg-gray-50">
+                              <pre className="text-xs text-gray-600 whitespace-pre-wrap break-words">
                                 {JSON.stringify(log, null, 2)}
                               </pre>
                             </td>
@@ -258,21 +258,21 @@ export default function LogsPage() {
 
           {/* Paginacion */}
           {data && data.total > PAGE_SIZE && (
-            <div className="border-t border-gray-800 px-4 py-3 flex items-center justify-between">
+            <div className="border-t border-gray-200 px-4 py-3 flex items-center justify-between">
               <button
                 onClick={() => setPage((p) => Math.max(0, p - 1))}
                 disabled={page === 0 || loading}
-                className="flex items-center gap-1 px-3 py-1 rounded-md bg-gray-700 text-white text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-1 px-3 py-1 rounded-md bg-gray-100 text-gray-900 text-xs disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ChevronLeft className="w-3 h-3" /> Anterior
               </button>
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-gray-500">
                 Mostrando {page * PAGE_SIZE + 1} - {Math.min((page + 1) * PAGE_SIZE, data.total)} de {data.total}
               </span>
               <button
                 onClick={() => setPage((p) => p + 1)}
                 disabled={page >= totalPages - 1 || loading}
-                className="flex items-center gap-1 px-3 py-1 rounded-md bg-gray-700 text-white text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-1 px-3 py-1 rounded-md bg-gray-100 text-gray-900 text-xs disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Siguiente <ChevronRight className="w-3 h-3" />
               </button>

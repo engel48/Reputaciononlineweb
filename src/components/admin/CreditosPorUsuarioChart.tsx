@@ -85,9 +85,9 @@ export default function CreditosPorUsuarioChart() {
 
   // Obtener color basado en el porcentaje de uso
   const getColorPorcentaje = (porcentaje: number) => {
-    if (porcentaje > 80) return 'text-red-600 dark:text-red-400';
-    if (porcentaje > 50) return 'text-amber-600 dark:text-amber-400';
-    return 'text-green-600 dark:text-green-400';
+    if (porcentaje > 80) return 'text-red-600 dark:text-red-600';
+    if (porcentaje > 50) return 'text-amber-600 dark:text-amber-600';
+    return 'text-green-600 dark:text-green-600';
   };
 
   if (cargando) {
@@ -96,7 +96,7 @@ export default function CreditosPorUsuarioChart() {
         <h2 className="heading-secondary mb-4">Créditos por Usuario</h2>
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
-          <span className="ml-3 text-gray-600 dark:text-gray-400">Cargando datos...</span>
+          <span className="ml-3 text-gray-600 dark:text-gray-500">Cargando datos...</span>
         </div>
       </div>
     );
@@ -106,7 +106,7 @@ export default function CreditosPorUsuarioChart() {
     return (
       <div className="card p-6">
         <h2 className="heading-secondary mb-4">Créditos por Usuario</h2>
-        <div className="text-center py-12 text-red-600 dark:text-red-400">
+        <div className="text-center py-12 text-red-600 dark:text-red-600">
           {error}
         </div>
       </div>
@@ -117,7 +117,7 @@ export default function CreditosPorUsuarioChart() {
     return (
       <div className="card p-6">
         <h2 className="heading-secondary mb-4">Créditos por Usuario</h2>
-        <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+        <div className="text-center py-12 text-gray-500 dark:text-gray-500">
           No hay datos de créditos disponibles
         </div>
       </div>
@@ -128,33 +128,33 @@ export default function CreditosPorUsuarioChart() {
     <div className="card p-6">
       <h2 className="heading-secondary mb-4">Créditos por Usuario</h2>
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead className="bg-gray-50 dark:bg-gray-800">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-200">
+          <thead className="bg-gray-50 dark:bg-gray-100">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Usuario</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Disponibles</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Gastados</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Total</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">% Uso</th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Distribución</th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-500">Usuario</th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-500">Disponibles</th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-500">Gastados</th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-500">Total</th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-500">% Uso</th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-500">Distribución</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900">
+          <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-200 dark:bg-gray-900">
             {datosUsuarios.map((usuario, index) => (
               <motion.tr
                 key={usuario.id}
-                className="hover:bg-gray-50 dark:hover:bg-gray-800"
+                className="hover:bg-gray-50 dark:hover:bg-gray-100"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.1 }}
               >
-                <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-900">
                   {usuario.nombre}
                 </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
+                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-700 dark:text-gray-600">
                   {usuario.disponibles.toLocaleString('es-CO')}
                 </td>
-                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
+                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-700 dark:text-gray-600">
                   {usuario.gastados.toLocaleString('es-CO')}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-primary-600 dark:text-primary-400">
@@ -164,7 +164,7 @@ export default function CreditosPorUsuarioChart() {
                   {usuario.porcentajeUso}%
                 </td>
                 <td className="px-6 py-4 text-sm">
-                  <div className="h-4 w-full max-w-xs overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                  <div className="h-4 w-full max-w-xs overflow-hidden rounded-full bg-gray-200 dark:bg-gray-100">
                     <div className="flex h-full">
                       <motion.div
                         className="h-full bg-red-500 dark:bg-red-600"
@@ -193,11 +193,11 @@ export default function CreditosPorUsuarioChart() {
       <div className="mt-4 flex justify-end space-x-6">
         <div className="flex items-center">
           <div className="mr-2 h-3 w-3 rounded-full bg-red-500 dark:bg-red-600"></div>
-          <span className="text-xs text-gray-600 dark:text-gray-300">Créditos Gastados</span>
+          <span className="text-xs text-gray-600 dark:text-gray-600">Créditos Gastados</span>
         </div>
         <div className="flex items-center">
           <div className="mr-2 h-3 w-3 rounded-full bg-green-500 dark:bg-green-600"></div>
-          <span className="text-xs text-gray-600 dark:text-gray-300">Créditos Disponibles</span>
+          <span className="text-xs text-gray-600 dark:text-gray-600">Créditos Disponibles</span>
         </div>
       </div>
     </div>

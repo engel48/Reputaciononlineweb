@@ -10,15 +10,15 @@ export default function ConfiguracionPage() {
 
   return (
     <AdminPageWrapper title="Configuración del Sistema" subtitle="Gestiona las configuraciones globales de la plataforma">
-      <div className="bg-[#151C2E] rounded-xl border border-gray-800 p-8">
+      <div className="bg-white rounded-xl border border-gray-200 p-8">
         <div className="text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#00E5FF]/10 mb-4">
-            <Settings className="h-8 w-8 text-[#00E5FF]" />
+            <Settings className="h-8 w-8 text-cyan-600" />
           </div>
-          <h2 className="text-xl font-semibold text-white mb-2">
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
             Configuración Integrada
           </h2>
-          <p className="text-gray-400 mb-6">
+          <p className="text-gray-500 mb-6">
             La configuración del sistema se encuentra integrada en el panel principal de administración.
           </p>
           <button

@@ -227,44 +227,44 @@ export default function PlanesPage() {
         </div>
 
         {error && (
-          <div className="rounded-md bg-red-100 dark:bg-red-900/30 p-4 text-sm text-red-800 dark:text-red-300">
+          <div className="rounded-md bg-red-100 dark:bg-red-100 p-4 text-sm text-red-800 dark:text-red-700">
             {error}
           </div>
         )}
 
         {/* Tabla */}
-        <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-800">
+        <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-200 bg-white dark:bg-gray-900">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-200">
+            <thead className="bg-gray-50 dark:bg-gray-100">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Plan</th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Precio</th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Creditos / mes</th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Cuentas sociales</th>
-                <th className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Estado</th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Usuarios</th>
-                <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Acciones</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-500">Plan</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-500">Precio</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-500">Creditos / mes</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-500">Cuentas sociales</th>
+                <th className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-500">Estado</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-500">Usuarios</th>
+                <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-500">Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-200">
               {cargando ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                  <td colSpan={7} className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-500">
                     Cargando planes...
                   </td>
                 </tr>
               ) : planes.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                  <td colSpan={7} className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-500">
                     No hay planes registrados
                   </td>
                 </tr>
               ) : (
                 planes.map((plan) => (
-                  <tr key={plan.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <tr key={plan.id} className="hover:bg-gray-50 dark:hover:bg-gray-100">
                     <td className="px-6 py-4 text-sm">
                       <div className="flex items-center gap-2">
-                        <span className="font-medium text-gray-900 dark:text-white">{plan.name}</span>
+                        <span className="font-medium text-gray-900 dark:text-gray-900">{plan.name}</span>
                         {plan.isPopular && (
                           <span title="Plan popular" className="inline-flex items-center text-amber-500">
                             <Star className="h-4 w-4 fill-current" />
@@ -276,20 +276,20 @@ export default function PlanesPage() {
                           </span>
                         )}
                       </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                      <div className="text-xs text-gray-500 dark:text-gray-500 mt-0.5">
                         <span className="font-mono">{plan.code}</span> &middot; {plan.description}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
+                    <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-900">
                       {plan.priceCop === 0 ? 'Gratis' : formatCOP(plan.priceCop)}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
+                    <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-900">
                       <div className="flex items-center">
                         <CreditCard className="mr-2 h-4 w-4 text-blue-500" />
                         {plan.monthlyCredits.toLocaleString('es-CO')}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
+                    <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-900">
                       <div className="flex items-center">
                         <Users className="mr-2 h-4 w-4 text-blue-500" />
                         {plan.maxSocialAccounts}
@@ -298,16 +298,16 @@ export default function PlanesPage() {
                     </td>
                     <td className="px-6 py-4 text-center text-sm">
                       {plan.isActive ? (
-                        <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                        <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-100 dark:text-green-600">
                           <CheckCircle className="mr-1 h-3 w-3" /> Activo
                         </span>
                       ) : (
-                        <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800 dark:bg-red-900/30 dark:text-red-400">
+                        <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800 dark:bg-red-100 dark:text-red-600">
                           <XCircle className="mr-1 h-3 w-3" /> Inactivo
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
+                    <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-900">
                       <div className="flex items-center">
                         <Users className="mr-2 h-4 w-4 text-blue-500" />
                         {plan.stats?.userCount ?? 0}
@@ -317,7 +317,7 @@ export default function PlanesPage() {
                       <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={() => abrirModalEditar(plan)}
-                          className="rounded p-1.5 text-blue-600 hover:bg-blue-100 dark:text-blue-400 dark:hover:bg-blue-900/30"
+                          className="rounded p-1.5 text-blue-600 hover:bg-blue-100 dark:text-blue-600 dark:hover:bg-blue-100"
                           title="Editar"
                         >
                           <Edit className="h-4 w-4" />
@@ -325,8 +325,8 @@ export default function PlanesPage() {
                         <button
                           onClick={() => toggleEstado(plan)}
                           className={`rounded p-1.5 ${plan.isActive
-                            ? 'text-red-600 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-900/30'
-                            : 'text-green-600 hover:bg-green-100 dark:text-green-400 dark:hover:bg-green-900/30'}`}
+                            ? 'text-red-600 hover:bg-red-100 dark:text-red-600 dark:hover:bg-red-100'
+                            : 'text-green-600 hover:bg-green-100 dark:text-green-600 dark:hover:bg-green-100'}`}
                           title={plan.isActive ? 'Desactivar' : 'Activar'}
                         >
                           {plan.isActive ? <XCircle className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
@@ -334,7 +334,7 @@ export default function PlanesPage() {
                         {(plan.stats?.userCount ?? 0) === 0 && (
                           <button
                             onClick={() => eliminarPlan(plan)}
-                            className="rounded p-1.5 text-red-600 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-900/30"
+                            className="rounded p-1.5 text-red-600 hover:bg-red-100 dark:text-red-600 dark:hover:bg-red-100"
                             title="Eliminar"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -351,59 +351,59 @@ export default function PlanesPage() {
 
         {/* Stats */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5">
+          <div className="rounded-lg border border-gray-200 dark:border-gray-200 bg-white dark:bg-gray-100 p-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-100 text-blue-600 dark:text-blue-700">
                 <CreditCard className="h-6 w-6" />
               </div>
               <div>
-                <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Planes</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">{planes.length}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-500">Planes</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-900">{planes.length}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-500">
                   {planes.filter((p) => p.isActive).length} activos
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5">
+          <div className="rounded-lg border border-gray-200 dark:border-gray-200 bg-white dark:bg-gray-100 p-5">
             <div className="flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-300">
                 <Users className="h-6 w-6" />
               </div>
               <div>
-                <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Usuarios totales</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">{totalUsers}</p>
+                <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-500">Usuarios totales</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-900">{totalUsers}</p>
               </div>
             </div>
           </div>
 
-          <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5">
+          <div className="rounded-lg border border-gray-200 dark:border-gray-200 bg-white dark:bg-gray-100 p-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-300">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-100 text-amber-600 dark:text-amber-700">
                 <Star className="h-6 w-6" />
               </div>
               <div>
-                <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Plan mas adoptado</p>
-                <p className="text-lg font-bold text-gray-900 dark:text-white">
+                <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-500">Plan mas adoptado</p>
+                <p className="text-lg font-bold text-gray-900 dark:text-gray-900">
                   {popularPlan ? popularPlan.name : '—'}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-gray-500 dark:text-gray-500">
                   {popularPlan?.stats?.userCount ?? 0} usuarios
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-5">
+          <div className="rounded-lg border border-gray-200 dark:border-gray-200 bg-white dark:bg-gray-100 p-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-300">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-100 dark:bg-green-100 text-green-600 dark:text-green-700">
                 <DollarSign className="h-6 w-6" />
               </div>
               <div>
-                <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">MRR estimado</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCOP(totalRevenue)}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">precio &times; usuarios activos</p>
+                <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-500">MRR estimado</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-900">{formatCOP(totalRevenue)}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-500">precio &times; usuarios activos</p>
               </div>
             </div>
           </div>
@@ -416,17 +416,17 @@ export default function PlanesPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="w-full max-w-lg rounded-lg bg-white dark:bg-gray-800 p-6 shadow-xl max-h-[90vh] overflow-y-auto"
+            className="w-full max-w-lg rounded-lg bg-white dark:bg-gray-100 p-6 shadow-xl max-h-[90vh] overflow-y-auto"
           >
-            <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">
+            <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-gray-900">
               {planEditando ? `Editar plan: ${planEditando.name}` : 'Nuevo plan'}
             </h3>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">
-                    Codigo* <span className="text-gray-400">(no se puede cambiar despues)</span>
+                  <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-600">
+                    Codigo* <span className="text-gray-500">(no se puede cambiar despues)</span>
                   </label>
                   <input
                     type="text"
@@ -435,38 +435,38 @@ export default function PlanesPage() {
                     onChange={handleInputChange}
                     disabled={!!planEditando}
                     placeholder="ej: pro"
-                    className="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-2 text-sm font-mono disabled:opacity-50"
+                    className="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-100 dark:text-gray-900 p-2 text-sm font-mono disabled:opacity-50"
                     required
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Nombre*</label>
+                  <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-600">Nombre*</label>
                   <input
                     type="text"
                     name="name"
                     value={form.name}
                     onChange={handleInputChange}
                     placeholder="ej: Plan Profesional"
-                    className="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-2 text-sm"
+                    className="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-100 dark:text-gray-900 p-2 text-sm"
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Descripcion</label>
+                <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-600">Descripcion</label>
                 <textarea
                   name="description"
                   value={form.description}
                   onChange={handleInputChange}
                   rows={2}
-                  className="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-2 text-sm"
+                  className="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-100 dark:text-gray-900 p-2 text-sm"
                 />
               </div>
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Precio (COP)*</label>
+                  <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-600">Precio (COP)*</label>
                   <input
                     type="number"
                     name="priceCop"
@@ -474,50 +474,50 @@ export default function PlanesPage() {
                     onChange={handleInputChange}
                     min={0}
                     step={1000}
-                    className="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-2 text-sm"
+                    className="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-100 dark:text-gray-900 p-2 text-sm"
                     required
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Creditos/mes*</label>
+                  <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-600">Creditos/mes*</label>
                   <input
                     type="number"
                     name="monthlyCredits"
                     value={form.monthlyCredits}
                     onChange={handleInputChange}
                     min={0}
-                    className="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-2 text-sm"
+                    className="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-100 dark:text-gray-900 p-2 text-sm"
                     required
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Max cuentas sociales*</label>
+                  <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-600">Max cuentas sociales*</label>
                   <input
                     type="number"
                     name="maxSocialAccounts"
                     value={form.maxSocialAccounts}
                     onChange={handleInputChange}
                     min={0}
-                    className="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-2 text-sm"
+                    className="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-100 dark:text-gray-900 p-2 text-sm"
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Orden de visualizacion</label>
+                <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-600">Orden de visualizacion</label>
                 <input
                   type="number"
                   name="displayOrder"
                   value={form.displayOrder}
                   onChange={handleInputChange}
                   min={0}
-                  className="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-2 text-sm"
+                  className="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-100 dark:text-gray-900 p-2 text-sm"
                 />
               </div>
 
-              <div className="flex flex-col gap-2 rounded-md border border-gray-200 dark:border-gray-700 p-3">
-                <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+              <div className="flex flex-col gap-2 rounded-md border border-gray-200 dark:border-gray-200 p-3">
+                <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-600">
                   <input
                     type="checkbox"
                     name="isActive"
@@ -527,7 +527,7 @@ export default function PlanesPage() {
                   />
                   Plan activo (los usuarios lo pueden adquirir)
                 </label>
-                <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-600">
                   <input
                     type="checkbox"
                     name="isPopular"
@@ -537,7 +537,7 @@ export default function PlanesPage() {
                   />
                   Marcar como popular (destacado en pricing)
                 </label>
-                <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-600">
                   <input
                     type="checkbox"
                     name="multiAccountPerPlatform"
@@ -550,7 +550,7 @@ export default function PlanesPage() {
               </div>
 
               {error && (
-                <div className="rounded-md bg-red-100 dark:bg-red-900/30 p-3 text-sm text-red-800 dark:text-red-300">
+                <div className="rounded-md bg-red-100 dark:bg-red-100 p-3 text-sm text-red-800 dark:text-red-700">
                   {error}
                 </div>
               )}
@@ -560,7 +560,7 @@ export default function PlanesPage() {
                   type="button"
                   onClick={cerrarModal}
                   disabled={guardando}
-                  className="rounded-md border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50"
+                  className="rounded-md border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-700 dark:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-100 disabled:opacity-50"
                 >
                   Cancelar
                 </button>

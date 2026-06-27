@@ -72,42 +72,42 @@ export default function AdminJuliaPage() {
         )}
 
         {stats?.topUsers?.length > 0 && (
-          <div className="bg-[#151C2E] rounded-lg p-4 border border-gray-800">
-            <div className="text-xs text-gray-400 mb-2">Top usuarios por consumo de IA</div>
+          <div className="bg-white rounded-lg p-4 border border-gray-200">
+            <div className="text-xs text-gray-500 mb-2">Top usuarios por consumo de IA</div>
             <div className="flex flex-wrap gap-2">
               {stats.topUsers.map((u: any) => (
-                <span key={u.userId} className="px-2 py-1 rounded-full bg-[#0B1120] border border-gray-700 text-xs text-gray-300">
-                  {u.name || u.email || u.userId} <span className="text-amber-400 font-semibold">· {u.creditsConsumed}</span>
+                <span key={u.userId} className="px-2 py-1 rounded-full bg-gray-50 border border-gray-200 text-xs text-gray-600">
+                  {u.name || u.email || u.userId} <span className="text-amber-600 font-semibold">· {u.creditsConsumed}</span>
                 </span>
               ))}
             </div>
           </div>
         )}
 
-        <div className="bg-[#151C2E] rounded-lg p-4 border border-gray-800 flex flex-wrap items-center gap-3">
+        <div className="bg-white rounded-lg p-4 border border-gray-200 flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2 flex-1 min-w-[200px]">
-            <Filter className="w-4 h-4 text-gray-400" />
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar por título de conversación..." className="flex-1 px-3 py-2 rounded-md bg-[#0B1120] border border-gray-700 text-white text-sm placeholder-gray-500" />
+            <Filter className="w-4 h-4 text-gray-500" />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar por título de conversación..." className="flex-1 px-3 py-2 rounded-md bg-gray-50 border border-gray-200 text-gray-900 text-sm placeholder-gray-500" />
           </div>
           <button onClick={load} disabled={loading} className="px-3 py-2 rounded-md bg-cyan-500 text-white text-sm font-medium flex items-center gap-1 hover:bg-cyan-600">
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /> Refrescar
           </button>
         </div>
 
-        <div className="bg-[#151C2E] rounded-lg border border-gray-800 overflow-hidden">
-          <div className="px-4 py-2 border-b border-gray-800 text-xs text-gray-400">
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <div className="px-4 py-2 border-b border-gray-200 text-xs text-gray-500">
             {loading ? 'Cargando...' : data ? `${data.total.toLocaleString('es-CO')} conversaciones` : ''}
           </div>
           {error ? (
-            <div className="p-6 bg-red-900/20 text-red-300 text-sm">{error}</div>
+            <div className="p-6 bg-red-50 text-red-700 text-sm">{error}</div>
           ) : loading ? (
-            <div className="p-12 text-center text-gray-400"><RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2" />Cargando...</div>
+            <div className="p-12 text-center text-gray-500"><RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2" />Cargando...</div>
           ) : conversations.length === 0 ? (
-            <div className="p-12 text-center text-gray-400 text-sm">No hay conversaciones.</div>
+            <div className="p-12 text-center text-gray-500 text-sm">No hay conversaciones.</div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-700 text-sm">
-                <thead className="bg-[#0B1120] text-xs uppercase text-gray-400">
+              <table className="min-w-full divide-y divide-gray-200 text-sm">
+                <thead className="bg-gray-50 text-xs uppercase text-gray-500">
                   <tr>
                     <th className="px-3 py-2 text-left">Usuario</th>
                     <th className="px-3 py-2 text-left">Título</th>
@@ -116,15 +116,15 @@ export default function AdminJuliaPage() {
                     <th className="px-3 py-2 text-right">Acción</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-700 text-gray-300">
+                <tbody className="divide-y divide-gray-200 text-gray-600">
                   {conversations.map((c) => (
-                    <tr key={c.id} className="hover:bg-gray-800">
-                      <td className="px-3 py-2"><div className="text-white text-xs">{c.user?.name || '—'}</div><div className="text-xs text-gray-500">{c.user?.email || ''}</div></td>
+                    <tr key={c.id} className="hover:bg-gray-100">
+                      <td className="px-3 py-2"><div className="text-gray-900 text-xs">{c.user?.name || '—'}</div><div className="text-xs text-gray-500">{c.user?.email || ''}</div></td>
                       <td className="px-3 py-2 text-xs">{c.title || '(sin título)'}</td>
                       <td className="px-3 py-2 text-xs whitespace-nowrap">{fmt(c.createdAt)}</td>
                       <td className="px-3 py-2 text-xs whitespace-nowrap">{fmt(c.updatedAt)}</td>
                       <td className="px-3 py-2 text-right">
-                        <button onClick={() => del(c.id)} disabled={busy === c.id} className="px-2 py-1 rounded bg-red-900/40 text-red-300 text-xs hover:bg-red-900/60 inline-flex items-center gap-1 disabled:opacity-50">
+                        <button onClick={() => del(c.id)} disabled={busy === c.id} className="px-2 py-1 rounded bg-red-100 text-red-700 text-xs hover:bg-red-200 inline-flex items-center gap-1 disabled:opacity-50">
                           <Trash2 className="w-3 h-3" /> Borrar
                         </button>
                       </td>
@@ -136,10 +136,10 @@ export default function AdminJuliaPage() {
           )}
 
           {data && data.total > PAGE_SIZE && (
-            <div className="border-t border-gray-800 px-4 py-3 flex items-center justify-between">
-              <button onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0 || loading} className="flex items-center gap-1 px-3 py-1 rounded-md bg-gray-700 text-white text-xs disabled:opacity-50"><ChevronLeft className="w-3 h-3" /> Anterior</button>
-              <span className="text-xs text-gray-400">Página {page + 1} de {totalPages || 1}</span>
-              <button onClick={() => setPage((p) => p + 1)} disabled={page >= totalPages - 1 || loading} className="flex items-center gap-1 px-3 py-1 rounded-md bg-gray-700 text-white text-xs disabled:opacity-50">Siguiente <ChevronRight className="w-3 h-3" /></button>
+            <div className="border-t border-gray-200 px-4 py-3 flex items-center justify-between">
+              <button onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0 || loading} className="flex items-center gap-1 px-3 py-1 rounded-md bg-gray-100 text-gray-900 text-xs disabled:opacity-50"><ChevronLeft className="w-3 h-3" /> Anterior</button>
+              <span className="text-xs text-gray-500">Página {page + 1} de {totalPages || 1}</span>
+              <button onClick={() => setPage((p) => p + 1)} disabled={page >= totalPages - 1 || loading} className="flex items-center gap-1 px-3 py-1 rounded-md bg-gray-100 text-gray-900 text-xs disabled:opacity-50">Siguiente <ChevronRight className="w-3 h-3" /></button>
             </div>
           )}
         </div>
@@ -149,10 +149,10 @@ export default function AdminJuliaPage() {
 }
 
 function StatCard({ label, value, icon, tone }: { label: string; value: number; icon?: React.ReactNode; tone?: 'amber' }) {
-  const color = tone === 'amber' ? 'text-amber-400' : 'text-cyan-400';
+  const color = tone === 'amber' ? 'text-amber-600' : 'text-cyan-600';
   return (
-    <div className="bg-[#151C2E] rounded-lg p-4 border border-gray-800">
-      <div className="flex items-center gap-2 text-xs text-gray-400">{icon}{label}</div>
+    <div className="bg-white rounded-lg p-4 border border-gray-200">
+      <div className="flex items-center gap-2 text-xs text-gray-500">{icon}{label}</div>
       <div className={`text-2xl font-bold mt-1 ${color}`}>{value.toLocaleString('es-CO')}</div>
     </div>
   );

@@ -20,7 +20,7 @@ export default function AdminPageWrapper({ children, title, subtitle }: AdminPag
   };
 
   return (
-    <div className="min-h-screen bg-[#0B1120]">
+    <div className="min-h-screen bg-gray-50">
       <AdminSidebar
         isCollapsed={sidebarCollapsed}
         onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
@@ -30,10 +30,10 @@ export default function AdminPageWrapper({ children, title, subtitle }: AdminPag
       {/* Main Content */}
       <div className={`transition-all duration-300 ${sidebarCollapsed ? 'ml-20' : 'ml-64'}`}>
         {/* Header */}
-        <header className="sticky top-0 z-40 h-16 bg-[#151C2E] border-b border-gray-800 flex items-center justify-between px-6">
+        <header className="sticky top-0 z-40 h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6">
           <div>
-            <h1 className="text-xl font-bold text-white">{title}</h1>
-            {subtitle && <p className="text-sm text-gray-400">{subtitle}</p>}
+            <h1 className="text-xl font-bold text-gray-900">{title}</h1>
+            {subtitle && <p className="text-sm text-gray-500">{subtitle}</p>}
           </div>
         </header>
 

@@ -357,18 +357,18 @@ export default function UsuariosPage() {
 
         {/* Stats Overview */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
-          <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.05)] rounded-xl">
+          <div className="bg-white dark:bg-gray-100 overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.05)] rounded-xl">
             <div className="p-5">
               <div className="flex items-center">
-                <div className="flex-shrink-0 h-12 w-12 rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-                  <Users className="h-6 w-6 text-[#00E5FF]" />
+                <div className="flex-shrink-0 h-12 w-12 rounded-xl bg-gray-100 dark:bg-gray-100 flex items-center justify-center">
+                  <Users className="h-6 w-6 text-cyan-600" />
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
+                    <dt className="text-sm font-medium text-gray-500 dark:text-gray-500 truncate">
                       Total Usuarios
                     </dt>
-                    <dd className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <dd className="text-2xl font-bold text-gray-900 dark:text-gray-900">
                       {getTotalUsers()}
                     </dd>
                   </dl>
@@ -377,18 +377,18 @@ export default function UsuariosPage() {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.05)] rounded-xl">
+          <div className="bg-white dark:bg-gray-100 overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.05)] rounded-xl">
             <div className="p-5">
               <div className="flex items-center">
-                <div className="flex-shrink-0 h-12 w-12 rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                <div className="flex-shrink-0 h-12 w-12 rounded-xl bg-gray-100 dark:bg-gray-100 flex items-center justify-center">
                   <Eye className="h-6 w-6 text-green-500" />
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
+                    <dt className="text-sm font-medium text-gray-500 dark:text-gray-500 truncate">
                       Usuarios Activos
                     </dt>
-                    <dd className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <dd className="text-2xl font-bold text-gray-900 dark:text-gray-900">
                       {getActiveUsers()}
                     </dd>
                   </dl>
@@ -397,18 +397,18 @@ export default function UsuariosPage() {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.05)] rounded-xl">
+          <div className="bg-white dark:bg-gray-100 overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.05)] rounded-xl">
             <div className="p-5">
               <div className="flex items-center">
-                <div className="flex-shrink-0 h-12 w-12 rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                <div className="flex-shrink-0 h-12 w-12 rounded-xl bg-gray-100 dark:bg-gray-100 flex items-center justify-center">
                   <Crown className="h-6 w-6 text-purple-500" />
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
+                    <dt className="text-sm font-medium text-gray-500 dark:text-gray-500 truncate">
                       Total Créditos
                     </dt>
-                    <dd className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <dd className="text-2xl font-bold text-gray-900 dark:text-gray-900">
                       {getTotalCredits().toLocaleString()}
                     </dd>
                   </dl>
@@ -419,20 +419,20 @@ export default function UsuariosPage() {
         </div>
 
         {/* Filters and Search */}
-        <div className="bg-white dark:bg-gray-800 shadow-[0_4px_20px_rgba(0,0,0,0.05)] rounded-xl mb-6">
-          <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.05)] rounded-xl mb-6">
+          <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-200">
             <div className="flex flex-col sm:flex-row gap-4">
               {/* Search */}
               <div className="relative flex-1">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search className="h-5 w-5 text-gray-400" />
+                  <Search className="h-5 w-5 text-gray-500" />
                 </div>
                 <input
                   type="text"
                   placeholder="Buscar usuarios..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#00E5FF] focus:border-[#00E5FF] text-gray-900 dark:text-white"
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-100 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#00E5FF] focus:border-[#00E5FF] text-gray-900 dark:text-gray-900"
                 />
               </div>
 
@@ -440,7 +440,7 @@ export default function UsuariosPage() {
               <select
                 value={filterPlan}
                 onChange={(e) => setFilterPlan(e.target.value)}
-                className="w-full sm:w-auto px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#00E5FF] focus:border-[#00E5FF]"
+                className="w-full sm:w-auto px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-100 text-gray-900 dark:text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#00E5FF] focus:border-[#00E5FF]"
               >
                 <option value="all">Todos los planes</option>
                 <option value="free">Free</option>
@@ -453,7 +453,7 @@ export default function UsuariosPage() {
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
-                className="w-full sm:w-auto px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#00E5FF] focus:border-[#00E5FF]"
+                className="w-full sm:w-auto px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-100 text-gray-900 dark:text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#00E5FF] focus:border-[#00E5FF]"
               >
                 <option value="all">Todos los tipos</option>
                 <option value="personal">Personal</option>
@@ -465,7 +465,7 @@ export default function UsuariosPage() {
               <button
                 onClick={loadUsers}
                 disabled={loading}
-                className="px-4 py-2 bg-[#00E5FF] text-white rounded-lg hover:bg-[#00B8D4] focus:outline-none focus:ring-2 focus:ring-[#00E5FF] focus:ring-offset-2 disabled:opacity-50"
+                className="px-4 py-2 bg-[#00E5FF] text-gray-900 rounded-lg hover:bg-[#00B8D4] focus:outline-none focus:ring-2 focus:ring-[#00E5FF] focus:ring-offset-2 disabled:opacity-50"
               >
                 <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
               </button>
@@ -474,58 +474,58 @@ export default function UsuariosPage() {
         </div>
 
         {/* Users Table */}
-        <div className="bg-white dark:bg-gray-800 shadow-[0_4px_20px_rgba(0,0,0,0.05)] overflow-hidden rounded-xl">
-          <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.05)] overflow-hidden rounded-xl">
+          <div className="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-200">
             <div className="flex justify-between items-center">
-              <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">
+              <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-gray-900">
                 Lista de Usuarios ({filteredUsers.length})
               </h3>
-              <div className="text-sm text-gray-500 dark:text-gray-400">
+              <div className="text-sm text-gray-500 dark:text-gray-500">
                 Página {currentPage} de {totalPages || 1}
               </div>
             </div>
           </div>
           <div className="overflow-x-auto -mx-4 sm:mx-0">
             <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead className="bg-gray-50 dark:bg-gray-700">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-200">
+                <thead className="bg-gray-50 dark:bg-gray-100">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-600 uppercase tracking-wider">
                       Usuario
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-600 uppercase tracking-wider">
                       Tipo
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-600 uppercase tracking-wider">
                       Plan
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-600 uppercase tracking-wider">
                       Créditos
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-600 uppercase tracking-wider">
                       Creado
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-600 uppercase tracking-wider">
                       Estado
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-600 uppercase tracking-wider">
                       Acciones
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-white dark:bg-gray-100 divide-y divide-gray-200 dark:divide-gray-200">
                   {currentUsers.map((user) => (
-                    <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                    <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-100/50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          <div className="text-sm font-medium text-gray-900 dark:text-gray-900">
                             {user.name || 'Usuario sin nombre'}
                           </div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
+                          <div className="text-sm text-gray-500 dark:text-gray-500">
                             {user.email}
                           </div>
                           {user.company && (
-                            <div className="text-xs text-gray-400 dark:text-gray-500">
+                            <div className="text-xs text-gray-500 dark:text-gray-500">
                               {user.company}
                             </div>
                           )}
@@ -534,10 +534,10 @@ export default function UsuariosPage() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                           user.profileType === 'political'
-                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
+                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-100 dark:text-blue-600'
                             : user.profileType === 'business'
-                            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                            : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                            ? 'bg-green-100 text-green-800 dark:bg-green-100 dark:text-green-600'
+                            : 'bg-gray-100 text-gray-800 dark:bg-gray-100 dark:text-gray-600'
                         }`}>
                           {user.profileType || 'Personal'}
                         </span>
@@ -547,10 +547,10 @@ export default function UsuariosPage() {
                           user.plan === 'enterprise'
                             ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400'
                             : user.plan === 'pro'
-                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
+                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-100 dark:text-blue-600'
                             : user.plan === 'basic'
                             ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
-                            : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                            : 'bg-gray-100 text-gray-800 dark:bg-gray-100 dark:text-gray-600'
                         }`}>
                           {user.plan}
                         </span>
@@ -558,9 +558,9 @@ export default function UsuariosPage() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`text-sm font-semibold ${
                           user.credits >= 500
-                            ? 'text-green-600 dark:text-green-400'
+                            ? 'text-green-600 dark:text-green-600'
                             : user.credits >= 100
-                              ? 'text-[#00E5FF]'
+                              ? 'text-cyan-600'
                               : user.credits >= 10
                                 ? 'text-orange-500'
                                 : 'text-red-500'
@@ -568,20 +568,20 @@ export default function UsuariosPage() {
                           {user.credits.toLocaleString()}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-500">
                         {new Date(user.createdAt).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex flex-col gap-1">
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                             user.isActive !== false
-                              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                              : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                              ? 'bg-green-100 text-green-800 dark:bg-green-100 dark:text-green-600'
+                              : 'bg-red-100 text-red-800 dark:bg-red-100 dark:text-red-600'
                           }`}>
                             {user.isActive !== false ? 'Habilitado' : 'Deshabilitado'}
                           </span>
                           {user.lastLogin && (
-                            <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                            <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-100 dark:text-blue-600">
                               Conectado
                             </span>
                           )}
@@ -614,8 +614,8 @@ export default function UsuariosPage() {
                                 onClick={() => handleToggleUser(user.id, user.isActive !== false)}
                                 className={`p-1.5 rounded-lg ${
                                   user.isActive !== false
-                                    ? 'text-red-600 hover:text-red-800 hover:bg-red-50 dark:hover:bg-red-900/20'
-                                    : 'text-green-600 hover:text-green-800 hover:bg-green-50 dark:hover:bg-green-900/20'
+                                    ? 'text-red-600 hover:text-red-800 hover:bg-red-50 dark:hover:bg-red-50'
+                                    : 'text-green-600 hover:text-green-800 hover:bg-green-50 dark:hover:bg-green-100'
                                 }`}
                                 title={user.isActive !== false ? 'Deshabilitar usuario' : 'Habilitar usuario'}
                               >
@@ -623,14 +623,14 @@ export default function UsuariosPage() {
                               </button>
                               <button
                                 onClick={() => handleEditUser(user)}
-                                className="text-[#00E5FF] hover:text-[#00B8D4] p-1.5 rounded-lg hover:bg-cyan-50 dark:hover:bg-cyan-900/20"
+                                className="text-cyan-600 hover:text-[#00B8D4] p-1.5 rounded-lg hover:bg-cyan-50 dark:hover:bg-cyan-900/20"
                                 title="Editar usuario"
                               >
                                 <Edit className="h-4 w-4" />
                               </button>
                               <button
                                 onClick={() => setShowDeleteConfirm(user.id)}
-                                className="text-red-600 hover:text-red-800 p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
+                                className="text-red-600 hover:text-red-800 p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-50"
                                 title="Eliminar usuario"
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -638,7 +638,7 @@ export default function UsuariosPage() {
                             </>
                           )}
                           {user.role === 'admin' && (
-                            <span className="text-xs text-gray-500 dark:text-gray-400 italic">
+                            <span className="text-xs text-gray-500 dark:text-gray-500 italic">
                               Admin protegido
                             </span>
                           )}
@@ -654,7 +654,7 @@ export default function UsuariosPage() {
 
         {/* Paginación */}
         {totalPages > 1 && (
-          <div className="bg-white dark:bg-gray-800 px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 sm:px-6 rounded-b-xl">
+          <div className="bg-white dark:bg-gray-100 px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-gray-200 sm:px-6 rounded-b-xl">
             <div className="flex-1 flex justify-between sm:hidden">
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
@@ -673,7 +673,7 @@ export default function UsuariosPage() {
             </div>
             <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
               <div>
-                <p className="text-sm text-gray-700 dark:text-gray-300">
+                <p className="text-sm text-gray-700 dark:text-gray-600">
                   Mostrando{' '}
                   <span className="font-medium">{indexOfFirstUser + 1}</span>
                   {' '}a{' '}
@@ -711,7 +711,7 @@ export default function UsuariosPage() {
                         onClick={() => handlePageChange(page)}
                         className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
                           page === currentPage
-                            ? 'z-10 bg-[#00E5FF] border-[#00E5FF] text-white'
+                            ? 'z-10 bg-[#00E5FF] border-[#00E5FF] text-gray-900'
                             : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
                         }`}
                       >
@@ -735,10 +735,10 @@ export default function UsuariosPage() {
         {/* Modal de Crear Usuario */}
         {showCreateModal && (
           <div className="fixed inset-0 bg-black/50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full overflow-hidden">
-              <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                  <UserPlus className="h-5 w-5 text-[#00E5FF]" />
+            <div className="bg-white dark:bg-gray-100 rounded-xl shadow-xl max-w-md w-full overflow-hidden">
+              <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-900 flex items-center gap-2">
+                  <UserPlus className="h-5 w-5 text-cyan-600" />
                   Crear Nuevo Usuario
                 </h3>
                 <button
@@ -746,7 +746,7 @@ export default function UsuariosPage() {
                     setShowCreateModal(false);
                     setCreateResult(null);
                   }}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  className="text-gray-500 hover:text-gray-600 dark:hover:text-gray-600"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -754,7 +754,7 @@ export default function UsuariosPage() {
 
               <div className="p-4 space-y-4 max-h-[60vh] overflow-y-auto">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-600 mb-1">
                     Nombre *
                   </label>
                   <input
@@ -762,12 +762,12 @@ export default function UsuariosPage() {
                     value={createForm.name}
                     onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
                     placeholder="Nombre completo"
-                    className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white placeholder-gray-500 focus:border-[#00E5FF] focus:outline-none focus:ring-1 focus:ring-[#00E5FF]"
+                    className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-100 px-3 py-2 text-gray-900 dark:text-gray-900 placeholder-gray-500 focus:border-[#00E5FF] focus:outline-none focus:ring-1 focus:ring-[#00E5FF]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-600 mb-1">
                     Email *
                   </label>
                   <input
@@ -775,12 +775,12 @@ export default function UsuariosPage() {
                     value={createForm.email}
                     onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
                     placeholder="correo@ejemplo.com"
-                    className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white placeholder-gray-500 focus:border-[#00E5FF] focus:outline-none focus:ring-1 focus:ring-[#00E5FF]"
+                    className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-100 px-3 py-2 text-gray-900 dark:text-gray-900 placeholder-gray-500 focus:border-[#00E5FF] focus:outline-none focus:ring-1 focus:ring-[#00E5FF]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-600 mb-1">
                     Contraseña *
                   </label>
                   <div className="flex gap-2">
@@ -789,12 +789,12 @@ export default function UsuariosPage() {
                       value={createForm.password}
                       onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
                       placeholder="Mínimo 6 caracteres"
-                      className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white placeholder-gray-500 focus:border-[#00E5FF] focus:outline-none focus:ring-1 focus:ring-[#00E5FF]"
+                      className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-100 px-3 py-2 text-gray-900 dark:text-gray-900 placeholder-gray-500 focus:border-[#00E5FF] focus:outline-none focus:ring-1 focus:ring-[#00E5FF]"
                     />
                     <button
                       type="button"
                       onClick={generatePassword}
-                      className="px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 text-sm"
+                      className="px-3 py-2 bg-gray-100 dark:bg-gray-100 rounded-lg text-gray-700 dark:text-gray-600 hover:bg-gray-200 dark:hover:bg-gray-200 text-sm"
                       title="Generar contraseña"
                     >
                       <RefreshCw className="h-4 w-4" />
@@ -804,13 +804,13 @@ export default function UsuariosPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-600 mb-1">
                       Plan
                     </label>
                     <select
                       value={createForm.plan}
                       onChange={(e) => setCreateForm({ ...createForm, plan: e.target.value })}
-                      className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white focus:border-[#00E5FF] focus:outline-none focus:ring-1 focus:ring-[#00E5FF]"
+                      className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-100 px-3 py-2 text-gray-900 dark:text-gray-900 focus:border-[#00E5FF] focus:outline-none focus:ring-1 focus:ring-[#00E5FF]"
                     >
                       <option value="basic">Basic</option>
                       <option value="professional">Professional</option>
@@ -819,7 +819,7 @@ export default function UsuariosPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-600 mb-1">
                       Créditos Iniciales
                     </label>
                     <input
@@ -827,13 +827,13 @@ export default function UsuariosPage() {
                       value={createForm.credits}
                       onChange={(e) => setCreateForm({ ...createForm, credits: e.target.value })}
                       placeholder="Auto según plan"
-                      className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white placeholder-gray-500 focus:border-[#00E5FF] focus:outline-none focus:ring-1 focus:ring-[#00E5FF]"
+                      className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-100 px-3 py-2 text-gray-900 dark:text-gray-900 placeholder-gray-500 focus:border-[#00E5FF] focus:outline-none focus:ring-1 focus:ring-[#00E5FF]"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-600 mb-1">
                     Teléfono
                   </label>
                   <input
@@ -841,12 +841,12 @@ export default function UsuariosPage() {
                     value={createForm.phone}
                     onChange={(e) => setCreateForm({ ...createForm, phone: e.target.value })}
                     placeholder="+57 300 000 0000"
-                    className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white placeholder-gray-500 focus:border-[#00E5FF] focus:outline-none focus:ring-1 focus:ring-[#00E5FF]"
+                    className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-100 px-3 py-2 text-gray-900 dark:text-gray-900 placeholder-gray-500 focus:border-[#00E5FF] focus:outline-none focus:ring-1 focus:ring-[#00E5FF]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-600 mb-1">
                     Empresa
                   </label>
                   <input
@@ -854,15 +854,15 @@ export default function UsuariosPage() {
                     value={createForm.company}
                     onChange={(e) => setCreateForm({ ...createForm, company: e.target.value })}
                     placeholder="Nombre de la empresa"
-                    className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white placeholder-gray-500 focus:border-[#00E5FF] focus:outline-none focus:ring-1 focus:ring-[#00E5FF]"
+                    className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-100 px-3 py-2 text-gray-900 dark:text-gray-900 placeholder-gray-500 focus:border-[#00E5FF] focus:outline-none focus:ring-1 focus:ring-[#00E5FF]"
                   />
                 </div>
 
                 {createResult && (
                   <div className={`flex items-center gap-2 p-3 rounded-lg ${
                     createResult.success
-                      ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400'
-                      : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400'
+                      ? 'bg-green-100 dark:bg-green-100 text-green-800 dark:text-green-600'
+                      : 'bg-red-100 dark:bg-red-100 text-red-800 dark:text-red-600'
                   }`}>
                     {createResult.success ? <CheckCircle className="h-5 w-5" /> : <XCircle className="h-5 w-5" />}
                     <span className="text-sm">{createResult.message}</span>
@@ -870,22 +870,22 @@ export default function UsuariosPage() {
                 )}
               </div>
 
-              <div className="flex gap-3 p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+              <div className="flex gap-3 p-4 border-t border-gray-200 dark:border-gray-200 bg-gray-50 dark:bg-gray-100/50">
                 <button
                   onClick={() => {
                     setShowCreateModal(false);
                     setCreateResult(null);
                   }}
-                  className="flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-600 font-medium hover:bg-gray-100 dark:hover:bg-gray-100"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handleCreateUser}
                   disabled={creating || !createForm.name || !createForm.email || !createForm.password}
-                  className={`flex-1 px-4 py-2 rounded-lg font-medium text-white flex items-center justify-center gap-2
+                  className={`flex-1 px-4 py-2 rounded-lg font-medium text-gray-900 flex items-center justify-center gap-2
                     ${creating || !createForm.name || !createForm.email || !createForm.password
-                      ? 'bg-gray-300 dark:bg-gray-600 cursor-not-allowed'
+                      ? 'bg-gray-300 dark:bg-gray-200 cursor-not-allowed'
                       : 'bg-[#00E5FF] hover:bg-[#00B8D4]'
                     }`}
                 >
@@ -909,9 +909,9 @@ export default function UsuariosPage() {
         {/* Modal de Reset Password */}
         {showResetModal && (
           <div className="fixed inset-0 bg-black/50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full overflow-hidden">
-              <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-100 rounded-xl shadow-xl max-w-md w-full overflow-hidden">
+              <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-900 flex items-center gap-2">
                   <Key className="h-5 w-5 text-orange-500" />
                   Resetear Contraseña
                 </h3>
@@ -921,18 +921,18 @@ export default function UsuariosPage() {
                     setResetResult(null);
                     setPasswordCopied(false);
                   }}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  className="text-gray-500 hover:text-gray-600 dark:hover:text-gray-600"
                 >
                   <X className="h-5 w-5" />
                 </button>
               </div>
 
               <div className="p-4 space-y-4">
-                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                <div className="bg-gray-50 dark:bg-gray-100/50 rounded-lg p-4">
+                  <p className="text-sm text-gray-600 dark:text-gray-500">
                     <span className="font-semibold">Usuario:</span> {showResetModal.name}
                   </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="text-sm text-gray-600 dark:text-gray-500">
                     <span className="font-semibold">Email:</span> {showResetModal.email}
                   </p>
                 </div>
@@ -949,27 +949,27 @@ export default function UsuariosPage() {
                 {resetResult && (
                   <div className={`rounded-lg p-4 ${
                     resetResult.success
-                      ? 'bg-green-50 dark:bg-green-900/20'
-                      : 'bg-red-50 dark:bg-red-900/20'
+                      ? 'bg-green-50 dark:bg-green-100'
+                      : 'bg-red-50 dark:bg-red-50'
                   }`}>
                     {resetResult.success && resetResult.password ? (
                       <div className="space-y-3">
-                        <div className="flex items-center gap-2 text-green-800 dark:text-green-400">
+                        <div className="flex items-center gap-2 text-green-800 dark:text-green-600">
                           <CheckCircle className="h-5 w-5" />
                           <span className="text-sm font-medium">{resetResult.message}</span>
                         </div>
                         <div className="mt-2">
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Contraseña temporal:</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-500 mb-1">Contraseña temporal:</p>
                           <div className="flex items-center gap-2">
-                            <code className="flex-1 px-3 py-2 bg-white dark:bg-gray-700 rounded-lg font-mono text-sm border border-gray-200 dark:border-gray-600">
+                            <code className="flex-1 px-3 py-2 bg-white dark:bg-gray-100 rounded-lg font-mono text-sm border border-gray-200 dark:border-gray-600">
                               {resetResult.password}
                             </code>
                             <button
                               onClick={copyPassword}
                               className={`p-2 rounded-lg transition-colors ${
                                 passwordCopied
-                                  ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400'
-                                  : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                  ? 'bg-green-100 text-green-600 dark:bg-green-100 dark:text-green-600'
+                                  : 'bg-gray-100 text-gray-600 dark:bg-gray-100 dark:text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-200'
                               }`}
                               title={passwordCopied ? 'Copiado!' : 'Copiar contraseña'}
                             >
@@ -979,7 +979,7 @@ export default function UsuariosPage() {
                         </div>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-2 text-red-800 dark:text-red-400">
+                      <div className="flex items-center gap-2 text-red-800 dark:text-red-600">
                         <XCircle className="h-5 w-5" />
                         <span className="text-sm">{resetResult.message}</span>
                       </div>
@@ -988,14 +988,14 @@ export default function UsuariosPage() {
                 )}
               </div>
 
-              <div className="flex gap-3 p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+              <div className="flex gap-3 p-4 border-t border-gray-200 dark:border-gray-200 bg-gray-50 dark:bg-gray-100/50">
                 <button
                   onClick={() => {
                     setShowResetModal(null);
                     setResetResult(null);
                     setPasswordCopied(false);
                   }}
-                  className="flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-600 font-medium hover:bg-gray-100 dark:hover:bg-gray-100"
                 >
                   {resetResult?.password ? 'Cerrar' : 'Cancelar'}
                 </button>
@@ -1003,9 +1003,9 @@ export default function UsuariosPage() {
                   <button
                     onClick={handleResetPassword}
                     disabled={resetting}
-                    className={`flex-1 px-4 py-2 rounded-lg font-medium text-white flex items-center justify-center gap-2
+                    className={`flex-1 px-4 py-2 rounded-lg font-medium text-gray-900 flex items-center justify-center gap-2
                       ${resetting
-                        ? 'bg-gray-300 dark:bg-gray-600 cursor-not-allowed'
+                        ? 'bg-gray-300 dark:bg-gray-200 cursor-not-allowed'
                         : 'bg-orange-500 hover:bg-orange-600'
                       }`}
                   >
@@ -1030,14 +1030,14 @@ export default function UsuariosPage() {
         {/* Modal de Edición */}
         {editingUser && (
           <div className="fixed inset-0 bg-black/50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full overflow-hidden">
-              <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate pr-2">
+            <div className="bg-white dark:bg-gray-100 rounded-xl shadow-xl max-w-md w-full overflow-hidden">
+              <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-900 truncate pr-2">
                   Editar: {editingUser.name}
                 </h3>
                 <button
                   onClick={() => setEditingUser(null)}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  className="text-gray-500 hover:text-gray-600 dark:hover:text-gray-600"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -1045,13 +1045,13 @@ export default function UsuariosPage() {
 
               <div className="p-4 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-600 mb-1">
                     Plan
                   </label>
                   <select
                     value={editForm.plan}
                     onChange={(e) => setEditForm({ ...editForm, plan: e.target.value })}
-                    className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white focus:border-[#00E5FF] focus:outline-none focus:ring-1 focus:ring-[#00E5FF]"
+                    className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-100 px-3 py-2 text-gray-900 dark:text-gray-900 focus:border-[#00E5FF] focus:outline-none focus:ring-1 focus:ring-[#00E5FF]"
                   >
                     <option value="free">Free</option>
                     <option value="basic">Basic</option>
@@ -1061,25 +1061,25 @@ export default function UsuariosPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-600 mb-1">
                     Créditos
                   </label>
                   <input
                     type="number"
                     value={editForm.credits}
                     onChange={(e) => setEditForm({ ...editForm, credits: e.target.value })}
-                    className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white focus:border-[#00E5FF] focus:outline-none focus:ring-1 focus:ring-[#00E5FF]"
+                    className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-100 px-3 py-2 text-gray-900 dark:text-gray-900 focus:border-[#00E5FF] focus:outline-none focus:ring-1 focus:ring-[#00E5FF]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-600 mb-1">
                     Tipo de Perfil
                   </label>
                   <select
                     value={editForm.profileType}
                     onChange={(e) => setEditForm({ ...editForm, profileType: e.target.value })}
-                    className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-white focus:border-[#00E5FF] focus:outline-none focus:ring-1 focus:ring-[#00E5FF]"
+                    className="block w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-100 px-3 py-2 text-gray-900 dark:text-gray-900 focus:border-[#00E5FF] focus:outline-none focus:ring-1 focus:ring-[#00E5FF]"
                   >
                     <option value="personal">Personal</option>
                     <option value="political">Político</option>
@@ -1088,16 +1088,16 @@ export default function UsuariosPage() {
                 </div>
               </div>
 
-              <div className="flex gap-3 p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+              <div className="flex gap-3 p-4 border-t border-gray-200 dark:border-gray-200 bg-gray-50 dark:bg-gray-100/50">
                 <button
                   onClick={() => setEditingUser(null)}
-                  className="flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-600 font-medium hover:bg-gray-100 dark:hover:bg-gray-100"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handleSaveUser}
-                  className="flex-1 px-4 py-2 rounded-lg bg-[#00E5FF] text-white font-medium hover:bg-[#00B8D4] flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2 rounded-lg bg-[#00E5FF] text-gray-900 font-medium hover:bg-[#00B8D4] flex items-center justify-center gap-2"
                 >
                   <Check className="h-4 w-4" />
                   Guardar
@@ -1110,22 +1110,22 @@ export default function UsuariosPage() {
         {/* Modal de Confirmación de Eliminación */}
         {showDeleteConfirm && (
           <div className="fixed inset-0 bg-black/50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full overflow-hidden">
+            <div className="bg-white dark:bg-gray-100 rounded-xl shadow-xl max-w-md w-full overflow-hidden">
               <div className="p-6 text-center">
-                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/20 mb-4">
+                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-50 mb-4">
                   <Trash2 className="h-6 w-6 text-red-600" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-900 mb-2">
                   Eliminar Usuario
                 </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-sm text-gray-500 dark:text-gray-500">
                   ¿Estás seguro de que quieres eliminar este usuario? Esta acción no se puede deshacer.
                 </p>
               </div>
-              <div className="flex gap-3 p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+              <div className="flex gap-3 p-4 border-t border-gray-200 dark:border-gray-200 bg-gray-50 dark:bg-gray-100/50">
                 <button
                   onClick={() => setShowDeleteConfirm(null)}
-                  className="flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-600 font-medium hover:bg-gray-100 dark:hover:bg-gray-100"
                 >
                   Cancelar
                 </button>

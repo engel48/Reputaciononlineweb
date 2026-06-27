@@ -36,10 +36,10 @@ interface Campaign {
   created_at: string;
 }
 
-const CARD = 'rounded-2xl bg-[#151C2E] border border-gray-800 p-5';
+const CARD = 'rounded-2xl bg-white border border-gray-200 p-5';
 const INPUT =
-  'w-full rounded-lg bg-[#0B1120] border border-gray-700 px-3 py-2 text-white text-sm focus:border-[#00E5FF] focus:outline-none';
-const LABEL = 'text-xs font-semibold text-gray-400 mb-1 block';
+  'w-full rounded-lg bg-gray-50 border border-gray-200 px-3 py-2 text-gray-900 text-sm focus:border-[#00E5FF] focus:outline-none';
+const LABEL = 'text-xs font-semibold text-gray-500 mb-1 block';
 const BTN_PRIMARY =
   'inline-flex items-center gap-2 rounded-lg bg-[#00E5FF] px-4 py-2 text-sm font-semibold text-[#0B1120] hover:bg-[#33EAFF] disabled:opacity-50';
 
@@ -71,8 +71,8 @@ export default function AdminAppPage() {
             onClick={() => setTab(t.key)}
             className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition ${
               tab === t.key
-                ? 'bg-[#00E5FF]/15 text-[#00E5FF]'
-                : 'text-gray-400 hover:bg-[#00E5FF]/10 hover:text-[#00E5FF]'
+                ? 'bg-[#00E5FF]/15 text-cyan-600'
+                : 'text-gray-500 hover:bg-[#00E5FF]/10 hover:text-cyan-600'
             }`}
           >
             <t.icon className="w-4 h-4" />
@@ -97,8 +97,8 @@ function Stat({ icon: Icon, label, value, color }: { icon: React.ElementType; la
           <Icon className="w-5 h-5" style={{ color }} />
         </div>
         <div>
-          <div className="text-2xl font-bold text-white">{value.toLocaleString('es-CO')}</div>
-          <div className="text-xs text-gray-400">{label}</div>
+          <div className="text-2xl font-bold text-gray-900">{value.toLocaleString('es-CO')}</div>
+          <div className="text-xs text-gray-500">{label}</div>
         </div>
       </div>
     </div>
@@ -141,7 +141,7 @@ function AnalyticsTab() {
         <Stat icon={BarChart3} label="Sesiones (7 días)" value={data.sessions.last7d} color="#00E5FF" />
         <Stat icon={BarChart3} label="Sesiones (30 días)" value={data.sessions.last30d} color="#01257D" />
       </div>
-      <button onClick={load} className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-[#00E5FF]">
+      <button onClick={load} className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-cyan-600">
         <RefreshCw className="w-4 h-4" /> Actualizar
       </button>
     </div>
@@ -195,8 +195,8 @@ function PushTab() {
   return (
     <div className="grid lg:grid-cols-2 gap-6">
       <div className={CARD}>
-        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-          <Send className="w-4 h-4 text-[#00E5FF]" /> Componer notificación
+        <h3 className="text-gray-900 font-semibold mb-4 flex items-center gap-2">
+          <Send className="w-4 h-4 text-cyan-600" /> Componer notificación
         </h3>
         <div className="space-y-4">
           <div>
@@ -235,12 +235,12 @@ function PushTab() {
             {sending ? 'Enviando…' : 'Enviar notificación'}
           </button>
           {result && (
-            <div className="flex items-center gap-2 text-sm text-green-400">
+            <div className="flex items-center gap-2 text-sm text-green-600">
               <CheckCircle className="w-4 h-4" /> {result}
             </div>
           )}
           {error && (
-            <div className="flex items-center gap-2 text-sm text-red-400">
+            <div className="flex items-center gap-2 text-sm text-red-600">
               <AlertCircle className="w-4 h-4" /> {error}
             </div>
           )}
@@ -248,21 +248,21 @@ function PushTab() {
       </div>
 
       <div className={CARD}>
-        <h3 className="text-white font-semibold mb-4">Historial reciente</h3>
+        <h3 className="text-gray-900 font-semibold mb-4">Historial reciente</h3>
         {campaigns.length === 0 ? (
           <p className="text-sm text-gray-500">Sin campañas enviadas todavía.</p>
         ) : (
           <div className="space-y-3 max-h-[420px] overflow-y-auto">
             {campaigns.map((c) => (
-              <div key={c.id} className="rounded-lg bg-[#0B1120] border border-gray-800 p-3">
+              <div key={c.id} className="rounded-lg bg-gray-50 border border-gray-200 p-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-white">{c.title}</span>
+                  <span className="text-sm font-medium text-gray-900">{c.title}</span>
                   <span className="text-xs text-gray-500">{c.segment}</span>
                 </div>
-                <p className="text-xs text-gray-400 mt-1 line-clamp-2">{c.body}</p>
+                <p className="text-xs text-gray-500 mt-1 line-clamp-2">{c.body}</p>
                 <div className="flex gap-3 mt-2 text-xs">
-                  <span className="text-green-400">✓ {c.sent_count}</span>
-                  <span className="text-red-400">✗ {c.failed_count}</span>
+                  <span className="text-green-600">✓ {c.sent_count}</span>
+                  <span className="text-red-600">✗ {c.failed_count}</span>
                   <span className="text-gray-500 ml-auto">{new Date(c.created_at).toLocaleString('es-CO')}</span>
                 </div>
               </div>
@@ -338,7 +338,7 @@ function ConfigTab({ section }: { section: 'version' | 'config' }) {
       {section === 'version' ? (
         <>
           <div className={CARD}>
-            <h3 className="text-white font-semibold mb-4">Control de versión</h3>
+            <h3 className="text-gray-900 font-semibold mb-4">Control de versión</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className={LABEL}>Versión mínima soportada</label>
@@ -361,7 +361,7 @@ function ConfigTab({ section }: { section: 'version' | 'config' }) {
           </div>
 
           <div className={CARD}>
-            <h3 className="text-white font-semibold mb-4">Mantenimiento</h3>
+            <h3 className="text-gray-900 font-semibold mb-4">Mantenimiento</h3>
             <Toggle label="Modo mantenimiento (bloquea la app)" checked={cfg.maintenance_mode} onChange={(v) => set({ maintenance_mode: v })} />
             <div className="mt-4">
               <label className={LABEL}>Mensaje de mantenimiento</label>
@@ -381,8 +381,8 @@ function ConfigTab({ section }: { section: 'version' | 'config' }) {
           {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           Guardar cambios
         </button>
-        {saved && <span className="flex items-center gap-1 text-sm text-green-400"><CheckCircle className="w-4 h-4" /> Guardado</span>}
-        {error && <span className="flex items-center gap-1 text-sm text-red-400"><AlertCircle className="w-4 h-4" /> {error}</span>}
+        {saved && <span className="flex items-center gap-1 text-sm text-green-600"><CheckCircle className="w-4 h-4" /> Guardado</span>}
+        {error && <span className="flex items-center gap-1 text-sm text-red-600"><AlertCircle className="w-4 h-4" /> {error}</span>}
       </div>
     </div>
   );
@@ -393,15 +393,15 @@ function FeatureFlagsEditor({ flags, onChange }: { flags: Record<string, boolean
   const entries = Object.entries(flags);
   return (
     <div className={CARD}>
-      <h3 className="text-white font-semibold mb-4">Feature flags</h3>
+      <h3 className="text-gray-900 font-semibold mb-4">Feature flags</h3>
       {entries.length === 0 && <p className="text-sm text-gray-500 mb-3">Sin flags. Agregá una abajo.</p>}
       <div className="space-y-2">
         {entries.map(([k, v]) => (
-          <div key={k} className="flex items-center justify-between rounded-lg bg-[#0B1120] border border-gray-800 px-3 py-2">
-            <span className="text-sm text-white font-mono">{k}</span>
+          <div key={k} className="flex items-center justify-between rounded-lg bg-gray-50 border border-gray-200 px-3 py-2">
+            <span className="text-sm text-gray-900 font-mono">{k}</span>
             <div className="flex items-center gap-3">
               <Toggle label="" checked={v} onChange={(val) => onChange({ ...flags, [k]: val })} />
-              <button onClick={() => { const f = { ...flags }; delete f[k]; onChange(f); }} className="text-red-400 hover:text-red-300">
+              <button onClick={() => { const f = { ...flags }; delete f[k]; onChange(f); }} className="text-red-600 hover:text-red-700">
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
@@ -412,7 +412,7 @@ function FeatureFlagsEditor({ flags, onChange }: { flags: Record<string, boolean
         <input className={INPUT} value={newKey} onChange={(e) => setNewKey(e.target.value)} placeholder="nombre_del_flag" />
         <button
           onClick={() => { if (newKey.trim()) { onChange({ ...flags, [newKey.trim()]: false }); setNewKey(''); } }}
-          className="inline-flex items-center gap-1 rounded-lg bg-[#00E5FF]/15 px-3 text-sm text-[#00E5FF]"
+          className="inline-flex items-center gap-1 rounded-lg bg-[#00E5FF]/15 px-3 text-sm text-cyan-600"
         >
           <Plus className="w-4 h-4" /> Agregar
         </button>
@@ -424,10 +424,10 @@ function FeatureFlagsEditor({ flags, onChange }: { flags: Record<string, boolean
 function AnnouncementsEditor({ items, onChange }: { items: Array<{ title: string; body: string; level?: string }>; onChange: (a: Array<{ title: string; body: string; level?: string }>) => void }) {
   return (
     <div className={CARD}>
-      <h3 className="text-white font-semibold mb-4">Anuncios in-app</h3>
+      <h3 className="text-gray-900 font-semibold mb-4">Anuncios in-app</h3>
       <div className="space-y-3">
         {items.map((a, i) => (
-          <div key={i} className="rounded-lg bg-[#0B1120] border border-gray-800 p-3 space-y-2">
+          <div key={i} className="rounded-lg bg-gray-50 border border-gray-200 p-3 space-y-2">
             <div className="flex gap-2">
               <input className={INPUT} value={a.title} onChange={(e) => { const c = [...items]; c[i] = { ...a, title: e.target.value }; onChange(c); }} placeholder="Título" />
               <select className={INPUT + ' max-w-[140px]'} value={a.level || 'info'} onChange={(e) => { const c = [...items]; c[i] = { ...a, level: e.target.value }; onChange(c); }}>
@@ -435,7 +435,7 @@ function AnnouncementsEditor({ items, onChange }: { items: Array<{ title: string
                 <option value="success">Éxito</option>
                 <option value="warning">Aviso</option>
               </select>
-              <button onClick={() => onChange(items.filter((_, j) => j !== i))} className="text-red-400 hover:text-red-300 px-2">
+              <button onClick={() => onChange(items.filter((_, j) => j !== i))} className="text-red-600 hover:text-red-700 px-2">
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
@@ -445,7 +445,7 @@ function AnnouncementsEditor({ items, onChange }: { items: Array<{ title: string
       </div>
       <button
         onClick={() => onChange([...items, { title: '', body: '', level: 'info' }])}
-        className="inline-flex items-center gap-1 rounded-lg bg-[#00E5FF]/15 px-3 py-2 mt-3 text-sm text-[#00E5FF]"
+        className="inline-flex items-center gap-1 rounded-lg bg-[#00E5FF]/15 px-3 py-2 mt-3 text-sm text-cyan-600"
       >
         <Plus className="w-4 h-4" /> Agregar anuncio
       </button>
@@ -459,18 +459,18 @@ function Toggle({ label, checked, onChange, className = '' }: { label: string; c
       <button
         type="button"
         onClick={() => onChange(!checked)}
-        className={`relative w-11 h-6 rounded-full transition ${checked ? 'bg-[#00E5FF]' : 'bg-gray-600'}`}
+        className={`relative w-11 h-6 rounded-full transition ${checked ? 'bg-[#00E5FF]' : 'bg-gray-200'}`}
       >
         <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${checked ? 'translate-x-5' : ''}`} />
       </button>
-      {label && <span className="text-sm text-gray-300">{label}</span>}
+      {label && <span className="text-sm text-gray-600">{label}</span>}
     </label>
   );
 }
 
 function Loading() {
   return (
-    <div className="flex items-center gap-2 text-gray-400 text-sm">
+    <div className="flex items-center gap-2 text-gray-500 text-sm">
       <RefreshCw className="w-4 h-4 animate-spin" /> Cargando…
     </div>
   );
@@ -479,10 +479,10 @@ function Loading() {
 function ErrorBox({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
     <div className={CARD}>
-      <div className="flex items-center gap-2 text-red-400 text-sm mb-3">
+      <div className="flex items-center gap-2 text-red-600 text-sm mb-3">
         <AlertCircle className="w-4 h-4" /> {message}
       </div>
-      <button onClick={onRetry} className="inline-flex items-center gap-2 text-sm text-[#00E5FF]">
+      <button onClick={onRetry} className="inline-flex items-center gap-2 text-sm text-cyan-600">
         <RefreshCw className="w-4 h-4" /> Reintentar
       </button>
     </div>

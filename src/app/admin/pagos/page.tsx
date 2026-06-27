@@ -78,12 +78,12 @@ export default function AdminPagosPage() {
 
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<string, { color: string; icon: React.ReactNode; label: string }> = {
-      pending: { color: 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400', icon: <Clock className="w-3 h-3" />, label: 'Pendiente' },
+      pending: { color: 'bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-600', icon: <Clock className="w-3 h-3" />, label: 'Pendiente' },
       approved: { color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-400', icon: <CheckCircle className="w-3 h-3" />, label: 'Aprobado' },
       completed: { color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-400', icon: <CheckCircle className="w-3 h-3" />, label: 'Completado' },
-      declined: { color: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400', icon: <XCircle className="w-3 h-3" />, label: 'Rechazado' },
-      failed: { color: 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400', icon: <XCircle className="w-3 h-3" />, label: 'Fallido' },
-      voided: { color: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300', icon: <AlertCircle className="w-3 h-3" />, label: 'Anulado' }
+      declined: { color: 'bg-red-100 text-red-800 dark:bg-red-50 dark:text-red-600', icon: <XCircle className="w-3 h-3" />, label: 'Rechazado' },
+      failed: { color: 'bg-red-100 text-red-800 dark:bg-red-50 dark:text-red-600', icon: <XCircle className="w-3 h-3" />, label: 'Fallido' },
+      voided: { color: 'bg-gray-100 text-gray-800 dark:bg-gray-100 dark:text-gray-600', icon: <AlertCircle className="w-3 h-3" />, label: 'Anulado' }
     };
 
     const config = statusConfig[status] || statusConfig.pending;
@@ -144,54 +144,54 @@ export default function AdminPagosPage() {
       {/* Stats Cards */}
       {stats && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          <div className="bg-white dark:bg-[#151C2E] rounded-xl p-4 border border-gray-100 dark:border-[#1A202C] shadow-[0_4px_20px_rgba(0,0,0,0.05)]">
+          <div className="bg-white dark:bg-white rounded-xl p-4 border border-gray-100 dark:border-[#1A202C] shadow-[0_4px_20px_rgba(0,0,0,0.05)]">
             <div className="flex items-center justify-between">
               <div className="p-2 bg-[#00E5FF]/10 rounded-lg">
-                <CreditCard className="w-5 h-5 text-[#00E5FF]" />
+                <CreditCard className="w-5 h-5 text-cyan-600" />
               </div>
-              <span className="text-2xl font-bold text-[#0B1120] dark:text-white">{stats.totalPayments}</span>
+              <span className="text-2xl font-bold text-[#0B1120] dark:text-gray-900">{stats.totalPayments}</span>
             </div>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Total Pagos</p>
+            <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">Total Pagos</p>
           </div>
 
-          <div className="bg-white dark:bg-[#151C2E] rounded-xl p-4 border border-gray-100 dark:border-[#1A202C] shadow-[0_4px_20px_rgba(0,0,0,0.05)]">
+          <div className="bg-white dark:bg-white rounded-xl p-4 border border-gray-100 dark:border-[#1A202C] shadow-[0_4px_20px_rgba(0,0,0,0.05)]">
             <div className="flex items-center justify-between">
               <div className="p-2 bg-emerald-100 dark:bg-emerald-900/20 rounded-lg">
                 <DollarSign className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
               </div>
-              <span className="text-2xl font-bold text-[#0B1120] dark:text-white">{formatCurrency(stats.totalRevenue)}</span>
+              <span className="text-2xl font-bold text-[#0B1120] dark:text-gray-900">{formatCurrency(stats.totalRevenue)}</span>
             </div>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Ingresos Totales</p>
+            <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">Ingresos Totales</p>
           </div>
 
-          <div className="bg-white dark:bg-[#151C2E] rounded-xl p-4 border border-gray-100 dark:border-[#1A202C] shadow-[0_4px_20px_rgba(0,0,0,0.05)]">
+          <div className="bg-white dark:bg-white rounded-xl p-4 border border-gray-100 dark:border-[#1A202C] shadow-[0_4px_20px_rgba(0,0,0,0.05)]">
             <div className="flex items-center justify-between">
               <div className="p-2 bg-amber-100 dark:bg-amber-900/20 rounded-lg">
-                <Clock className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                <Clock className="w-5 h-5 text-amber-600 dark:text-amber-600" />
               </div>
-              <span className="text-2xl font-bold text-[#0B1120] dark:text-white">{stats.pendingPayments}</span>
+              <span className="text-2xl font-bold text-[#0B1120] dark:text-gray-900">{stats.pendingPayments}</span>
             </div>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Pendientes</p>
+            <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">Pendientes</p>
           </div>
 
-          <div className="bg-white dark:bg-[#151C2E] rounded-xl p-4 border border-gray-100 dark:border-[#1A202C] shadow-[0_4px_20px_rgba(0,0,0,0.05)]">
+          <div className="bg-white dark:bg-white rounded-xl p-4 border border-gray-100 dark:border-[#1A202C] shadow-[0_4px_20px_rgba(0,0,0,0.05)]">
             <div className="flex items-center justify-between">
               <div className="p-2 bg-emerald-100 dark:bg-emerald-900/20 rounded-lg">
                 <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
               </div>
-              <span className="text-2xl font-bold text-[#0B1120] dark:text-white">{stats.approvedPayments}</span>
+              <span className="text-2xl font-bold text-[#0B1120] dark:text-gray-900">{stats.approvedPayments}</span>
             </div>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Aprobados</p>
+            <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">Aprobados</p>
           </div>
 
-          <div className="bg-white dark:bg-[#151C2E] rounded-xl p-4 border border-gray-100 dark:border-[#1A202C] shadow-[0_4px_20px_rgba(0,0,0,0.05)]">
+          <div className="bg-white dark:bg-white rounded-xl p-4 border border-gray-100 dark:border-[#1A202C] shadow-[0_4px_20px_rgba(0,0,0,0.05)]">
             <div className="flex items-center justify-between">
-              <div className="p-2 bg-red-100 dark:bg-red-900/20 rounded-lg">
-                <XCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+              <div className="p-2 bg-red-100 dark:bg-red-50 rounded-lg">
+                <XCircle className="w-5 h-5 text-red-600 dark:text-red-600" />
               </div>
-              <span className="text-2xl font-bold text-[#0B1120] dark:text-white">{stats.declinedPayments}</span>
+              <span className="text-2xl font-bold text-[#0B1120] dark:text-gray-900">{stats.declinedPayments}</span>
             </div>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Rechazados</p>
+            <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">Rechazados</p>
           </div>
         </div>
       )}
@@ -199,19 +199,19 @@ export default function AdminPagosPage() {
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
           <input
             type="text"
             placeholder="Buscar por nombre, email o ID de transacción..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#1A202C] bg-white dark:bg-[#151C2E] focus:ring-2 focus:ring-[#00E5FF]/30 focus:border-[#00E5FF] transition-all"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#1A202C] bg-white dark:bg-white focus:ring-2 focus:ring-[#00E5FF]/30 focus:border-[#00E5FF] transition-all"
           />
         </div>
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#1A202C] bg-white dark:bg-[#151C2E] focus:ring-2 focus:ring-[#00E5FF]/30 focus:border-[#00E5FF] transition-all"
+          className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#1A202C] bg-white dark:bg-white focus:ring-2 focus:ring-[#00E5FF]/30 focus:border-[#00E5FF] transition-all"
         >
           <option value="all">Todos los estados</option>
           <option value="pending">Pendientes</option>
@@ -224,29 +224,29 @@ export default function AdminPagosPage() {
       </div>
 
       {/* Payments Table */}
-      <div className="bg-white dark:bg-[#151C2E] rounded-xl border border-gray-100 dark:border-[#1A202C] shadow-[0_4px_20px_rgba(0,0,0,0.05)] overflow-hidden">
+      <div className="bg-white dark:bg-white rounded-xl border border-gray-100 dark:border-[#1A202C] shadow-[0_4px_20px_rgba(0,0,0,0.05)] overflow-hidden">
         {loading ? (
           <div className="p-8 text-center">
-            <RefreshCw className="w-8 h-8 text-[#00E5FF] animate-spin mx-auto" />
-            <p className="text-gray-500 dark:text-gray-400 mt-2">Cargando pagos...</p>
+            <RefreshCw className="w-8 h-8 text-cyan-600 animate-spin mx-auto" />
+            <p className="text-gray-500 dark:text-gray-500 mt-2">Cargando pagos...</p>
           </div>
         ) : filteredPayments.length === 0 ? (
           <div className="p-8 text-center">
-            <CreditCard className="w-12 h-12 text-gray-400 mx-auto" />
-            <p className="text-gray-500 dark:text-gray-400 mt-2">No se encontraron pagos</p>
+            <CreditCard className="w-12 h-12 text-gray-500 mx-auto" />
+            <p className="text-gray-500 dark:text-gray-500 mt-2">No se encontraron pagos</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50 dark:bg-[#1A202C]">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Usuario</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Monto</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Plan/Créditos</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Estado</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Método</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Fecha</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Acciones</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-500 uppercase tracking-wider">Usuario</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-500 uppercase tracking-wider">Monto</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-500 uppercase tracking-wider">Plan/Créditos</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-500 uppercase tracking-wider">Estado</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-500 uppercase tracking-wider">Método</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-500 uppercase tracking-wider">Fecha</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-500 uppercase tracking-wider">Acciones</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-[#1A202C]">
@@ -254,24 +254,24 @@ export default function AdminPagosPage() {
                   <tr key={payment.id} className="hover:bg-gray-50 dark:hover:bg-[#1A202C]/50 transition-colors">
                     <td className="px-4 py-4">
                       <div>
-                        <p className="font-medium text-[#0B1120] dark:text-white">{payment.users?.name || 'Sin nombre'}</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{payment.users?.email || 'Sin email'}</p>
+                        <p className="font-medium text-[#0B1120] dark:text-gray-900">{payment.users?.name || 'Sin nombre'}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-500">{payment.users?.email || 'Sin email'}</p>
                       </div>
                     </td>
                     <td className="px-4 py-4">
-                      <span className="font-semibold text-[#0B1120] dark:text-white">
+                      <span className="font-semibold text-[#0B1120] dark:text-gray-900">
                         {formatCurrency(payment.amount, payment.currency)}
                       </span>
                     </td>
                     <td className="px-4 py-4">
                       <div>
                         {payment.plan_type && (
-                          <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-[#00E5FF]/10 text-[#00E5FF] capitalize">
+                          <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-[#00E5FF]/10 text-cyan-600 capitalize">
                             {payment.plan_type}
                           </span>
                         )}
                         {payment.credits_purchased && (
-                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                          <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
                             +{payment.credits_purchased} créditos
                           </p>
                         )}
@@ -280,10 +280,10 @@ export default function AdminPagosPage() {
                     <td className="px-4 py-4">
                       {getStatusBadge(payment.status)}
                     </td>
-                    <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-300">
+                    <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-600">
                       {payment.payment_method || 'N/A'}
                     </td>
-                    <td className="px-4 py-4 text-sm text-gray-500 dark:text-gray-400">
+                    <td className="px-4 py-4 text-sm text-gray-500 dark:text-gray-500">
                       {formatDate(payment.created_at)}
                     </td>
                     <td className="px-4 py-4 text-right">
@@ -292,7 +292,7 @@ export default function AdminPagosPage() {
                           setSelectedPayment(payment);
                           setShowModal(true);
                         }}
-                        className="p-2 rounded-lg text-gray-400 hover:text-[#00E5FF] hover:bg-[#00E5FF]/10 transition-colors"
+                        className="p-2 rounded-lg text-gray-500 hover:text-cyan-600 hover:bg-[#00E5FF]/10 transition-colors"
                         title="Ver detalles"
                       >
                         <Eye className="w-4 h-4" />
@@ -311,17 +311,17 @@ export default function AdminPagosPage() {
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#1A202C] disabled:opacity-50 transition-colors"
+              className="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-[#1A202C] disabled:opacity-50 transition-colors"
             >
               Anterior
             </button>
-            <span className="text-sm text-gray-500 dark:text-gray-400">
+            <span className="text-sm text-gray-500 dark:text-gray-500">
               Página {page} de {totalPages}
             </span>
             <button
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              className="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#1A202C] disabled:opacity-50 transition-colors"
+              className="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-[#1A202C] disabled:opacity-50 transition-colors"
             >
               Siguiente
             </button>
@@ -331,14 +331,14 @@ export default function AdminPagosPage() {
 
       {/* Payment Detail Modal */}
       {showModal && selectedPayment && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0B1120]/70 backdrop-blur-sm">
-          <div className="bg-white dark:bg-[#151C2E] rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-50/70 backdrop-blur-sm">
+          <div className="bg-white dark:bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-gray-100 dark:border-[#1A202C]">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-[#0B1120] dark:text-white">Detalles del Pago</h2>
+                <h2 className="text-xl font-bold text-[#0B1120] dark:text-gray-900">Detalles del Pago</h2>
                 <button
                   onClick={() => setShowModal(false)}
-                  className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-[#1A202C] transition-colors"
+                  className="p-2 rounded-lg text-gray-500 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-[#1A202C] transition-colors"
                 >
                   <XCircle className="w-5 h-5" />
                 </button>
@@ -348,30 +348,30 @@ export default function AdminPagosPage() {
             <div className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">ID de Pago</p>
-                  <p className="font-mono text-sm text-[#0B1120] dark:text-white mt-1">{selectedPayment.id.slice(0, 8)}...</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-500 uppercase tracking-wider">ID de Pago</p>
+                  <p className="font-mono text-sm text-[#0B1120] dark:text-gray-900 mt-1">{selectedPayment.id.slice(0, 8)}...</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">Estado</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-500 uppercase tracking-wider">Estado</p>
                   <div className="mt-1">{getStatusBadge(selectedPayment.status)}</div>
                 </div>
               </div>
 
               <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">Usuario</p>
-                <p className="font-medium text-[#0B1120] dark:text-white mt-1">{selectedPayment.users?.name}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-500 uppercase tracking-wider">Usuario</p>
+                <p className="font-medium text-[#0B1120] dark:text-gray-900 mt-1">{selectedPayment.users?.name}</p>
                 <p className="text-sm text-gray-500">{selectedPayment.users?.email}</p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">Monto</p>
-                  <p className="text-2xl font-bold text-[#00E5FF] mt-1">
+                  <p className="text-xs text-gray-500 dark:text-gray-500 uppercase tracking-wider">Monto</p>
+                  <p className="text-2xl font-bold text-cyan-600 mt-1">
                     {formatCurrency(selectedPayment.amount, selectedPayment.currency)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">Créditos</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-500 uppercase tracking-wider">Créditos</p>
                   <p className="text-2xl font-bold text-emerald-500 mt-1">
                     +{selectedPayment.credits_purchased || 0}
                   </p>
@@ -380,20 +380,20 @@ export default function AdminPagosPage() {
 
               {selectedPayment.wompi_transaction_id && (
                 <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">ID Wompi</p>
-                  <p className="font-mono text-sm text-[#0B1120] dark:text-white mt-1">{selectedPayment.wompi_transaction_id}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-500 uppercase tracking-wider">ID Wompi</p>
+                  <p className="font-mono text-sm text-[#0B1120] dark:text-gray-900 mt-1">{selectedPayment.wompi_transaction_id}</p>
                 </div>
               )}
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">Fecha Creación</p>
-                  <p className="text-sm text-[#0B1120] dark:text-white mt-1">{formatDate(selectedPayment.created_at)}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-500 uppercase tracking-wider">Fecha Creación</p>
+                  <p className="text-sm text-[#0B1120] dark:text-gray-900 mt-1">{formatDate(selectedPayment.created_at)}</p>
                 </div>
                 {selectedPayment.paid_at && (
                   <div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">Fecha Pago</p>
-                    <p className="text-sm text-[#0B1120] dark:text-white mt-1">{formatDate(selectedPayment.paid_at)}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-500 uppercase tracking-wider">Fecha Pago</p>
+                    <p className="text-sm text-[#0B1120] dark:text-gray-900 mt-1">{formatDate(selectedPayment.paid_at)}</p>
                   </div>
                 )}
               </div>
@@ -402,7 +402,7 @@ export default function AdminPagosPage() {
             <div className="p-6 border-t border-gray-100 dark:border-[#1A202C]">
               <button
                 onClick={() => setShowModal(false)}
-                className="w-full py-2.5 rounded-xl bg-[#0B1120] hover:bg-[#1A202C] text-white font-semibold transition-colors"
+                className="w-full py-2.5 rounded-xl bg-gray-50 hover:bg-[#1A202C] text-gray-900 font-semibold transition-colors"
               >
                 Cerrar
               </button>

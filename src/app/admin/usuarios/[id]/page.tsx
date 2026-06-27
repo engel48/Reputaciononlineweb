@@ -91,15 +91,15 @@ interface UserDetail {
 }
 
 const PLAN_COLORS: Record<string, string> = {
-  free: 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
+  free: 'bg-gray-200 text-gray-700 dark:bg-gray-100 dark:text-gray-600',
   basic: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
   pro: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300',
   enterprise: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
 };
 
 const SENTIMENT_COLORS: Record<string, string> = {
-  positive: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-  negative: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+  positive: 'bg-green-100 text-green-800 dark:bg-green-100 dark:text-green-700',
+  negative: 'bg-red-100 text-red-800 dark:bg-red-100 dark:text-red-700',
   neutral: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
 };
 
@@ -153,7 +153,7 @@ export default function UserDetailPage() {
   if (loading) {
     return (
       <AdminPageWrapper title="Detalle de usuario" subtitle="Cargando...">
-        <div className="flex justify-center py-12 text-gray-400">
+        <div className="flex justify-center py-12 text-gray-500">
           <RefreshCw className="h-6 w-6 animate-spin mr-2" /> Cargando datos del usuario...
         </div>
       </AdminPageWrapper>
@@ -163,11 +163,11 @@ export default function UserDetailPage() {
   if (error || !data) {
     return (
       <AdminPageWrapper title="Detalle de usuario" subtitle="">
-        <div className="bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-700 p-4 rounded-lg">
-          <p className="text-red-800 dark:text-red-300">
+        <div className="bg-red-100 dark:bg-red-50 border border-red-300 dark:border-red-700 p-4 rounded-lg">
+          <p className="text-red-800 dark:text-red-700">
             <AlertTriangle className="inline w-4 h-4 mr-1" /> {error || 'Usuario no encontrado'}
           </p>
-          <Link href="/admin/usuarios" className="inline-flex items-center mt-3 text-sm text-blue-600 dark:text-blue-400">
+          <Link href="/admin/usuarios" className="inline-flex items-center mt-3 text-sm text-blue-600 dark:text-blue-600">
             <ArrowLeft className="w-4 h-4 mr-1" /> Volver a usuarios
           </Link>
         </div>
@@ -182,7 +182,7 @@ export default function UserDetailPage() {
       <div className="space-y-6">
         {/* Header con acciones rapidas */}
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <Link href="/admin/usuarios" className="inline-flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600">
+          <Link href="/admin/usuarios" className="inline-flex items-center text-sm text-gray-600 dark:text-gray-500 hover:text-blue-600">
             <ArrowLeft className="w-4 h-4 mr-1" /> Volver al listado
           </Link>
           <div className="flex items-center gap-2">
@@ -191,94 +191,94 @@ export default function UserDetailPage() {
             </span>
             <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
               u.isActive
-                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-                : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                ? 'bg-green-100 text-green-800 dark:bg-green-100 dark:text-green-700'
+                : 'bg-red-100 text-red-800 dark:bg-red-100 dark:text-red-700'
             }`}>
               {u.isActive ? 'Activo' : 'Deshabilitado'}
             </span>
             {u.role === 'admin' && (
-              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-100 dark:text-blue-700">
                 ADMIN
               </span>
             )}
-            <button onClick={load} className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700" title="Refrescar">
-              <RefreshCw className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+            <button onClick={load} className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-100" title="Refrescar">
+              <RefreshCw className="w-4 h-4 text-gray-600 dark:text-gray-500" />
             </button>
           </div>
         </div>
 
         {/* Stats cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-[#151C2E] rounded-lg p-4 border border-gray-800">
+          <div className="bg-white rounded-lg p-4 border border-gray-200">
             <div className="flex items-center gap-2 mb-2">
-              <CreditCard className="w-5 h-5 text-cyan-400" />
-              <span className="text-xs uppercase tracking-wide text-gray-400">Creditos</span>
+              <CreditCard className="w-5 h-5 text-cyan-600" />
+              <span className="text-xs uppercase tracking-wide text-gray-500">Creditos</span>
             </div>
-            <p className="text-2xl font-bold text-white">{u.credits.toLocaleString('es-CO')}</p>
+            <p className="text-2xl font-bold text-gray-900">{u.credits.toLocaleString('es-CO')}</p>
             <p className="text-xs text-gray-500 mt-1">{data.credits.transactionsCount} transacciones</p>
           </div>
-          <div className="bg-[#151C2E] rounded-lg p-4 border border-gray-800">
+          <div className="bg-white rounded-lg p-4 border border-gray-200">
             <div className="flex items-center gap-2 mb-2">
-              <Activity className="w-5 h-5 text-cyan-400" />
-              <span className="text-xs uppercase tracking-wide text-gray-400">Redes conectadas</span>
+              <Activity className="w-5 h-5 text-cyan-600" />
+              <span className="text-xs uppercase tracking-wide text-gray-500">Redes conectadas</span>
             </div>
-            <p className="text-2xl font-bold text-white">
+            <p className="text-2xl font-bold text-gray-900">
               {data.socialAccounts.filter((s) => s.connected).length}
             </p>
             <p className="text-xs text-gray-500 mt-1">{data.socialAccounts.length} totales</p>
           </div>
-          <div className="bg-[#151C2E] rounded-lg p-4 border border-gray-800">
+          <div className="bg-white rounded-lg p-4 border border-gray-200">
             <div className="flex items-center gap-2 mb-2">
-              <MessageSquare className="w-5 h-5 text-cyan-400" />
-              <span className="text-xs uppercase tracking-wide text-gray-400">Menciones</span>
+              <MessageSquare className="w-5 h-5 text-cyan-600" />
+              <span className="text-xs uppercase tracking-wide text-gray-500">Menciones</span>
             </div>
-            <p className="text-2xl font-bold text-white">{data.mentions.total.toLocaleString('es-CO')}</p>
+            <p className="text-2xl font-bold text-gray-900">{data.mentions.total.toLocaleString('es-CO')}</p>
             <p className="text-xs text-gray-500 mt-1">{data.julia.conversationsCount} chats con Julia</p>
           </div>
-          <div className="bg-[#151C2E] rounded-lg p-4 border border-gray-800">
+          <div className="bg-white rounded-lg p-4 border border-gray-200">
             <div className="flex items-center gap-2 mb-2">
-              <DollarSign className="w-5 h-5 text-cyan-400" />
-              <span className="text-xs uppercase tracking-wide text-gray-400">Pagos</span>
+              <DollarSign className="w-5 h-5 text-cyan-600" />
+              <span className="text-xs uppercase tracking-wide text-gray-500">Pagos</span>
             </div>
-            <p className="text-2xl font-bold text-white">{data.payments.total}</p>
+            <p className="text-2xl font-bold text-gray-900">{data.payments.total}</p>
             <p className="text-xs text-gray-500 mt-1">historico</p>
           </div>
         </div>
 
         {/* Perfil basico */}
-        <div className="bg-[#151C2E] rounded-lg p-6 border border-gray-800">
-          <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-            <User className="w-5 h-5 text-cyan-400" /> Perfil
+        <div className="bg-white rounded-lg p-6 border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <User className="w-5 h-5 text-cyan-600" /> Perfil
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
-              <p className="text-gray-400 text-xs uppercase">Email</p>
-              <p className="text-white flex items-center gap-2"><Mail className="w-4 h-4 text-gray-500" /> {u.email}</p>
+              <p className="text-gray-500 text-xs uppercase">Email</p>
+              <p className="text-gray-900 flex items-center gap-2"><Mail className="w-4 h-4 text-gray-500" /> {u.email}</p>
             </div>
             <div>
-              <p className="text-gray-400 text-xs uppercase">Telefono</p>
-              <p className="text-white flex items-center gap-2"><Phone className="w-4 h-4 text-gray-500" /> {u.phone || '—'}</p>
+              <p className="text-gray-500 text-xs uppercase">Telefono</p>
+              <p className="text-gray-900 flex items-center gap-2"><Phone className="w-4 h-4 text-gray-500" /> {u.phone || '—'}</p>
             </div>
             <div>
-              <p className="text-gray-400 text-xs uppercase">Empresa / Marca</p>
-              <p className="text-white flex items-center gap-2"><Building2 className="w-4 h-4 text-gray-500" /> {u.brandName || u.company || '—'}</p>
+              <p className="text-gray-500 text-xs uppercase">Empresa / Marca</p>
+              <p className="text-gray-900 flex items-center gap-2"><Building2 className="w-4 h-4 text-gray-500" /> {u.brandName || u.company || '—'}</p>
             </div>
             <div>
-              <p className="text-gray-400 text-xs uppercase">Tipo de perfil</p>
-              <p className="text-white">{u.profileType || '—'} {u.category ? `· ${u.category}` : ''}</p>
+              <p className="text-gray-500 text-xs uppercase">Tipo de perfil</p>
+              <p className="text-gray-900">{u.profileType || '—'} {u.category ? `· ${u.category}` : ''}</p>
             </div>
             <div>
-              <p className="text-gray-400 text-xs uppercase">Registrado</p>
-              <p className="text-white flex items-center gap-2"><Calendar className="w-4 h-4 text-gray-500" /> {formatDate(u.createdAt)}</p>
+              <p className="text-gray-500 text-xs uppercase">Registrado</p>
+              <p className="text-gray-900 flex items-center gap-2"><Calendar className="w-4 h-4 text-gray-500" /> {formatDate(u.createdAt)}</p>
             </div>
             <div>
-              <p className="text-gray-400 text-xs uppercase">Ultimo login</p>
-              <p className="text-white flex items-center gap-2"><Calendar className="w-4 h-4 text-gray-500" /> {formatDate(u.lastLogin)}</p>
+              <p className="text-gray-500 text-xs uppercase">Ultimo login</p>
+              <p className="text-gray-900 flex items-center gap-2"><Calendar className="w-4 h-4 text-gray-500" /> {formatDate(u.lastLogin)}</p>
             </div>
             {(u.political.cargo || u.political.partido) && (
               <div className="md:col-span-2">
-                <p className="text-gray-400 text-xs uppercase">Perfil politico</p>
-                <p className="text-white">
+                <p className="text-gray-500 text-xs uppercase">Perfil politico</p>
+                <p className="text-gray-900">
                   {u.political.cargo ? <span>Cargo: {u.political.cargo}</span> : null}
                   {u.political.partido ? <span className="ml-3">Partido: {u.political.partido}</span> : null}
                 </p>
@@ -288,14 +288,14 @@ export default function UserDetailPage() {
         </div>
 
         {/* Redes sociales */}
-        <div className="bg-[#151C2E] rounded-lg p-6 border border-gray-800">
-          <h3 className="text-lg font-semibold text-white mb-4">Redes sociales conectadas</h3>
+        <div className="bg-white rounded-lg p-6 border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Redes sociales conectadas</h3>
           {data.socialAccounts.length === 0 ? (
             <p className="text-gray-500 text-sm">No tiene redes conectadas.</p>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-700">
-                <thead className="text-xs uppercase text-gray-400">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="text-xs uppercase text-gray-500">
                   <tr>
                     <th className="px-3 py-2 text-left">Plataforma</th>
                     <th className="px-3 py-2 text-left">Usuario</th>
@@ -306,14 +306,14 @@ export default function UserDetailPage() {
                     <th className="px-3 py-2 text-left">Ultimo sync</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-700 text-sm text-gray-300">
+                <tbody className="divide-y divide-gray-200 text-sm text-gray-600">
                   {data.socialAccounts.map((s) => (
                     <tr key={s.id}>
-                      <td className="px-3 py-2 capitalize text-white">{s.platform}</td>
+                      <td className="px-3 py-2 capitalize text-gray-900">{s.platform}</td>
                       <td className="px-3 py-2">
                         @{s.username}
                         {s.profileUrl && (
-                          <a href={s.profileUrl} target="_blank" rel="noopener noreferrer" className="ml-2 text-cyan-400">
+                          <a href={s.profileUrl} target="_blank" rel="noopener noreferrer" className="ml-2 text-cyan-600">
                             <ExternalLink className="w-3 h-3 inline" />
                           </a>
                         )}
@@ -322,16 +322,16 @@ export default function UserDetailPage() {
                       <td className="px-3 py-2 text-right">{s.posts}</td>
                       <td className="px-3 py-2 text-center">
                         <span className={`px-2 py-0.5 text-xs rounded-full ${
-                          s.connected ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
+                          s.connected ? 'bg-green-100 text-green-800 dark:bg-green-100 dark:text-green-700' : 'bg-gray-200 text-gray-600 dark:bg-gray-100 dark:text-gray-500'
                         }`}>
                           {s.connected ? 'Conectado' : 'Desconectado'}
                         </span>
                       </td>
                       <td className="px-3 py-2 text-center">
                         <span className={`px-2 py-0.5 text-xs rounded-full ${
-                          s.tokenStatus === 'valid' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
-                          s.tokenStatus === 'expired' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' :
-                          'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
+                          s.tokenStatus === 'valid' ? 'bg-green-100 text-green-800 dark:bg-green-100 dark:text-green-700' :
+                          s.tokenStatus === 'expired' ? 'bg-red-100 text-red-800 dark:bg-red-100 dark:text-red-700' :
+                          'bg-gray-200 text-gray-600 dark:bg-gray-100 dark:text-gray-500'
                         }`}>
                           {s.tokenStatus}
                         </span>
@@ -346,16 +346,16 @@ export default function UserDetailPage() {
         </div>
 
         {/* Transacciones de creditos */}
-        <div className="bg-[#151C2E] rounded-lg p-6 border border-gray-800">
-          <h3 className="text-lg font-semibold text-white mb-4">
-            Transacciones de creditos <span className="text-sm font-normal text-gray-400">(ultimas {data.credits.recentTransactions.length} de {data.credits.transactionsCount})</span>
+        <div className="bg-white rounded-lg p-6 border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Transacciones de creditos <span className="text-sm font-normal text-gray-500">(ultimas {data.credits.recentTransactions.length} de {data.credits.transactionsCount})</span>
           </h3>
           {data.credits.recentTransactions.length === 0 ? (
             <p className="text-gray-500 text-sm">Sin transacciones registradas.</p>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-700">
-                <thead className="text-xs uppercase text-gray-400">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="text-xs uppercase text-gray-500">
                   <tr>
                     <th className="px-3 py-2 text-left">Fecha</th>
                     <th className="px-3 py-2 text-left">Tipo</th>
@@ -364,13 +364,13 @@ export default function UserDetailPage() {
                     <th className="px-3 py-2 text-left">Descripcion</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-700 text-sm text-gray-300">
+                <tbody className="divide-y divide-gray-200 text-sm text-gray-600">
                   {data.credits.recentTransactions.map((t) => (
                     <tr key={t.id}>
                       <td className="px-3 py-2 text-xs">{formatDate(t.createdAt)}</td>
-                      <td className="px-3 py-2"><span className="px-2 py-0.5 text-xs rounded-full bg-gray-700">{t.type}</span></td>
+                      <td className="px-3 py-2"><span className="px-2 py-0.5 text-xs rounded-full bg-gray-100">{t.type}</span></td>
                       <td className={`px-3 py-2 text-right font-medium ${
-                        t.amount > 0 ? 'text-green-400' : t.amount < 0 ? 'text-red-400' : 'text-gray-400'
+                        t.amount > 0 ? 'text-green-600' : t.amount < 0 ? 'text-red-600' : 'text-gray-500'
                       }`}>
                         {t.amount > 0 ? '+' : ''}{t.amount.toLocaleString('es-CO')}
                       </td>
@@ -385,16 +385,16 @@ export default function UserDetailPage() {
         </div>
 
         {/* Pagos */}
-        <div className="bg-[#151C2E] rounded-lg p-6 border border-gray-800">
-          <h3 className="text-lg font-semibold text-white mb-4">
-            Pagos <span className="text-sm font-normal text-gray-400">({data.payments.total} totales)</span>
+        <div className="bg-white rounded-lg p-6 border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Pagos <span className="text-sm font-normal text-gray-500">({data.payments.total} totales)</span>
           </h3>
           {data.payments.recent.length === 0 ? (
             <p className="text-gray-500 text-sm">No hay pagos registrados.</p>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-700">
-                <thead className="text-xs uppercase text-gray-400">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="text-xs uppercase text-gray-500">
                   <tr>
                     <th className="px-3 py-2 text-left">Fecha</th>
                     <th className="px-3 py-2 text-right">Monto</th>
@@ -403,16 +403,16 @@ export default function UserDetailPage() {
                     <th className="px-3 py-2 text-left font-mono">Transaccion</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-700 text-sm text-gray-300">
+                <tbody className="divide-y divide-gray-200 text-sm text-gray-600">
                   {data.payments.recent.map((p) => (
                     <tr key={p.id}>
                       <td className="px-3 py-2 text-xs">{formatDate(p.createdAt)}</td>
                       <td className="px-3 py-2 text-right">{formatCOP(Number(p.amount))}</td>
                       <td className="px-3 py-2 text-center">
                         <span className={`px-2 py-0.5 text-xs rounded-full ${
-                          p.status === 'approved' || p.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
+                          p.status === 'approved' || p.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-100 dark:text-green-700' :
                           p.status === 'pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' :
-                          'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+                          'bg-red-100 text-red-800 dark:bg-red-100 dark:text-red-700'
                         }`}>
                           {p.status}
                         </span>
@@ -429,16 +429,16 @@ export default function UserDetailPage() {
 
         {/* Menciones recientes */}
         {data.mentions.recent.length > 0 && (
-          <div className="bg-[#151C2E] rounded-lg p-6 border border-gray-800">
-            <h3 className="text-lg font-semibold text-white mb-4">
-              Menciones recientes <span className="text-sm font-normal text-gray-400">({data.mentions.total} totales)</span>
+          <div className="bg-white rounded-lg p-6 border border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Menciones recientes <span className="text-sm font-normal text-gray-500">({data.mentions.total} totales)</span>
             </h3>
             <div className="space-y-3">
               {data.mentions.recent.map((m) => (
-                <div key={m.id} className="border border-gray-700 rounded p-3 text-sm">
+                <div key={m.id} className="border border-gray-200 rounded p-3 text-sm">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <span className="capitalize text-cyan-400 text-xs">{m.platform}</span>
+                      <span className="capitalize text-cyan-600 text-xs">{m.platform}</span>
                       {m.sentiment && (
                         <span className={`px-2 py-0.5 text-xs rounded-full ${SENTIMENT_COLORS[m.sentiment] || SENTIMENT_COLORS.neutral}`}>
                           {m.sentiment}
@@ -447,13 +447,13 @@ export default function UserDetailPage() {
                     </div>
                     <span className="text-xs text-gray-500">{formatDate(m.publishedAt)}</span>
                   </div>
-                  <p className="text-gray-300 line-clamp-2">{m.content}</p>
+                  <p className="text-gray-600 line-clamp-2">{m.content}</p>
                   <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
                     <span>{m.likes} likes</span>
                     <span>{m.shares} shares</span>
                     <span>{m.comments} comments</span>
                     {m.url && (
-                      <a href={m.url} target="_blank" rel="noopener noreferrer" className="ml-auto text-cyan-400">Ver</a>
+                      <a href={m.url} target="_blank" rel="noopener noreferrer" className="ml-auto text-cyan-600">Ver</a>
                     )}
                   </div>
                 </div>
@@ -464,12 +464,12 @@ export default function UserDetailPage() {
 
         {/* Julia */}
         {data.julia.lastConversation && (
-          <div className="bg-[#151C2E] rounded-lg p-6 border border-gray-800">
-            <h3 className="text-lg font-semibold text-white mb-2">Conversaciones con Julia</h3>
-            <p className="text-sm text-gray-400">
+          <div className="bg-white rounded-lg p-6 border border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Conversaciones con Julia</h3>
+            <p className="text-sm text-gray-500">
               {data.julia.conversationsCount} conversacion{data.julia.conversationsCount !== 1 ? 'es' : ''} totales.
             </p>
-            <p className="text-sm text-gray-300 mt-2">
+            <p className="text-sm text-gray-600 mt-2">
               <strong>Ultima:</strong> {data.julia.lastConversation.title}
               <span className="text-gray-500 ml-2">({formatDate(data.julia.lastConversation.updatedAt)})</span>
             </p>

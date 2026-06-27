@@ -31,8 +31,8 @@ export default function ConsumosPorCanalChart() {
     <div className="card p-6">
       <h2 className="heading-secondary mb-4">Consumo por Canal</h2>
       <div className="mb-4">
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Total consumido: <span className="font-medium text-gray-900 dark:text-white">{total.toLocaleString('es-CO')} créditos</span>
+        <p className="text-sm text-gray-500 dark:text-gray-500">
+          Total consumido: <span className="font-medium text-gray-900 dark:text-gray-900">{total.toLocaleString('es-CO')} créditos</span>
         </p>
       </div>
 
@@ -45,11 +45,11 @@ export default function ConsumosPorCanalChart() {
             transition={{ duration: 0.3, delay: index * 0.1 }}
           >
             <div className="flex items-center">
-              <div className="w-32 truncate text-sm font-medium text-gray-700 dark:text-gray-300">
+              <div className="w-32 truncate text-sm font-medium text-gray-700 dark:text-gray-600">
                 {item.canal}
               </div>
               <div className="ml-2 flex-1">
-                <div className="h-4 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                <div className="h-4 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-100">
                   <motion.div 
                     className="h-4 rounded-full" 
                     style={{ backgroundColor: item.color }}
@@ -60,10 +60,10 @@ export default function ConsumosPorCanalChart() {
                 </div>
               </div>
               <div className="ml-4 flex w-32 justify-between text-sm font-medium">
-                <span className="text-gray-700 dark:text-gray-300">
+                <span className="text-gray-700 dark:text-gray-600">
                   {item.valor.toLocaleString('es-CO')}
                 </span>
-                <span className="text-gray-500 dark:text-gray-400">
+                <span className="text-gray-500 dark:text-gray-500">
                   {item.porcentaje?.toFixed(1)}%
                 </span>
               </div>

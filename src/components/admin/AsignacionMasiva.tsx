@@ -167,7 +167,7 @@ export default function AsignacionMasiva() {
               className="flex flex-1 flex-col items-center"
             >
               <div 
-                className={`flex h-10 w-10 items-center justify-center rounded-full ${paso === step ? 'bg-primary-600 text-white dark:bg-primary-500' : paso > step ? 'bg-green-500 text-white dark:bg-green-600' : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400'}`}
+                className={`flex h-10 w-10 items-center justify-center rounded-full ${paso === step ? 'bg-primary-600 text-white dark:bg-primary-500' : paso > step ? 'bg-green-500 text-white dark:bg-green-600' : 'bg-gray-200 text-gray-600 dark:bg-gray-100 dark:text-gray-500'}`}
               >
                 {paso > step ? (
                   <Check className="h-5 w-5" />
@@ -175,14 +175,14 @@ export default function AsignacionMasiva() {
                   <span>{step}</span>
                 )}
               </div>
-              <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+              <p className="mt-2 text-xs text-gray-500 dark:text-gray-500">
                 {step === 1 ? 'Subir Archivo' : step === 2 ? 'Confirmar Usuarios' : 'Completado'}
               </p>
             </div>
           ))}
         </div>
         <div className="relative mt-2">
-          <div className="absolute left-0 top-1/2 h-1 w-full -translate-y-1/2 transform rounded bg-gray-200 dark:bg-gray-700"></div>
+          <div className="absolute left-0 top-1/2 h-1 w-full -translate-y-1/2 transform rounded bg-gray-200 dark:bg-gray-100"></div>
           <div 
             className="absolute left-0 top-1/2 h-1 -translate-y-1/2 transform rounded bg-primary-600 transition-all dark:bg-primary-500"
             style={{ width: `${((paso - 1) / 2) * 100}%` }}
@@ -198,14 +198,14 @@ export default function AsignacionMasiva() {
             animate={{ opacity: 1 }}
             className="flex flex-col items-center"
           >
-            <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
-              <Upload className="h-8 w-8 text-gray-500 dark:text-gray-400" />
+            <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-100">
+              <Upload className="h-8 w-8 text-gray-500 dark:text-gray-500" />
             </div>
             
-            <h3 className="mb-2 text-center text-lg font-medium text-gray-900 dark:text-white">
+            <h3 className="mb-2 text-center text-lg font-medium text-gray-900 dark:text-gray-900">
               Subir Archivo de Usuarios
             </h3>
-            <p className="mb-6 text-center text-sm text-gray-500 dark:text-gray-400">
+            <p className="mb-6 text-center text-sm text-gray-500 dark:text-gray-500">
               Sube un archivo CSV o Excel con la lista de usuarios y la cantidad de créditos a asignar.
             </p>
             
@@ -222,11 +222,11 @@ export default function AsignacionMasiva() {
                   htmlFor="archivo"
                   className="flex cursor-pointer flex-col items-center justify-center"
                 >
-                  <Upload className="mb-2 h-8 w-8 text-gray-400 dark:text-gray-500" />
-                  <p className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <Upload className="mb-2 h-8 w-8 text-gray-500 dark:text-gray-500" />
+                  <p className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-600">
                     {archivo ? archivo.name : 'Haz clic para seleccionar archivo'}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-xs text-gray-500 dark:text-gray-500">
                     CSV, Excel (.xlsx, .xls)
                   </p>
                 </label>
@@ -234,7 +234,7 @@ export default function AsignacionMasiva() {
             </div>
 
             {errorMensaje && (
-              <div className="mb-4 flex w-full max-w-md items-center rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
+              <div className="mb-4 flex w-full max-w-md items-center rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-50 dark:text-red-600">
                 <AlertTriangle className="mr-2 h-4 w-4" />
                 {errorMensaje}
               </div>
@@ -242,13 +242,13 @@ export default function AsignacionMasiva() {
 
             <div className="mt-2 flex justify-end space-x-3">
               <button
-                className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-200"
                 onClick={reiniciarProceso}
               >
                 Cancelar
               </button>
               <button
-                className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-primary-500 dark:hover:bg-primary-400"
+                className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-gray-900 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-primary-500 dark:hover:bg-primary-400"
                 onClick={procesarArchivo}
                 disabled={cargando}
               >
@@ -264,11 +264,11 @@ export default function AsignacionMasiva() {
             </div>
 
             <div className="mt-6 w-full max-w-md rounded-md bg-blue-50 p-4 dark:bg-blue-900/20">
-              <h4 className="mb-2 font-medium text-blue-700 dark:text-blue-400">Formato de archivo requerido</h4>
-              <p className="mb-2 text-sm text-blue-600 dark:text-blue-300">
+              <h4 className="mb-2 font-medium text-blue-700 dark:text-blue-600">Formato de archivo requerido</h4>
+              <p className="mb-2 text-sm text-blue-600 dark:text-blue-700">
                 El archivo debe contener las siguientes columnas:
               </p>
-              <ul className="list-inside list-disc text-sm text-blue-600 dark:text-blue-300">
+              <ul className="list-inside list-disc text-sm text-blue-600 dark:text-blue-700">
                 <li>email (correo del usuario)</li>
                 <li>creditos (cantidad a asignar)</li>
                 <li>canal (opcional, por defecto 'general')</li>
@@ -284,38 +284,38 @@ export default function AsignacionMasiva() {
             animate={{ opacity: 1 }}
           >
             <div className="mb-4 flex items-center">
-              <Users className="mr-2 h-5 w-5 text-gray-500 dark:text-gray-400" />
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+              <Users className="mr-2 h-5 w-5 text-gray-500 dark:text-gray-500" />
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-900">
                 Confirmar Asignación de Créditos
               </h3>
             </div>
 
-            <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+            <p className="mb-4 text-sm text-gray-500 dark:text-gray-500">
               Se asignarán créditos a los siguientes usuarios. Revisa la información antes de confirmar.
             </p>
 
             <div className="mb-6 overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead className="bg-gray-50 dark:bg-gray-800">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-200">
+                <thead className="bg-gray-50 dark:bg-gray-100">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-500">
                       Usuario
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-500">
                       Email
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                    <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-500">
                       Créditos a Asignar
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900">
+                <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-200 dark:bg-gray-900">
                   {usuarios.map((usuario) => (
-                    <tr key={usuario.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                      <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
+                    <tr key={usuario.id} className="hover:bg-gray-50 dark:hover:bg-gray-100">
+                      <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-900">
                         {usuario.nombre}
                       </td>
-                      <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                      <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-500">
                         {usuario.email}
                       </td>
                       <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium text-primary-600 dark:text-primary-400">
@@ -324,9 +324,9 @@ export default function AsignacionMasiva() {
                     </tr>
                   ))}
                 </tbody>
-                <tfoot className="bg-gray-50 dark:bg-gray-800">
+                <tfoot className="bg-gray-50 dark:bg-gray-100">
                   <tr>
-                    <td colSpan={2} className="px-6 py-3 text-right text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <td colSpan={2} className="px-6 py-3 text-right text-sm font-medium text-gray-700 dark:text-gray-600">
                       Total de créditos a asignar:
                     </td>
                     <td className="whitespace-nowrap px-6 py-3 text-right text-sm font-bold text-primary-600 dark:text-primary-400">
@@ -339,14 +339,14 @@ export default function AsignacionMasiva() {
 
             <div className="mt-4 flex justify-end space-x-3">
               <button
-                className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-200"
                 onClick={() => setPaso(1)}
                 disabled={cargando}
               >
                 Volver
               </button>
               <button
-                className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-primary-500 dark:hover:bg-primary-400"
+                className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-gray-900 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-primary-500 dark:hover:bg-primary-400"
                 onClick={confirmarAsignacion}
                 disabled={cargando}
               >
@@ -370,25 +370,25 @@ export default function AsignacionMasiva() {
             className="flex flex-col items-center text-center"
           >
             <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
-              <Check className="h-8 w-8 text-green-600 dark:text-green-400" />
+              <Check className="h-8 w-8 text-green-600 dark:text-green-600" />
             </div>
             
-            <h3 className="mb-2 text-lg font-medium text-gray-900 dark:text-white">
+            <h3 className="mb-2 text-lg font-medium text-gray-900 dark:text-gray-900">
               Asignación Completada
             </h3>
-            <p className="mb-6 text-gray-500 dark:text-gray-400">
+            <p className="mb-6 text-gray-500 dark:text-gray-500">
               Se han asignado créditos a {usuarios.length} usuarios exitosamente.
             </p>
             
-            <div className="mb-6 w-full max-w-md rounded-md bg-green-50 p-4 dark:bg-green-900/20">
-              <p className="text-sm text-green-700 dark:text-green-400">
+            <div className="mb-6 w-full max-w-md rounded-md bg-green-50 p-4 dark:bg-green-100">
+              <p className="text-sm text-green-700 dark:text-green-600">
                 Total de créditos asignados: {usuarios.reduce((sum, u) => sum + u.creditos, 0).toLocaleString('es-CO')}
               </p>
             </div>
             
             <div className="flex space-x-3">
               <button
-                className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-primary-500 dark:hover:bg-primary-400"
+                className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-gray-900 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-primary-500 dark:hover:bg-primary-400"
                 onClick={reiniciarProceso}
               >
                 Nueva Asignación

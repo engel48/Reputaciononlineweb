@@ -134,7 +134,7 @@ export default function AsignarCreditosModal({ isOpen, onClose, onConfirm }: Asi
           
           {/* Modal */}
           <motion.div 
-            className="relative w-full max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-gray-800"
+            className="relative w-full max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-gray-100"
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
@@ -142,7 +142,7 @@ export default function AsignarCreditosModal({ isOpen, onClose, onConfirm }: Asi
           >
             {/* Botu00f3n de cerrar */}
             <button 
-              className="absolute right-4 top-4 rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-700"
+              className="absolute right-4 top-4 rounded-full p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-100"
               onClick={onClose}
             >
               <X className="h-5 w-5" />
@@ -152,10 +152,10 @@ export default function AsignarCreditosModal({ isOpen, onClose, onConfirm }: Asi
               <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary-100 dark:bg-primary-900">
                 <CreditCard className="h-7 w-7 text-primary-600 dark:text-primary-400" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-900">
                 Asignar Cru00e9ditos
               </h3>
-              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-500">
                 Asigna cru00e9ditos a los usuarios para que puedan utilizar las funcionalidades de la plataforma.
               </p>
             </div>
@@ -167,10 +167,10 @@ export default function AsignarCreditosModal({ isOpen, onClose, onConfirm }: Asi
                 animate={{ opacity: 1 }}
               >
                 <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
-                  <Check className="h-8 w-8 text-green-600 dark:text-green-400" />
+                  <Check className="h-8 w-8 text-green-600 dark:text-green-600" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white">u00a1Cru00e9ditos asignados!</h3>
-                <p className="mt-2 text-center text-gray-500 dark:text-gray-400">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-900">u00a1Cru00e9ditos asignados!</h3>
+                <p className="mt-2 text-center text-gray-500 dark:text-gray-500">
                   Los cru00e9ditos han sido asignados exitosamente al usuario.
                 </p>
               </motion.div>
@@ -178,16 +178,16 @@ export default function AsignarCreditosModal({ isOpen, onClose, onConfirm }: Asi
               <form onSubmit={handleSubmit}>
                 {/* Selecciu00f3n de usuario */}
                 <div className="mb-4">
-                  <label htmlFor="usuario" className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label htmlFor="usuario" className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-600">
                     Usuario
                   </label>
                   <div className="relative">
                     <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                      <Users className="h-4 w-4 text-gray-400" />
+                      <Users className="h-4 w-4 text-gray-500" />
                     </div>
                     <select
                       id="usuario"
-                      className="block w-full rounded-md border border-gray-300 bg-white py-2 pl-10 pr-3 text-sm placeholder-gray-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                      className="block w-full rounded-md border border-gray-300 bg-white py-2 pl-10 pr-3 text-sm placeholder-gray-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-100 dark:text-gray-900 dark:placeholder-gray-400"
                       value={usuarioSeleccionado}
                       onChange={(e) => setUsuarioSeleccionado(e.target.value)}
                       required
@@ -205,7 +205,7 @@ export default function AsignarCreditosModal({ isOpen, onClose, onConfirm }: Asi
 
                 {/* Planes predefinidos */}
                 <div className="mb-4">
-                  <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-600">
                     Planes predefinidos
                   </label>
                   <div className="grid grid-cols-2 gap-2">
@@ -213,13 +213,13 @@ export default function AsignarCreditosModal({ isOpen, onClose, onConfirm }: Asi
                       <button
                         key={plan.id}
                         type="button"
-                        className="flex flex-col rounded-md border border-gray-300 p-2 text-left text-sm hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
+                        className="flex flex-col rounded-md border border-gray-300 p-2 text-left text-sm hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-100"
                         onClick={() => aplicarPlan(plan.id)}
                       >
-                        <span className="font-medium text-gray-900 dark:text-white">{plan.nombre}</span>
+                        <span className="font-medium text-gray-900 dark:text-gray-900">{plan.nombre}</span>
                         {plan.id !== 'personalizado' && (
                           <>
-                            <span className="text-gray-500 dark:text-gray-400">{plan.creditos.toLocaleString('es-CO')} cru00e9ditos</span>
+                            <span className="text-gray-500 dark:text-gray-500">{plan.creditos.toLocaleString('es-CO')} cru00e9ditos</span>
                             <span className="text-primary-600 dark:text-primary-400">$ {plan.precio.toLocaleString('es-CO')} COP</span>
                           </>
                         )}
@@ -230,13 +230,13 @@ export default function AsignarCreditosModal({ isOpen, onClose, onConfirm }: Asi
 
                 {/* Cantidad de cru00e9ditos */}
                 <div className="mb-4">
-                  <label htmlFor="cantidad" className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label htmlFor="cantidad" className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-600">
                     Cantidad de cru00e9ditos
                   </label>
                   <input
                     type="number"
                     id="cantidad"
-                    className="block w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm placeholder-gray-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                    className="block w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm placeholder-gray-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-100 dark:text-gray-900 dark:placeholder-gray-400"
                     value={cantidad}
                     onChange={(e) => setCantidad(Math.max(0, parseInt(e.target.value) || 0))}
                     required
@@ -246,12 +246,12 @@ export default function AsignarCreditosModal({ isOpen, onClose, onConfirm }: Asi
 
                 {/* Canal */}
                 <div className="mb-4">
-                  <label htmlFor="canal" className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label htmlFor="canal" className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-600">
                     Canal
                   </label>
                   <select
                     id="canal"
-                    className="block w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm placeholder-gray-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                    className="block w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm placeholder-gray-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-100 dark:text-gray-900 dark:placeholder-gray-400"
                     value={canal}
                     onChange={(e) => setCanal(e.target.value)}
                   >
@@ -263,13 +263,13 @@ export default function AsignarCreditosModal({ isOpen, onClose, onConfirm }: Asi
 
                 {/* Descripciu00f3n */}
                 <div className="mb-4">
-                  <label htmlFor="descripcion" className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label htmlFor="descripcion" className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-600">
                     Descripciu00f3n
                   </label>
                   <input
                     type="text"
                     id="descripcion"
-                    className="block w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm placeholder-gray-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                    className="block w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm placeholder-gray-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-100 dark:text-gray-900 dark:placeholder-gray-400"
                     value={descripcion}
                     onChange={(e) => setDescripcion(e.target.value)}
                     placeholder="Ej. Plan mensual, promociu00f3n, etc."
@@ -279,14 +279,14 @@ export default function AsignarCreditosModal({ isOpen, onClose, onConfirm }: Asi
                 <div className="mt-6 flex justify-end space-x-3">
                   <button
                     type="button"
-                    className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                    className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-200"
                     onClick={onClose}
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
-                    className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-primary-500 dark:hover:bg-primary-400"
+                    className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-gray-900 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-primary-500 dark:hover:bg-primary-400"
                   >
                     Asignar Cru00e9ditos
                   </button>

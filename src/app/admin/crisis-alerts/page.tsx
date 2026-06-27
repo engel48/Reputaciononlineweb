@@ -39,16 +39,16 @@ interface AlertsResponse {
 const PAGE_SIZE = 20;
 
 const SEVERITY_BADGE: Record<string, string> = {
-  critical: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border border-red-300',
+  critical: 'bg-red-100 text-red-800 dark:bg-red-100 dark:text-red-700 border border-red-300',
   high: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 border border-orange-300',
   medium: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border border-yellow-300',
-  low: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-300',
+  low: 'bg-blue-100 text-blue-800 dark:bg-blue-100 dark:text-blue-700 border border-blue-300',
 };
 
 const STATUS_BADGE: Record<string, string> = {
-  active: 'bg-red-500 text-white',
-  acknowledged: 'bg-yellow-500 text-white',
-  resolved: 'bg-green-500 text-white',
+  active: 'bg-red-500 text-gray-900',
+  acknowledged: 'bg-yellow-500 text-gray-900',
+  resolved: 'bg-green-500 text-gray-900',
 };
 
 function formatDate(iso: string | null): string {
@@ -127,23 +127,23 @@ export default function CrisisAlertsPage() {
         {/* Stats cards */}
         {data && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-[#151C2E] border border-red-500/40 rounded-lg p-4">
-              <p className="text-xs uppercase text-red-300">Activas</p>
-              <p className="text-2xl font-bold text-white">{data.stats.byStatus.active || 0}</p>
+            <div className="bg-white border border-red-500/40 rounded-lg p-4">
+              <p className="text-xs uppercase text-red-700">Activas</p>
+              <p className="text-2xl font-bold text-gray-900">{data.stats.byStatus.active || 0}</p>
               <p className="text-xs text-gray-500 mt-1">requieren atencion</p>
             </div>
-            <div className="bg-[#151C2E] border border-yellow-500/40 rounded-lg p-4">
+            <div className="bg-white border border-yellow-500/40 rounded-lg p-4">
               <p className="text-xs uppercase text-yellow-300">Acknowledged</p>
-              <p className="text-2xl font-bold text-white">{data.stats.byStatus.acknowledged || 0}</p>
+              <p className="text-2xl font-bold text-gray-900">{data.stats.byStatus.acknowledged || 0}</p>
               <p className="text-xs text-gray-500 mt-1">en seguimiento</p>
             </div>
-            <div className="bg-[#151C2E] border border-green-500/40 rounded-lg p-4">
-              <p className="text-xs uppercase text-green-300">Resueltas</p>
-              <p className="text-2xl font-bold text-white">{data.stats.byStatus.resolved || 0}</p>
+            <div className="bg-white border border-green-500/40 rounded-lg p-4">
+              <p className="text-xs uppercase text-green-700">Resueltas</p>
+              <p className="text-2xl font-bold text-gray-900">{data.stats.byStatus.resolved || 0}</p>
             </div>
-            <div className="bg-[#151C2E] border border-gray-700 rounded-lg p-4">
-              <p className="text-xs uppercase text-gray-400">Total</p>
-              <p className="text-2xl font-bold text-white">{data.stats.total}</p>
+            <div className="bg-white border border-gray-200 rounded-lg p-4">
+              <p className="text-xs uppercase text-gray-500">Total</p>
+              <p className="text-2xl font-bold text-gray-900">{data.stats.total}</p>
               <p className="text-xs text-gray-500 mt-1">
                 {data.stats.bySeverity.critical || 0} criticas
               </p>
@@ -152,11 +152,11 @@ export default function CrisisAlertsPage() {
         )}
 
         {/* Filtros */}
-        <div className="bg-[#151C2E] rounded-lg p-4 border border-gray-800 flex flex-wrap gap-3 items-center">
+        <div className="bg-white rounded-lg p-4 border border-gray-200 flex flex-wrap gap-3 items-center">
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-3 py-2 rounded-md bg-[#0B1120] border border-gray-700 text-white text-sm"
+            className="px-3 py-2 rounded-md bg-gray-50 border border-gray-200 text-gray-900 text-sm"
           >
             <option value="">Todos los estados</option>
             <option value="active">Activas</option>
@@ -166,7 +166,7 @@ export default function CrisisAlertsPage() {
           <select
             value={filterSeverity}
             onChange={(e) => setFilterSeverity(e.target.value)}
-            className="px-3 py-2 rounded-md bg-[#0B1120] border border-gray-700 text-white text-sm"
+            className="px-3 py-2 rounded-md bg-gray-50 border border-gray-200 text-gray-900 text-sm"
           >
             <option value="">Todas las severidades</option>
             <option value="critical">Critica</option>
@@ -183,28 +183,28 @@ export default function CrisisAlertsPage() {
         </div>
 
         {error && (
-          <div className="bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-300 text-sm p-3 rounded">
+          <div className="bg-red-100 dark:bg-red-50 text-red-800 dark:text-red-700 text-sm p-3 rounded">
             {error}
           </div>
         )}
 
         {/* Lista */}
-        <div className="bg-[#151C2E] rounded-lg border border-gray-800 overflow-hidden">
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           {loading ? (
-            <div className="p-12 text-center text-gray-400">
+            <div className="p-12 text-center text-gray-500">
               <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2" /> Cargando...
             </div>
           ) : !data || data.alerts.length === 0 ? (
             <div className="p-12 text-center">
               <CheckCircle className="w-12 h-12 mx-auto mb-3 text-green-500" />
-              <p className="text-white font-medium mb-1">Sin alertas activas</p>
-              <p className="text-sm text-gray-400">
+              <p className="text-gray-900 font-medium mb-1">Sin alertas activas</p>
+              <p className="text-sm text-gray-500">
                 El sistema vigila menciones automaticamente y crea alertas cuando detecta picos de sentimiento negativo o trending topics hostiles.
               </p>
             </div>
           ) : (
-            <table className="min-w-full divide-y divide-gray-700 text-sm">
-              <thead className="bg-[#0B1120] text-xs uppercase text-gray-400">
+            <table className="min-w-full divide-y divide-gray-200 text-sm">
+              <thead className="bg-gray-50 text-xs uppercase text-gray-500">
                 <tr>
                   <th className="px-3 py-2 text-left">Severidad</th>
                   <th className="px-3 py-2 text-left">Tipo</th>
@@ -215,7 +215,7 @@ export default function CrisisAlertsPage() {
                   <th className="px-3 py-2 text-right">Acciones</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-700 text-gray-300">
+              <tbody className="divide-y divide-gray-200 text-gray-600">
                 {data.alerts.map((alert) => (
                   <tr key={alert.id} className={alert.severity === 'critical' ? 'bg-red-900/10' : ''}>
                     <td className="px-3 py-2">
@@ -227,7 +227,7 @@ export default function CrisisAlertsPage() {
                     <td className="px-3 py-2 text-xs max-w-md truncate">{alert.description}</td>
                     <td className="px-3 py-2 text-xs">
                       {alert.user ? (
-                        <Link href={`/admin/usuarios/${alert.user.id}`} className="text-cyan-400 hover:underline">
+                        <Link href={`/admin/usuarios/${alert.user.id}`} className="text-cyan-600 hover:underline">
                           {alert.user.name || alert.user.email}
                         </Link>
                       ) : (
@@ -256,7 +256,7 @@ export default function CrisisAlertsPage() {
                           <button
                             onClick={() => updateStatus(alert.id, 'resolved')}
                             disabled={acting === alert.id}
-                            className="p-1.5 text-green-600 hover:bg-green-100 dark:hover:bg-green-900/20 rounded disabled:opacity-50"
+                            className="p-1.5 text-green-600 hover:bg-green-100 dark:hover:bg-green-100 rounded disabled:opacity-50"
                             title="Marcar como resuelta"
                           >
                             <Check className="w-4 h-4" />
@@ -272,21 +272,21 @@ export default function CrisisAlertsPage() {
 
           {/* Paginacion */}
           {data && data.total > PAGE_SIZE && (
-            <div className="border-t border-gray-800 px-4 py-3 flex items-center justify-between text-xs">
+            <div className="border-t border-gray-200 px-4 py-3 flex items-center justify-between text-xs">
               <button
                 onClick={() => setPage((p) => Math.max(0, p - 1))}
                 disabled={page === 0 || loading}
-                className="flex items-center gap-1 px-3 py-1 rounded bg-gray-700 text-white disabled:opacity-50"
+                className="flex items-center gap-1 px-3 py-1 rounded bg-gray-100 text-gray-900 disabled:opacity-50"
               >
                 <ChevronLeft className="w-3 h-3" /> Anterior
               </button>
-              <span className="text-gray-400">
+              <span className="text-gray-500">
                 Pagina {page + 1} de {totalPages}
               </span>
               <button
                 onClick={() => setPage((p) => p + 1)}
                 disabled={page >= totalPages - 1 || loading}
-                className="flex items-center gap-1 px-3 py-1 rounded bg-gray-700 text-white disabled:opacity-50"
+                className="flex items-center gap-1 px-3 py-1 rounded bg-gray-100 text-gray-900 disabled:opacity-50"
               >
                 Siguiente <ChevronRight className="w-3 h-3" />
               </button>

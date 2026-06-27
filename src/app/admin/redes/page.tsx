@@ -38,9 +38,9 @@ function fmt(iso: string | null): string {
 }
 
 const tokenBadge: Record<string, string> = {
-  valid: 'bg-green-900/30 text-green-300',
-  expired: 'bg-red-900/30 text-red-300',
-  unknown: 'bg-gray-700 text-gray-300',
+  valid: 'bg-green-100 text-green-700',
+  expired: 'bg-red-100 text-red-700',
+  unknown: 'bg-gray-100 text-gray-600',
 };
 
 export default function AdminRedesPage() {
@@ -119,25 +119,25 @@ export default function AdminRedesPage() {
         )}
 
         {/* Filtros */}
-        <div className="bg-[#151C2E] rounded-lg p-4 border border-gray-800 flex flex-wrap items-center gap-3">
+        <div className="bg-white rounded-lg p-4 border border-gray-200 flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2 flex-1 min-w-[180px]">
-            <Filter className="w-4 h-4 text-gray-400" />
+            <Filter className="w-4 h-4 text-gray-500" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar @usuario o nombre..."
-              className="flex-1 px-3 py-2 rounded-md bg-[#0B1120] border border-gray-700 text-white text-sm placeholder-gray-500"
+              className="flex-1 px-3 py-2 rounded-md bg-gray-50 border border-gray-200 text-gray-900 text-sm placeholder-gray-500"
             />
           </div>
-          <select value={platform} onChange={(e) => setPlatform(e.target.value)} className="px-3 py-2 rounded-md bg-[#0B1120] border border-gray-700 text-white text-sm">
+          <select value={platform} onChange={(e) => setPlatform(e.target.value)} className="px-3 py-2 rounded-md bg-gray-50 border border-gray-200 text-gray-900 text-sm">
             {PLATFORMS.map((p) => <option key={p} value={p}>{p ? p : 'Todas las redes'}</option>)}
           </select>
-          <select value={connected} onChange={(e) => setConnected(e.target.value)} className="px-3 py-2 rounded-md bg-[#0B1120] border border-gray-700 text-white text-sm">
+          <select value={connected} onChange={(e) => setConnected(e.target.value)} className="px-3 py-2 rounded-md bg-gray-50 border border-gray-200 text-gray-900 text-sm">
             <option value="">Conexión: todas</option>
             <option value="true">Conectadas</option>
             <option value="false">Desconectadas</option>
           </select>
-          <select value={tokenStatus} onChange={(e) => setTokenStatus(e.target.value)} className="px-3 py-2 rounded-md bg-[#0B1120] border border-gray-700 text-white text-sm">
+          <select value={tokenStatus} onChange={(e) => setTokenStatus(e.target.value)} className="px-3 py-2 rounded-md bg-gray-50 border border-gray-200 text-gray-900 text-sm">
             <option value="">Token: todos</option>
             <option value="valid">Válido</option>
             <option value="expired">Vencido</option>
@@ -148,17 +148,17 @@ export default function AdminRedesPage() {
         </div>
 
         {/* Tabla */}
-        <div className="bg-[#151C2E] rounded-lg border border-gray-800 overflow-hidden">
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           {error ? (
-            <div className="p-6 bg-red-900/20 text-red-300 text-sm">{error}</div>
+            <div className="p-6 bg-red-50 text-red-700 text-sm">{error}</div>
           ) : loading ? (
-            <div className="p-12 text-center text-gray-400"><RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2" />Cargando...</div>
+            <div className="p-12 text-center text-gray-500"><RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2" />Cargando...</div>
           ) : !data || data.accounts.length === 0 ? (
-            <div className="p-12 text-center text-gray-400 text-sm">No hay cuentas que coincidan.</div>
+            <div className="p-12 text-center text-gray-500 text-sm">No hay cuentas que coincidan.</div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-700 text-sm">
-                <thead className="bg-[#0B1120] text-xs uppercase text-gray-400">
+              <table className="min-w-full divide-y divide-gray-200 text-sm">
+                <thead className="bg-gray-50 text-xs uppercase text-gray-500">
                   <tr>
                     <th className="px-3 py-2 text-left">Usuario</th>
                     <th className="px-3 py-2 text-left">Red</th>
@@ -169,14 +169,14 @@ export default function AdminRedesPage() {
                     <th className="px-3 py-2 text-right">Acciones</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-700 text-gray-300">
+                <tbody className="divide-y divide-gray-200 text-gray-600">
                   {data.accounts.map((a) => (
-                    <tr key={a.id} className="hover:bg-gray-800">
+                    <tr key={a.id} className="hover:bg-gray-100">
                       <td className="px-3 py-2">
-                        <div className="text-white">{a.user?.name || '—'}</div>
+                        <div className="text-gray-900">{a.user?.name || '—'}</div>
                         <div className="text-xs text-gray-500">{a.user?.email || a.userId}</div>
                       </td>
-                      <td className="px-3 py-2"><span className="px-2 py-0.5 rounded text-xs bg-gray-700 font-mono">{a.platform}</span></td>
+                      <td className="px-3 py-2"><span className="px-2 py-0.5 rounded text-xs bg-gray-100 font-mono">{a.platform}</span></td>
                       <td className="px-3 py-2">
                         <div>@{a.username}</div>
                         <div className="text-xs text-gray-500">{a.connected ? 'conectada' : 'desconectada'}</div>
@@ -188,11 +188,11 @@ export default function AdminRedesPage() {
                       <td className="px-3 py-2 text-xs">{fmt(a.lastSync)}</td>
                       <td className="px-3 py-2">
                         <div className="flex items-center justify-end gap-2">
-                          <button onClick={() => act('refresh', a)} disabled={busy === a.id} className="px-2 py-1 rounded bg-gray-700 text-xs hover:bg-gray-600 flex items-center gap-1 disabled:opacity-50">
+                          <button onClick={() => act('refresh', a)} disabled={busy === a.id} className="px-2 py-1 rounded bg-gray-100 text-xs hover:bg-gray-200 flex items-center gap-1 disabled:opacity-50">
                             <RefreshCw className={`w-3 h-3 ${busy === a.id ? 'animate-spin' : ''}`} /> Refresh
                           </button>
                           {a.connected && (
-                            <button onClick={() => act('disconnect', a)} disabled={busy === a.id} className="px-2 py-1 rounded bg-amber-900/40 text-amber-300 text-xs hover:bg-amber-900/60 flex items-center gap-1 disabled:opacity-50">
+                            <button onClick={() => act('disconnect', a)} disabled={busy === a.id} className="px-2 py-1 rounded bg-amber-100 text-amber-700 text-xs hover:bg-amber-200 flex items-center gap-1 disabled:opacity-50">
                               <Unplug className="w-3 h-3" /> Desconectar
                             </button>
                           )}
@@ -209,12 +209,12 @@ export default function AdminRedesPage() {
           )}
 
           {data && data.total > PAGE_SIZE && (
-            <div className="border-t border-gray-800 px-4 py-3 flex items-center justify-between">
-              <button onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0 || loading} className="flex items-center gap-1 px-3 py-1 rounded-md bg-gray-700 text-white text-xs disabled:opacity-50">
+            <div className="border-t border-gray-200 px-4 py-3 flex items-center justify-between">
+              <button onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0 || loading} className="flex items-center gap-1 px-3 py-1 rounded-md bg-gray-100 text-gray-900 text-xs disabled:opacity-50">
                 <ChevronLeft className="w-3 h-3" /> Anterior
               </button>
-              <span className="text-xs text-gray-400">Página {page + 1} de {totalPages || 1}</span>
-              <button onClick={() => setPage((p) => p + 1)} disabled={page >= totalPages - 1 || loading} className="flex items-center gap-1 px-3 py-1 rounded-md bg-gray-700 text-white text-xs disabled:opacity-50">
+              <span className="text-xs text-gray-500">Página {page + 1} de {totalPages || 1}</span>
+              <button onClick={() => setPage((p) => p + 1)} disabled={page >= totalPages - 1 || loading} className="flex items-center gap-1 px-3 py-1 rounded-md bg-gray-100 text-gray-900 text-xs disabled:opacity-50">
                 Siguiente <ChevronRight className="w-3 h-3" />
               </button>
             </div>
@@ -226,10 +226,10 @@ export default function AdminRedesPage() {
 }
 
 function StatCard({ label, value, icon, tone }: { label: string; value: number; icon?: React.ReactNode; tone?: 'green' | 'red' }) {
-  const color = tone === 'green' ? 'text-green-400' : tone === 'red' ? 'text-red-400' : 'text-cyan-400';
+  const color = tone === 'green' ? 'text-green-600' : tone === 'red' ? 'text-red-600' : 'text-cyan-600';
   return (
-    <div className="bg-[#151C2E] rounded-lg p-4 border border-gray-800">
-      <div className="flex items-center gap-2 text-xs text-gray-400">{icon}{label}</div>
+    <div className="bg-white rounded-lg p-4 border border-gray-200">
+      <div className="flex items-center gap-2 text-xs text-gray-500">{icon}{label}</div>
       <div className={`text-2xl font-bold mt-1 ${color}`}>{value.toLocaleString('es-CO')}</div>
     </div>
   );

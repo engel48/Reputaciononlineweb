@@ -91,7 +91,7 @@ export default function StatsPage() {
   if (loading) {
     return (
       <AdminPageWrapper title="Stats globales" subtitle="Cargando...">
-        <div className="text-center py-12 text-gray-400">
+        <div className="text-center py-12 text-gray-500">
           <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2" /> Calculando metricas...
         </div>
       </AdminPageWrapper>
@@ -101,7 +101,7 @@ export default function StatsPage() {
   if (error || !data) {
     return (
       <AdminPageWrapper title="Stats globales" subtitle="">
-        <div className="bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-300 p-4 rounded-lg">
+        <div className="bg-red-100 dark:bg-red-50 text-red-800 dark:text-red-700 p-4 rounded-lg">
           <AlertTriangle className="inline w-4 h-4 mr-1" /> {error || 'Sin datos'}
         </div>
       </AdminPageWrapper>
@@ -128,9 +128,9 @@ export default function StatsPage() {
         </div>
 
         {/* Usuarios */}
-        <div className="bg-[#151C2E] rounded-lg p-6 border border-gray-800">
-          <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-            <Users className="w-5 h-5 text-cyan-400" /> Usuarios
+        <div className="bg-white rounded-lg p-6 border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <Users className="w-5 h-5 text-cyan-600" /> Usuarios
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <DistributionList
@@ -147,22 +147,22 @@ export default function StatsPage() {
         </div>
 
         {/* Creditos */}
-        <div className="bg-[#151C2E] rounded-lg p-6 border border-gray-800">
-          <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-            <CreditCard className="w-5 h-5 text-cyan-400" /> Creditos (ultimos 30 dias)
+        <div className="bg-white rounded-lg p-6 border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <CreditCard className="w-5 h-5 text-cyan-600" /> Creditos (ultimos 30 dias)
           </h3>
           <div className="grid grid-cols-3 gap-4 mb-6">
             <Mini label="Consumo" value={data.credits.consumedLast30d.toLocaleString('es-CO')} color="text-orange-400" />
-            <Mini label="Bonus (renovacion)" value={data.credits.bonusLast30d.toLocaleString('es-CO')} color="text-green-400" />
-            <Mini label="Compras" value={data.credits.purchasedLast30d.toLocaleString('es-CO')} color="text-cyan-400" />
+            <Mini label="Bonus (renovacion)" value={data.credits.bonusLast30d.toLocaleString('es-CO')} color="text-green-600" />
+            <Mini label="Compras" value={data.credits.purchasedLast30d.toLocaleString('es-CO')} color="text-cyan-600" />
           </div>
           {data.credits.topConsumers.length > 0 && (
             <div>
-              <p className="text-sm text-gray-400 mb-2">Top 5 consumidores</p>
+              <p className="text-sm text-gray-500 mb-2">Top 5 consumidores</p>
               <div className="space-y-1">
                 {data.credits.topConsumers.map((tc, i) => (
-                  <div key={tc.userId} className="flex items-center justify-between text-sm py-1.5 border-b border-gray-700">
-                    <span className="text-white">
+                  <div key={tc.userId} className="flex items-center justify-between text-sm py-1.5 border-b border-gray-200">
+                    <span className="text-gray-900">
                       <span className="text-gray-500 mr-2">#{i + 1}</span>
                       {tc.user?.name || tc.user?.email || tc.userId.slice(0, 8)}
                       {tc.user?.plan && (
@@ -178,16 +178,16 @@ export default function StatsPage() {
         </div>
 
         {/* Pagos */}
-        <div className="bg-[#151C2E] rounded-lg p-6 border border-gray-800">
-          <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-            <DollarSign className="w-5 h-5 text-cyan-400" /> Pagos
+        <div className="bg-white rounded-lg p-6 border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <DollarSign className="w-5 h-5 text-cyan-600" /> Pagos
           </h3>
           {Object.keys(data.payments.byStatus).length === 0 ? (
             <p className="text-gray-500 text-sm">Sin pagos registrados.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full text-sm">
-                <thead className="text-xs uppercase text-gray-400 border-b border-gray-700">
+                <thead className="text-xs uppercase text-gray-500 border-b border-gray-200">
                   <tr>
                     <th className="text-left py-2">Estado</th>
                     <th className="text-right py-2">Cantidad</th>
@@ -196,10 +196,10 @@ export default function StatsPage() {
                 </thead>
                 <tbody>
                   {Object.entries(data.payments.byStatus).map(([status, info]) => (
-                    <tr key={status} className="border-b border-gray-700 last:border-0">
-                      <td className="py-2 capitalize text-white">{status}</td>
-                      <td className="py-2 text-right text-gray-300">{info.count}</td>
-                      <td className="py-2 text-right text-cyan-400">{formatCOP(info.amount)}</td>
+                    <tr key={status} className="border-b border-gray-200 last:border-0">
+                      <td className="py-2 capitalize text-gray-900">{status}</td>
+                      <td className="py-2 text-right text-gray-600">{info.count}</td>
+                      <td className="py-2 text-right text-cyan-600">{formatCOP(info.amount)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -209,9 +209,9 @@ export default function StatsPage() {
         </div>
 
         {/* Sentimiento global */}
-        <div className="bg-[#151C2E] rounded-lg p-6 border border-gray-800">
-          <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-            <Heart className="w-5 h-5 text-cyan-400" /> Sentimiento global (30d)
+        <div className="bg-white rounded-lg p-6 border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <Heart className="w-5 h-5 text-cyan-600" /> Sentimiento global (30d)
           </h3>
           {sentimentTotal === 0 ? (
             <p className="text-gray-500 text-sm">Sin menciones analizadas en los ultimos 30 dias.</p>
@@ -222,15 +222,15 @@ export default function StatsPage() {
                 <div className="bg-yellow-500" style={{ width: `${data.sentiment.neutral}%` }} title={`Neutral ${data.sentiment.neutral}%`} />
                 <div className="bg-red-500" style={{ width: `${data.sentiment.negative}%` }} title={`Negativo ${data.sentiment.negative}%`} />
               </div>
-              <div className="flex justify-between text-xs text-gray-400">
-                <span className="text-green-400">{data.sentiment.positive}% positivo</span>
+              <div className="flex justify-between text-xs text-gray-500">
+                <span className="text-green-600">{data.sentiment.positive}% positivo</span>
                 <span className="text-yellow-400">{data.sentiment.neutral}% neutro</span>
-                <span className="text-red-400">{data.sentiment.negative}% negativo</span>
+                <span className="text-red-600">{data.sentiment.negative}% negativo</span>
               </div>
               <p className="text-xs text-gray-500 mt-3">
                 Basado en {data.sentiment.totalAnalyzed.toLocaleString('es-CO')} menciones analizadas.
                 {data.sentiment.averageScore !== null && (
-                  <> Score promedio: <span className="text-white font-medium">{data.sentiment.averageScore}</span>/100</>
+                  <> Score promedio: <span className="text-gray-900 font-medium">{data.sentiment.averageScore}</span>/100</>
                 )}
               </p>
             </>
@@ -238,22 +238,22 @@ export default function StatsPage() {
         </div>
 
         {/* Salud */}
-        <div className="bg-[#151C2E] rounded-lg p-6 border border-gray-800">
-          <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-            <Server className="w-5 h-5 text-cyan-400" /> Salud del sistema
+        <div className="bg-white rounded-lg p-6 border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <Server className="w-5 h-5 text-cyan-600" /> Salud del sistema
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
-              <p className="text-xs uppercase text-gray-400 mb-1">Ultimo token refresh</p>
+              <p className="text-xs uppercase text-gray-500 mb-1">Ultimo token refresh</p>
               {data.health.lastTokenRefresh ? (
                 <>
-                  <p className="text-white">{formatDate(data.health.lastTokenRefresh.at)}</p>
+                  <p className="text-gray-900">{formatDate(data.health.lastTokenRefresh.at)}</p>
                   <p className="text-xs">
                     Status:{' '}
                     {data.health.lastTokenRefresh.status === 200 ? (
-                      <span className="text-green-400 font-medium"><CheckCircle className="inline w-3 h-3" /> 200 OK</span>
+                      <span className="text-green-600 font-medium"><CheckCircle className="inline w-3 h-3" /> 200 OK</span>
                     ) : (
-                      <span className="text-red-400 font-medium"><XCircle className="inline w-3 h-3" /> {data.health.lastTokenRefresh.status}</span>
+                      <span className="text-red-600 font-medium"><XCircle className="inline w-3 h-3" /> {data.health.lastTokenRefresh.status}</span>
                     )}
                   </p>
                 </>
@@ -262,11 +262,11 @@ export default function StatsPage() {
               )}
             </div>
             <div>
-              <p className="text-xs uppercase text-gray-400 mb-1">Ultimo sync social</p>
+              <p className="text-xs uppercase text-gray-500 mb-1">Ultimo sync social</p>
               {data.health.lastSocialSync ? (
                 <>
-                  <p className="text-white">{formatDate(data.health.lastSocialSync.at)}</p>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-gray-900">{formatDate(data.health.lastSocialSync.at)}</p>
+                  <p className="text-xs text-gray-500">
                     Menciones creadas: {data.health.lastSocialSync.summary?.mentions_created ?? 0}
                   </p>
                 </>
@@ -275,14 +275,14 @@ export default function StatsPage() {
               )}
             </div>
             <div>
-              <p className="text-xs uppercase text-gray-400 mb-1">Errores 24h</p>
-              <p className={`text-2xl font-bold ${data.health.errorsLast24h > 0 ? 'text-red-400' : 'text-green-400'}`}>
+              <p className="text-xs uppercase text-gray-500 mb-1">Errores 24h</p>
+              <p className={`text-2xl font-bold ${data.health.errorsLast24h > 0 ? 'text-red-600' : 'text-green-600'}`}>
                 {data.health.errorsLast24h}
               </p>
             </div>
             <div>
-              <p className="text-xs uppercase text-gray-400 mb-1">Crisis alerts activas</p>
-              <p className={`text-2xl font-bold ${data.health.activeCrisisAlerts > 0 ? 'text-red-400' : 'text-green-400'}`}>
+              <p className="text-xs uppercase text-gray-500 mb-1">Crisis alerts activas</p>
+              <p className={`text-2xl font-bold ${data.health.activeCrisisAlerts > 0 ? 'text-red-600' : 'text-green-600'}`}>
                 {data.health.activeCrisisAlerts}
               </p>
             </div>
@@ -290,9 +290,9 @@ export default function StatsPage() {
         </div>
 
         {/* Plataforma */}
-        <div className="bg-[#151C2E] rounded-lg p-6 border border-gray-800">
-          <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-            <Globe className="w-5 h-5 text-cyan-400" /> Plataforma
+        <div className="bg-white rounded-lg p-6 border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <Globe className="w-5 h-5 text-cyan-600" /> Plataforma
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <Mini label="Redes conectadas" value={data.platform.socialAccountsConnected} />
@@ -309,21 +309,21 @@ export default function StatsPage() {
 
 function StatCard({ icon: Icon, label, value, sub }: { icon: any; label: string; value: any; sub?: string }) {
   return (
-    <div className="bg-[#151C2E] rounded-lg p-4 border border-gray-800">
+    <div className="bg-white rounded-lg p-4 border border-gray-200">
       <div className="flex items-center gap-2 mb-2">
-        <Icon className="w-5 h-5 text-cyan-400" />
-        <span className="text-xs uppercase tracking-wide text-gray-400">{label}</span>
+        <Icon className="w-5 h-5 text-cyan-600" />
+        <span className="text-xs uppercase tracking-wide text-gray-500">{label}</span>
       </div>
-      <p className="text-2xl font-bold text-white">{value}</p>
+      <p className="text-2xl font-bold text-gray-900">{value}</p>
       {sub && <p className="text-xs text-gray-500 mt-1">{sub}</p>}
     </div>
   );
 }
 
-function Mini({ label, value, color = 'text-white' }: { label: string; value: any; color?: string }) {
+function Mini({ label, value, color = 'text-gray-900' }: { label: string; value: any; color?: string }) {
   return (
     <div>
-      <p className="text-xs uppercase text-gray-400">{label}</p>
+      <p className="text-xs uppercase text-gray-500">{label}</p>
       <p className={`text-xl font-bold ${color}`}>{value}</p>
     </div>
   );
@@ -333,17 +333,17 @@ function DistributionList({ title, entries, total }: { title: string; entries: A
   if (entries.length === 0) return <div><p className="text-gray-500 text-sm">{title}: sin datos</p></div>;
   return (
     <div>
-      <p className="text-sm font-medium text-gray-300 mb-2">{title}</p>
+      <p className="text-sm font-medium text-gray-600 mb-2">{title}</p>
       <div className="space-y-1.5">
         {entries.map(([key, count]) => {
           const pct = total > 0 ? Math.round((count / total) * 100) : 0;
           return (
             <div key={key}>
-              <div className="flex justify-between text-xs text-gray-400 mb-0.5">
-                <span className="capitalize text-white">{key}</span>
+              <div className="flex justify-between text-xs text-gray-500 mb-0.5">
+                <span className="capitalize text-gray-900">{key}</span>
                 <span>{count} ({pct}%)</span>
               </div>
-              <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+              <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                 <div className="h-full bg-cyan-500" style={{ width: `${pct}%` }} />
               </div>
             </div>

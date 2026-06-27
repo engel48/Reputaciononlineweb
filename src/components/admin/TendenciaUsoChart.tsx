@@ -59,11 +59,11 @@ export default function TendenciaUsoChart() {
       <h2 className="heading-secondary mb-4">Tendencia de Uso de Créditos</h2>
       
       {/* Selector de período */}
-      <div className="mb-6 flex rounded-md bg-gray-100 p-1 dark:bg-gray-700">
+      <div className="mb-6 flex rounded-md bg-gray-100 p-1 dark:bg-gray-100">
         {(['semana', 'mes', 'trimestre'] as const).map((periodo) => (
           <button
             key={periodo}
-            className={`flex-1 rounded-md py-1 text-sm font-medium transition-colors ${periodo === periodoSeleccionado ? 'bg-white text-primary-600 shadow-sm dark:bg-gray-800 dark:text-primary-400' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}
+            className={`flex-1 rounded-md py-1 text-sm font-medium transition-colors ${periodo === periodoSeleccionado ? 'bg-white text-primary-600 shadow-sm dark:bg-gray-100 dark:text-primary-400' : 'text-gray-500 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-200'}`}
             onClick={() => setPeriodoSeleccionado(periodo)}
           >
             {periodo === 'semana' ? 'Semana' : periodo === 'mes' ? 'Mes' : 'Trimestre'}
@@ -101,7 +101,7 @@ export default function TendenciaUsoChart() {
                   />
                 )}
               </div>
-              <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">{dato.fecha}</div>
+              <div className="mt-2 text-xs text-gray-500 dark:text-gray-500">{dato.fecha}</div>
             </div>
           ))}
         </div>
@@ -111,32 +111,32 @@ export default function TendenciaUsoChart() {
       <div className="mt-4 flex justify-center space-x-6">
         <div className="flex items-center">
           <div className="mr-2 h-3 w-3 rounded-full bg-red-500 dark:bg-red-600"></div>
-          <span className="text-xs text-gray-600 dark:text-gray-300">Consumo</span>
+          <span className="text-xs text-gray-600 dark:text-gray-600">Consumo</span>
         </div>
         <div className="flex items-center">
           <div className="mr-2 h-3 w-3 rounded-full bg-green-500 dark:bg-green-600"></div>
-          <span className="text-xs text-gray-600 dark:text-gray-300">Recarga</span>
+          <span className="text-xs text-gray-600 dark:text-gray-600">Recarga</span>
         </div>
       </div>
       
       {/* Estadísticas */}
       <div className="mt-6 grid grid-cols-3 gap-4">
-        <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
-          <p className="text-xs text-gray-500 dark:text-gray-400">Total Consumido</p>
+        <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-100">
+          <p className="text-xs text-gray-500 dark:text-gray-500">Total Consumido</p>
           <p className="text-lg font-semibold text-gray-700 dark:text-gray-200">
             {totalConsumo.toLocaleString('es-CO')}
           </p>
         </div>
         
-        <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
-          <p className="text-xs text-gray-500 dark:text-gray-400">Total Recargado</p>
+        <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-100">
+          <p className="text-xs text-gray-500 dark:text-gray-500">Total Recargado</p>
           <p className="text-lg font-semibold text-gray-700 dark:text-gray-200">
             {totalRecarga.toLocaleString('es-CO')}
           </p>
         </div>
         
-        <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-700">
-          <p className="text-xs text-gray-500 dark:text-gray-400">Promedio Diario</p>
+        <div className="rounded-lg bg-gray-50 p-3 dark:bg-gray-100">
+          <p className="text-xs text-gray-500 dark:text-gray-500">Promedio Diario</p>
           <p className="text-lg font-semibold text-gray-700 dark:text-gray-200">
             {Math.round(promedioConsumo).toLocaleString('es-CO')}
           </p>
