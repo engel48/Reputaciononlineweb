@@ -72,7 +72,7 @@ class AuthRepository {
 
   Future<void> logout() async {
     try {
-      await _api.get('/auth/logout');
+      await _api.post('/auth/logout');
     } catch (_) {}
     await _storage.clear();
   }

@@ -29,19 +29,28 @@ class OnboardingSeenController extends Notifier<bool> {
 
 /// Marca el onboarding como completado (flag del backend + respaldo local) y
 /// refresca el usuario. Tras esto el router redirige solo a /home.
+///
+/// IMPORTANTE: capturamos todos los providers ANTES del primer `await`. Al
+/// completar, el cambio de estado dispara la navegación y desmonta la pantalla;
+/// usar `ref` después del await reventaría ("ref used after unmount").
 Future<void> completeOnboarding(WidgetRef ref) async {
-  await ref.read(onboardingSeenProvider.notifier).markSeen();
+  final seenCtrl = ref.read(onboardingSeenProvider.notifier);
+  final authCtrl = ref.read(authControllerProvider.notifier);
+  final api = ref.read(apiClientProvider);
   final user = ref.read(authControllerProvider).user;
-  if (user == null) return;
-  try {
-    final res = await ref.read(apiClientProvider).put('/users', body: {
-      'userId': user.id,
-      'onboardingCompleted': true,
-    });
-    final updated =
-        AppUser.fromJson(((res as Map)['user'] as Map).cast<String, dynamic>());
-    await ref.read(authControllerProvider.notifier).setUser(updated);
-  } catch (_) {
-    // Si falla el backend, el respaldo local ya evita el loop.
+
+  if (user != null) {
+    try {
+      final res = await api.put('/users', body: {
+        'userId': user.id,
+        'onboardingCompleted': true,
+      });
+      final updated = AppUser.fromJson(
+          ((res as Map)['user'] as Map).cast<String, dynamic>());
+      await authCtrl.setUser(updated);
+    } catch (_) {
+      // Si falla el backend, el respaldo local de abajo evita el loop.
+    }
   }
+  await seenCtrl.markSeen();
 }
