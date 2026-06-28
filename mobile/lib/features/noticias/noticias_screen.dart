@@ -28,15 +28,15 @@ class NoticiasScreen extends ConsumerWidget {
           ),
         ),
         body: const TabBarView(
-          children: [_MentionsTab(), _KeywordsTab()],
+          children: [NewsMentionsTab(), KeywordsTab()],
         ),
       ),
     );
   }
 }
 
-class _MentionsTab extends ConsumerWidget {
-  const _MentionsTab();
+class NewsMentionsTab extends ConsumerWidget {
+  const NewsMentionsTab({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -176,8 +176,8 @@ class _NewsTile extends StatelessWidget {
   }
 }
 
-class _KeywordsTab extends ConsumerWidget {
-  const _KeywordsTab();
+class KeywordsTab extends ConsumerWidget {
+  const KeywordsTab({super.key});
 
   Future<void> _addDialog(BuildContext context, WidgetRef ref) async {
     final controller = TextEditingController();

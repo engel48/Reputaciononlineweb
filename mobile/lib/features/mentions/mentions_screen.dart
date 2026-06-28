@@ -10,8 +10,22 @@ import '../../shared/widgets/async_view.dart';
 import '../../shared/widgets/sentiment_chip.dart';
 import 'mentions_providers.dart';
 
-class MentionsScreen extends ConsumerWidget {
+class MentionsScreen extends StatelessWidget {
   const MentionsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Menciones')),
+      body: const MentionsView(),
+    );
+  }
+}
+
+/// Cuerpo reutilizable de menciones sociales (filtro de plataforma + lista).
+/// Sin Scaffold: se usa standalone (MentionsScreen) y como tab de Monitoreo.
+class MentionsView extends ConsumerWidget {
+  const MentionsView({super.key});
 
   static const _filters = [null, 'x', 'facebook', 'instagram', 'youtube'];
 
@@ -20,69 +34,67 @@ class MentionsScreen extends ConsumerWidget {
     final selected = ref.watch(mentionPlatformFilter);
     final async = ref.watch(mentionsProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Menciones'),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(52),
-          child: SizedBox(
-            height: 52,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              children: _filters.map((f) {
-                final isSel = selected == f;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: Center(
-                    child: GestureDetector(
-                      onTap: () =>
-                          ref.read(mentionPlatformFilter.notifier).set(f),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 180),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 9),
-                        decoration: BoxDecoration(
-                          color: isSel
-                              ? AppColors.cyan
-                              : Colors.white.withValues(alpha: 0.14),
-                          borderRadius: BorderRadius.circular(999),
-                          border: isSel
-                              ? null
-                              : Border.all(
-                                  color: Colors.white.withValues(alpha: 0.4)),
-                        ),
-                        child: Text(
-                          f == null ? 'Todas' : PlatformUi.label(f),
-                          style: TextStyle(
-                            color: isSel ? AppColors.accentNavy : Colors.white,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13,
-                          ),
+    return Column(
+      children: [
+        SizedBox(
+          height: 56,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            children: _filters.map((f) {
+              final isSel = selected == f;
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: Center(
+                  child: GestureDetector(
+                    onTap: () =>
+                        ref.read(mentionPlatformFilter.notifier).set(f),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: isSel
+                            ? AppColors.cyan
+                            : AppColors.muted.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(999),
+                        border: isSel
+                            ? null
+                            : Border.all(
+                                color: AppColors.muted.withValues(alpha: 0.25)),
+                      ),
+                      child: Text(
+                        f == null ? 'Todas' : PlatformUi.label(f),
+                        style: TextStyle(
+                          color: isSel ? AppColors.accentNavy : null,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
                         ),
                       ),
                     ),
                   ),
-                );
-              }).toList(),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: () async => ref.invalidate(mentionsProvider),
+            child: AsyncView<List<Mention>>(
+              value: async,
+              onRetry: () => ref.invalidate(mentionsProvider),
+              data: (items) => items.isEmpty
+                  ? const _EmptyMentions()
+                  : ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: items.length,
+                      itemBuilder: (_, i) => _MentionTile(items[i]),
+                    ),
             ),
           ),
         ),
-      ),
-      body: RefreshIndicator(
-        onRefresh: () async => ref.invalidate(mentionsProvider),
-        child: AsyncView<List<Mention>>(
-          value: async,
-          onRetry: () => ref.invalidate(mentionsProvider),
-          data: (items) => items.isEmpty
-              ? const _EmptyMentions()
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: items.length,
-                  itemBuilder: (_, i) => _MentionTile(items[i]),
-                ),
-        ),
-      ),
+      ],
     );
   }
 }

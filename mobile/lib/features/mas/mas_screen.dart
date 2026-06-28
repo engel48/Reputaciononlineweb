@@ -18,7 +18,6 @@ class MasScreen extends ConsumerWidget {
   const MasScreen({super.key});
 
   static const _entries = [
-    _Entry('Noticias', 'Menciones en medios y keywords', Icons.article_outlined, '/noticias', AppColors.cyan),
     _Entry('Búsqueda', 'Analizá la reputación de alguien', Icons.travel_explore, '/busqueda', AppColors.accentNavy),
     _Entry('Crisis', 'Alertas y respuesta con IA', Icons.warning_amber_rounded, '/crisis', AppColors.warning),
     _Entry('Redes sociales', 'Conectá tus cuentas', Icons.hub_outlined, '/redes', AppColors.success),

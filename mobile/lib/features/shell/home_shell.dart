@@ -5,7 +5,7 @@ import '../../data/push/push_service.dart';
 import '../creditos/creditos_screen.dart';
 import '../dashboard/dashboard_screen.dart';
 import '../julia/julia_screen.dart';
-import '../mentions/mentions_screen.dart';
+import '../monitoreo/monitoreo_screen.dart';
 import '../mas/mas_screen.dart';
 
 /// Contenedor principal con navegación inferior (bottom nav).
@@ -30,7 +30,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
 
   static const _tabs = <Widget>[
     DashboardScreen(),
-    MentionsScreen(),
+    MonitoreoScreen(),
     JuliaScreen(),
     CreditosScreen(),
     MasScreen(),
@@ -49,9 +49,9 @@ class _HomeShellState extends ConsumerState<HomeShell> {
               selectedIcon: Icon(Icons.dashboard),
               label: 'Inicio'),
           NavigationDestination(
-              icon: Icon(Icons.hearing_outlined),
-              selectedIcon: Icon(Icons.hearing),
-              label: 'Menciones'),
+              icon: Icon(Icons.radar_outlined),
+              selectedIcon: Icon(Icons.radar),
+              label: 'Monitoreo'),
           NavigationDestination(
               icon: Icon(Icons.auto_awesome_outlined),
               selectedIcon: Icon(Icons.auto_awesome),
