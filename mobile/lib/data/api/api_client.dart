@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../core/env.dart';
 import 'token_storage.dart';
@@ -31,6 +32,10 @@ class ApiClient {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
+          options.extra['__t'] = DateTime.now().millisecondsSinceEpoch;
+          if (kDebugMode) {
+            debugPrint('[api] → ${options.method} ${options.path}');
+          }
           final token = await tokenStorage.readToken();
           if (token != null && token.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $token';
@@ -42,7 +47,18 @@ class ApiClient {
           }
           handler.next(options);
         },
+        onResponse: (response, handler) {
+          if (kDebugMode) {
+            debugPrint(
+                '[api] ✓ ${response.requestOptions.method} ${response.requestOptions.path} → ${response.statusCode} (${_elapsed(response.requestOptions)}ms)');
+          }
+          handler.next(response);
+        },
         onError: (e, handler) {
+          if (kDebugMode) {
+            debugPrint(
+                '[api] ✗ ${e.requestOptions.method} ${e.requestOptions.path} → ${e.type} ${e.response?.statusCode ?? ''} (${_elapsed(e.requestOptions)}ms): ${e.message}');
+          }
           if (e.response?.statusCode == 401) {
             onUnauthorized?.call();
           }
@@ -55,6 +71,11 @@ class ApiClient {
   final TokenStorage tokenStorage;
   final void Function()? onUnauthorized;
   late final Dio _dio;
+
+  static int _elapsed(RequestOptions o) {
+    final t = o.extra['__t'];
+    return t is int ? DateTime.now().millisecondsSinceEpoch - t : -1;
+  }
 
   Future<dynamic> get(String path, {Map<String, dynamic>? query}) =>
       _send(() => _dio.get(path, queryParameters: query));
