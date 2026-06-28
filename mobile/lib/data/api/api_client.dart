@@ -23,8 +23,8 @@ class ApiClient {
     _dio = Dio(
       BaseOptions(
         baseUrl: '${Env.apiBaseUrl}/api',
-        connectTimeout: const Duration(seconds: 20),
-        receiveTimeout: const Duration(seconds: 40),
+        connectTimeout: const Duration(seconds: 25),
+        receiveTimeout: const Duration(seconds: 45),
         headers: {'Accept': 'application/json'},
       ),
     );
@@ -72,32 +72,63 @@ class ApiClient {
       _send(() => _dio.delete(path, queryParameters: query));
 
   Future<dynamic> _send(Future<Response> Function() run) async {
-    try {
-      final res = await run();
-      return res.data;
-    } on DioException catch (e) {
-      final code = e.response?.statusCode;
-      final data = e.response?.data;
-      String msg;
-      if (data is Map && (data['error'] != null || data['message'] != null)) {
-        msg = (data['error'] ?? data['message']).toString();
-      } else if (code != null) {
-        msg = 'Error $code';
-      } else {
-        switch (e.type) {
-          case DioExceptionType.connectionTimeout:
-          case DioExceptionType.sendTimeout:
-          case DioExceptionType.receiveTimeout:
-            msg = 'La conexión tardó demasiado. Intentá de nuevo.';
-            break;
-          case DioExceptionType.connectionError:
-            msg = 'Sin conexión a internet. Revisá tu red e intentá de nuevo.';
-            break;
-          default:
-            msg = 'Error de conexión. Revisá tu internet e intentá de nuevo.';
-        }
+    // Reintenta automáticamente ante fallos transitorios (típicos cuando el
+    // servidor está "despertando" / cold start): timeout de conexión, conexión
+    // caída o errores de gateway 502/503/504. NO reintenta receiveTimeout ni
+    // respuestas de la app (4xx/5xx propias) para no reprocesar dos veces.
+    DioException? lastError;
+    for (var attempt = 0; attempt < 3; attempt++) {
+      try {
+        final res = await run();
+        return res.data;
+      } on DioException catch (e) {
+        lastError = e;
+        if (!_isRetriable(e, attempt)) break;
+        await Future.delayed(Duration(milliseconds: 800 * (attempt + 1)));
       }
-      throw ApiException(msg, statusCode: code, data: data);
     }
+    throw _toApiException(lastError!);
+  }
+
+  bool _isRetriable(DioException e, int attempt) {
+    if (attempt >= 2) return false; // máx. 3 intentos (0,1,2)
+    switch (e.type) {
+      case DioExceptionType.connectionTimeout:
+      case DioExceptionType.connectionError:
+      case DioExceptionType.sendTimeout:
+        return true;
+      case DioExceptionType.badResponse:
+        final c = e.response?.statusCode;
+        return c == 502 || c == 503 || c == 504;
+      default:
+        return false;
+    }
+  }
+
+  ApiException _toApiException(DioException e) {
+    final code = e.response?.statusCode;
+    final data = e.response?.data;
+    String msg;
+    if (data is Map && (data['error'] != null || data['message'] != null)) {
+      msg = (data['error'] ?? data['message']).toString();
+    } else if (code == 502 || code == 503 || code == 504) {
+      msg = 'El servidor está iniciando. Esperá unos segundos e intentá de nuevo.';
+    } else if (code != null) {
+      msg = 'Error $code';
+    } else {
+      switch (e.type) {
+        case DioExceptionType.connectionTimeout:
+        case DioExceptionType.sendTimeout:
+        case DioExceptionType.receiveTimeout:
+          msg = 'La conexión tardó demasiado. Intentá de nuevo.';
+          break;
+        case DioExceptionType.connectionError:
+          msg = 'Sin conexión a internet. Revisá tu red e intentá de nuevo.';
+          break;
+        default:
+          msg = 'Error de conexión. Revisá tu internet e intentá de nuevo.';
+      }
+    }
+    return ApiException(msg, statusCode: code, data: data);
   }
 }

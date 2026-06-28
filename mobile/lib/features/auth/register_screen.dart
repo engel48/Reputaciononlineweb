@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../data/api/api_client.dart';
+import '../../shared/widgets/auth_header.dart';
 import 'auth_controller.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -72,16 +73,23 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Crear cuenta')),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (_error != null)
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            AuthHeader(
+              title: 'Crear cuenta',
+              subtitle: 'Empezá a cuidar tu reputación online',
+              onBack: () => context.go('/login'),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 28),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (_error != null)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: Text(_error!,
@@ -173,27 +181,34 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   title: const Text('Acepto los términos y la política de privacidad',
                       style: TextStyle(fontSize: 13)),
                 ),
-                const SizedBox(height: 8),
-                ElevatedButton(
-                  onPressed: _loading ? null : _submit,
-                  child: _loading
-                      ? const SizedBox(
-                          height: 22,
-                          width: 22,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2.4, color: AppColors.navy))
-                      : const Text('Crear cuenta'),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: _loading ? null : _submit,
+                        child: _loading
+                            ? const SizedBox(
+                                height: 22,
+                                width: 22,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2.4, color: AppColors.navy))
+                            : const Text('Crear cuenta',
+                                style: TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.w700)),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Center(
+                      child: TextButton(
+                        onPressed: () => context.go('/login'),
+                        child: const Text('Ya tengo cuenta'),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 12),
-                Center(
-                  child: TextButton(
-                    onPressed: () => context.go('/login'),
-                    child: const Text('Ya tengo cuenta'),
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );

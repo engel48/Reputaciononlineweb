@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../data/api/api_client.dart';
-import '../../shared/widgets/brand_logo.dart';
+import '../../shared/widgets/auth_header.dart';
 import 'auth_controller.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -53,86 +53,93 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Center(child: BrandLogo(height: 56)),
-                const SizedBox(height: 32),
-                Text('Bienvenido de nuevo',
-                    style: Theme.of(context).textTheme.headlineSmall),
-                const SizedBox(height: 6),
-                Text('Ingresá a tu cuenta de Reputación Online',
-                    style: TextStyle(color: AppColors.muted)),
-                const SizedBox(height: 28),
-                if (_error != null) _ErrorBanner(_error!),
-                TextFormField(
-                  controller: _email,
-                  keyboardType: TextInputType.emailAddress,
-                  autofillHints: const [AutofillHints.email],
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    prefixIcon: Icon(Icons.mail_outline),
-                  ),
-                  validator: (v) =>
-                      (v == null || !v.contains('@')) ? 'Email inválido' : null,
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _password,
-                  obscureText: _obscure,
-                  autofillHints: const [AutofillHints.password],
-                  decoration: InputDecoration(
-                    labelText: 'Contraseña',
-                    prefixIcon: const Icon(Icons.lock_outline),
-                    suffixIcon: IconButton(
-                      icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
-                      onPressed: () => setState(() => _obscure = !_obscure),
-                    ),
-                  ),
-                  validator: (v) =>
-                      (v == null || v.isEmpty) ? 'Ingresá tu contraseña' : null,
-                ),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () => context.go('/forgot'),
-                    child: const Text('¿Olvidaste tu contraseña?'),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                ElevatedButton(
-                  onPressed: _loading ? null : _submit,
-                  child: _loading
-                      ? const SizedBox(
-                          height: 22,
-                          width: 22,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2.4, color: AppColors.navy),
-                        )
-                      : const Text('Ingresar'),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const AuthHeader(
+              title: 'Bienvenido de nuevo',
+              subtitle: 'Ingresá a tu cuenta de Reputación Online',
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 28, 24, 28),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Text('¿No tenés cuenta? '),
-                    GestureDetector(
-                      onTap: () => context.go('/register'),
-                      child: const Text('Registrate',
-                          style: TextStyle(
-                              color: AppColors.cyanHover,
-                              fontWeight: FontWeight.w700)),
+                    if (_error != null) _ErrorBanner(_error!),
+                    TextFormField(
+                      controller: _email,
+                      keyboardType: TextInputType.emailAddress,
+                      autofillHints: const [AutofillHints.email],
+                      decoration: const InputDecoration(
+                        labelText: 'Email',
+                        prefixIcon: Icon(Icons.mail_outline),
+                      ),
+                      validator: (v) =>
+                          (v == null || !v.contains('@')) ? 'Email inválido' : null,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _password,
+                      obscureText: _obscure,
+                      autofillHints: const [AutofillHints.password],
+                      decoration: InputDecoration(
+                        labelText: 'Contraseña',
+                        prefixIcon: const Icon(Icons.lock_outline),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                              _obscure ? Icons.visibility_off : Icons.visibility),
+                          onPressed: () => setState(() => _obscure = !_obscure),
+                        ),
+                      ),
+                      validator: (v) =>
+                          (v == null || v.isEmpty) ? 'Ingresá tu contraseña' : null,
+                    ),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () => context.go('/forgot'),
+                        child: const Text('¿Olvidaste tu contraseña?'),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: _loading ? null : _submit,
+                        child: _loading
+                            ? const SizedBox(
+                                height: 22,
+                                width: 22,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2.4, color: AppColors.navy),
+                              )
+                            : const Text('Ingresar',
+                                style: TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.w700)),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('¿No tenés cuenta? '),
+                        GestureDetector(
+                          onTap: () => context.go('/register'),
+                          child: const Text('Registrate',
+                              style: TextStyle(
+                                  color: AppColors.cyanHover,
+                                  fontWeight: FontWeight.w700)),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
