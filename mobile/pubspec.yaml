@@ -39,7 +39,6 @@ dependencies:
   dio: ^5.9.2
   flutter_secure_storage: ^10.3.1
   fl_chart: ^1.2.0
-  google_fonts: ^8.1.0
   cached_network_image: ^3.4.1
   intl: ^0.20.2
   url_launcher: ^6.3.2
@@ -75,6 +74,13 @@ flutter:
 
   assets:
     - assets/brand/
+
+  # Fuente Inter empaquetada (variable). Antes se descargaba en runtime con
+  # google_fonts, lo que congelaba la UI sin internet. Ahora va offline.
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter.ttf
 
   # To add assets to your application, add an assets section, like this:
   # assets:

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'app_colors.dart';
 
@@ -46,16 +45,18 @@ class AppTheme {
       useMaterial3: true,
       colorScheme: scheme,
       brightness: b,
-      textTheme: GoogleFonts.interTextTheme(
-        ThemeData(brightness: b).textTheme,
-      ).apply(bodyColor: textColor, displayColor: textColor),
+      fontFamily: 'Inter',
+      textTheme: ThemeData(brightness: b)
+          .textTheme
+          .apply(fontFamily: 'Inter', bodyColor: textColor, displayColor: textColor),
       appBarTheme: AppBarTheme(
         backgroundColor: isDark ? AppColors.navy : AppColors.bgLight,
         foregroundColor: textColor,
         elevation: 0,
         scrolledUnderElevation: 0.5,
         centerTitle: false,
-        titleTextStyle: GoogleFonts.inter(
+        titleTextStyle: TextStyle(
+          fontFamily: 'Inter',
           fontSize: 18,
           fontWeight: FontWeight.w700,
           color: textColor,
@@ -78,7 +79,8 @@ class AppTheme {
           foregroundColor: AppColors.navy,
           elevation: 0,
           minimumSize: const Size.fromHeight(52),
-          textStyle: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 15),
+          textStyle: const TextStyle(
+              fontFamily: 'Inter', fontWeight: FontWeight.w600, fontSize: 15),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       ),
@@ -87,7 +89,8 @@ class AppTheme {
           foregroundColor: AppColors.cyan,
           minimumSize: const Size.fromHeight(52),
           side: const BorderSide(color: AppColors.cyan),
-          textStyle: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 15),
+          textStyle: const TextStyle(
+              fontFamily: 'Inter', fontWeight: FontWeight.w600, fontSize: 15),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       ),
@@ -120,7 +123,11 @@ class AppTheme {
         backgroundColor: isDark ? AppColors.navyMedium : AppColors.bgLight,
         indicatorColor: AppColors.cyan.withValues(alpha: 0.18),
         labelTextStyle: WidgetStatePropertyAll(
-          GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: textColor),
+          TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: textColor),
         ),
         height: 64,
       ),
