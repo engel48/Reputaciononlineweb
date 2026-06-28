@@ -287,8 +287,8 @@ export default function JuliaChat() {
 
   return (
     <motion.div
-      className={`fixed bottom-6 right-6 w-96 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 z-50 ${
-        isMinimized ? 'h-16' : 'h-[600px]'
+      className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-[calc(100vw-2rem)] sm:w-96 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 z-50 flex flex-col ${
+        isMinimized ? 'h-16' : 'h-[600px] max-h-[calc(100vh-2rem)] overflow-hidden'
       }`}
       initial={{ scale: 0, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
@@ -363,7 +363,7 @@ export default function JuliaChat() {
       {!isMinimized && (
         <>
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 h-96">
+          <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
             <AnimatePresence>
               {messages.map((message, index) => (
                 <motion.div
