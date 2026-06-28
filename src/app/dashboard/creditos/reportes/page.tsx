@@ -95,7 +95,29 @@ export default function ReportesCreditosPage() {
       const tipoReporte = reportType === 'mensual-general' ? 'completo' :
                          reportType === 'canales-sociales' ? 'canales' :
                          reportType === 'tendencias-trimestre' ? 'tendencia' :
+                         reportType === 'noticias-tiempo-real' ? 'noticias' :
                          'completo';
+
+      // Para el reporte de noticias, traer las noticias REALES del usuario
+      // (endpoint asegurado por sesión: solo devuelve datos del usuario autenticado).
+      let noticias: ReportData['noticias'] = undefined;
+      if (tipoReporte === 'noticias') {
+        try {
+          const r = await fetch('/api/monitoring/unified-search?type=news&limit=25', { credentials: 'include' });
+          if (r.ok) {
+            const j = await r.json();
+            const results: any[] = j?.data?.results || [];
+            noticias = results.map((n) => ({
+              titulo: n.title || (n.content ? String(n.content).slice(0, 80) : 'Sin título'),
+              fuente: n.source || n.author || 'Medio',
+              fecha: n.createdAt ? new Date(n.createdAt).toLocaleDateString('es-CO') : '',
+              sentimiento: n.sentiment === 'positive' ? 'Positivo' : n.sentiment === 'negative' ? 'Negativo' : 'Neutral',
+            }));
+          }
+        } catch (e) {
+          console.warn('No se pudieron cargar noticias para el reporte:', e);
+        }
+      }
 
       // Crear reporte con datos reales del usuario
       const reportData: ReportData = {
@@ -107,7 +129,8 @@ export default function ReportesCreditosPage() {
           email: user.email,
           plan: user.plan,
           creditos: user.credits
-        }
+        },
+        noticias,
       };
 
       console.log('Generando reporte personalizado:', reportData);

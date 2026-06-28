@@ -140,9 +140,9 @@ export default function PlanesPage() {
         : type === 'number'
         ? parseInt(value, 10) || 0
         : value;
-    // Tope duro de cuentas: la plataforma no soporta más de 3 por usuario
+    // Total hasta 12 (3 por red x 4 redes); el tope real es 3 cuentas POR red social.
     if (name === 'maxSocialAccounts' && typeof newValue === 'number') {
-      newValue = Math.min(3, Math.max(0, newValue));
+      newValue = Math.min(12, Math.max(0, newValue));
     }
     if (name === 'maxAccountsPerPlatform' && typeof newValue === 'number') {
       newValue = Math.min(3, Math.max(1, newValue));
@@ -510,14 +510,14 @@ export default function PlanesPage() {
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-600">Max cuentas sociales* (máx 3)</label>
+                  <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-600">Max cuentas sociales* (total, máx 12)</label>
                   <input
                     type="number"
                     name="maxSocialAccounts"
                     value={form.maxSocialAccounts}
                     onChange={handleInputChange}
                     min={0}
-                    max={3}
+                    max={12}
                     className="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-100 dark:text-gray-900 p-2 text-sm"
                     required
                   />

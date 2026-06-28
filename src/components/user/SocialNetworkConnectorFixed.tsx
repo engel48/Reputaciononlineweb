@@ -99,15 +99,21 @@ interface AccountItem {
 }
 
 export default function SocialNetworkConnectorFixed(props: SocialNetworkConnectorProps) {
-  const { maxAccountsPerPlatform } = usePlan();
+  const { maxAccountsPerPlatform, getFeatureLimit } = usePlan();
   // El plan permite multiples cuentas por red si su limite por plataforma > 1.
   const allowsMultiAccount = maxAccountsPerPlatform > 1;
+  // Limite TOTAL de cuentas del plan (sumando todas las redes).
+  const totalAccountLimit = getFeatureLimit('maxSocialAccounts');
   // Cuantas cuentas hay conectadas en una red dada (para el contador X/N).
-  const connectedCountFor = (platform: string) =>
-    (accounts[platform] || []).filter((a) => a.connected).length;
-  // Si todavia se puede agregar otra cuenta de esa red segun el plan.
+  const connectedCountFor = (platform: string) => {
+    const arr = (accounts[platform] || []).filter((a) => a.connected);
+    if (arr.length > 0) return arr.length;
+    // Fallback cuando la lista multi-cuenta no esta cargada: la conexion simple.
+    return connections[platform as keyof SocialConnectionsState]?.connected ? 1 : 0;
+  };
+  // Si todavia se puede agregar otra cuenta de esa red segun el plan (por red y total).
   const canAddMoreFor = (platform: string) =>
-    connectedCountFor(platform) < maxAccountsPerPlatform;
+    connectedCountFor(platform) < maxAccountsPerPlatform && !reachedTotalLimit;
 
   const [connections, setConnections] = useState<SocialConnectionsState>({
     facebook: { connected: false, username: '', displayName: '', followers: 0, profileImage: '', lastSync: null, metrics: { posts: 0, engagement: 0, reach: 0 } },
@@ -120,6 +126,14 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
   const [accounts, setAccounts] = useState<Record<string, AccountItem[]>>({
     facebook: [], instagram: [], x: [], youtube: []
   });
+
+  // Total de cuentas conectadas en todas las redes (se calcula tras tener el estado).
+  const totalConnected = ['facebook', 'instagram', 'x', 'youtube'].reduce(
+    (sum, p) => sum + connectedCountFor(p),
+    0,
+  );
+  // Si ya se alcanzo el tope TOTAL del plan (no se puede conectar ninguna mas).
+  const reachedTotalLimit = totalAccountLimit > 0 && totalConnected >= totalAccountLimit;
 
   const [loading, setLoading] = useState<Record<string, boolean>>({});
   const [syncing, setSyncing] = useState<Record<string, boolean>>({});
@@ -833,6 +847,11 @@ export default function SocialNetworkConnectorFixed(props: SocialNetworkConnecto
                         Desconectar {allowsMultiAccount && accounts[network.id]?.length > 1 ? 'todas' : ''}
                       </Button>
                     </>
+                  ) : reachedTotalLimit ? (
+                    <p className="text-xs text-center text-gray-500 dark:text-gray-400">
+                      Alcanzaste el límite de {totalAccountLimit} cuenta{totalAccountLimit !== 1 ? 's' : ''} de tu plan.
+                      Actualiza tu plan para conectar más.
+                    </p>
                   ) : (
                     <Button
                       onClick={() => handleConnect(network.id)}

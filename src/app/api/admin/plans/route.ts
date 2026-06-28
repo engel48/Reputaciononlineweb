@@ -126,8 +126,8 @@ export async function POST(request: NextRequest) {
       description: description ?? null,
       price_cop: Math.max(0, Math.floor(priceCop)),
       monthly_credits: Math.max(0, Math.floor(monthlyCredits)),
-      // Tope duro: máximo 3 cuentas (la plataforma no soporta más por usuario)
-      max_social_accounts: Math.min(3, Math.max(0, Math.floor(maxSocialAccounts ?? 1))),
+      // Total hasta 12 (3 por red x 4 redes); el tope real es 3 cuentas POR red social.
+      max_social_accounts: Math.min(12, Math.max(0, Math.floor(maxSocialAccounts ?? 1))),
       multi_account_per_platform: !!multiAccountPerPlatform,
       max_accounts_per_platform: Math.min(3, Math.max(1, Math.floor(maxAccountsPerPlatform ?? 1))),
       features: features ?? {},

@@ -2,7 +2,7 @@
 import { useUser } from '@/context/UserContext';
 
 export interface ReportData {
-  tipo: 'consumo' | 'tendencia' | 'canales' | 'completo';
+  tipo: 'consumo' | 'tendencia' | 'canales' | 'completo' | 'noticias';
   formato: 'pdf' | 'excel' | 'csv';
   periodo: 'semana' | 'mes' | 'trimestre' | 'personalizado';
   fechaInicio?: string;
@@ -14,6 +14,8 @@ export interface ReportData {
     plan: string;
     creditos: number;
   };
+  /** Noticias recientes del usuario (solo para el reporte tipo 'noticias'). */
+  noticias?: { titulo: string; fuente: string; fecha: string; sentimiento: string }[];
 }
 
 interface ConsumoCredito {
@@ -578,39 +580,48 @@ export class ReportGenerator {
     }
 
     const heading = (text: string) => {
+      // Salto de página si el encabezado quedaría al fondo.
+      if (y > pageH - 90) { doc.addPage(); y = 60; }
       doc.setTextColor(navy[0], navy[1], navy[2]);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(13);
       doc.text(text, margin, y);
     };
 
-    // Resumen de consumo.
-    heading('Resumen de consumo');
-    const e = real.estadisticas;
-    autoTable(doc, {
-      startY: y + 8,
-      theme: 'grid',
-      margin: { left: margin, right: margin },
-      headStyles: { fillColor: navy, textColor: 255, fontStyle: 'bold' },
-      styles: { fontSize: 10, cellPadding: 6 },
-      head: [['Métrica', 'Valor']],
-      body: [
-        ['Total consumido', `${e.totalConsumo} créditos`],
-        ['Promedio diario', `${e.promedioDiario} créditos`],
-        ['Día de mayor consumo', e.diaMayorConsumo.fecha === 'N/A' ? '—' : `${e.diaMayorConsumo.fecha} (${e.diaMayorConsumo.consumo})`],
-      ],
-    });
-    y = (doc as any).lastAutoTable.finalY + 26;
-
-    // Consumo por fecha.
-    heading('Consumo por fecha');
-    if (real.consumoCreditos.length === 0) {
+    const sinDatos = (msg: string) => {
       doc.setTextColor(gray[0], gray[1], gray[2]);
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(10);
-      doc.text('Sin consumo en el período.', margin, y + 18);
+      doc.text(msg, margin, y + 18);
       y += 38;
-    } else {
+    };
+
+    // ── Secciones reutilizables ──────────────────────────────────────────────
+    const seccionResumen = () => {
+      heading('Resumen de consumo');
+      const e = real.estadisticas;
+      autoTable(doc, {
+        startY: y + 8,
+        theme: 'grid',
+        margin: { left: margin, right: margin },
+        headStyles: { fillColor: navy, textColor: 255, fontStyle: 'bold' },
+        styles: { fontSize: 10, cellPadding: 6 },
+        head: [['Métrica', 'Valor']],
+        body: [
+          ['Total consumido', `${e.totalConsumo} créditos`],
+          ['Promedio diario', `${e.promedioDiario} créditos`],
+          ['Día de mayor consumo', e.diaMayorConsumo.fecha === 'N/A' ? '—' : `${e.diaMayorConsumo.fecha} (${e.diaMayorConsumo.consumo})`],
+        ],
+      });
+      y = (doc as any).lastAutoTable.finalY + 26;
+    };
+
+    const seccionPorFecha = () => {
+      heading('Consumo por fecha');
+      if (real.consumoCreditos.length === 0) {
+        sinDatos('Sin consumo en el período.');
+        return;
+      }
       autoTable(doc, {
         startY: y + 8,
         theme: 'striped',
@@ -621,11 +632,14 @@ export class ReportGenerator {
         body: real.consumoCreditos.map((c) => [c.fecha, String(c.consumo), c.canal]),
       });
       y = (doc as any).lastAutoTable.finalY + 26;
-    }
+    };
 
-    // Resumen por canal.
-    if (real.resumenCanales.length > 0) {
+    const seccionPorCanal = () => {
       heading('Resumen por canal');
+      if (real.resumenCanales.length === 0) {
+        sinDatos('Sin datos por canal en el período.');
+        return;
+      }
       autoTable(doc, {
         startY: y + 8,
         theme: 'striped',
@@ -635,6 +649,52 @@ export class ReportGenerator {
         head: [['Canal', 'Consumo', '%']],
         body: real.resumenCanales.map((r) => [r.canal, String(r.consumo), `${r.porcentaje}%`]),
       });
+      y = (doc as any).lastAutoTable.finalY + 26;
+    };
+
+    const seccionNoticias = () => {
+      heading('Noticias recientes (últimos 7 días)');
+      const items = data.noticias || [];
+      if (items.length === 0) {
+        sinDatos('No hay noticias monitoreadas para tu cuenta en el período.');
+        return;
+      }
+      autoTable(doc, {
+        startY: y + 8,
+        theme: 'striped',
+        margin: { left: margin, right: margin },
+        headStyles: { fillColor: navy, textColor: 255, fontStyle: 'bold' },
+        styles: { fontSize: 9, cellPadding: 5, overflow: 'linebreak' },
+        columnStyles: { 2: { cellWidth: 240 } },
+        head: [['Fecha', 'Fuente', 'Titular', 'Sentimiento']],
+        body: items.map((n) => [n.fecha, n.fuente, n.titulo, n.sentimiento]),
+      });
+      y = (doc as any).lastAutoTable.finalY + 26;
+    };
+
+    // ── Composición según el tipo de reporte ─────────────────────────────────
+    switch (data.tipo) {
+      case 'noticias':
+        seccionNoticias();
+        break;
+      case 'canales':
+        seccionResumen();
+        seccionPorCanal();
+        break;
+      case 'tendencia':
+        seccionResumen();
+        seccionPorFecha();
+        break;
+      case 'consumo':
+        seccionResumen();
+        seccionPorFecha();
+        break;
+      case 'completo':
+      default:
+        seccionResumen();
+        seccionPorFecha();
+        seccionPorCanal();
+        break;
     }
 
     // Footer.
