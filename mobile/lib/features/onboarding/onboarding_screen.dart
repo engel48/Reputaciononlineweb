@@ -9,13 +9,15 @@ import '../../data/models/keyword.dart';
 import '../../shared/platform_ui.dart';
 import '../../shared/widgets/brand_logo.dart';
 import '../../shared/widgets/neural_background.dart';
+import '../auth/auth_controller.dart';
 import '../noticias/noticias_providers.dart';
 import '../redes/redes_providers.dart';
 import '../redes/redes_screen.dart';
 import 'onboarding.dart';
 
-/// Onboarding guiado para usuarios nuevos: bienvenida → conectar redes →
-/// palabras clave → listo. Saltable en cualquier momento.
+/// Onboarding guiado para usuarios nuevos (igual que la web): bienvenida →
+/// tus datos → tipo de perfil → conectar redes → palabras clave → listo.
+/// Saltable en cualquier momento.
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -27,11 +29,37 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _pc = PageController();
   int _page = 0;
   bool _finishing = false;
-  static const _last = 3;
+  static const _last = 5;
+
+  late final TextEditingController _name;
+  late final TextEditingController _company;
+  late final TextEditingController _phone;
+  late final TextEditingController _bio;
+  late final TextEditingController _category;
+  late final TextEditingController _brandName;
+  String _profileType = 'personal';
+
+  @override
+  void initState() {
+    super.initState();
+    final u = ref.read(authControllerProvider).user;
+    _name = TextEditingController(text: u?.name ?? '');
+    _company = TextEditingController(text: u?.company ?? '');
+    _phone = TextEditingController(text: u?.phone ?? '');
+    _bio = TextEditingController(text: u?.bio ?? '');
+    _category = TextEditingController();
+    _brandName = TextEditingController(text: u?.company ?? '');
+    if (u?.profileType != null && u!.profileType!.isNotEmpty) {
+      _profileType = u.profileType!;
+    }
+  }
 
   @override
   void dispose() {
     _pc.dispose();
+    for (final c in [_name, _company, _phone, _bio, _category, _brandName]) {
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -54,7 +82,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Future<void> _finish() async {
     if (_finishing) return;
     setState(() => _finishing = true);
-    await completeOnboarding(ref);
+    final profile = <String, dynamic>{
+      if (_name.text.trim().isNotEmpty) 'name': _name.text.trim(),
+      if (_company.text.trim().isNotEmpty) 'company': _company.text.trim(),
+      if (_phone.text.trim().isNotEmpty) 'phone': _phone.text.trim(),
+      if (_bio.text.trim().isNotEmpty) 'bio': _bio.text.trim(),
+      'profileType': _profileType,
+      if (_category.text.trim().isNotEmpty) 'category': _category.text.trim(),
+      if (_brandName.text.trim().isNotEmpty) 'brandName': _brandName.text.trim(),
+    };
+    await completeOnboarding(ref, profile: profile);
     if (mounted) context.go('/home');
   }
 
@@ -75,11 +112,22 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               child: PageView(
                 controller: _pc,
                 onPageChanged: (i) => setState(() => _page = i),
-                children: const [
-                  _WelcomeStep(),
-                  _ConnectStep(),
-                  _KeywordsStep(),
-                  _DoneStep(),
+                children: [
+                  const _WelcomeStep(),
+                  _DatosStep(
+                      name: _name,
+                      company: _company,
+                      phone: _phone,
+                      bio: _bio),
+                  _CategoriaStep(
+                    category: _category,
+                    brandName: _brandName,
+                    profileType: _profileType,
+                    onType: (t) => setState(() => _profileType = t),
+                  ),
+                  const _ConnectStep(),
+                  const _KeywordsStep(),
+                  const _DoneStep(),
                 ],
               ),
             ),
@@ -89,9 +137,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 final active = i == _page;
                 return AnimatedContainer(
                   duration: const Duration(milliseconds: 220),
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  width: active ? 22 : 8,
-                  height: 8,
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  width: active ? 20 : 7,
+                  height: 7,
                   decoration: BoxDecoration(
                     color: active
                         ? AppColors.cyan
@@ -118,7 +166,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     flex: 2,
                     child: FilledButton(
                       onPressed: _finishing ? null : _next,
-                      child: Text(_page == _last ? 'Ir al inicio' : 'Siguiente'),
+                      child: _finishing
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: Colors.white))
+                          : Text(_page == _last ? 'Ir al inicio' : 'Siguiente'),
                     ),
                   ),
                 ],
@@ -145,7 +199,8 @@ class _StepShell extends StatelessWidget {
 }
 
 class _StepHeader extends StatelessWidget {
-  const _StepHeader({required this.icon, required this.title, required this.subtitle});
+  const _StepHeader(
+      {required this.icon, required this.title, required this.subtitle});
   final IconData icon;
   final String title;
   final String subtitle;
@@ -156,8 +211,8 @@ class _StepHeader extends StatelessWidget {
       children: [
         const SizedBox(height: 8),
         Container(
-          width: 84,
-          height: 84,
+          width: 80,
+          height: 80,
           decoration: BoxDecoration(
             gradient: AppColors.brandGradient,
             shape: BoxShape.circle,
@@ -169,9 +224,9 @@ class _StepHeader extends StatelessWidget {
               ),
             ],
           ),
-          child: Icon(icon, color: Colors.white, size: 40),
+          child: Icon(icon, color: Colors.white, size: 38),
         ),
-        const SizedBox(height: 22),
+        const SizedBox(height: 20),
         Text(title,
             textAlign: TextAlign.center,
             style: Theme.of(context)
@@ -201,7 +256,7 @@ class _WelcomeStep extends StatelessWidget {
         _StepShell(
           children: [
             const SizedBox(height: 30),
-            const Center(child: BrandLogo(height: 64)),
+            const Center(child: BrandLogo(height: 62)),
             const SizedBox(height: 34),
             Text('¡Bienvenido a Reputación Online!',
                 textAlign: TextAlign.center,
@@ -211,11 +266,130 @@ class _WelcomeStep extends StatelessWidget {
                     ?.copyWith(fontWeight: FontWeight.w800)),
             const SizedBox(height: 12),
             const Text(
-              'En 2 pasos dejamos tu cuenta lista para monitorear lo que se dice de vos en redes y medios, con análisis de IA.',
+              'Configuremos tu cuenta en unos pasos para monitorear lo que se dice de vos en redes y medios, con análisis de IA.',
               textAlign: TextAlign.center,
               style: TextStyle(color: AppColors.muted, fontSize: 15, height: 1.45),
             ),
           ],
+        ),
+      ],
+    );
+  }
+}
+
+class _DatosStep extends StatelessWidget {
+  const _DatosStep({
+    required this.name,
+    required this.company,
+    required this.phone,
+    required this.bio,
+  });
+  final TextEditingController name, company, phone, bio;
+
+  @override
+  Widget build(BuildContext context) {
+    return _StepShell(
+      children: [
+        const _StepHeader(
+          icon: Icons.badge_outlined,
+          title: 'Tus datos',
+          subtitle: 'Contanos quién sos para personalizar tu cuenta.',
+        ),
+        TextField(
+          controller: name,
+          textCapitalization: TextCapitalization.words,
+          decoration: const InputDecoration(
+              labelText: 'Nombre', prefixIcon: Icon(Icons.person_outline)),
+        ),
+        const SizedBox(height: 14),
+        TextField(
+          controller: company,
+          textCapitalization: TextCapitalization.words,
+          decoration: const InputDecoration(
+              labelText: 'Empresa / Organización (opcional)',
+              prefixIcon: Icon(Icons.business_outlined)),
+        ),
+        const SizedBox(height: 14),
+        TextField(
+          controller: phone,
+          keyboardType: TextInputType.phone,
+          decoration: const InputDecoration(
+              labelText: 'Teléfono (opcional)',
+              prefixIcon: Icon(Icons.phone_outlined)),
+        ),
+        const SizedBox(height: 14),
+        TextField(
+          controller: bio,
+          minLines: 2,
+          maxLines: 4,
+          maxLength: 280,
+          decoration: const InputDecoration(
+              labelText: 'Bio (opcional)',
+              prefixIcon: Icon(Icons.notes_outlined),
+              alignLabelWithHint: true),
+        ),
+      ],
+    );
+  }
+}
+
+class _CategoriaStep extends StatelessWidget {
+  const _CategoriaStep({
+    required this.category,
+    required this.brandName,
+    required this.profileType,
+    required this.onType,
+  });
+  final TextEditingController category, brandName;
+  final String profileType;
+  final ValueChanged<String> onType;
+
+  @override
+  Widget build(BuildContext context) {
+    final isPersonal = profileType == 'personal';
+    return _StepShell(
+      children: [
+        const _StepHeader(
+          icon: Icons.workspaces_outline,
+          title: 'Tipo de perfil',
+          subtitle: 'Esto adapta el monitoreo y los reportes a tu caso.',
+        ),
+        SegmentedButton<String>(
+          segments: const [
+            ButtonSegment(
+                value: 'personal',
+                icon: Icon(Icons.person_outline),
+                label: Text('Personal')),
+            ButtonSegment(
+                value: 'business',
+                icon: Icon(Icons.business_outlined),
+                label: Text('Empresa')),
+            ButtonSegment(
+                value: 'political',
+                icon: Icon(Icons.campaign_outlined),
+                label: Text('Político')),
+          ],
+          selected: {profileType},
+          onSelectionChanged: (s) => onType(s.first),
+        ),
+        const SizedBox(height: 18),
+        if (!isPersonal) ...[
+          TextField(
+            controller: brandName,
+            textCapitalization: TextCapitalization.words,
+            decoration: const InputDecoration(
+                labelText: 'Nombre de la marca / candidatura',
+                prefixIcon: Icon(Icons.label_outline)),
+          ),
+          const SizedBox(height: 14),
+        ],
+        TextField(
+          controller: category,
+          textCapitalization: TextCapitalization.sentences,
+          decoration: const InputDecoration(
+              labelText: 'Rubro / especialidad (opcional)',
+              hintText: 'Ej: gastronomía, tecnología, salud…',
+              prefixIcon: Icon(Icons.category_outlined)),
         ),
       ],
     );
@@ -232,13 +406,14 @@ class _ConnectStep extends ConsumerWidget {
     ['twitter', 'X (Twitter)'],
   ];
 
-  Future<void> _connect(
-      BuildContext context, WidgetRef ref, String oauthKey, String label) async {
+  Future<void> _connect(BuildContext context, WidgetRef ref, String oauthKey,
+      String label) async {
     final token = await ref.read(tokenStorageProvider).readToken();
     if (token == null || token.isEmpty || !context.mounted) return;
     final result = await Navigator.of(context).push<String>(
       MaterialPageRoute(
-        builder: (_) => OAuthWebView(provider: oauthKey, label: label, token: token),
+        builder: (_) =>
+            OAuthWebView(provider: oauthKey, label: label, token: token),
       ),
     );
     if (result == 'ok') ref.invalidate(redesStatusProvider);
@@ -375,7 +550,6 @@ class _DoneStep extends StatelessWidget {
           subtitle:
               'Tu cuenta quedó configurada. La app sincroniza sola cada pocos minutos: apenas haya datos, los vas a ver en el inicio.',
         ),
-        const SizedBox(height: 8),
         const Center(
           child: Text('Tocá "Ir al inicio" para empezar.',
               style: TextStyle(color: AppColors.muted, fontSize: 13)),

@@ -33,7 +33,8 @@ class OnboardingSeenController extends Notifier<bool> {
 /// IMPORTANTE: capturamos todos los providers ANTES del primer `await`. Al
 /// completar, el cambio de estado dispara la navegación y desmonta la pantalla;
 /// usar `ref` después del await reventaría ("ref used after unmount").
-Future<void> completeOnboarding(WidgetRef ref) async {
+Future<void> completeOnboarding(WidgetRef ref,
+    {Map<String, dynamic> profile = const {}}) async {
   final seenCtrl = ref.read(onboardingSeenProvider.notifier);
   final authCtrl = ref.read(authControllerProvider.notifier);
   final api = ref.read(apiClientProvider);
@@ -44,6 +45,7 @@ Future<void> completeOnboarding(WidgetRef ref) async {
       final res = await api.put('/users', body: {
         'userId': user.id,
         'onboardingCompleted': true,
+        ...profile,
       });
       final updated = AppUser.fromJson(
           ((res as Map)['user'] as Map).cast<String, dynamic>());
