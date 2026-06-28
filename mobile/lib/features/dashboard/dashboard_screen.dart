@@ -24,15 +24,26 @@ class DashboardScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Hola, ${user?.displayName.split(' ').first ?? ''}'),
+        foregroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.white),
+        flexibleSpace: const DecoratedBox(
+          decoration: BoxDecoration(gradient: AppColors.brandGradient),
+        ),
+        title: Text(
+          'Hola, ${user?.displayName.split(' ').first ?? ''}',
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+        ),
         actions: [
           const _NotifBell(),
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: Chip(
-              avatar: const Icon(Icons.bolt, size: 18, color: AppColors.accentNavy),
-              label: Text('${user?.credits ?? 0}'),
-              backgroundColor: AppColors.cyan.withValues(alpha: 0.15),
+              avatar: const Icon(Icons.bolt, size: 18, color: Colors.white),
+              label: Text('${user?.credits ?? 0}',
+                  style: const TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.w700)),
+              backgroundColor: Colors.white.withValues(alpha: 0.22),
+              side: BorderSide.none,
             ),
           ),
         ],
@@ -149,68 +160,78 @@ class _ReputationCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final up = r.trend == 'up';
     final down = r.trend == 'down';
-    final trendColor = up ? AppColors.success : (down ? AppColors.danger : AppColors.muted);
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Row(
-          children: [
-            SizedBox(
-              width: 80,
-              height: 80,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  SizedBox(
-                    width: 80,
-                    height: 80,
-                    child: CircularProgressIndicator(
-                      value: (r.score.clamp(0, 100)) / 100,
-                      strokeWidth: 7,
-                      backgroundColor: AppColors.borderLight,
-                      valueColor: const AlwaysStoppedAnimation(AppColors.cyan),
-                    ),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: AppColors.brandGradient,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.accentNavy.withValues(alpha: 0.32),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(22),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 86,
+            height: 86,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  width: 86,
+                  height: 86,
+                  child: CircularProgressIndicator(
+                    value: (r.score.clamp(0, 100)) / 100,
+                    strokeWidth: 8,
+                    backgroundColor: Colors.white.withValues(alpha: 0.22),
+                    valueColor: const AlwaysStoppedAnimation(Colors.white),
                   ),
-                  Text('${r.score}',
-                      style: const TextStyle(
-                          fontSize: 22, fontWeight: FontWeight.w800)),
-                ],
-              ),
+                ),
+                Text('${r.score}',
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 26,
+                        fontWeight: FontWeight.w800)),
+              ],
             ),
-            const SizedBox(width: 18),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Índice de reputación',
-                      style: TextStyle(color: AppColors.muted, fontSize: 13)),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Icon(
-                          up
-                              ? Icons.trending_up
-                              : (down ? Icons.trending_down : Icons.trending_flat),
-                          color: trendColor,
-                          size: 18),
-                      const SizedBox(width: 6),
-                      Text(
+          ),
+          const SizedBox(width: 20),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Índice de reputación',
+                    style: TextStyle(color: Colors.white70, fontSize: 13)),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Icon(
                         up
-                            ? 'En alza'
-                            : (down ? 'A la baja' : 'Estable'),
-                        style: TextStyle(
-                            color: trendColor, fontWeight: FontWeight.w600),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text('Anterior: ${r.previousScore}',
-                      style: const TextStyle(color: AppColors.muted, fontSize: 12)),
-                ],
-              ),
+                            ? Icons.trending_up
+                            : (down ? Icons.trending_down : Icons.trending_flat),
+                        color: Colors.white,
+                        size: 20),
+                    const SizedBox(width: 6),
+                    Text(
+                      up ? 'En alza' : (down ? 'A la baja' : 'Estable'),
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text('Anterior: ${r.previousScore}',
+                    style: const TextStyle(color: Colors.white60, fontSize: 12)),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

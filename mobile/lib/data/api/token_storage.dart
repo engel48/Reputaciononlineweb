@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -20,10 +21,14 @@ class TokenStorage {
   bool _tokenLoaded = false;
 
   Future<void> save(String token, Map<String, dynamic> user) async {
+    // El cache en memoria cubre el uso inmediato (el login no espera al disco).
     _cachedToken = token;
     _tokenLoaded = true;
-    await _storage.write(key: _kToken, value: token);
-    await _storage.write(key: _kUser, value: jsonEncode(user));
+    // Persistencia en segundo plano: en Android el Keystore es lento (en
+    // emulador, segundos) y NO debe bloquear el flujo de login. Si la app se
+    // cierra antes de que termine, el usuario simplemente vuelve a loguearse.
+    unawaited(_storage.write(key: _kToken, value: token));
+    unawaited(_storage.write(key: _kUser, value: jsonEncode(user)));
   }
 
   Future<String?> readToken() async {

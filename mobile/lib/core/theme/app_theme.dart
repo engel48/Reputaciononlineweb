@@ -63,12 +63,16 @@ class AppTheme {
         ),
       ),
       cardTheme: CardThemeData(
-        elevation: 0,
+        elevation: isDark ? 0 : 5,
+        shadowColor: AppColors.accentNavy.withValues(alpha: 0.16),
+        surfaceTintColor: Colors.transparent,
         color: isDark ? AppColors.navyMedium : AppColors.bgLight,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radius),
           side: BorderSide(
-            color: isDark ? AppColors.navyLight : AppColors.borderLight,
+            color: isDark
+                ? AppColors.navyLight
+                : AppColors.borderLight.withValues(alpha: 0.7),
           ),
         ),
         margin: EdgeInsets.zero,

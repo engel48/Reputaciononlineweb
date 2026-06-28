@@ -16,15 +16,24 @@ void _applyCredits(Ref ref, dynamic res) {
   }
 }
 
-/// Mensaje de error legible para acciones de Julia (incluye 402 créditos).
+/// Mensaje de error limpio para Julia: NUNCA expone errores crudos del backend
+/// ni del proveedor de IA. Detecta créditos (402) y saturación/límite diario.
 String _juliaError(ApiException e) {
   if (e.isPaymentRequired) {
-    if (e.data is Map && (e.data as Map)['response'] != null) {
-      return (e.data as Map)['response'].toString();
-    }
-    return 'No tenés créditos suficientes para esta acción.';
+    return 'No te alcanzan los créditos para esta acción. Recargá desde Créditos.';
   }
-  return e.message;
+  final raw = '${e.message} ${e.data ?? ''}'.toLowerCase();
+  if (raw.contains('rate_limit') ||
+      raw.contains('rate limit') ||
+      raw.contains('limit reached') ||
+      raw.contains('429') ||
+      raw.contains('límite') ||
+      raw.contains('limite') ||
+      raw.contains('demasiad') ||
+      raw.contains('try again')) {
+    return 'Julia está con mucha demanda en este momento 🤖. Probá de nuevo en unos minutos.';
+  }
+  return 'Julia no pudo responder ahora. Probá de nuevo en un momento.';
 }
 
 /// Estado del chat con Julia: lista de mensajes + saldo de créditos conocido.
@@ -97,14 +106,9 @@ class JuliaController extends AsyncNotifier<JuliaState> {
       final updated = [...current.messages, userMsg, reply];
       state = AsyncData(JuliaState(messages: updated, balance: newBalance ?? current.balance));
     } on ApiException catch (e) {
-      final msg = e.isPaymentRequired
-          ? (e.data is Map && (e.data as Map)['response'] != null
-              ? (e.data as Map)['response'].toString()
-              : 'No tenés créditos suficientes para chatear con Julia.')
-          : 'Julia tuvo un problema: ${e.message}';
       final errMsg = JuliaMessage(
         role: 'assistant',
-        content: msg,
+        content: _juliaError(e),
         timestamp: DateTime.now(),
         error: true,
       );
