@@ -1,5 +1,7 @@
 // Servicio de IA centralizado.
-// Primario: Groq (llama-3.3-70b-versatile). Fallback: DeepSeek R1 (OpenAI-compatible).
+// Primario: Google Gemini (2.5 Flash / 2.5 Flash-Lite, endpoint OpenAI-compatible).
+// Fallback: Groq (llama-3.3-70b-versatile) → DeepSeek R1. La selección es por env:
+// si GEMINI_API_KEY está presente, Gemini es el primario; si no, se usa Groq.
 // Mantiene el branding como "Julia" y soporta inyección de contexto de usuario.
 
 import Groq from 'groq-sdk';
@@ -16,7 +18,14 @@ interface ChatOptions {
   jsonMode?: boolean;
   frequencyPenalty?: number;
   presencePenalty?: number;
+  /** Modelo a usar (solo aplica a Gemini). Por defecto GEMINI_MODEL (Flash). */
+  model?: string;
 }
+
+// Gemini (primario) vía endpoint OpenAI-compatible.
+const GEMINI_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/openai';
+const GEMINI_MODEL = 'gemini-2.5-flash'; // calidad: chat, reportes, crisis, recomendaciones
+const GEMINI_MODEL_LITE = 'gemini-2.5-flash-lite'; // alto volumen: sentiment, resumen de noticias
 
 const GROQ_MODEL = 'llama-3.3-70b-versatile';
 const DEEPSEEK_MODEL = 'deepseek-chat';
@@ -40,17 +49,23 @@ Reglas de estilo:
 - Recuerda y referencia lo que el usuario te ha dicho antes en esta conversación cuando sea relevante.`;
 
 class AIService {
+  private geminiApiKey?: string;
   private groqClient?: Groq;
   private deepseekApiKey?: string;
 
   constructor() {
+    const geminiKey = process.env.GEMINI_API_KEY || '';
     const groqKey = process.env.GROQ_API_KEY || '';
     const deepseekKey = process.env.DEEPSEEK_API_KEY || '';
 
+    if (geminiKey) {
+      this.geminiApiKey = geminiKey;
+    }
+
     if (groqKey) {
       this.groqClient = new Groq({ apiKey: groqKey });
-    } else {
-      console.warn('⚠️ GROQ_API_KEY no está configurada');
+    } else if (!geminiKey) {
+      console.warn('⚠️ No hay GEMINI_API_KEY ni GROQ_API_KEY configuradas');
     }
 
     if (deepseekKey) {
@@ -60,7 +75,7 @@ class AIService {
 
   /** True si al menos un proveedor está configurado */
   isAvailable(): boolean {
-    return !!(this.groqClient || this.deepseekApiKey);
+    return !!(this.geminiApiKey || this.groqClient || this.deepseekApiKey);
   }
 
   private async callGroq(messages: AIMessage[], options: ChatOptions): Promise<string> {
@@ -105,32 +120,62 @@ class AIService {
     return data.choices?.[0]?.message?.content || '';
   }
 
+  private async callGemini(messages: AIMessage[], options: ChatOptions): Promise<string> {
+    if (!this.geminiApiKey) throw new Error('Gemini not configured');
+
+    const res = await fetch(`${GEMINI_BASE_URL}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${this.geminiApiKey}`,
+      },
+      body: JSON.stringify({
+        model: options.model || GEMINI_MODEL,
+        messages: messages.map((m) => ({ role: m.role, content: m.content })),
+        temperature: options.temperature ?? 0.7,
+        max_tokens: options.max_tokens ?? 2048,
+        // Apaga el "thinking" de Gemini 2.5: respuestas más rápidas y costo
+        // predecible (sin tokens de razonamiento ocultos). Suficiente para Julia.
+        reasoning_effort: 'none',
+        // NOTA: el endpoint OpenAI-compat de Gemini NO soporta frequency_penalty
+        // ni presence_penalty (devuelve 400), por eso no se envían.
+        ...(options.jsonMode ? { response_format: { type: 'json_object' as const } } : {}),
+      }),
+    });
+
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      const e: any = new Error(`Gemini API error ${res.status}: ${body}`);
+      e.status = res.status;
+      throw e;
+    }
+
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content || '';
+  }
+
   /**
-   * Chat principal. Intenta Groq; si falla con 429/5xx o timeout, cae a DeepSeek.
+   * Chat principal. Cadena de proveedores: Gemini (primario) → Groq → DeepSeek.
+   * Si un proveedor falla, se registra el error y se prueba el siguiente; solo si
+   * todos fallan se lanza el error agregado. Esto maximiza la disponibilidad de Julia.
    */
   async chat(messages: AIMessage[], options: ChatOptions = {}): Promise<string> {
     const errors: string[] = [];
 
-    if (this.groqClient) {
+    const providers: Array<{ name: string; enabled: boolean; call: () => Promise<string> }> = [
+      { name: 'Gemini', enabled: !!this.geminiApiKey, call: () => this.callGemini(messages, options) },
+      { name: 'Groq', enabled: !!this.groqClient, call: () => this.callGroq(messages, options) },
+      { name: 'DeepSeek', enabled: !!this.deepseekApiKey, call: () => this.callDeepSeek(messages, options) },
+    ];
+
+    for (const p of providers) {
+      if (!p.enabled) continue;
       try {
-        return await this.callGroq(messages, options);
+        return await p.call();
       } catch (err: any) {
         const msg = err?.message || String(err);
-        errors.push(`Groq: ${msg}`);
-        const status = err?.status || err?.response?.status;
-        const isRetryable = !status || status === 429 || status === 503 || status >= 500;
-        if (!isRetryable) {
-          throw err;
-        }
-        console.warn(`[aiService] Groq falló (${msg}), intentando DeepSeek...`);
-      }
-    }
-
-    if (this.deepseekApiKey) {
-      try {
-        return await this.callDeepSeek(messages, options);
-      } catch (err: any) {
-        errors.push(`DeepSeek: ${err?.message || String(err)}`);
+        errors.push(`${p.name}: ${msg}`);
+        console.warn(`[aiService] ${p.name} falló (${msg}), probando siguiente proveedor...`);
       }
     }
 
@@ -219,7 +264,12 @@ Reglas de score: -1.0 a -0.3 = negative, -0.3 a +0.3 = neutral, +0.3 a +1.0 = po
       },
     ];
 
-    const response = await this.chat(messages, { temperature: 0.3, jsonMode: true });
+    // Alto volumen (corre por cada mención): usa el modelo más barato (Flash-Lite).
+    const response = await this.chat(messages, {
+      temperature: 0.3,
+      jsonMode: true,
+      model: GEMINI_MODEL_LITE,
+    });
     const parsed = this.parseJsonResponse(response);
 
     if (!['positive', 'negative', 'neutral'].includes(parsed.sentiment)) {
@@ -444,7 +494,12 @@ Reglas de score: -1.0 a -0.3 = negative, -0.3 a +0.3 = neutral, +0.3 a +1.0 = po
     ];
 
     try {
-      const response = await this.chat(messages, { temperature: 0.4, jsonMode: true });
+      // Resumen de noticias = tarea liviana de alto volumen: Flash-Lite.
+      const response = await this.chat(messages, {
+        temperature: 0.4,
+        jsonMode: true,
+        model: GEMINI_MODEL_LITE,
+      });
       return this.parseJsonResponse(response);
     } catch {
       return {

@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Brain, Bot, AlertTriangle, MessageSquare, BarChart3, FileText, History, Coins, Loader2, ChevronDown, ChevronRight, Search } from 'lucide-react';
-import JuliaThinkingAnimation from '@/components/dashboard/JuliaThinkingAnimation';
 import SimpleChat from '@/components/dashboard/SimpleChat';
 import { CREDIT_COSTS } from '@/lib/credit-costs';
 import { useHasMentionsData } from '@/hooks/useHasMentionsData';
@@ -25,9 +24,6 @@ export default function JuliaPage() {
   const { user } = useUser();
   const { loading: hasDataLoading, hasConnections } = useHasMentionsData();
   const [activeTab, setActiveTab] = useState<JuliaTab>('chat');
-  const [neuralNetworkMode, setNeuralNetworkMode] = useState<'sentiment' | 'platform' | 'engagement'>('sentiment');
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [errorConexion, setErrorConexion] = useState(false);
   const firstName = user?.name ? user.name.split(' ')[0] : null;
 
   // Analisis states
@@ -46,11 +42,6 @@ export default function JuliaPage() {
   const [historyError, setHistoryError] = useState<string | null>(null);
   const [expandedConv, setExpandedConv] = useState<string | null>(null);
   const [historySearch, setHistorySearch] = useState('');
-
-  React.useEffect(() => {
-    const timer = setTimeout(() => setIsAnalyzing(false), 8000);
-    return () => clearTimeout(timer);
-  }, []);
 
   // Cargar historial cuando se abre el tab
   useEffect(() => {
@@ -244,73 +235,6 @@ export default function JuliaPage() {
       {/* Tab Content */}
       {activeTab === 'chat' && (
         <>
-          {/* Red Neuronal */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-            className="mb-6"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
-                <Sparkles className="mr-2 h-5 w-5 text-blue-500" />
-                Red Neuronal de Analisis
-              </h2>
-              <div className="flex items-center space-x-4">
-                <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
-                  {['sentiment', 'platform', 'engagement'].map((mode) => (
-                    <button
-                      key={mode}
-                      onClick={() => setNeuralNetworkMode(mode as any)}
-                      className={`px-3 py-1 text-xs rounded-md transition-all duration-200 ${
-                        neuralNetworkMode === mode
-                          ? 'bg-blue-500 text-white'
-                          : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
-                      }`}
-                    >
-                      {mode === 'sentiment' ? 'Sentimiento' : mode === 'platform' ? 'Plataforma' : 'Engagement'}
-                    </button>
-                  ))}
-                </div>
-                <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
-                  {isAnalyzing ? (
-                    <>
-                      <span className="relative flex h-3 w-3 mr-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
-                      </span>
-                      Analizando en tiempo real
-                    </>
-                  ) : (
-                    <>
-                      <div className="h-3 w-3 mr-2 rounded-full bg-green-500"></div>
-                      Analisis completado
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="card bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 p-0 overflow-hidden rounded-xl shadow-lg border border-blue-100 dark:border-gray-700 relative">
-              {errorConexion && (
-                <div className="absolute top-4 right-4 z-10 bg-red-100 dark:bg-red-900 border border-red-300 dark:border-red-700 rounded-lg p-2 flex items-center text-sm text-red-800 dark:text-red-200">
-                  <AlertTriangle className="h-4 w-4 mr-2" />
-                  Conexion limitada
-                </div>
-              )}
-              <div className="w-full" style={{ height: "500px" }}>
-                <JuliaThinkingAnimation
-                  particleCount={errorConexion ? 50 : 150}
-                  showMentions={!errorConexion}
-                  responsive={true}
-                  className="w-full h-full"
-                  title={isAnalyzing ? `Julia esta analizando ${neuralNetworkMode === 'sentiment' ? 'sentimientos' : neuralNetworkMode === 'platform' ? 'plataformas' : 'engagement'}` : 'Analisis completado'}
-                  subtitle={isAnalyzing ? "Procesando menciones y sentimientos en tiempo real" : `Red neuronal lista para analizar`}
-                />
-              </div>
-            </div>
-          </motion.div>
-
           {/* Chat con Julia IA */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}

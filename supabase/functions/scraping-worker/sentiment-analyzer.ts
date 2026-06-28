@@ -30,7 +30,10 @@ export class SentimentAnalyzer {
         { role: 'user', content: `Analiza el sentimiento de este texto:\n"${content}"` },
       ],
       {
+        // apiKey = key de Groq (fallback). Si el secret GEMINI_API_KEY existe,
+        // callGroq usa Gemini Flash-Lite (alto volumen) automáticamente.
         apiKey: this.groqApiKey,
+        model: 'gemini-2.5-flash-lite',
         temperature: GROQ_CONFIG.temperature,
         maxTokens: GROQ_CONFIG.max_tokens,
         jsonMode: true,
