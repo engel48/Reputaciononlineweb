@@ -172,14 +172,9 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
               {(menuOpen || menuHovered || isMobile) && 'Dashboard'}
             </Link>
 
-            <Link href="/dashboard/analisis" className={`group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${pathname === '/dashboard/analisis' ? 'bg-[#00E5FF]/15 text-[#00E5FF]' : 'text-gray-400 hover:bg-[#00E5FF]/10 hover:text-[#00E5FF]'}`}>
-              <BarChart3 className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 transition-colors ${pathname === '/dashboard/analisis' ? 'text-[#00E5FF]' : 'text-gray-500 group-hover:text-[#00E5FF]'}`} />
-              {(menuOpen || menuHovered || isMobile) && 'Análisis'}
-            </Link>
-
             <Link href="/dashboard/monitoreo" className={`group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${pathname === '/dashboard/monitoreo' || pathname.startsWith('/dashboard/monitoreo') ? 'bg-[#00E5FF]/15 text-[#00E5FF]' : 'text-gray-400 hover:bg-[#00E5FF]/10 hover:text-[#00E5FF]'}`}>
               <Radio className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 transition-colors ${pathname === '/dashboard/monitoreo' || pathname.startsWith('/dashboard/monitoreo') ? 'text-[#00E5FF]' : 'text-gray-500 group-hover:text-[#00E5FF]'}`} />
-              {(menuOpen || menuHovered || isMobile) && 'Monitoreo'}
+              {(menuOpen || menuHovered || isMobile) && 'Monitoreo y Análisis'}
             </Link>
 
             <Link href="/dashboard/audiencia" className={`group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${pathname === '/dashboard/audiencia' ? 'bg-[#00E5FF]/15 text-[#00E5FF]' : 'text-gray-400 hover:bg-[#00E5FF]/10 hover:text-[#00E5FF]'}`}>

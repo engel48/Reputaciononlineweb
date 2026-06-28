@@ -30,7 +30,10 @@ export function useHasMentionsData() {
 
         if (connRes?.ok) {
           const data = await connRes.json();
-          const networks = data?.connections || data?.data || data?.networks || [];
+          // /api/social-connect (GET) devuelve las conexiones bajo `socialConnections`
+          // (objeto { plataforma: { connected } }). Mantener los otros nombres por compat.
+          const networks =
+            data?.socialConnections || data?.connections || data?.data || data?.networks || [];
           const connected = Array.isArray(networks)
             ? networks.some((n: any) => n?.connected === true)
             : Object.values(networks || {}).some((n: any) => n?.connected === true);
