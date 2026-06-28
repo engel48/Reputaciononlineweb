@@ -126,6 +126,8 @@ class _DashboardBody extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
+        _ConnectedNetworks(d.social),
+        const SizedBox(height: 16),
         _SentimentCard(m),
         const SizedBox(height: 16),
         _SectionCard(
@@ -357,6 +359,103 @@ class _RecentTile extends StatelessWidget {
                 style: const TextStyle(color: AppColors.muted, fontSize: 11)),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Lista de redes conectadas en el home (estado + seguidores). Si no hay
+/// ninguna, invita a conectar.
+class _ConnectedNetworks extends StatelessWidget {
+  const _ConnectedNetworks(this.social);
+  final SocialSummary social;
+
+  @override
+  Widget build(BuildContext context) {
+    final connected = social.platforms.where((p) => p.connected).toList();
+    return _SectionCard(
+      title: 'Tus redes conectadas',
+      child: connected.isEmpty
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Todavía no conectaste ninguna red. Conectá tus cuentas para empezar a monitorear tu reputación.',
+                  style: TextStyle(color: AppColors.muted, fontSize: 13),
+                ),
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: () => context.push('/redes'),
+                  icon: const Icon(Icons.add_link),
+                  label: const Text('Conectar redes'),
+                ),
+              ],
+            )
+          : Column(
+              children: [
+                for (final p in connected) _NetRow(p),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    onPressed: () => context.push('/redes'),
+                    icon: const Icon(Icons.tune, size: 18),
+                    label: const Text('Administrar redes'),
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+}
+
+class _NetRow extends StatelessWidget {
+  const _NetRow(this.p);
+  final PlatformStat p;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = PlatformUi.color(p.platform);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 18,
+            backgroundColor: color.withValues(alpha: 0.14),
+            child: Icon(PlatformUi.icon(p.platform), color: color, size: 18),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(PlatformUi.label(p.platform),
+                    style: const TextStyle(fontWeight: FontWeight.w600)),
+                Text('${Fmt.compact(p.followers)} seguidores',
+                    style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: AppColors.success.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.check_circle, size: 14, color: AppColors.success),
+                SizedBox(width: 4),
+                Text('Conectado',
+                    style: TextStyle(
+                        color: AppColors.success,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600)),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
