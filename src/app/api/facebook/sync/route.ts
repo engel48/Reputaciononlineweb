@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { syncFacebookMentions } from '@/lib/social-sync/facebook';
+import { aggregateSyncResults } from '@/lib/social-sync';
 import { syncFailureResponse } from '@/lib/social-sync/sync-response';
 
 /**
@@ -24,26 +25,34 @@ export async function POST(request: NextRequest) {
     const body = await request.json().catch(() => ({}));
 
     const { supabase } = await import('@/lib/supabase-server');
-    const { data: social, error: socialErr } = await supabase
+    const { data: rows } = await supabase
       .from('social_media')
-      .select('access_token')
+      .select('id, access_token')
       .eq('user_id', userId)
-      .eq('platform', 'facebook')
-      .single();
+      .eq('platform', 'facebook');
 
-    if (socialErr || !social?.access_token) {
+    const accounts = (rows || []).filter((r) => r.access_token);
+    if (accounts.length === 0) {
       return NextResponse.json(
         { success: false, error: 'Facebook no está conectado' },
         { status: 400 }
       );
     }
 
-    const result = await syncFacebookMentions(userId, social.access_token, {
-      maxPosts: body.maxPosts,
-      maxCommentsPerPost: body.maxCommentsPerPost,
-      lookbackDays: body.lookbackDays,
-      maxExternalMentions: body.maxExternalMentions,
-    });
+    // Sincronizar TODAS las cuentas de Facebook del usuario (varias por plan).
+    const results: Awaited<ReturnType<typeof syncFacebookMentions>>[] = [];
+    for (const acc of accounts) {
+      results.push(
+        await syncFacebookMentions(userId, acc.access_token!, {
+          maxPosts: body.maxPosts,
+          maxCommentsPerPost: body.maxCommentsPerPost,
+          lookbackDays: body.lookbackDays,
+          maxExternalMentions: body.maxExternalMentions,
+          socialAccountId: acc.id,
+        })
+      );
+    }
+    const result = aggregateSyncResults(results);
 
     if (!result.success) {
       // Falla por configuración/permisos (p. ej. "no hay páginas vinculadas")

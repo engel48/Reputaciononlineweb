@@ -164,7 +164,7 @@ export async function syncFacebookMentions(
     result.followers = page.followers_count || page.fan_count || 0;
     result.engagement = avgEngagement;
 
-    await supabase
+    const fbMetrics = supabase
       .from('social_media')
       .update({
         connected: true,
@@ -172,9 +172,11 @@ export async function syncFacebookMentions(
         posts: posts.length,
         engagement: avgEngagement,
         last_sync: new Date().toISOString(),
-      })
-      .eq('user_id', userId)
-      .eq('platform', 'facebook');
+      });
+    // Escribir SOLO en la fila de esta cuenta si se conoce su id (multi-cuenta).
+    await (opts.socialAccountId
+      ? fbMetrics.eq('id', opts.socialAccountId)
+      : fbMetrics.eq('user_id', userId).eq('platform', 'facebook'));
 
     // Notificaciones automáticas si hay menciones nuevas relevantes
     const totalNew = result.mentions_created + result.external_mentions_created;

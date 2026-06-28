@@ -184,7 +184,7 @@ export async function syncInstagramMentions(
     const avgEngagement = posts.length > 0 ? engagementTotal / posts.length : 0;
     result.engagement = avgEngagement;
 
-    await supabase
+    const igMetrics = supabase
       .from('social_media')
       .update({
         connected: true,
@@ -192,9 +192,11 @@ export async function syncInstagramMentions(
         posts: posts.length || profileData.media_count || 0,
         engagement: avgEngagement,
         last_sync: new Date().toISOString(),
-      })
-      .eq('user_id', userId)
-      .eq('platform', 'instagram');
+      });
+    // Escribir SOLO en la fila de esta cuenta si se conoce su id (multi-cuenta).
+    await (opts.socialAccountId
+      ? igMetrics.eq('id', opts.socialAccountId)
+      : igMetrics.eq('user_id', userId).eq('platform', 'instagram'));
 
     const totalNew = result.mentions_created + result.external_mentions_created;
     if (totalNew > 0) {

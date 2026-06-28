@@ -155,7 +155,7 @@ export async function syncTwitterMentions(
     const avgEngagement = tweets.length > 0 ? (likesTotal + retweetsTotal) / tweets.length : 0;
     result.engagement = avgEngagement;
 
-    await supabase
+    const xMetrics = supabase
       .from('social_media')
       .update({
         connected: true,
@@ -163,9 +163,11 @@ export async function syncTwitterMentions(
         posts: tweets.length,
         engagement: avgEngagement,
         last_sync: new Date().toISOString(),
-      })
-      .eq('user_id', userId)
-      .eq('platform', 'x');
+      });
+    // Escribir SOLO en la fila de esta cuenta si se conoce su id (multi-cuenta).
+    await (opts.socialAccountId
+      ? xMetrics.eq('id', opts.socialAccountId)
+      : xMetrics.eq('user_id', userId).eq('platform', 'x'));
 
     const totalNew = result.mentions_created + result.external_mentions_created;
     if (totalNew > 0) {

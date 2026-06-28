@@ -103,6 +103,8 @@ export async function POST(request: NextRequest) {
             maxCommentsPerPost: 25,
             lookbackDays: 7,
             maxExternalMentions: 25,
+            // Escribir métricas SOLO en esta fila (soporta varias cuentas por red).
+            socialAccountId: r.id,
           })
         )
       );

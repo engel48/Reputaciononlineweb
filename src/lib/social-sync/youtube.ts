@@ -169,7 +169,7 @@ export async function syncYoutubeMentions(
       totalViews > 0 ? ((totalLikes + totalComments) / totalViews) * 100 : 0;
     result.engagement = engagementRate;
 
-    await supabase
+    const ytMetrics = supabase
       .from('social_media')
       .update({
         connected: true,
@@ -177,9 +177,11 @@ export async function syncYoutubeMentions(
         posts: parseInt(channel.statistics?.videoCount || '0', 10),
         engagement: engagementRate,
         last_sync: new Date().toISOString(),
-      })
-      .eq('user_id', userId)
-      .eq('platform', 'youtube');
+      });
+    // Escribir SOLO en la fila de esta cuenta si se conoce su id (multi-cuenta).
+    await (opts.socialAccountId
+      ? ytMetrics.eq('id', opts.socialAccountId)
+      : ytMetrics.eq('user_id', userId).eq('platform', 'youtube'));
 
     const totalNew = result.mentions_created + result.external_mentions_created;
     if (totalNew > 0) {
