@@ -5,6 +5,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/theme_mode_provider.dart';
 import '../../data/api/api_client.dart';
 import '../auth/auth_controller.dart';
+import '../auth/biometric.dart';
 
 class AjustesScreen extends ConsumerWidget {
   const AjustesScreen({super.key});
@@ -12,6 +13,9 @@ class AjustesScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final mode = ref.watch(themeModeProvider);
+    final bioAvailable =
+        ref.watch(biometricAvailableProvider).asData?.value ?? false;
+    final bioEnabled = ref.watch(biometricEnabledProvider);
     return Scaffold(
       appBar: AppBar(title: const Text('Ajustes')),
       body: ListView(
@@ -54,16 +58,46 @@ class AjustesScreen extends ConsumerWidget {
           const SizedBox(height: 20),
           _section(context, 'Seguridad'),
           Card(
-            child: ListTile(
-              leading: const Icon(Icons.lock_outline, color: AppColors.cyanHover),
-              title: const Text('Cambiar contraseña'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => _openChangePassword(context),
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.lock_outline,
+                      color: AppColors.cyanHover),
+                  title: const Text('Cambiar contraseña'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => _openChangePassword(context),
+                ),
+                if (bioAvailable) ...[
+                  const Divider(height: 1),
+                  SwitchListTile(
+                    secondary: const Icon(Icons.fingerprint,
+                        color: AppColors.cyanHover),
+                    title: const Text('Desbloqueo biométrico'),
+                    subtitle:
+                        const Text('Pedir huella o Face ID al abrir la app'),
+                    value: bioEnabled,
+                    onChanged: (v) => _toggleBiometric(context, ref, v),
+                  ),
+                ],
+              ],
             ),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _toggleBiometric(
+      BuildContext context, WidgetRef ref, bool value) async {
+    if (value) {
+      final ok = await ref.read(biometricServiceProvider).authenticate(
+          'Confirmá para activar el desbloqueo biométrico');
+      if (!ok) return; // no se pudo verificar → no activar
+      await ref.read(biometricEnabledProvider.notifier).set(true);
+      ref.read(biometricUnlockedProvider.notifier).unlock();
+    } else {
+      await ref.read(biometricEnabledProvider.notifier).set(false);
+    }
   }
 
   Widget _section(BuildContext context, String title) => Padding(

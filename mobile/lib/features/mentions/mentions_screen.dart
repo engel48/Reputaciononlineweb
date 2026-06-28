@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -158,11 +159,23 @@ class _MentionTile extends StatelessWidget {
   const _MentionTile(this.m);
   final Mention m;
 
+  void _showDetail(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => _MentionDetail(m),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
-      child: Padding(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => _showDetail(context),
+        child: Padding(
         padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -213,6 +226,7 @@ class _MentionTile extends StatelessWidget {
             ),
           ],
         ),
+        ),
       ),
     );
   }
@@ -225,4 +239,117 @@ class _MentionTile extends StatelessWidget {
               style: const TextStyle(color: AppColors.muted, fontSize: 12)),
         ],
       );
+}
+
+/// Detalle completo de una mención (bottom sheet): contenido sin recortar,
+/// métricas y acción de copiar.
+class _MentionDetail extends StatelessWidget {
+  const _MentionDetail(this.m);
+  final Mention m;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = PlatformUi.color(m.platform);
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+          20, 4, 20, 20 + MediaQuery.of(context).padding.bottom),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 18,
+                backgroundColor: color.withValues(alpha: 0.15),
+                child: Icon(PlatformUi.icon(m.platform), color: color, size: 18),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(m.author,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontWeight: FontWeight.w700)),
+                        ),
+                        if (m.verified)
+                          const Padding(
+                            padding: EdgeInsets.only(left: 4),
+                            child: Icon(Icons.verified,
+                                size: 15, color: AppColors.cyanHover),
+                          ),
+                      ],
+                    ),
+                    Text(
+                      PlatformUi.label(m.platform) +
+                          (m.location.isNotEmpty ? ' · ${m.location}' : ''),
+                      style: const TextStyle(color: AppColors.muted, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+              SentimentChip(m.sentiment),
+            ],
+          ),
+          const SizedBox(height: 16),
+          SelectableText(m.content,
+              style: const TextStyle(fontSize: 15, height: 1.45)),
+          const SizedBox(height: 18),
+          Row(
+            children: [
+              _DetailStat(Icons.favorite_border, m.likes, 'Me gusta'),
+              _DetailStat(Icons.chat_bubble_outline, m.comments, 'Comentarios'),
+              _DetailStat(Icons.repeat, m.shares, 'Compartidos'),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(Fmt.relative(m.timestamp),
+              style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+          const SizedBox(height: 18),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.tonalIcon(
+              onPressed: () {
+                Clipboard.setData(ClipboardData(text: m.content));
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Texto copiado')),
+                );
+              },
+              icon: const Icon(Icons.copy_outlined),
+              label: const Text('Copiar texto'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DetailStat extends StatelessWidget {
+  const _DetailStat(this.icon, this.value, this.label);
+  final IconData icon;
+  final int value;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Column(
+        children: [
+          Icon(icon, size: 18, color: AppColors.cyanHover),
+          const SizedBox(height: 4),
+          Text(Fmt.compact(value),
+              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+          Text(label,
+              style: const TextStyle(color: AppColors.muted, fontSize: 11)),
+        ],
+      ),
+    );
+  }
 }

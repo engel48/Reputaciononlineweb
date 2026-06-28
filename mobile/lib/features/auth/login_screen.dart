@@ -6,6 +6,7 @@ import '../../core/theme/app_colors.dart';
 import '../../data/api/api_client.dart';
 import '../../shared/widgets/auth_header.dart';
 import 'auth_controller.dart';
+import 'biometric.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -40,6 +41,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             _email.text.trim(),
             _password.text,
           );
+      // Login con contraseña recién hecho → no pedir biometría encima.
+      ref.read(biometricUnlockedProvider.notifier).unlock();
       // El router redirige a /home automáticamente al cambiar el estado de auth.
     } on ApiException catch (e) {
       setState(() => _error = e.message);

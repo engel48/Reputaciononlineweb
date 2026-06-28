@@ -104,6 +104,10 @@ class _DashboardBody extends StatelessWidget {
       children: [
         _ReputationCard(d.reputation),
         const SizedBox(height: 16),
+        if (d.social.connected > 0 && m.total == 0) ...[
+          const _WaitingDataBanner(),
+          const SizedBox(height: 16),
+        ],
         Row(
           children: [
             Expanded(
@@ -359,6 +363,54 @@ class _RecentTile extends StatelessWidget {
                 style: const TextStyle(color: AppColors.muted, fontSize: 11)),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Aviso para cuando hay redes conectadas pero todavía no llegan datos
+/// (típico mientras Meta aprueba el acceso). Evita que el usuario crea que
+/// la app está rota al ver todo en 0.
+class _WaitingDataBanner extends StatelessWidget {
+  const _WaitingDataBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.cyan.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.cyan.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: AppColors.cyan.withValues(alpha: 0.18),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.sync, color: AppColors.cyanHover, size: 22),
+          ),
+          const SizedBox(width: 14),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Estamos trayendo tus datos',
+                    style: TextStyle(fontWeight: FontWeight.w700)),
+                SizedBox(height: 2),
+                Text(
+                  'Tus redes están conectadas. En cuanto se habilite el acceso, vas a ver acá tus menciones y métricas en tiempo real.',
+                  style: TextStyle(
+                      color: AppColors.muted, fontSize: 12.5, height: 1.35),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -6,6 +6,7 @@ import '../../core/theme/app_colors.dart';
 import '../../data/api/api_client.dart';
 import '../../shared/widgets/auth_header.dart';
 import 'auth_controller.dart';
+import 'biometric.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -56,6 +57,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             plan: _plan,
             profileType: _profileType,
           );
+      ref.read(biometricUnlockedProvider.notifier).unlock();
       if (res.requiresEmailVerification && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Te enviamos un código de verificación a tu email.'),

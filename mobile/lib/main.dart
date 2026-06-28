@@ -7,6 +7,7 @@ import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_mode_provider.dart';
 import 'features/app_gate/app_gate.dart';
+import 'features/auth/biometric_gate.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,7 +31,9 @@ class ReputacionApp extends ConsumerWidget {
       darkTheme: AppTheme.dark,
       themeMode: ref.watch(themeModeProvider),
       routerConfig: router,
-      builder: (context, child) => AppGate(child: child ?? const SizedBox.shrink()),
+      builder: (context, child) => AppGate(
+        child: BiometricGate(child: child ?? const SizedBox.shrink()),
+      ),
     );
   }
 }
