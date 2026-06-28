@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Brain, Send, User } from 'lucide-react';
 import { emitCreditsChanged } from '@/lib/credit-events';
 import { useUser } from '@/context/UserContext';
+import { cleanJuliaText } from '@/lib/format-julia';
 
 interface Mensaje {
   id: string;
@@ -199,7 +200,7 @@ export default function SimpleChat() {
                   ? 'bg-[#01257D] text-white rounded-br-none'
                   : 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white rounded-bl-none border border-gray-200 dark:border-gray-500'
               }`}>
-                <p className="text-sm whitespace-pre-wrap">{mensaje.texto}</p>
+                <p className="text-sm whitespace-pre-wrap">{mensaje.esUsuario ? mensaje.texto : cleanJuliaText(mensaje.texto)}</p>
                 <p className={`text-xs mt-1 ${
                   mensaje.esUsuario ? 'text-blue-100' : 'text-gray-500 dark:text-gray-400'
                 }`}>

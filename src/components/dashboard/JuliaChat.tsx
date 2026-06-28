@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Send, User, Sparkles, RefreshCw, X, Minimize2, Maximize2, Volume2, VolumeX, Coins, Brain, AlertTriangle, FileText } from 'lucide-react';
 import { emitCreditsChanged } from '@/lib/credit-events';
+import { cleanJuliaText } from '@/lib/format-julia';
 import { useUser } from '@/context/UserContext';
 
 /** Isotipo de marca (Reputación Online) — avatar de Julia, en vez del ícono genérico. */
@@ -401,7 +402,7 @@ export default function JuliaChat() {
                       </div>
                     ) : (
                       <>
-                        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                        <p className="text-sm whitespace-pre-wrap">{message.sender === 'user' ? message.content : cleanJuliaText(message.content)}</p>
                         <p className={`text-xs mt-1 ${
                           message.sender === 'user' ? 'text-blue-100' : 'text-gray-500 dark:text-gray-400'
                         }`}>

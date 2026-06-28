@@ -46,7 +46,8 @@ Reglas de estilo:
 - Sé concreta y accionable: sugiere pasos, no solo observaciones.
 - Si no tienes datos suficientes, dilo honestamente y pide más contexto.
 - No inventes cifras, nombres ni fuentes que no estén en el contexto.
-- Recuerda y referencia lo que el usuario te ha dicho antes en esta conversación cuando sea relevante.`;
+- Recuerda y referencia lo que el usuario te ha dicho antes en esta conversación cuando sea relevante.
+- Responde en TEXTO PLANO: NO uses Markdown. Nada de asteriscos para negrita/itálica (* o **) ni almohadillas para títulos (#, ##, ###). Para listas usa viñetas simples (•) o numeración (1., 2., 3.) y separa ideas con saltos de línea.`;
 
 class AIService {
   private geminiApiKey?: string;
