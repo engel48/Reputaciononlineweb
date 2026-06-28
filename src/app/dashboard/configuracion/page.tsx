@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Settings, Bell, Shield, Globe, User, Save, Check } from 'lucide-react';
+import { Settings, Bell, Shield, Globe, User, Save, Check, ExternalLink } from 'lucide-react';
 import { useUser } from '@/context/UserContext';
+import { useTheme } from '@/hooks/useTheme';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -34,6 +35,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
 
 export default function ConfiguracionPage() {
   const { user } = useUser();
+  const { theme, setTheme } = useTheme();
   const [saved, setSaved] = useState(false);
   const [notificaciones, setNotificaciones] = useState({
     email: true,
@@ -49,10 +51,28 @@ export default function ConfiguracionPage() {
   });
 
   const [idioma, setIdioma] = useState('es');
-  const [tema, setTema] = useState('light');
+
+  // Cargar preferencias guardadas (localStorage).
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('user_prefs');
+      if (raw) {
+        const p = JSON.parse(raw);
+        if (p.notificaciones) setNotificaciones((prev) => ({ ...prev, ...p.notificaciones }));
+        if (p.privacidad) setPrivacidad((prev) => ({ ...prev, ...p.privacidad }));
+        if (p.idioma) setIdioma(p.idioma);
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   const handleGuardar = () => {
-    console.log('Configuraciones guardadas:', { notificaciones, privacidad, idioma, tema });
+    try {
+      localStorage.setItem('user_prefs', JSON.stringify({ notificaciones, privacidad, idioma }));
+    } catch {
+      /* ignore */
+    }
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
   };
@@ -187,8 +207,8 @@ export default function ConfiguracionPage() {
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tema</label>
               <select
-                value={tema}
-                onChange={(e) => setTema(e.target.value)}
+                value={theme}
+                onChange={(e) => setTheme(e.target.value as 'light' | 'dark' | 'auto')}
                 className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#01257D] focus:border-transparent dark:bg-gray-700 dark:text-white text-sm"
               >
                 <option value="light">Claro</option>
@@ -234,6 +254,29 @@ export default function ConfiguracionPage() {
           </div>
         </motion.div>
       </div>
+
+      {/* Privacidad y datos */}
+      <motion.div
+        variants={itemVariants}
+        className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6"
+      >
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <div className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700">
+            <Shield className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+          </div>
+          Privacidad y datos
+        </h2>
+        <div className="flex flex-wrap gap-3">
+          <a
+            href="/politica-de-privacidad"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm rounded-lg border border-[#01257D] text-[#01257D] dark:text-[#00E5FF] dark:border-[#00E5FF] hover:bg-[#01257D]/5 transition-colors"
+          >
+            <ExternalLink className="w-4 h-4" /> Ver política de privacidad
+          </a>
+        </div>
+      </motion.div>
 
       {/* Boton guardar */}
       <motion.div

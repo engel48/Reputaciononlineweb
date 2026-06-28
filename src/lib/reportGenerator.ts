@@ -39,22 +39,83 @@ interface SampleData {
   };
 }
 
-// ❌ DATOS DE EJEMPLO ELIMINADOS - Los reportes ahora usan datos REALES del usuario
-// Si no hay datos, se debe mostrar un mensaje al usuario indicando que no hay información disponible
-const getSampleData = (): SampleData => {
-  // Retornar estructura vacía - El sistema debe obtener datos reales de la base de datos
-  console.warn('⚠️ getSampleData() llamado - Los reportes deben usar datos reales del usuario');
-  return {
-    consumoCreditos: [],
-    resumenCanales: [],
-    estadisticas: {
-      totalConsumo: 0,
-      promedioDiario: 0,
-      diaMayorConsumo: { fecha: 'N/A', consumo: 0 },
-      crecimiento: '0%'
-    }
-  };
+const EMPTY_DATA: SampleData = {
+  consumoCreditos: [],
+  resumenCanales: [],
+  estadisticas: {
+    totalConsumo: 0,
+    promedioDiario: 0,
+    diaMayorConsumo: { fecha: 'N/A', consumo: 0 },
+    crecimiento: '0%',
+  },
 };
+
+// Cache de datos REALES que llena generateAndDownload antes de generar el reporte.
+// Los métodos de formato leen vía getSampleData(); si no se cargó, devuelven vacío.
+let realReportData: SampleData | null = null;
+
+const getSampleData = (): SampleData => realReportData || EMPTY_DATA;
+
+/**
+ * Trae el consumo REAL de créditos del usuario desde /api/credits y lo agrupa
+ * por fecha+canal y por canal. Si no hay consumo, devuelve estructura vacía
+ * (el reporte mostrará ceros honestos en vez de datos inventados).
+ */
+async function fetchRealReportData(): Promise<SampleData> {
+  try {
+    const res = await fetch('/api/credits', { credentials: 'include' });
+    if (!res.ok) return EMPTY_DATA;
+    const json = await res.json();
+    const txs: any[] = json?.data?.transactions || [];
+    const usage = txs.filter((t) => t?.type === 'usage'); // consumo (amount negativo)
+    if (usage.length === 0) return EMPTY_DATA;
+
+    // consumoCreditos: agrupado por fecha + canal (related_entity).
+    const byKey = new Map<string, ConsumoCredito>();
+    for (const t of usage) {
+      const fecha = new Date(t.created_at).toISOString().split('T')[0];
+      const canal = t.related_entity || t.description || 'general';
+      const consumo = Math.abs(t.amount || 0);
+      const key = `${fecha}__${canal}`;
+      const prev = byKey.get(key);
+      if (prev) prev.consumo += consumo;
+      else byKey.set(key, { fecha, consumo, canal });
+    }
+    const consumoCreditos = Array.from(byKey.values()).sort((a, b) => a.fecha.localeCompare(b.fecha));
+    const totalConsumo = consumoCreditos.reduce((s, c) => s + c.consumo, 0);
+
+    // resumenCanales: agrupado por canal con porcentaje.
+    const byCanal = new Map<string, number>();
+    for (const c of consumoCreditos) byCanal.set(c.canal, (byCanal.get(c.canal) || 0) + c.consumo);
+    const resumenCanales: ResumenCanal[] = Array.from(byCanal.entries())
+      .map(([canal, consumo]) => ({
+        canal,
+        consumo,
+        porcentaje: totalConsumo > 0 ? Math.round((consumo / totalConsumo) * 100) : 0,
+      }))
+      .sort((a, b) => b.consumo - a.consumo);
+
+    const dias = new Set(consumoCreditos.map((c) => c.fecha)).size || 1;
+    const diaMayorConsumo = consumoCreditos.reduce(
+      (max, c) => (c.consumo > max.consumo ? { fecha: c.fecha, consumo: c.consumo } : max),
+      { fecha: 'N/A', consumo: 0 }
+    );
+
+    return {
+      consumoCreditos,
+      resumenCanales,
+      estadisticas: {
+        totalConsumo,
+        promedioDiario: Math.round(totalConsumo / dias),
+        diaMayorConsumo,
+        crecimiento: '0%',
+      },
+    };
+  } catch (e) {
+    console.error('[reportGenerator] error trayendo datos reales:', e);
+    return EMPTY_DATA;
+  }
+}
 
 export class ReportGenerator {
   // Generar reporte en formato CSV
@@ -445,6 +506,8 @@ export class ReportGenerator {
     const timestamp = new Date().toISOString().split('T')[0];
     const filename = `reporte-${data.tipo}-${timestamp}`;
 
+    // Cargar el consumo REAL del usuario antes de generar (lo leen los métodos de formato).
+    realReportData = await fetchRealReportData();
     try {
       switch (data.formato) {
         case 'csv':
@@ -467,6 +530,8 @@ export class ReportGenerator {
     } catch (error) {
       console.error('Error generando reporte:', error);
       throw error;
+    } finally {
+      realReportData = null;
     }
   }
 
