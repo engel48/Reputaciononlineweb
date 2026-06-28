@@ -70,15 +70,24 @@ class EmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(28),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 44, color: AppColors.muted),
-            const SizedBox(height: 12),
+            Container(
+              width: 84,
+              height: 84,
+              decoration: BoxDecoration(
+                color: AppColors.cyan.withValues(alpha: 0.10),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 40, color: AppColors.cyanHover),
+            ),
+            const SizedBox(height: 18),
             Text(message,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: AppColors.muted)),
+                style: const TextStyle(
+                    color: AppColors.muted, fontSize: 14, height: 1.4)),
           ],
         ),
       ),

@@ -34,11 +34,21 @@ class MentionsScreen extends ConsumerWidget {
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
                   child: ChoiceChip(
-                    label: Text(f == null ? 'Todas' : PlatformUi.label(f)),
+                    label: Text(
+                      f == null ? 'Todas' : PlatformUi.label(f),
+                      style: TextStyle(
+                        color: isSel ? AppColors.accentNavy : Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
                     selected: isSel,
+                    showCheckmark: false,
                     onSelected: (_) =>
                         ref.read(mentionPlatformFilter.notifier).set(f),
-                    selectedColor: AppColors.cyan.withValues(alpha: 0.2),
+                    backgroundColor: Colors.white.withValues(alpha: 0.16),
+                    selectedColor: AppColors.cyan,
+                    side: BorderSide.none,
                   ),
                 );
               }).toList(),
@@ -52,13 +62,7 @@ class MentionsScreen extends ConsumerWidget {
           value: async,
           onRetry: () => ref.invalidate(mentionsProvider),
           data: (items) => items.isEmpty
-              ? ListView(children: const [
-                  SizedBox(height: 120),
-                  EmptyState(
-                    icon: Icons.hearing_disabled,
-                    message: 'Sin menciones en los últimos 7 días.',
-                  ),
-                ])
+              ? const _EmptyMentions()
               : ListView.builder(
                   padding: const EdgeInsets.all(16),
                   itemCount: items.length,
@@ -66,6 +70,74 @@ class MentionsScreen extends ConsumerWidget {
                 ),
         ),
       ),
+    );
+  }
+}
+
+class _EmptyMentions extends StatelessWidget {
+  const _EmptyMentions();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(28, 90, 28, 28),
+      children: [
+        Center(
+          child: Container(
+            width: 92,
+            height: 92,
+            decoration: BoxDecoration(
+              gradient: AppColors.brandGradient,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.accentNavy.withValues(alpha: 0.28),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: const Icon(Icons.forum_outlined, color: Colors.white, size: 42),
+          ),
+        ),
+        const SizedBox(height: 22),
+        Text(
+          'Todavía no hay menciones',
+          textAlign: TextAlign.center,
+          style: Theme.of(context)
+              .textTheme
+              .titleLarge
+              ?.copyWith(fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 10),
+        const Text(
+          'Cuando se detecten comentarios o publicaciones sobre vos en tus redes, vas a verlos acá con su sentimiento y engagement.',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: AppColors.muted, fontSize: 14, height: 1.4),
+        ),
+        const SizedBox(height: 16),
+        Center(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppColors.cyan.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.swipe_down, size: 16, color: AppColors.cyanHover),
+                SizedBox(width: 6),
+                Text('Deslizá para actualizar',
+                    style: TextStyle(
+                        color: AppColors.cyanHover,
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600)),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

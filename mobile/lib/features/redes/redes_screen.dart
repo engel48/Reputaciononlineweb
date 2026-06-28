@@ -80,46 +80,119 @@ class _PlatformCard extends ConsumerWidget {
     final connected = stat?.connected == true;
     final color = PlatformUi.color(iconKey);
     return Card(
-      margin: const EdgeInsets.only(bottom: 10),
+      margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Row(
+        padding: const EdgeInsets.all(16),
+        child: Column(
           children: [
-            CircleAvatar(
-              backgroundColor: color.withValues(alpha: 0.15),
-              child: Icon(PlatformUi.icon(iconKey), color: color),
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 22,
+                  backgroundColor: color.withValues(alpha: 0.15),
+                  child: Icon(PlatformUi.icon(iconKey), color: color),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(label,
+                          style: const TextStyle(
+                              fontWeight: FontWeight.w700, fontSize: 15)),
+                      const SizedBox(height: 3),
+                      Row(
+                        children: [
+                          Icon(
+                              connected
+                                  ? Icons.check_circle
+                                  : Icons.remove_circle_outline,
+                              size: 14,
+                              color: connected
+                                  ? AppColors.success
+                                  : AppColors.muted),
+                          const SizedBox(width: 4),
+                          Text(connected ? 'Conectada' : 'No conectada',
+                              style: TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: connected
+                                      ? AppColors.success
+                                      : AppColors.muted)),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                connected
+                    ? OutlinedButton.icon(
+                        onPressed: () => _connect(context, ref),
+                        icon: const Icon(Icons.refresh, size: 16),
+                        label: const Text('Reconectar'),
+                        style: OutlinedButton.styleFrom(
+                          visualDensity: VisualDensity.compact,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          minimumSize: const Size(0, 38),
+                        ),
+                      )
+                    : FilledButton(
+                        onPressed: () => _connect(context, ref),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppColors.cyan,
+                          foregroundColor: AppColors.accentNavy,
+                        ),
+                        child: const Text('Conectar'),
+                      ),
+              ],
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            if (connected) ...[
+              const SizedBox(height: 14),
+              Row(
                 children: [
-                  Text(label, style: const TextStyle(fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 2),
-                  Text(
-                    connected
-                        ? '${Fmt.compact(stat?.followers ?? 0)} seguidores · conectada'
-                        : 'No conectada',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: connected ? AppColors.success : AppColors.muted,
-                    ),
+                  Expanded(
+                    child: _metric('Seguidores',
+                        Fmt.compact(stat?.followers ?? 0), Icons.group_outlined, color),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _metric(
+                        'Engagement',
+                        '${(stat?.engagement ?? 0).toStringAsFixed(1)}%',
+                        Icons.bolt_outlined,
+                        AppColors.cyanHover),
                   ),
                 ],
               ),
-            ),
-            connected
-                ? const Icon(Icons.check_circle, color: AppColors.success)
-                : FilledButton(
-                    onPressed: () => _connect(context, ref),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: AppColors.cyan,
-                      foregroundColor: AppColors.accentNavy,
-                    ),
-                    child: const Text('Conectar'),
-                  ),
+            ],
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _metric(String label, String value, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: color),
+          const SizedBox(width: 8),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(value,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w800, fontSize: 15)),
+              Text(label,
+                  style: const TextStyle(color: AppColors.muted, fontSize: 11)),
+            ],
+          ),
+        ],
       ),
     );
   }

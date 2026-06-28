@@ -38,11 +38,11 @@ class DashboardScreen extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: Chip(
-              avatar: const Icon(Icons.bolt, size: 18, color: Colors.white),
+              avatar: const Icon(Icons.bolt, size: 18, color: AppColors.accentNavy),
               label: Text('${user?.credits ?? 0}',
                   style: const TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.w700)),
-              backgroundColor: Colors.white.withValues(alpha: 0.22),
+                      color: AppColors.accentNavy, fontWeight: FontWeight.w800)),
+              backgroundColor: Colors.white,
               side: BorderSide.none,
             ),
           ),
