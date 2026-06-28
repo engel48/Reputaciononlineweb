@@ -12,6 +12,17 @@ import { EmptyMentionsState } from '@/components/ui/EmptyMentionsState';
 import { useHasMentionsData } from '@/hooks/useHasMentionsData';
 import FeatureGate from '@/components/plan/FeatureGate';
 import AnalisisPage from '@/app/dashboard/analisis/page';
+import dynamic from 'next/dynamic';
+
+// Mapa geográfico de menciones (lazy, sin SSR — usa Leaflet/OpenStreetMap, sin tokens).
+const DynamicMencionesMap = dynamic(() => import('@/components/dashboard/MencionesMap'), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[400px] w-full flex items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-md">
+      <div className="text-gray-500 dark:text-gray-400">Cargando mapa...</div>
+    </div>
+  ),
+});
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -130,6 +141,11 @@ export default function MonitoreoPage() {
               <FeatureGate feature="hasMediaCoverage">
                 <MediaMonitoring userProfile={userProfile} />
               </FeatureGate>
+            </motion.section>
+
+            {/* Mapa geográfico de menciones */}
+            <motion.section variants={itemVariants} className="mt-8">
+              <DynamicMencionesMap />
             </motion.section>
           </>
         ) : (

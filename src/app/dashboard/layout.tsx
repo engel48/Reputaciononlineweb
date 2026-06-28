@@ -197,14 +197,9 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
               {(menuOpen || menuHovered || isMobile) && 'Julia IA'}
             </Link>
 
-            <Link href="/dashboard/busqueda-noticias" className={`group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${pathname === '/dashboard/busqueda-noticias' ? 'bg-[#00E5FF]/15 text-[#00E5FF]' : 'text-gray-400 hover:bg-[#00E5FF]/10 hover:text-[#00E5FF]'}`}>
-              <Search className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 transition-colors ${pathname === '/dashboard/busqueda-noticias' ? 'text-[#00E5FF]' : 'text-gray-500 group-hover:text-[#00E5FF]'}`} />
-              {(menuOpen || menuHovered || isMobile) && 'Búsqueda y Noticias'}
-            </Link>
-
-            <Link href="/dashboard/busqueda-personas" className={`group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${pathname === '/dashboard/busqueda-personas' ? 'bg-[#00E5FF]/15 text-[#00E5FF]' : 'text-gray-400 hover:bg-[#00E5FF]/10 hover:text-[#00E5FF]'}`}>
-              <Target className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 transition-colors ${pathname === '/dashboard/busqueda-personas' ? 'text-[#00E5FF]' : 'text-gray-500 group-hover:text-[#00E5FF]'}`} />
-              {(menuOpen || menuHovered || isMobile) && 'Búsqueda de Personas'}
+            <Link href="/dashboard/busqueda-noticias" className={`group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${pathname === '/dashboard/busqueda-noticias' || pathname === '/dashboard/busqueda-personas' ? 'bg-[#00E5FF]/15 text-[#00E5FF]' : 'text-gray-400 hover:bg-[#00E5FF]/10 hover:text-[#00E5FF]'}`}>
+              <Search className={`${(menuOpen || menuHovered || isMobile) ? 'mr-3' : 'mx-auto'} h-5 w-5 transition-colors ${pathname === '/dashboard/busqueda-noticias' || pathname === '/dashboard/busqueda-personas' ? 'text-[#00E5FF]' : 'text-gray-500 group-hover:text-[#00E5FF]'}`} />
+              {(menuOpen || menuHovered || isMobile) && 'Búsqueda'}
             </Link>
 
             <Link href="/dashboard/creditos/reportes" className={`group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${pathname === '/dashboard/creditos/reportes' ? 'bg-[#00E5FF]/15 text-[#00E5FF]' : 'text-gray-400 hover:bg-[#00E5FF]/10 hover:text-[#00E5FF]'}`}>
