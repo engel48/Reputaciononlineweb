@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-// Crear cliente Supabase
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-);
+import { supabase } from '@/lib/supabase-server';
+import { requireAuth } from '@/lib/auth-helper';
 
 interface UnifiedResult {
   id: string;
@@ -30,13 +25,18 @@ interface UnifiedResult {
 
 export async function GET(request: NextRequest) {
   try {
+    // Aislamiento multiusuario: exigir sesión y filtrar SIEMPRE por el userId
+    // del token verificado. Nunca confiar en un userId que venga por query.
+    const auth = await requireAuth(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
+
     const { searchParams } = new URL(request.url);
     const query = searchParams.get('query') || '';
     const type = searchParams.get('type') || 'all'; // all, news, social, hashtags
     const platform = searchParams.get('platform'); // facebook, instagram, x, youtube, etc.
     const sentiment = searchParams.get('sentiment'); // positive, negative, neutral
     const limit = parseInt(searchParams.get('limit') || '50');
-    const userId = searchParams.get('userId');
 
     console.log('🔍 UNIFIED SEARCH API:', { query, type, platform, sentiment, limit });
 
@@ -59,9 +59,8 @@ export async function GET(request: NextRequest) {
           newsQuery = newsQuery.eq('sentiment', sentiment);
         }
 
-        if (userId) {
-          newsQuery = newsQuery.eq('user_id', userId);
-        }
+        // Aislamiento: solo noticias del usuario autenticado
+        newsQuery = newsQuery.eq('user_id', userId);
 
         const { data: newsData, error: newsError } = await newsQuery;
 
@@ -113,9 +112,8 @@ export async function GET(request: NextRequest) {
           socialQuery = socialQuery.eq('sentiment', sentiment);
         }
 
-        if (userId) {
-          socialQuery = socialQuery.eq('user_id', userId);
-        }
+        // Aislamiento: solo menciones del usuario autenticado
+        socialQuery = socialQuery.eq('user_id', userId);
 
         const { data: socialData, error: socialError } = await socialQuery;
 
@@ -163,9 +161,8 @@ export async function GET(request: NextRequest) {
           hashtagQuery = hashtagQuery.ilike('hashtag', `%${cleanQuery}%`);
         }
 
-        if (userId) {
-          hashtagQuery = hashtagQuery.eq('user_id', userId);
-        }
+        // Aislamiento: solo hashtags del usuario autenticado
+        hashtagQuery = hashtagQuery.eq('user_id', userId);
 
         const { data: hashtagData, error: hashtagError } = await hashtagQuery;
 

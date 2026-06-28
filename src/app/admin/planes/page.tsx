@@ -134,12 +134,19 @@ export default function PlanesPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
-    const newValue =
+    let newValue: string | number | boolean =
       type === 'checkbox'
         ? (e.target as HTMLInputElement).checked
         : type === 'number'
         ? parseInt(value, 10) || 0
         : value;
+    // Tope duro de cuentas: la plataforma no soporta más de 3 por usuario
+    if (name === 'maxSocialAccounts' && typeof newValue === 'number') {
+      newValue = Math.min(3, Math.max(0, newValue));
+    }
+    if (name === 'maxAccountsPerPlatform' && typeof newValue === 'number') {
+      newValue = Math.min(3, Math.max(1, newValue));
+    }
     setForm((prev) => ({ ...prev, [name]: newValue }));
   };
 
@@ -503,13 +510,14 @@ export default function PlanesPage() {
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-600">Max cuentas sociales*</label>
+                  <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-600">Max cuentas sociales* (máx 3)</label>
                   <input
                     type="number"
                     name="maxSocialAccounts"
                     value={form.maxSocialAccounts}
                     onChange={handleInputChange}
                     min={0}
+                    max={3}
                     className="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-100 dark:text-gray-900 p-2 text-sm"
                     required
                   />
@@ -529,16 +537,17 @@ export default function PlanesPage() {
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-600">Máx. cuentas por red social</label>
+                <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-600">Máx. cuentas por red social (máx 3)</label>
                 <input
                   type="number"
                   name="maxAccountsPerPlatform"
                   value={form.maxAccountsPerPlatform}
                   onChange={handleInputChange}
                   min={1}
+                  max={3}
                   className="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-100 dark:text-gray-900 p-2 text-sm"
                 />
-                <p className="mt-1 text-xs text-gray-400">1 = una sola cuenta por cada red (sin 2 Facebook, etc.).</p>
+                <p className="mt-1 text-xs text-gray-400">1 = una sola cuenta por cada red (sin 2 Facebook, etc.). Tope: 3.</p>
               </div>
 
               <div className="flex flex-col gap-2 rounded-md border border-gray-200 dark:border-gray-200 p-3">

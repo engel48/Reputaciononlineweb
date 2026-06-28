@@ -126,9 +126,10 @@ export async function POST(request: NextRequest) {
       description: description ?? null,
       price_cop: Math.max(0, Math.floor(priceCop)),
       monthly_credits: Math.max(0, Math.floor(monthlyCredits)),
-      max_social_accounts: Math.max(0, Math.floor(maxSocialAccounts ?? 1)),
+      // Tope duro: máximo 3 cuentas (la plataforma no soporta más por usuario)
+      max_social_accounts: Math.min(3, Math.max(0, Math.floor(maxSocialAccounts ?? 1))),
       multi_account_per_platform: !!multiAccountPerPlatform,
-      max_accounts_per_platform: Math.max(1, Math.floor(maxAccountsPerPlatform ?? 1)),
+      max_accounts_per_platform: Math.min(3, Math.max(1, Math.floor(maxAccountsPerPlatform ?? 1))),
       features: features ?? {},
       is_active: isActive !== false,
       is_popular: !!isPopular,

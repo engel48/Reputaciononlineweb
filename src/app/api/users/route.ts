@@ -3,6 +3,7 @@ import { userService } from '@/lib/database-adapter';
 import { createClient } from '@supabase/supabase-js';
 import { sendPlanChangeEmail, sendPurchaseConfirmationEmail, sendLowCreditsWarningEmail } from '@/lib/email-service';
 import { requireAuth } from '@/lib/auth-helper';
+import { getMonthlyCreditLimit } from '@/lib/plan-limits';
 
 // Supabase directo para obtener email y datos confiables del usuario
 const supabaseAdmin = createClient(
@@ -74,6 +75,14 @@ export async function PUT(request: NextRequest) {
     const oldCredits = currentUser.credits || 0;
 
     console.log('USERS API PUT: Estado actual:', { email: currentUser.email, plan: oldPlan, credits: oldCredits });
+
+    // Si un admin cambia el plan y NO fijó créditos a mano, resetear los créditos
+    // al tope mensual del plan nuevo (mismo comportamiento que el flujo de pago Wompi).
+    if (isAdmin && updates.plan && updates.plan !== oldPlan && updates.credits === undefined) {
+      const planCredits = await getMonthlyCreditLimit(updates.plan);
+      updates.credits = planCredits;
+      console.log(`USERS API PUT: Plan ${oldPlan}->${updates.plan}, créditos reseteados a ${planCredits}`);
+    }
 
     // Actualizar usuario en la base de datos
     await userService.update(userId, {

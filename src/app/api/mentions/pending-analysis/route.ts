@@ -8,43 +8,31 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-// Supabase client (server-side con service_role para bypass RLS)
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+import { supabase } from '@/lib/supabase-server';
+import { requireAuth } from '@/lib/auth-helper';
 
 export async function GET(req: NextRequest) {
   try {
-    // Verificar Supabase configurado
-    if (!supabaseUrl || !supabaseServiceKey) {
-      return NextResponse.json(
-        { success: false, error: 'Supabase no está configurado correctamente' },
-        { status: 500 }
-      );
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    // Aislamiento multiusuario: exigir sesión y filtrar SIEMPRE por el userId
+    // del token verificado. Nunca confiar en un userId que venga por query.
+    const auth = await requireAuth(req);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     // Obtener parámetros de query
     const { searchParams } = new URL(req.url);
-    const userId = searchParams.get('userId');
     const limit = parseInt(searchParams.get('limit') || '100', 10);
     const offset = parseInt(searchParams.get('offset') || '0', 10);
 
-    // Construir query
+    // Construir query (solo menciones del usuario autenticado)
     let query = supabase
       .from('mentions')
       .select('id, platform, content, author_name, published_at, metadata')
+      .eq('user_id', userId)
       .is('metadata->>sentiment', null) // Menciones sin análisis de sentimiento
       .not('content', 'is', null) // Que tengan contenido
       .order('published_at', { ascending: false })
       .range(offset, offset + limit - 1);
-
-    // Filtrar por usuario si se proporciona
-    if (userId) {
-      query = query.eq('user_id', userId);
-    }
 
     const { data: mentions, error: fetchError, count } = await query;
 
@@ -56,16 +44,13 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // También obtener el conteo total
-    let countQuery = supabase
+    // También obtener el conteo total (solo del usuario autenticado)
+    const countQuery = supabase
       .from('mentions')
       .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
       .is('metadata->>sentiment', null)
       .not('content', 'is', null);
-
-    if (userId) {
-      countQuery = countQuery.eq('user_id', userId);
-    }
 
     const { count: totalCount } = await countQuery;
 
