@@ -128,10 +128,8 @@ const MediosComunicacionPage = () => {
     };
 
     loadRealTimeData();
-
-    // Actualizar datos cada 60 segundos
-    const interval = setInterval(loadRealTimeData, 60000);
-    return () => clearInterval(interval);
+    // Sin polling automático: /api/media-analytics scrapea + analiza 6 medios por
+    // llamada (carga alta de procesamiento/IA). Se carga una sola vez al abrir.
   }, []);
 
   const formatNumber = (num: number): string => {
