@@ -14,6 +14,7 @@ class TokenStorage {
   static const _kUser = 'auth_user';
   static const _kTheme = 'theme_mode';
   static const _kBiometric = 'biometric_enabled';
+  static const _kOnboardingSeen = 'onboarding_seen';
 
   // Cache en memoria del token: el interceptor lo lee en CADA request, y en
   // Android el almacén seguro (Keystore) es lento (en emulador, decenas de ms).
@@ -62,6 +63,12 @@ class TokenStorage {
       (await _storage.read(key: _kBiometric)) == 'true';
   Future<void> writeBiometricEnabled(bool value) =>
       _storage.write(key: _kBiometric, value: value ? 'true' : 'false');
+
+  /// Respaldo local de "onboarding visto" (por si falla el flag del backend).
+  Future<bool> readOnboardingSeen() async =>
+      (await _storage.read(key: _kOnboardingSeen)) == 'true';
+  Future<void> writeOnboardingSeen() =>
+      _storage.write(key: _kOnboardingSeen, value: 'true');
 
   Future<void> clear() async {
     _cachedToken = null;

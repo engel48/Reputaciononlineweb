@@ -11,6 +11,8 @@ import '../../features/busqueda/busqueda_screen.dart';
 import '../../features/crisis/crisis_screen.dart';
 import '../../features/noticias/noticias_screen.dart';
 import '../../features/notificaciones/notificaciones_screen.dart';
+import '../../features/onboarding/onboarding.dart';
+import '../../features/onboarding/onboarding_screen.dart';
 import '../../features/perfil/edit_profile_screen.dart';
 import '../../features/perfil/perfil_screen.dart';
 import '../../features/planes/planes_screen.dart';
@@ -23,6 +25,7 @@ const _authRoutes = {'/login', '/register', '/forgot'};
 final routerProvider = Provider<GoRouter>((ref) {
   final refresh = ValueNotifier<int>(0);
   ref.listen(authControllerProvider, (_, __) => refresh.value++);
+  ref.listen(onboardingSeenProvider, (_, __) => refresh.value++);
   ref.onDispose(refresh.dispose);
 
   return GoRouter(
@@ -39,7 +42,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (!auth.isAuthenticated) {
         return onAuthRoute ? null : '/login';
       }
-      if (onAuthRoute || loc == '/splash') return '/home';
+      // Usuario nuevo sin onboarding → al onboarding guiado (con respaldo local
+      // por si el flag del backend no se pudo guardar).
+      final user = auth.user;
+      final seen = ref.read(onboardingSeenProvider);
+      final needsOnboarding =
+          user != null && !user.onboardingCompleted && !seen;
+      if (needsOnboarding) {
+        return loc == '/onboarding' ? null : '/onboarding';
+      }
+      if (onAuthRoute || loc == '/splash' || loc == '/onboarding') {
+        return '/home';
+      }
       return null;
     },
     routes: [
@@ -48,6 +62,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/register', builder: (_, __) => const RegisterScreen()),
       GoRoute(path: '/forgot', builder: (_, __) => const ForgotPasswordScreen()),
       GoRoute(path: '/home', builder: (_, __) => const HomeShell()),
+      GoRoute(path: '/onboarding', builder: (_, __) => const OnboardingScreen()),
       GoRoute(path: '/noticias', builder: (_, __) => const NoticiasScreen()),
       GoRoute(path: '/crisis', builder: (_, __) => const CrisisScreen()),
       GoRoute(path: '/busqueda', builder: (_, __) => const BusquedaScreen()),
