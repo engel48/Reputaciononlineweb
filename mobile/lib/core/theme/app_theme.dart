@@ -49,17 +49,22 @@ class AppTheme {
       textTheme: ThemeData(brightness: b)
           .textTheme
           .apply(fontFamily: 'Inter', bodyColor: textColor, displayColor: textColor),
-      appBarTheme: AppBarTheme(
-        backgroundColor: isDark ? AppColors.navy : AppColors.bgLight,
-        foregroundColor: textColor,
+      // AppBar de marca (navy + texto blanco) en TODAS las pantallas. El
+      // dashboard pinta encima un gradiente como hero.
+      appBarTheme: const AppBarTheme(
+        backgroundColor: AppColors.accentNavy,
+        foregroundColor: Colors.white,
+        iconTheme: IconThemeData(color: Colors.white),
+        actionsIconTheme: IconThemeData(color: Colors.white),
         elevation: 0,
-        scrolledUnderElevation: 0.5,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
         centerTitle: false,
         titleTextStyle: TextStyle(
           fontFamily: 'Inter',
           fontSize: 18,
           fontWeight: FontWeight.w700,
-          color: textColor,
+          color: Colors.white,
         ),
       ),
       cardTheme: CardThemeData(
@@ -138,6 +143,14 @@ class AppTheme {
       dividerTheme: DividerThemeData(
         color: isDark ? AppColors.navyLight : AppColors.borderLight,
         thickness: 1,
+      ),
+      // Pestañas en blanco: viven sobre AppBars con gradiente de marca.
+      tabBarTheme: const TabBarThemeData(
+        labelColor: Colors.white,
+        unselectedLabelColor: Colors.white70,
+        indicatorColor: Colors.white,
+        dividerColor: Colors.transparent,
+        labelStyle: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
       ),
     );
   }

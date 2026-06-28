@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_colors.dart';
+import 'brand_loader.dart';
 
 /// Render estándar de un AsyncValue: loading / error (con reintento) / data.
 class AsyncView<T> extends StatelessWidget {
@@ -20,7 +21,7 @@ class AsyncView<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     return value.when(
       data: data,
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const BrandLoader(label: 'Cargando…'),
       error: (e, _) => _ErrorState(message: '$e', onRetry: onRetry),
     );
   }

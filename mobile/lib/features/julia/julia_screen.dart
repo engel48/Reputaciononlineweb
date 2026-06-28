@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../data/models/julia.dart';
 import '../../shared/format.dart';
+import '../../shared/widgets/brand_loader.dart';
 import '../../shared/widgets/neural_background.dart';
 import '../../shared/widgets/sentiment_chip.dart';
 import 'julia_providers.dart';
@@ -125,7 +126,7 @@ class _JuliaScreenState extends ConsumerState<JuliaScreen> {
       children: [
         Expanded(
           child: async.isLoading
-              ? const Center(child: CircularProgressIndicator())
+              ? const BrandLoader()
               : messages.isEmpty
                   ? _Welcome(onPick: _send)
                   : ListView.builder(
