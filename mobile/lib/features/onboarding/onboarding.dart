@@ -4,27 +4,19 @@ import '../../core/providers.dart';
 import '../../data/models/user.dart';
 import '../auth/auth_controller.dart';
 
-/// Respaldo local: ¿ya se mostró/saltó el onboarding en este dispositivo?
-/// Sirve para no quedar en loop si el flag del backend no se pudo guardar.
+/// Respaldo en memoria (por sesión): ¿ya se completó/saltó el onboarding en esta
+/// sesión? Evita un loop si el flag del backend no se pudo guardar. Se resetea
+/// al cerrar sesión para que una cuenta nueva lo vuelva a ver.
 final onboardingSeenProvider =
     NotifierProvider<OnboardingSeenController, bool>(
         OnboardingSeenController.new);
 
 class OnboardingSeenController extends Notifier<bool> {
   @override
-  bool build() {
-    _load();
-    return false;
-  }
+  bool build() => false;
 
-  Future<void> _load() async {
-    state = await ref.read(tokenStorageProvider).readOnboardingSeen();
-  }
-
-  Future<void> markSeen() async {
-    state = true;
-    await ref.read(tokenStorageProvider).writeOnboardingSeen();
-  }
+  void markSeen() => state = true;
+  void reset() => state = false;
 }
 
 /// Marca el onboarding como completado (flag del backend + respaldo local) y
@@ -51,8 +43,8 @@ Future<void> completeOnboarding(WidgetRef ref,
           ((res as Map)['user'] as Map).cast<String, dynamic>());
       await authCtrl.setUser(updated);
     } catch (_) {
-      // Si falla el backend, el respaldo local de abajo evita el loop.
+      // Si falla el backend, el respaldo en memoria de abajo evita el loop.
     }
   }
-  await seenCtrl.markSeen();
+  seenCtrl.markSeen();
 }

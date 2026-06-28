@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers.dart';
 import '../../data/api/jwt.dart';
 import '../../data/models/user.dart';
+import '../onboarding/onboarding.dart';
 import 'auth_repository.dart';
 
 enum AuthStatus { unknown, authenticated, unauthenticated }
@@ -75,12 +76,14 @@ class AuthController extends Notifier<AuthState> {
 
   Future<void> logout() async {
     await _repo.logout();
+    ref.read(onboardingSeenProvider.notifier).reset();
     state = const AuthState(AuthStatus.unauthenticated);
   }
 
   /// Llamado por el interceptor en 401: limpia sesión sin pegarle a la red.
   Future<void> forceLogout() async {
     await ref.read(tokenStorageProvider).clear();
+    ref.read(onboardingSeenProvider.notifier).reset();
     state = const AuthState(AuthStatus.unauthenticated);
   }
 
