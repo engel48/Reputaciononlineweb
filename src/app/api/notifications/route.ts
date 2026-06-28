@@ -82,5 +82,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true });
   }
 
+  if (body?.action === 'delete' && body?.id) {
+    const { error } = await supabase
+      .from('notifications')
+      .delete()
+      .eq('id', body.id)
+      .eq('user_id', userId);
+    if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: true });
+  }
+
   return NextResponse.json({ success: false, error: 'action no soportada' }, { status: 400 });
 }

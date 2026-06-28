@@ -31,13 +31,24 @@ export type SystemNotification = Notification & {
   priority: 'low' | 'medium' | 'high';
 };
 
-// Funciones para gestionar notificaciones
-export async function fetchUserNotifications(userId: string, limit: number = 10): Promise<Notification[]> {
+// Funciones para gestionar notificaciones (endpoint real: /api/notifications,
+// auth por cookie/Bearer; la misma API que usa la app móvil).
+export async function fetchUserNotifications(userId: string, _limit: number = 30): Promise<Notification[]> {
   try {
-    // Esta sería la llamada a la API para obtener las notificaciones del usuario
-    const response = await fetch(`/api/users/${userId}/notifications?limit=${limit}`);
+    const response = await fetch('/api/notifications', { credentials: 'include' });
     if (!response.ok) return [];
-    return await response.json();
+    const data = await response.json();
+    const list: any[] = Array.isArray(data?.notifications) ? data.notifications : [];
+    return list.map((n) => ({
+      id: n.id,
+      userId,
+      type: n.type,
+      title: n.title,
+      message: n.message,
+      link: n.actionUrl || undefined,
+      isRead: !!n.read,
+      createdAt: n.timestamp ? new Date(n.timestamp) : new Date(),
+    }));
   } catch (error) {
     console.error('Error al obtener notificaciones:', error);
     return [];
@@ -46,9 +57,11 @@ export async function fetchUserNotifications(userId: string, limit: number = 10)
 
 export async function markNotificationAsRead(notificationId: string): Promise<boolean> {
   try {
-    // Esta sería la llamada a la API para marcar la notificación como leída
-    const response = await fetch(`/api/notifications/${notificationId}/read`, {
-      method: 'PUT'
+    const response = await fetch('/api/notifications', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'markRead', id: notificationId }),
     });
     return response.ok;
   } catch (error) {
@@ -57,11 +70,13 @@ export async function markNotificationAsRead(notificationId: string): Promise<bo
   }
 }
 
-export async function markAllNotificationsAsRead(userId: string): Promise<boolean> {
+export async function markAllNotificationsAsRead(_userId?: string): Promise<boolean> {
   try {
-    // Esta sería la llamada a la API para marcar todas las notificaciones como leídas
-    const response = await fetch(`/api/users/${userId}/notifications/read-all`, {
-      method: 'PUT'
+    const response = await fetch('/api/notifications', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'markAllRead' }),
     });
     return response.ok;
   } catch (error) {
@@ -72,9 +87,11 @@ export async function markAllNotificationsAsRead(userId: string): Promise<boolea
 
 export async function deleteNotification(notificationId: string): Promise<boolean> {
   try {
-    // Esta sería la llamada a la API para eliminar una notificación
-    const response = await fetch(`/api/notifications/${notificationId}`, {
-      method: 'DELETE'
+    const response = await fetch('/api/notifications', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'delete', id: notificationId }),
     });
     return response.ok;
   } catch (error) {
