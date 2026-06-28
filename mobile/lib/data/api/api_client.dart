@@ -23,8 +23,8 @@ class ApiClient {
     _dio = Dio(
       BaseOptions(
         baseUrl: '${Env.apiBaseUrl}/api',
-        connectTimeout: const Duration(seconds: 25),
-        receiveTimeout: const Duration(seconds: 45),
+        connectTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(seconds: 30),
         headers: {'Accept': 'application/json'},
       ),
     );
@@ -72,10 +72,10 @@ class ApiClient {
       _send(() => _dio.delete(path, queryParameters: query));
 
   Future<dynamic> _send(Future<Response> Function() run) async {
-    // Reintenta automáticamente ante fallos transitorios (típicos cuando el
-    // servidor está "despertando" / cold start): timeout de conexión, conexión
-    // caída o errores de gateway 502/503/504. NO reintenta receiveTimeout ni
-    // respuestas de la app (4xx/5xx propias) para no reprocesar dos veces.
+    // Reintenta SOLO ante errores de gateway 502/503/504 (respuestas rápidas
+    // típicas de un cold start, donde el proxy está arriba pero la app aún
+    // inicia). NO reintenta timeouts ni conexión caída: en esos casos la red no
+    // está y reintentar solo multiplica la espera; mejor fallar rápido y claro.
     DioException? lastError;
     for (var attempt = 0; attempt < 3; attempt++) {
       try {
@@ -84,7 +84,7 @@ class ApiClient {
       } on DioException catch (e) {
         lastError = e;
         if (!_isRetriable(e, attempt)) break;
-        await Future.delayed(Duration(milliseconds: 800 * (attempt + 1)));
+        await Future.delayed(Duration(milliseconds: 600 * (attempt + 1)));
       }
     }
     throw _toApiException(lastError!);
@@ -92,17 +92,9 @@ class ApiClient {
 
   bool _isRetriable(DioException e, int attempt) {
     if (attempt >= 2) return false; // máx. 3 intentos (0,1,2)
-    switch (e.type) {
-      case DioExceptionType.connectionTimeout:
-      case DioExceptionType.connectionError:
-      case DioExceptionType.sendTimeout:
-        return true;
-      case DioExceptionType.badResponse:
-        final c = e.response?.statusCode;
-        return c == 502 || c == 503 || c == 504;
-      default:
-        return false;
-    }
+    if (e.type != DioExceptionType.badResponse) return false;
+    final c = e.response?.statusCode;
+    return c == 502 || c == 503 || c == 504;
   }
 
   ApiException _toApiException(DioException e) {
