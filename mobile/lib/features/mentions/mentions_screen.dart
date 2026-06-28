@@ -33,22 +33,34 @@ class MentionsScreen extends ConsumerWidget {
                 final isSel = selected == f;
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
-                  child: ChoiceChip(
-                    label: Text(
-                      f == null ? 'Todas' : PlatformUi.label(f),
-                      style: TextStyle(
-                        color: isSel ? AppColors.accentNavy : Colors.white,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
+                  child: Center(
+                    child: GestureDetector(
+                      onTap: () =>
+                          ref.read(mentionPlatformFilter.notifier).set(f),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 180),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 9),
+                        decoration: BoxDecoration(
+                          color: isSel
+                              ? AppColors.cyan
+                              : Colors.white.withValues(alpha: 0.14),
+                          borderRadius: BorderRadius.circular(999),
+                          border: isSel
+                              ? null
+                              : Border.all(
+                                  color: Colors.white.withValues(alpha: 0.4)),
+                        ),
+                        child: Text(
+                          f == null ? 'Todas' : PlatformUi.label(f),
+                          style: TextStyle(
+                            color: isSel ? AppColors.accentNavy : Colors.white,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
+                        ),
                       ),
                     ),
-                    selected: isSel,
-                    showCheckmark: false,
-                    onSelected: (_) =>
-                        ref.read(mentionPlatformFilter.notifier).set(f),
-                    backgroundColor: Colors.white.withValues(alpha: 0.16),
-                    selectedColor: AppColors.cyan,
-                    side: BorderSide.none,
                   ),
                 );
               }).toList(),

@@ -38,11 +38,35 @@ class _CrisisScreenState extends ConsumerState<CrisisScreen> {
                 ])
                   Padding(
                     padding: const EdgeInsets.only(right: 8),
-                    child: ChoiceChip(
-                      label: Text(s[1]),
-                      selected: _status == s[0],
-                      selectedColor: AppColors.cyan.withValues(alpha: 0.2),
-                      onSelected: (_) => setState(() => _status = s[0]),
+                    child: Center(
+                      child: GestureDetector(
+                        onTap: () => setState(() => _status = s[0]),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 9),
+                          decoration: BoxDecoration(
+                            color: _status == s[0]
+                                ? AppColors.cyan
+                                : Colors.white.withValues(alpha: 0.14),
+                            borderRadius: BorderRadius.circular(999),
+                            border: _status == s[0]
+                                ? null
+                                : Border.all(
+                                    color: Colors.white.withValues(alpha: 0.4)),
+                          ),
+                          child: Text(
+                            s[1],
+                            style: TextStyle(
+                              color: _status == s[0]
+                                  ? AppColors.accentNavy
+                                  : Colors.white,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
               ],
