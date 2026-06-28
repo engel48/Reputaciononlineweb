@@ -7,6 +7,7 @@ import {
   DollarSign, Star, Crown,
 } from 'lucide-react';
 import { AdminPageWrapper } from '@/components/admin';
+import { planFeaturesByGroup } from '@/lib/plan-features-catalog';
 
 interface Plan {
   id: string;
@@ -36,6 +37,7 @@ interface PlanForm {
   isActive: boolean;
   isPopular: boolean;
   displayOrder: number;
+  features: Record<string, boolean>;
 }
 
 const EMPTY_FORM: PlanForm = {
@@ -49,6 +51,7 @@ const EMPTY_FORM: PlanForm = {
   isActive: true,
   isPopular: false,
   displayOrder: 0,
+  features: {},
 };
 
 function formatCOP(value: number): string {
@@ -109,9 +112,14 @@ export default function PlanesPage() {
       isActive: plan.isActive,
       isPopular: plan.isPopular,
       displayOrder: plan.displayOrder,
+      features: plan.features || {},
     });
     setError(null);
     setModalAbierto(true);
+  };
+
+  const toggleFeature = (key: string, checked: boolean) => {
+    setForm((prev) => ({ ...prev, features: { ...prev.features, [key]: checked } }));
   };
 
   const cerrarModal = () => {
@@ -547,6 +555,39 @@ export default function PlanesPage() {
                   />
                   Permite multiples cuentas de la misma red social
                 </label>
+              </div>
+
+              {/* Módulos / funciones incluidas en el plan (se guardan en plans.features) */}
+              <div className="rounded-md border border-gray-200 dark:border-gray-200 p-3">
+                <p className="mb-2 text-sm font-semibold text-gray-800 dark:text-gray-700">
+                  Módulos / funciones incluidas
+                </p>
+                <div className="space-y-3">
+                  {planFeaturesByGroup().map(({ group, items }) => (
+                    <div key={group}>
+                      <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-500">
+                        {group}
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1">
+                        {items.map((item) => (
+                          <label
+                            key={item.key}
+                            title={item.hint || ''}
+                            className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-600"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={!!form.features[item.key]}
+                              onChange={(e) => toggleFeature(item.key, e.target.checked)}
+                              className="h-4 w-4 rounded border-gray-300"
+                            />
+                            <span>{item.label}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               {error && (

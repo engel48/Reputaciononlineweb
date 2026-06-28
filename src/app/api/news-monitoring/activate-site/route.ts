@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import * as jwt from 'jsonwebtoken';
 import { supabase } from '@/lib/supabase-server';
 import { getSiteById } from '@/lib/news-monitoring/sites-config';
+import { userHasPlanFeature } from '@/lib/plan-limits';
 
 import { getJwtSecret } from '@/lib/jwt-secret';
 
@@ -51,6 +52,21 @@ export async function POST(request: NextRequest) {
           timestamp: new Date().toISOString(),
         },
         { status: 401 }
+      );
+    }
+
+    // Monitoreo de noticias = módulo de planes altos (plans.features.mediaCoverage).
+    if (!(await userHasPlanFeature(userId, 'mediaCoverage'))) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'PLAN_FEATURE_REQUIRED',
+            message: 'Tu plan no incluye el monitoreo de noticias. Actualiza tu plan para usarlo.',
+          },
+          timestamp: new Date().toISOString(),
+        },
+        { status: 403 }
       );
     }
 

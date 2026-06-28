@@ -10,6 +10,7 @@ import { SocialListeningCard } from '@/components/dashboard/SocialListeningCard'
 import { useUser } from '@/context/UserContext';
 import { EmptyMentionsState } from '@/components/ui/EmptyMentionsState';
 import { useHasMentionsData } from '@/hooks/useHasMentionsData';
+import FeatureGate from '@/components/plan/FeatureGate';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -114,9 +115,11 @@ export default function MonitoreoPage() {
           </motion.section>
         </div>
 
-        {/* Media Monitoring - Full Width */}
+        {/* Media Monitoring (monitoreo de noticias) - gateado a planes con el módulo */}
         <motion.section variants={itemVariants} whileHover={{ y: -2 }} transition={{ duration: 0.2 }}>
-          <MediaMonitoring userProfile={userProfile} />
+          <FeatureGate feature="hasMediaCoverage">
+            <MediaMonitoring userProfile={userProfile} />
+          </FeatureGate>
         </motion.section>
       </div>
     </motion.div>

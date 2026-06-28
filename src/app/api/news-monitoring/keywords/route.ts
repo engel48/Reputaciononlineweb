@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
+import { userHasPlanFeature } from '@/lib/plan-limits';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -109,6 +110,14 @@ export async function POST(request: NextRequest) {
         success: false,
         error: 'No autorizado',
       }, { status: 401 });
+    }
+
+    // Monitoreo de noticias = módulo de planes altos (plans.features.mediaCoverage).
+    if (!(await userHasPlanFeature(userId, 'mediaCoverage'))) {
+      return NextResponse.json({
+        success: false,
+        error: 'Tu plan no incluye el monitoreo de noticias. Actualiza tu plan para usarlo.',
+      }, { status: 403 });
     }
 
     const body = await request.json();

@@ -131,6 +131,23 @@ export async function getMaxAccountsPerPlatform(planCode: string): Promise<numbe
   return free?.maxAccountsPerPlatform ?? 1;
 }
 
+/**
+ * ¿El plan del usuario incluye una feature/módulo dado (clave del JSONB
+ * `plans.features`)? Para enforcement server-side de módulos. Ej: el monitoreo
+ * de noticias usa la clave 'mediaCoverage'. Si el plan o el usuario no existen,
+ * o la feature no está activada, devuelve false (fail-closed).
+ */
+export async function userHasPlanFeature(userId: string, featureKey: string): Promise<boolean> {
+  const { data: user, error } = await supabase
+    .from('users')
+    .select('plan')
+    .eq('id', userId)
+    .maybeSingle();
+  if (error || !user) return false;
+  const plan = await getPlanByCode((user as any).plan as string);
+  return !!plan?.features?.[featureKey];
+}
+
 export interface SocialAccountCheckResult {
   allowed: boolean;
   current: number;

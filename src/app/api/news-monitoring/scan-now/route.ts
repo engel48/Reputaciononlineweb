@@ -9,6 +9,7 @@ import { supabase } from '@/lib/supabase-server';
 import { scrapeSiteWithRateLimit } from '@/lib/news-monitoring/scraper';
 import { checkBalance, deductCreditsForAction } from '@/lib/credit-guard';
 import { CREDIT_COSTS } from '@/lib/credit-costs';
+import { userHasPlanFeature } from '@/lib/plan-limits';
 
 import { getJwtSecret } from '@/lib/jwt-secret';
 
@@ -47,6 +48,21 @@ export async function POST(request: NextRequest) {
           timestamp: new Date().toISOString(),
         },
         { status: 401 }
+      );
+    }
+
+    // El monitoreo de noticias es un módulo de planes altos (plans.features.mediaCoverage).
+    if (!(await userHasPlanFeature(userId, 'mediaCoverage'))) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'PLAN_FEATURE_REQUIRED',
+            message: 'Tu plan no incluye el monitoreo de noticias. Actualiza tu plan para usarlo.',
+          },
+          timestamp: new Date().toISOString(),
+        },
+        { status: 403 }
       );
     }
 
