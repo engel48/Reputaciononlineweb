@@ -516,9 +516,8 @@ export class ReportGenerator {
           break;
 
         case 'pdf':
-          // Generar HTML optimizado para PDF que se ve mucho mejor
-          const htmlContent = this.generatePrintableHTML(data);
-          this.downloadFile(htmlContent, `${filename}-reporte.html`, 'text/html');
+          // PDF REAL de marca (jsPDF) — un solo color (navy), sin íconos genéricos.
+          await this.generatePDF(data);
           break;
 
         case 'excel':
@@ -533,6 +532,123 @@ export class ReportGenerator {
     } finally {
       realReportData = null;
     }
+  }
+
+  /**
+   * Genera un PDF REAL (jsPDF) con estilo de marca: un solo color (navy #01257D),
+   * SIN emojis ni íconos genéricos. Usa los datos reales ya cargados (getSampleData).
+   */
+  static async generatePDF(data: ReportData): Promise<void> {
+    const { default: JsPDF } = await import('jspdf');
+    const autoTable = (await import('jspdf-autotable')).default;
+    const real = getSampleData();
+
+    const navy: [number, number, number] = [1, 37, 125];
+    const gray: [number, number, number] = [90, 90, 90];
+    const doc = new JsPDF({ unit: 'pt', format: 'a4' });
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+    const margin = 40;
+
+    // Encabezado de marca (navy).
+    doc.setFillColor(navy[0], navy[1], navy[2]);
+    doc.rect(0, 0, pageW, 92, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(20);
+    doc.text('Reputación Online', margin, 42);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    doc.text(`Reporte: ${String(data.tipo).toUpperCase()}`, margin, 64);
+    doc.setFontSize(9);
+    const fecha = new Date().toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' });
+    doc.text(`Período: ${data.periodo}   ·   Generado: ${fecha}`, margin, 80);
+
+    let y = 122;
+
+    // Datos del usuario.
+    if (data.usuario) {
+      doc.setTextColor(gray[0], gray[1], gray[2]);
+      doc.setFontSize(10);
+      doc.text(`Usuario: ${data.usuario.nombre}`, margin, y);
+      doc.text(`Plan: ${String(data.usuario.plan).toUpperCase()}`, margin, y + 15);
+      doc.text(`Email: ${data.usuario.email}`, margin, y + 30);
+      doc.text(`Créditos disponibles: ${data.usuario.creditos.toLocaleString('es-CO')}`, margin, y + 45);
+      y += 72;
+    }
+
+    const heading = (text: string) => {
+      doc.setTextColor(navy[0], navy[1], navy[2]);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(13);
+      doc.text(text, margin, y);
+    };
+
+    // Resumen de consumo.
+    heading('Resumen de consumo');
+    const e = real.estadisticas;
+    autoTable(doc, {
+      startY: y + 8,
+      theme: 'grid',
+      margin: { left: margin, right: margin },
+      headStyles: { fillColor: navy, textColor: 255, fontStyle: 'bold' },
+      styles: { fontSize: 10, cellPadding: 6 },
+      head: [['Métrica', 'Valor']],
+      body: [
+        ['Total consumido', `${e.totalConsumo} créditos`],
+        ['Promedio diario', `${e.promedioDiario} créditos`],
+        ['Día de mayor consumo', e.diaMayorConsumo.fecha === 'N/A' ? '—' : `${e.diaMayorConsumo.fecha} (${e.diaMayorConsumo.consumo})`],
+      ],
+    });
+    y = (doc as any).lastAutoTable.finalY + 26;
+
+    // Consumo por fecha.
+    heading('Consumo por fecha');
+    if (real.consumoCreditos.length === 0) {
+      doc.setTextColor(gray[0], gray[1], gray[2]);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.text('Sin consumo en el período.', margin, y + 18);
+      y += 38;
+    } else {
+      autoTable(doc, {
+        startY: y + 8,
+        theme: 'striped',
+        margin: { left: margin, right: margin },
+        headStyles: { fillColor: navy, textColor: 255, fontStyle: 'bold' },
+        styles: { fontSize: 9.5, cellPadding: 5 },
+        head: [['Fecha', 'Créditos', 'Canal']],
+        body: real.consumoCreditos.map((c) => [c.fecha, String(c.consumo), c.canal]),
+      });
+      y = (doc as any).lastAutoTable.finalY + 26;
+    }
+
+    // Resumen por canal.
+    if (real.resumenCanales.length > 0) {
+      heading('Resumen por canal');
+      autoTable(doc, {
+        startY: y + 8,
+        theme: 'striped',
+        margin: { left: margin, right: margin },
+        headStyles: { fillColor: navy, textColor: 255, fontStyle: 'bold' },
+        styles: { fontSize: 9.5, cellPadding: 5 },
+        head: [['Canal', 'Consumo', '%']],
+        body: real.resumenCanales.map((r) => [r.canal, String(r.consumo), `${r.porcentaje}%`]),
+      });
+    }
+
+    // Footer.
+    doc.setTextColor(150, 150, 150);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.text(
+      `© ${new Date().getFullYear()} Reputación Online — Monitoreo de reputación con IA`,
+      margin,
+      pageH - 24,
+    );
+
+    const timestamp = new Date().toISOString().split('T')[0];
+    doc.save(`reporte-${data.tipo}-${timestamp}.pdf`);
   }
 
   // Generar HTML optimizado para impresión/PDF

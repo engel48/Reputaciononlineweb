@@ -31,6 +31,7 @@ export async function PUT(request: NextRequest, { params }: RouteCtx) {
   if (body.monthlyCredits !== undefined) updateData.monthly_credits = Math.max(0, Math.floor(body.monthlyCredits));
   if (body.maxSocialAccounts !== undefined) updateData.max_social_accounts = Math.max(0, Math.floor(body.maxSocialAccounts));
   if (body.multiAccountPerPlatform !== undefined) updateData.multi_account_per_platform = !!body.multiAccountPerPlatform;
+  if (body.maxAccountsPerPlatform !== undefined) updateData.max_accounts_per_platform = Math.max(1, Math.floor(body.maxAccountsPerPlatform));
   if (body.features !== undefined) updateData.features = body.features;
   if (body.isActive !== undefined) updateData.is_active = !!body.isActive;
   if (body.isPopular !== undefined) updateData.is_popular = !!body.isPopular;

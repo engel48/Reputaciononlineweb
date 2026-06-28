@@ -4,9 +4,9 @@
  */
 
 export const CREDIT_COSTS = {
-  // Busquedas
-  search_basic: 1,           // Por resultado (dentro de 30 dias)
-  search_extended: 1,        // Por resultado (>30 dias de antiguedad)
+  // Busquedas (trabajo pesado: scraping + IA)
+  search_basic: 2,           // Por resultado (dentro de 30 dias)
+  search_extended: 2,        // Por resultado (>30 dias de antiguedad)
 
   // Monitoreo
   monitoring_hourly: 3,      // Por keyword por ciclo horario
@@ -21,15 +21,15 @@ export const CREDIT_COSTS = {
   // Julia IA
   julia_chat: 1,             // Por mensaje de chat
   julia_sentiment: 3,        // Analisis de sentimiento
-  julia_person_search: 5,    // Busqueda de persona
+  julia_person_search: 10,   // Analisis profundo de persona/empresa (scraping + IA, pesado)
   julia_content_gen: 5,      // Generacion de contenido
   julia_reputation: 10,      // Analisis completo de reputacion
   julia_crisis_response: 5,  // Respuesta sugerida a crisis
-  julia_summarize: 3,        // Resumen de noticias
+  julia_summarize: 5,        // Resumen de noticias
 
   // Redes sociales
   social_sync: 2,            // Sincronizacion por plataforma
-  unified_search: 3,         // Busqueda unificada por consulta
+  unified_search: 5,         // Busqueda unificada por consulta
 } as const;
 
 export type CreditAction = keyof typeof CREDIT_COSTS;

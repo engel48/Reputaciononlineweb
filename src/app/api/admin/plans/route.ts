@@ -17,6 +17,7 @@ interface PlanRow {
   monthly_credits: number;
   max_social_accounts: number;
   multi_account_per_platform: boolean;
+  max_accounts_per_platform: number | null;
   features: Record<string, boolean>;
   is_active: boolean;
   is_popular: boolean;
@@ -36,6 +37,7 @@ function toApi(row: PlanRow) {
     monthlyCredits: row.monthly_credits,
     maxSocialAccounts: row.max_social_accounts,
     multiAccountPerPlatform: row.multi_account_per_platform,
+    maxAccountsPerPlatform: row.max_accounts_per_platform ?? 1,
     features: row.features ?? {},
     isActive: row.is_active,
     isPopular: row.is_popular,
@@ -101,6 +103,7 @@ export async function POST(request: NextRequest) {
     monthlyCredits,
     maxSocialAccounts,
     multiAccountPerPlatform,
+    maxAccountsPerPlatform,
     features,
     isActive,
     isPopular,
@@ -125,6 +128,7 @@ export async function POST(request: NextRequest) {
       monthly_credits: Math.max(0, Math.floor(monthlyCredits)),
       max_social_accounts: Math.max(0, Math.floor(maxSocialAccounts ?? 1)),
       multi_account_per_platform: !!multiAccountPerPlatform,
+      max_accounts_per_platform: Math.max(1, Math.floor(maxAccountsPerPlatform ?? 1)),
       features: features ?? {},
       is_active: isActive !== false,
       is_popular: !!isPopular,

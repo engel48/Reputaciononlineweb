@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { performWebSearch, scrapeWebPage } from '@/lib/realWebSearch';
 import { aiService } from '@/lib/ai-service';
 import { searchPersonOrCompany } from '@/lib/services/newsSearchService';
+import { checkBalance, deductCreditsForAction, extractUserIdFromToken } from '@/lib/credit-guard';
+import { CREDIT_COSTS } from '@/lib/credit-costs';
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,6 +17,33 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(`📊 Iniciando análisis profundo para: ${name}`);
+
+    // Cobro del análisis profundo (operación pesada: scraping + IA). Verifica
+    // saldo antes; deduce al obtener resultado (charge()). Si no hay sesión, no cobra.
+    const authToken = request.cookies.get('auth-token')?.value;
+    const userId = authToken ? extractUserIdFromToken(authToken) : null;
+    if (userId) {
+      const cost = CREDIT_COSTS.julia_person_search;
+      const balance = await checkBalance(userId, cost);
+      if (!balance.hasEnough && !balance.unlimited) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `No te alcanzan los créditos. Este análisis cuesta ${cost}.`,
+            credits: { cost, currentBalance: balance.currentBalance },
+          },
+          { status: 402 }
+        );
+      }
+    }
+    const charge = async () => {
+      if (!userId) return;
+      try {
+        await deductCreditsForAction(userId, 'julia_person_search', 1, `Análisis de ${name}`);
+      } catch {
+        /* no romper la respuesta por un fallo de deducción */
+      }
+    };
 
     // 1. PRIMERO: Buscar en noticias scrapeadas (datos REALES)
     let dbAnalysis = null;
@@ -78,6 +107,7 @@ export async function POST(request: NextRequest) {
         analysis_date: new Date().toISOString()
       };
 
+      await charge();
       return NextResponse.json({
         success: true,
         analysis
@@ -181,6 +211,7 @@ export async function POST(request: NextRequest) {
       analysis_date: new Date().toISOString()
     };
 
+    await charge();
     return NextResponse.json({
       success: true,
       analysis

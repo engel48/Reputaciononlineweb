@@ -18,6 +18,7 @@ interface Plan {
   monthlyCredits: number;
   maxSocialAccounts: number;
   multiAccountPerPlatform: boolean;
+  maxAccountsPerPlatform: number;
   features: Record<string, boolean>;
   isActive: boolean;
   isPopular: boolean;
@@ -34,6 +35,7 @@ interface PlanForm {
   monthlyCredits: number;
   maxSocialAccounts: number;
   multiAccountPerPlatform: boolean;
+  maxAccountsPerPlatform: number;
   isActive: boolean;
   isPopular: boolean;
   displayOrder: number;
@@ -48,6 +50,7 @@ const EMPTY_FORM: PlanForm = {
   monthlyCredits: 0,
   maxSocialAccounts: 1,
   multiAccountPerPlatform: false,
+  maxAccountsPerPlatform: 1,
   isActive: true,
   isPopular: false,
   displayOrder: 0,
@@ -109,6 +112,7 @@ export default function PlanesPage() {
       monthlyCredits: plan.monthlyCredits,
       maxSocialAccounts: plan.maxSocialAccounts,
       multiAccountPerPlatform: plan.multiAccountPerPlatform,
+      maxAccountsPerPlatform: plan.maxAccountsPerPlatform ?? 1,
       isActive: plan.isActive,
       isPopular: plan.isPopular,
       displayOrder: plan.displayOrder,
@@ -522,6 +526,19 @@ export default function PlanesPage() {
                   min={0}
                   className="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-100 dark:text-gray-900 p-2 text-sm"
                 />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-600">Máx. cuentas por red social</label>
+                <input
+                  type="number"
+                  name="maxAccountsPerPlatform"
+                  value={form.maxAccountsPerPlatform}
+                  onChange={handleInputChange}
+                  min={1}
+                  className="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-100 dark:text-gray-900 p-2 text-sm"
+                />
+                <p className="mt-1 text-xs text-gray-400">1 = una sola cuenta por cada red (sin 2 Facebook, etc.).</p>
               </div>
 
               <div className="flex flex-col gap-2 rounded-md border border-gray-200 dark:border-gray-200 p-3">
