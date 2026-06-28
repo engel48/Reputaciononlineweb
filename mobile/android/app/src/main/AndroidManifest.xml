@@ -30,6 +30,12 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- Impeller deshabilitado: en emuladores (GL por software) compila
+             shaders de forma síncrona y congela el hilo principal. Skia es más
+             estable. Quitar esta línea cuando se mida Impeller en hardware real. -->
+        <meta-data
+            android:name="io.flutter.embedding.android.EnableImpeller"
+            android:value="false" />
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

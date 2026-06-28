@@ -13,12 +13,25 @@ class TokenStorage {
   static const _kUser = 'auth_user';
   static const _kTheme = 'theme_mode';
 
+  // Cache en memoria del token: el interceptor lo lee en CADA request, y en
+  // Android el almacén seguro (Keystore) es lento (en emulador, decenas de ms).
+  // Leerlo una vez y cachearlo evita bloquear el hilo en cada llamada.
+  String? _cachedToken;
+  bool _tokenLoaded = false;
+
   Future<void> save(String token, Map<String, dynamic> user) async {
+    _cachedToken = token;
+    _tokenLoaded = true;
     await _storage.write(key: _kToken, value: token);
     await _storage.write(key: _kUser, value: jsonEncode(user));
   }
 
-  Future<String?> readToken() => _storage.read(key: _kToken);
+  Future<String?> readToken() async {
+    if (_tokenLoaded) return _cachedToken;
+    _cachedToken = await _storage.read(key: _kToken);
+    _tokenLoaded = true;
+    return _cachedToken;
+  }
 
   Future<Map<String, dynamic>?> readUser() async {
     final raw = await _storage.read(key: _kUser);
@@ -39,6 +52,8 @@ class TokenStorage {
       _storage.write(key: _kTheme, value: value);
 
   Future<void> clear() async {
+    _cachedToken = null;
+    _tokenLoaded = true; // sin token, pero ya "cargado": readToken devuelve null sin tocar el almacén
     await _storage.delete(key: _kToken);
     await _storage.delete(key: _kUser);
   }
