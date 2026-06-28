@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
@@ -21,12 +23,22 @@ class ApiException implements Exception {
 /// Cliente HTTP central. Apunta a la API Next.js existente y agrega el JWT en cada request.
 class ApiClient {
   ApiClient({required this.tokenStorage, this.onUnauthorized}) {
+    // User-Agent propio para que el backend identifique la APP móvil (y no la
+    // detecte como un navegador Windows en los correos de inicio de sesión).
+    var os = 'Android';
+    try {
+      if (Platform.isIOS) os = 'iOS';
+    } catch (_) {}
     _dio = Dio(
       BaseOptions(
         baseUrl: '${Env.apiBaseUrl}/api',
         connectTimeout: const Duration(seconds: 15),
         receiveTimeout: const Duration(seconds: 30),
-        headers: {'Accept': 'application/json'},
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'ReputacionOnlineApp/${Env.appVersion} ($os; Flutter)',
+          'X-Client-Platform': os.toLowerCase(),
+        },
       ),
     );
     _dio.interceptors.add(

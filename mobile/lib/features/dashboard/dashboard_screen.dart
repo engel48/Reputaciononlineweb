@@ -431,8 +431,11 @@ class _NetRow extends StatelessWidget {
               children: [
                 Text(PlatformUi.label(p.platform),
                     style: const TextStyle(fontWeight: FontWeight.w600)),
-                Text('${Fmt.compact(p.followers)} seguidores',
-                    style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+                const SizedBox(height: 2),
+                Text(
+                  '${Fmt.compact(p.followers)} seguidores · ${p.engagement.toStringAsFixed(1)}% engagement',
+                  style: const TextStyle(color: AppColors.muted, fontSize: 12),
+                ),
               ],
             ),
           ),
