@@ -86,12 +86,28 @@ export default function AnalisisPage() {
       try {
         setIsLoading(true);
 
-        // Cargar análisis completo desde dashboard-analytics
-        const response = await fetch('/api/dashboard-analytics');
+        // Cargar análisis completo desde dashboard-analytics (shape real: { data: { mentions, socialMedia, reputation } }).
+        const response = await fetch('/api/dashboard-analytics', { credentials: 'include' });
         if (response.ok) {
-          const data = await response.json();
-          setSocialData(data);
-          setAnalysisData(data.sentiment || {});
+          const json = await response.json();
+          const d = json?.data || {};
+          const m = d.mentions || {};
+          const sTotal = (m.positive || 0) + (m.negative || 0) + (m.neutral || 0);
+          const pct = (n: number) => (sTotal > 0 ? Math.round((n / sTotal) * 100) : 0);
+          const dist = {
+            positive: pct(m.positive || 0),
+            neutral: pct(m.neutral || 0),
+            negative: pct(m.negative || 0),
+          };
+          setSocialData(json);
+          setAnalysisData({
+            distribution: dist,
+            sentimentDistribution: dist,
+            counts: { positive: m.positive || 0, neutral: m.neutral || 0, negative: m.negative || 0, total: m.total || 0 },
+            averageScore: Math.round((d.reputation?.score || 0) / 10),
+            topKeywords: [],
+            topEmotions: [],
+          });
         }
       } catch (error) {
         console.error('Error cargando datos de análisis:', error);
@@ -260,7 +276,7 @@ export default function AnalisisPage() {
                               {analysisData?.sentimentDistribution?.positive || 0}%
                             </div>
                             <div className="text-sm text-green-700 dark:text-green-300">
-                              {Math.round((analysisData?.sentimentDistribution?.positive || 0) * 12.48)} menciones
+                              {analysisData?.counts?.positive || 0} menciones
                             </div>
                           </div>
                         </div>
@@ -275,7 +291,7 @@ export default function AnalisisPage() {
                               {analysisData?.sentimentDistribution?.neutral || 0}%
                             </div>
                             <div className="text-sm text-blue-700 dark:text-blue-300">
-                              {Math.round((analysisData?.sentimentDistribution?.neutral || 0) * 12.48)} menciones
+                              {analysisData?.counts?.neutral || 0} menciones
                             </div>
                           </div>
                         </div>
@@ -290,7 +306,7 @@ export default function AnalisisPage() {
                               {analysisData?.sentimentDistribution?.negative || 0}%
                             </div>
                             <div className="text-sm text-red-700 dark:text-red-300">
-                              {Math.round((analysisData?.sentimentDistribution?.negative || 0) * 12.48)} menciones
+                              {analysisData?.counts?.negative || 0} menciones
                             </div>
                           </div>
                         </div>
@@ -427,7 +443,7 @@ export default function AnalisisPage() {
                   <div className="text-center p-8 bg-gradient-to-br from-pink-100 to-rose-200 dark:from-pink-900/30 dark:to-rose-800/30 rounded-2xl border-2 border-pink-200 dark:border-pink-700 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                     <Heart className="h-12 w-12 text-pink-500 mx-auto mb-4" />
                     <div className="text-4xl font-bold text-pink-600 dark:text-pink-400 mb-2">
-                      {socialData?.totalLikes || 1847}
+                      {socialData?.totalLikes || 0}
                     </div>
                     <div className="text-lg font-semibold text-pink-700 dark:text-pink-300">
                       Total Likes
@@ -437,7 +453,7 @@ export default function AnalisisPage() {
                   <div className="text-center p-8 bg-gradient-to-br from-blue-100 to-indigo-200 dark:from-blue-900/30 dark:to-indigo-800/30 rounded-2xl border-2 border-blue-200 dark:border-blue-700 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                     <Share2 className="h-12 w-12 text-blue-500 mx-auto mb-4" />
                     <div className="text-4xl font-bold text-blue-600 dark:text-blue-400 mb-2">
-                      {socialData?.totalShares || 523}
+                      {socialData?.totalShares || 0}
                     </div>
                     <div className="text-lg font-semibold text-blue-700 dark:text-blue-300">
                       Total Shares
@@ -447,7 +463,7 @@ export default function AnalisisPage() {
                   <div className="text-center p-8 bg-gradient-to-br from-green-100 to-emerald-200 dark:from-green-900/30 dark:to-emerald-800/30 rounded-2xl border-2 border-green-200 dark:border-green-700 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                     <MessageSquare className="h-12 w-12 text-green-500 mx-auto mb-4" />
                     <div className="text-4xl font-bold text-green-600 dark:text-green-400 mb-2">
-                      {socialData?.totalComments || 314}
+                      {socialData?.totalComments || 0}
                     </div>
                     <div className="text-lg font-semibold text-green-700 dark:text-green-300">
                       Total Comments
@@ -479,10 +495,10 @@ export default function AnalisisPage() {
                       <Sparkles className="h-5 w-5 text-green-400" />
                     </div>
                     <CheckCircle className="h-12 w-12 text-green-500 mb-4" />
-                    <h3 className="text-4xl font-bold text-green-600 dark:text-green-400 mb-2">65%</h3>
+                    <h3 className="text-4xl font-bold text-green-600 dark:text-green-400 mb-2">{analysisData?.sentimentDistribution?.positive ?? 0}%</h3>
                     <p className="text-lg font-semibold text-green-700 dark:text-green-300 mb-3">Menciones Positivas</p>
                     <div className="flex items-center text-sm">
-                      <TrendIndicator value={5} />
+                      <TrendIndicator value={0} />
                     </div>
                   </div>
 
@@ -491,10 +507,10 @@ export default function AnalisisPage() {
                       <Activity className="h-5 w-5 text-blue-400" />
                     </div>
                     <Minus className="h-12 w-12 text-[#01257D] mb-4" />
-                    <h3 className="text-4xl font-bold text-[#01257D] dark:text-blue-400 mb-2">25%</h3>
+                    <h3 className="text-4xl font-bold text-[#01257D] dark:text-blue-400 mb-2">{analysisData?.sentimentDistribution?.neutral ?? 0}%</h3>
                     <p className="text-lg font-semibold text-[#01257D] dark:text-blue-300 mb-3">Menciones Neutras</p>
                     <div className="flex items-center text-sm">
-                      <TrendIndicator value={-3} />
+                      <TrendIndicator value={0} />
                     </div>
                   </div>
 
@@ -503,10 +519,10 @@ export default function AnalisisPage() {
                       <AlertTriangle className="h-5 w-5 text-red-400" />
                     </div>
                     <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
-                    <h3 className="text-4xl font-bold text-red-600 dark:text-red-400 mb-2">10%</h3>
+                    <h3 className="text-4xl font-bold text-red-600 dark:text-red-400 mb-2">{analysisData?.sentimentDistribution?.negative ?? 0}%</h3>
                     <p className="text-lg font-semibold text-red-700 dark:text-red-300 mb-3">Menciones Negativas</p>
                     <div className="flex items-center text-sm">
-                      <TrendIndicator value={-2} />
+                      <TrendIndicator value={0} />
                     </div>
                   </div>
                 </div>

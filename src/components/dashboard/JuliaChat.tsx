@@ -2,9 +2,19 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, Send, Bot, User, Sparkles, RefreshCw, X, Minimize2, Maximize2, Volume2, VolumeX, Coins, Brain, AlertTriangle, FileText } from 'lucide-react';
+import { MessageCircle, Send, User, Sparkles, RefreshCw, X, Minimize2, Maximize2, Volume2, VolumeX, Coins, Brain, AlertTriangle, FileText } from 'lucide-react';
 import { emitCreditsChanged } from '@/lib/credit-events';
 import { useUser } from '@/context/UserContext';
+
+/** Isotipo de marca (Reputación Online) — avatar de Julia, en vez del ícono genérico. */
+function BrandMark({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 40 40" fill="none" className={className} xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M20 35C19.5 35 19 34.8 18.6 34.4C18.2 34 18 33.5 18 33V30.5C16.5 30.2 15.1 29.6 13.9 28.7C12.7 27.8 11.7 26.7 10.9 25.4C10.1 24.1 9.6 22.7 9.4 21.2C9.2 19.7 9.3 18.2 9.7 16.8C10.1 15.4 10.8 14.1 11.7 12.9C12.6 11.7 13.7 10.7 15 10C16.3 9.3 17.7 8.8 19.2 8.6C20.7 8.4 22.2 8.5 23.6 8.9C25 9.3 26.3 10 27.5 10.9C28.7 11.8 29.7 12.9 30.5 14.2C31.3 15.5 31.8 16.9 32 18.4C32.2 19.9 32.1 21.4 31.7 22.8C31.3 24.2 30.6 25.5 29.7 26.7C28.8 27.9 27.7 28.9 26.4 29.6L26 29.8V33C26 33.5 25.8 34 25.4 34.4C25 34.8 24.5 35 24 35H20ZM20 32H24V28.5L24.5 28.3C25.6 27.8 26.6 27.1 27.4 26.2C28.2 25.3 28.8 24.3 29.2 23.2C29.6 22.1 29.7 20.9 29.6 19.7C29.5 18.5 29.1 17.4 28.5 16.4C27.9 15.4 27.1 14.5 26.1 13.8C25.1 13.1 24 12.6 22.8 12.4C21.6 12.2 20.4 12.3 19.3 12.7C18.2 13.1 17.2 13.7 16.3 14.5C15.4 15.3 14.7 16.3 14.3 17.4C13.9 18.5 13.8 19.7 13.9 20.9C14 22.1 14.4 23.2 15 24.2C15.6 25.2 16.4 26.1 17.4 26.8C18.4 27.5 19.5 28 20.7 28.2L21 28.3V32H20Z" fill="currentColor"/>
+      <circle cx="20" cy="20" r="4" fill="currentColor"/>
+    </svg>
+  );
+}
 
 interface Message {
   id: string;
@@ -262,7 +272,7 @@ export default function JuliaChat() {
             repeatType: "loop"
           }}
         >
-          <Bot className="w-8 h-8" />
+          <BrandMark className="w-8 h-8 text-white" />
         </motion.div>
         
         {/* Indicator de disponibilidad */}
@@ -297,7 +307,7 @@ export default function JuliaChat() {
             }}
             transition={{ duration: 2, repeat: Infinity }}
           >
-            <Bot className="w-6 h-6 text-[#01257D]" />
+            <BrandMark className="w-6 h-6 text-[#01257D]" />
           </motion.div>
           <div>
             <h3 className="font-semibold text-white">Julia</h3>
@@ -420,7 +430,7 @@ export default function JuliaChat() {
               {/* Quick Actions */}
               <div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Acciones rapidas:</p>
-                <div className="flex flex-wrap gap-1">
+                <div className="flex flex-wrap gap-1.5">
                   {quickActions.map((qa, index) => (
                     <motion.button
                       key={index}
@@ -432,7 +442,7 @@ export default function JuliaChat() {
                         };
                         setInputMessage(promptMap[qa.action] || qa.label);
                       }}
-                      className="flex items-center space-x-1 text-xs px-2 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800/40 rounded-full transition-colors"
+                      className="flex items-center space-x-1 text-xs px-2 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-800/40 rounded-full transition-colors max-w-full"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
@@ -448,14 +458,14 @@ export default function JuliaChat() {
               {/* Quick Questions */}
               <div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Preguntas frecuentes:</p>
-                <div className="flex flex-wrap gap-1">
+                <div className="flex flex-col gap-1">
                   {quickQuestions.map((question, index) => (
                     <motion.button
                       key={index}
                       onClick={() => handleQuickQuestion(question)}
-                      className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full transition-colors"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
+                      className="w-full text-left text-xs px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors whitespace-normal break-words"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                     >
                       {question}
                     </motion.button>

@@ -7,6 +7,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import * as jwt from 'jsonwebtoken';
 import { supabase } from '@/lib/supabase-server';
 import { scrapeSiteWithRateLimit } from '@/lib/news-monitoring/scraper';
+import { checkBalance, deductCreditsForAction } from '@/lib/credit-guard';
+import { CREDIT_COSTS } from '@/lib/credit-costs';
 
 import { getJwtSecret } from '@/lib/jwt-secret';
 
@@ -98,6 +100,24 @@ export async function POST(request: NextRequest) {
           timestamp: new Date().toISOString(),
         },
         { status: 400 }
+      );
+    }
+
+    // Verificar créditos ANTES de gastar recursos (escaneo manual = monitoring_hourly).
+    const SCAN_COST = CREDIT_COSTS.monitoring_hourly;
+    const balance = await checkBalance(userId, SCAN_COST);
+    if (!balance.hasEnough && !balance.unlimited) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'INSUFFICIENT_CREDITS',
+            message: `Créditos insuficientes. Este escaneo cuesta ${SCAN_COST} créditos y tienes ${balance.currentBalance}.`,
+          },
+          credits: { cost: SCAN_COST, currentBalance: balance.currentBalance },
+          timestamp: new Date().toISOString(),
+        },
+        { status: 402 }
       );
     }
 
@@ -239,6 +259,13 @@ export async function POST(request: NextRequest) {
         })
         .eq('id', monitoredSite.id);
 
+      // Cobrar el escaneo (solo si fue exitoso; el saldo ya se validó arriba).
+      let creditsAfter: number | undefined;
+      if (!balance.unlimited) {
+        const deduct = await deductCreditsForAction(userId, 'monitoring_hourly', 1, 'Escaneo manual de noticias');
+        creditsAfter = deduct.newBalance;
+      }
+
       return NextResponse.json(
         {
           success: true,
@@ -256,6 +283,7 @@ export async function POST(request: NextRequest) {
             })),
             duration: `${duration}ms`,
           },
+          credits: { cost: SCAN_COST, newBalance: creditsAfter },
           message: `Escaneo completado: ${scrapingResult.mentionsFound} menciones encontradas`,
           timestamp: new Date().toISOString(),
         },

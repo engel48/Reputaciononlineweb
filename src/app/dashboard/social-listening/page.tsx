@@ -53,33 +53,69 @@ export default function SocialListeningPage() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [metrics, setMetrics] = useState<ListeningMetrics | null>(null);
 
-  // Fetch real data from APIs
+  // Perfil del usuario desde el contexto (no desde endpoints inexistentes).
   useEffect(() => {
-    const fetchRealData = async () => {
-      try {
-        const session = await fetch('/api/auth/session').then(r => r.json());
-        if (!session?.user) {
-          setIsLoading(false);
-          return;
-        }
-
-        const metricsResponse = await fetch(`/api/social-listening/metrics?userId=${session.user.id}`);
-        const metricsData = await metricsResponse.json();
-        setMetrics(metricsData.metrics || null);
-
-        const profileResponse = await fetch(`/api/user/profile?userId=${session.user.id}`);
-        const profileData = await profileResponse.json();
-        setUserProfile(profileData.profile || null);
-
-        setIsLoading(false);
-      } catch (error) {
-        console.error('Error loading data:', error);
-        setMetrics(null);
-        setUserProfile(null);
-        setIsLoading(false);
-      }
+    const map: Record<string, UserProfile['type']> = {
+      political: 'político',
+      business: 'empresa',
+      personal: 'personalidad',
     };
-    fetchRealData();
+    setUserProfile({
+      type: map[user?.profileType || 'personal'] || 'empresa',
+      specialization: user?.category,
+    });
+  }, [user]);
+
+  // Métricas REALES desde /api/dashboard-analytics (el mismo endpoint del dashboard).
+  useEffect(() => {
+    let cancelled = false;
+    const empty: ListeningMetrics = {
+      totalMentions: 0,
+      sentiment: { positive: 0, negative: 0, neutral: 0 },
+      reach: 0,
+      engagement: 0,
+      crisisAlerts: 0,
+      mediaAppearances: 0,
+    };
+    (async () => {
+      try {
+        const res = await fetch('/api/dashboard-analytics', { credentials: 'include' });
+        const json = await res.json();
+        const d = json?.data;
+        if (cancelled) return;
+        if (res.ok && d?.mentions) {
+          const s = d.mentions;
+          const sTotal = (s.positive || 0) + (s.negative || 0) + (s.neutral || 0);
+          const pct = (n: number) => (sTotal > 0 ? Math.round((n / sTotal) * 100) : 0);
+          const platforms: any[] = d.socialMedia?.platforms || [];
+          const connected = platforms.filter((p) => p.connected);
+          setMetrics({
+            totalMentions: s.total || 0,
+            sentiment: {
+              positive: pct(s.positive || 0),
+              negative: pct(s.negative || 0),
+              neutral: pct(s.neutral || 0),
+            },
+            reach: platforms.reduce((sum, p) => sum + (p.followers || 0), 0),
+            engagement: connected.length
+              ? Math.round(connected.reduce((sum, p) => sum + (p.engagement || 0), 0) / connected.length)
+              : 0,
+            crisisAlerts: 0,
+            mediaAppearances: 0,
+          });
+        } else {
+          setMetrics(empty);
+        }
+      } catch (error) {
+        console.error('Error loading social-listening data:', error);
+        if (!cancelled) setMetrics(empty);
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Determinar tipo de usuario para personalización
@@ -113,12 +149,6 @@ export default function SocialListeningPage() {
 
     return baseTabs;
   };
-
-  // Efectos y funciones
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1500);
-    return () => clearTimeout(timer);
-  }, []);
 
   useEffect(() => {
     if (autoRefresh) {
