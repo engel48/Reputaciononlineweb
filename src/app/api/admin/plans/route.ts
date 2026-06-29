@@ -126,10 +126,10 @@ export async function POST(request: NextRequest) {
       description: description ?? null,
       price_cop: Math.max(0, Math.floor(priceCop)),
       monthly_credits: Math.max(0, Math.floor(monthlyCredits)),
-      // Total hasta 12 (3 por red x 4 redes); el tope real es 3 cuentas POR red social.
-      max_social_accounts: Math.min(12, Math.max(0, Math.floor(maxSocialAccounts ?? 1))),
+      // Tope real: 2 cuentas POR red social (solo el plan más alto). Total hasta 8 (2 x 4 redes).
+      max_social_accounts: Math.min(8, Math.max(0, Math.floor(maxSocialAccounts ?? 1))),
       multi_account_per_platform: !!multiAccountPerPlatform,
-      max_accounts_per_platform: Math.min(3, Math.max(1, Math.floor(maxAccountsPerPlatform ?? 1))),
+      max_accounts_per_platform: Math.min(2, Math.max(1, Math.floor(maxAccountsPerPlatform ?? 1))),
       features: features ?? {},
       is_active: isActive !== false,
       is_popular: !!isPopular,

@@ -151,7 +151,11 @@ export default function PlanPage() {
                         <ul className="space-y-2">
                           <li className="flex items-center text-sm text-gray-600 dark:text-gray-400">
                             <Check className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                            Hasta {plan.maxSocialAccounts} cuenta{plan.maxSocialAccounts !== 1 ? 's' : ''} de redes sociales
+                            {plan.maxSocialAccounts <= 1
+                              ? '1 cuenta social'
+                              : (plan.maxAccountsPerPlatform ?? 1) > 1
+                              ? `Hasta ${plan.maxAccountsPerPlatform} cuentas por red social (${plan.maxSocialAccounts} en total)`
+                              : `1 cuenta por cada red social (hasta ${plan.maxSocialAccounts})`}
                           </li>
                           {modules.length > 0 ? (
                             modules.map((label) => (

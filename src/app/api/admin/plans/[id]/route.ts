@@ -29,10 +29,10 @@ export async function PUT(request: NextRequest, { params }: RouteCtx) {
   if (body.description !== undefined) updateData.description = body.description;
   if (body.priceCop !== undefined) updateData.price_cop = Math.max(0, Math.floor(body.priceCop));
   if (body.monthlyCredits !== undefined) updateData.monthly_credits = Math.max(0, Math.floor(body.monthlyCredits));
-  // Total hasta 12 (3 por red x 4 redes); el tope real es 3 cuentas POR red social.
-  if (body.maxSocialAccounts !== undefined) updateData.max_social_accounts = Math.min(12, Math.max(0, Math.floor(body.maxSocialAccounts)));
+  // Tope real: 2 cuentas POR red social (solo el plan más alto). Total hasta 8 (2 x 4 redes).
+  if (body.maxSocialAccounts !== undefined) updateData.max_social_accounts = Math.min(8, Math.max(0, Math.floor(body.maxSocialAccounts)));
   if (body.multiAccountPerPlatform !== undefined) updateData.multi_account_per_platform = !!body.multiAccountPerPlatform;
-  if (body.maxAccountsPerPlatform !== undefined) updateData.max_accounts_per_platform = Math.min(3, Math.max(1, Math.floor(body.maxAccountsPerPlatform)));
+  if (body.maxAccountsPerPlatform !== undefined) updateData.max_accounts_per_platform = Math.min(2, Math.max(1, Math.floor(body.maxAccountsPerPlatform)));
   if (body.features !== undefined) updateData.features = body.features;
   if (body.isActive !== undefined) updateData.is_active = !!body.isActive;
   if (body.isPopular !== undefined) updateData.is_popular = !!body.isPopular;

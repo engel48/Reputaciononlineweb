@@ -88,7 +88,8 @@ export async function GET(request: NextRequest) {
 
     const { supabase } = await import('@/lib/supabase-server');
     const [socialRes, statsRes, mentionsRes] = await Promise.all([
-      supabase.from('social_media').select('*').eq('user_id', userId).eq('platform', 'youtube').maybeSingle(),
+      // order+limit(1): tolera varias cuentas de YouTube (toma la más reciente) sin romper.
+      supabase.from('social_media').select('*').eq('user_id', userId).eq('platform', 'youtube').order('last_sync', { ascending: false, nullsFirst: false }).limit(1).maybeSingle(),
       supabase.from('user_stats').select('*').eq('user_id', userId).maybeSingle(),
       supabase
         .from('mentions')

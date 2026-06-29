@@ -22,6 +22,7 @@ interface PublicPlan {
   monthlyCredits: number;
   maxSocialAccounts: number;
   multiAccountPerPlatform: boolean;
+  maxAccountsPerPlatform: number;
   features: Record<string, boolean>;
   isPopular: boolean;
   displayOrder: number;
@@ -64,10 +65,15 @@ function buildFeatureList(plan: PublicPlan): string[] {
   // Limites cuantitativos primero
   lines.push(`${plan.monthlyCredits.toLocaleString('es-CO')} creditos al mes`);
   if (plan.maxSocialAccounts > 0) {
-    const accSuffix = plan.multiAccountPerPlatform
-      ? `${plan.maxSocialAccounts} cuentas sociales (multiples por red)`
-      : `${plan.maxSocialAccounts} cuenta${plan.maxSocialAccounts !== 1 ? 's' : ''} social${plan.maxSocialAccounts !== 1 ? 'es' : ''}`;
-    lines.push(accSuffix);
+    const total = plan.maxSocialAccounts;
+    const perRed = plan.maxAccountsPerPlatform ?? 1;
+    const accLine =
+      total <= 1
+        ? '1 cuenta social'
+        : perRed > 1
+        ? `Hasta ${perRed} cuentas por red social (${total} en total)`
+        : `1 cuenta por cada red social (hasta ${total})`;
+    lines.push(accLine);
   }
 
   // Features booleanas habilitadas
@@ -374,8 +380,8 @@ export default function PlanesPage() {
                     <td className="border border-gray-200 dark:border-gray-600 p-4 font-medium text-gray-900 dark:text-white">Cuentas sociales</td>
                     {plans.map((p) => (
                       <td key={p.code} className={`border border-gray-200 dark:border-gray-600 p-4 text-center ${p.isPopular ? 'bg-blue-50 dark:bg-blue-900/20 text-gray-900 dark:text-white font-medium' : 'text-gray-700 dark:text-gray-300'}`}>
-                        {p.maxSocialAccounts}
-                        {p.multiAccountPerPlatform && <span className="block text-xs text-purple-600 dark:text-purple-400">multiples por red</span>}
+                        {(p.maxAccountsPerPlatform ?? 1) > 1 ? `${p.maxAccountsPerPlatform} por red` : '1 por red'}
+                        <span className="block text-xs text-gray-500 dark:text-gray-400">{p.maxSocialAccounts} en total</span>
                       </td>
                     ))}
                   </tr>

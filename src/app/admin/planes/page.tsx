@@ -140,12 +140,12 @@ export default function PlanesPage() {
         : type === 'number'
         ? parseInt(value, 10) || 0
         : value;
-    // Total hasta 12 (3 por red x 4 redes); el tope real es 3 cuentas POR red social.
+    // Tope real: 2 cuentas POR red (solo el plan más alto). Total hasta 8 (2 x 4 redes).
     if (name === 'maxSocialAccounts' && typeof newValue === 'number') {
-      newValue = Math.min(12, Math.max(0, newValue));
+      newValue = Math.min(8, Math.max(0, newValue));
     }
     if (name === 'maxAccountsPerPlatform' && typeof newValue === 'number') {
-      newValue = Math.min(3, Math.max(1, newValue));
+      newValue = Math.min(2, Math.max(1, newValue));
     }
     setForm((prev) => ({ ...prev, [name]: newValue }));
   };
@@ -312,7 +312,9 @@ export default function PlanesPage() {
                       <div className="flex items-center">
                         <Users className="mr-2 h-4 w-4 text-blue-500" />
                         {plan.maxSocialAccounts}
-                        {plan.multiAccountPerPlatform && <span className="ml-1 text-xs text-purple-500">(multi)</span>}
+                        <span className="ml-1 text-xs text-purple-500">
+                          ({(plan.maxAccountsPerPlatform ?? 1) > 1 ? `${plan.maxAccountsPerPlatform} por red` : '1 por red'})
+                        </span>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-center text-sm">
@@ -510,14 +512,14 @@ export default function PlanesPage() {
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-600">Max cuentas sociales* (total, máx 12)</label>
+                  <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-600">Max cuentas sociales* (total, máx 8)</label>
                   <input
                     type="number"
                     name="maxSocialAccounts"
                     value={form.maxSocialAccounts}
                     onChange={handleInputChange}
                     min={0}
-                    max={12}
+                    max={8}
                     className="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-100 dark:text-gray-900 p-2 text-sm"
                     required
                   />
@@ -537,17 +539,17 @@ export default function PlanesPage() {
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-600">Máx. cuentas por red social (máx 3)</label>
+                <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-600">Máx. cuentas por red social (máx 2)</label>
                 <input
                   type="number"
                   name="maxAccountsPerPlatform"
                   value={form.maxAccountsPerPlatform}
                   onChange={handleInputChange}
                   min={1}
-                  max={3}
+                  max={2}
                   className="w-full rounded-md border border-gray-300 dark:border-gray-600 dark:bg-gray-100 dark:text-gray-900 p-2 text-sm"
                 />
-                <p className="mt-1 text-xs text-gray-400">1 = una sola cuenta por cada red (sin 2 Facebook, etc.). Tope: 3.</p>
+                <p className="mt-1 text-xs text-gray-400">1 = una sola cuenta por cada red (sin 2 Facebook, etc.). Tope: 2 (pensado solo para el plan más alto).</p>
               </div>
 
               <div className="flex flex-col gap-2 rounded-md border border-gray-200 dark:border-gray-200 p-3">

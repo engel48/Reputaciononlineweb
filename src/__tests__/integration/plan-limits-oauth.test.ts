@@ -6,8 +6,11 @@
  * que checkSocialAccountLimit aplica las reglas correctas en cada
  * combinacion (plan x cantidad x intentar misma red).
  *
- * Replica el flujo: usuario tiene plan X, ya tiene N cuentas conectadas,
- * intenta conectar una nueva en plataforma Y → permitido o rechazado.
+ * Modelo vigente (seed de public.plans):
+ *   - free:       1 cuenta total (1 por red)
+ *   - basic:      1 por red  -> hasta 4 en total
+ *   - pro:        1 por red  -> hasta 4 en total   (mono-cuenta, la mayoria de usuarios)
+ *   - enterprise: 2 por red  -> hasta 8 en total   (UNICO con multi-cuenta por red)
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -16,9 +19,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 // max_accounts_per_platform = cuantas cuentas de la MISMA red permite el plan.
 const PLANS = {
   free: { code: 'free', name: 'Plan Free', price_cop: 0, monthly_credits: 100, max_social_accounts: 1, multi_account_per_platform: false, max_accounts_per_platform: 1, features: {}, is_active: true },
-  basic: { code: 'basic', name: 'Plan Basico', price_cop: 99000, monthly_credits: 500, max_social_accounts: 3, multi_account_per_platform: false, max_accounts_per_platform: 1, features: {}, is_active: true },
-  pro: { code: 'pro', name: 'Plan Profesional', price_cop: 249000, monthly_credits: 5000, max_social_accounts: 12, multi_account_per_platform: true, max_accounts_per_platform: 3, features: {}, is_active: true },
-  enterprise: { code: 'enterprise', name: 'Plan Enterprise', price_cop: 499000, monthly_credits: 50000, max_social_accounts: 20, multi_account_per_platform: true, max_accounts_per_platform: 5, features: {}, is_active: true },
+  basic: { code: 'basic', name: 'Plan Basico', price_cop: 99000, monthly_credits: 500, max_social_accounts: 4, multi_account_per_platform: false, max_accounts_per_platform: 1, features: {}, is_active: true },
+  pro: { code: 'pro', name: 'Plan Profesional', price_cop: 249000, monthly_credits: 5000, max_social_accounts: 4, multi_account_per_platform: false, max_accounts_per_platform: 1, features: {}, is_active: true },
+  enterprise: { code: 'enterprise', name: 'Plan Enterprise', price_cop: 499000, monthly_credits: 50000, max_social_accounts: 8, multi_account_per_platform: true, max_accounts_per_platform: 2, features: {}, is_active: true },
 };
 
 // Estado de cada usuario test (plan + cuentas conectadas)
@@ -59,6 +62,12 @@ vi.mock('@/lib/supabase-server', () => ({
   },
 }));
 
+// Helper: arma N conexiones repartidas en las 4 redes (round-robin).
+function mix(n: number): Array<{ platform: string; connected: boolean }> {
+  const nets = ['facebook', 'instagram', 'x', 'youtube'];
+  return Array.from({ length: n }, (_, i) => ({ platform: nets[i % 4], connected: true }));
+}
+
 describe('Integration: planes + OAuth limit enforcement', () => {
   beforeEach(async () => {
     // Reset cache de plans en cada test
@@ -67,145 +76,123 @@ describe('Integration: planes + OAuth limit enforcement', () => {
     Object.keys(userScenarios).forEach((k) => delete userScenarios[k]);
   });
 
-  it('user FREE recien creado puede conectar SU PRIMERA red', async () => {
-    userScenarios['user-free-new'] = { plan: 'free', connections: [] };
+  // ─────────────────────────────── FREE (1 total) ───────────────────────────────
+  it('FREE recien creado puede conectar SU PRIMERA red', async () => {
+    userScenarios['u'] = { plan: 'free', connections: [] };
     const { checkSocialAccountLimit } = await import('@/lib/plan-limits');
-    const result = await checkSocialAccountLimit('user-free-new', 'youtube');
+    const result = await checkSocialAccountLimit('u', 'youtube');
     expect(result.allowed).toBe(true);
     expect(result.limit).toBe(1);
   });
 
-  it('user FREE con 1 cuenta NO puede conectar segunda red (limite=1)', async () => {
-    userScenarios['user-free-full'] = {
-      plan: 'free',
-      connections: [{ platform: 'youtube', connected: true }],
-    };
+  it('FREE con 1 cuenta NO puede conectar una segunda (tope total = 1)', async () => {
+    userScenarios['u'] = { plan: 'free', connections: [{ platform: 'youtube', connected: true }] };
     const { checkSocialAccountLimit } = await import('@/lib/plan-limits');
-    const result = await checkSocialAccountLimit('user-free-full', 'facebook');
+    const result = await checkSocialAccountLimit('u', 'facebook');
     expect(result.allowed).toBe(false);
     expect(result.reason).toContain('limite de 1');
   });
 
-  it('user BASIC con 3 redes NO puede conectar la 4ta (limite=3)', async () => {
-    userScenarios['user-basic-full'] = {
-      plan: 'basic',
-      connections: [
-        { platform: 'youtube', connected: true },
-        { platform: 'facebook', connected: true },
-        { platform: 'instagram', connected: true },
-      ],
-    };
+  // ─────────────────────────────── BASIC (1/red, 4 total) ───────────────────────
+  it('BASIC NO puede conectar una segunda cuenta de la misma red (1 por red)', async () => {
+    userScenarios['u'] = { plan: 'basic', connections: [{ platform: 'facebook', connected: true }] };
     const { checkSocialAccountLimit } = await import('@/lib/plan-limits');
-    const result = await checkSocialAccountLimit('user-basic-full', 'x');
-    expect(result.allowed).toBe(false);
-    expect(result.reason).toContain('limite de 3');
-  });
-
-  it('user BASIC con 1 facebook NO puede conectar segunda facebook (no multi-cuenta)', async () => {
-    userScenarios['user-basic-fb'] = {
-      plan: 'basic',
-      connections: [{ platform: 'facebook', connected: true }],
-    };
-    const { checkSocialAccountLimit } = await import('@/lib/plan-limits');
-    const result = await checkSocialAccountLimit('user-basic-fb', 'facebook');
+    const result = await checkSocialAccountLimit('u', 'facebook');
     expect(result.allowed).toBe(false);
     expect(result.reason).toContain('una cuenta de facebook');
   });
 
-  it('user PRO con 2 cuentas de facebook SI puede conectar la 3ra (3 por red)', async () => {
-    userScenarios['user-pro-fb2'] = {
-      plan: 'pro',
+  it('BASIC con 3 redes distintas puede conectar la 4ta (distinta red)', async () => {
+    userScenarios['u'] = { plan: 'basic', connections: mix(3) }; // fb, ig, x
+    const { checkSocialAccountLimit } = await import('@/lib/plan-limits');
+    const result = await checkSocialAccountLimit('u', 'youtube');
+    expect(result.allowed).toBe(true);
+    expect(result.current).toBe(3);
+  });
+
+  it('BASIC con 4 cuentas NO puede conectar mas (tope total = 4)', async () => {
+    userScenarios['u'] = { plan: 'basic', connections: mix(4) }; // 1 por cada red
+    const { checkSocialAccountLimit } = await import('@/lib/plan-limits');
+    const result = await checkSocialAccountLimit('u', 'facebook');
+    expect(result.allowed).toBe(false);
+    expect(result.reason).toContain('limite de 4');
+  });
+
+  // ─────────────────────────────── PRO (1/red, 4 total — mono) ──────────────────
+  it('PRO NO puede conectar una segunda cuenta de la misma red (mono-cuenta)', async () => {
+    userScenarios['u'] = { plan: 'pro', connections: [{ platform: 'facebook', connected: true }] };
+    const { checkSocialAccountLimit } = await import('@/lib/plan-limits');
+    const result = await checkSocialAccountLimit('u', 'facebook');
+    expect(result.allowed).toBe(false);
+    expect(result.reason).toContain('una cuenta de facebook');
+  });
+
+  it('PRO con 4 cuentas NO puede conectar mas (tope total = 4)', async () => {
+    userScenarios['u'] = { plan: 'pro', connections: mix(4) };
+    const { checkSocialAccountLimit } = await import('@/lib/plan-limits');
+    const result = await checkSocialAccountLimit('u', 'instagram');
+    expect(result.allowed).toBe(false);
+    expect(result.reason).toContain('limite de 4');
+  });
+
+  // ─────────────────────────── ENTERPRISE (2/red, 8 total — multi) ──────────────
+  it('ENTERPRISE con 1 facebook SI puede conectar una segunda facebook (multi-cuenta)', async () => {
+    userScenarios['u'] = { plan: 'enterprise', connections: [{ platform: 'facebook', connected: true }] };
+    const { checkSocialAccountLimit } = await import('@/lib/plan-limits');
+    const result = await checkSocialAccountLimit('u', 'facebook');
+    expect(result.allowed).toBe(true);
+    expect(result.limit).toBe(8);
+  });
+
+  it('ENTERPRISE con 2 facebook NO puede conectar la 3ra de esa red (max 2 por red)', async () => {
+    userScenarios['u'] = {
+      plan: 'enterprise',
       connections: [
         { platform: 'facebook', connected: true },
         { platform: 'facebook', connected: true },
       ],
     };
     const { checkSocialAccountLimit } = await import('@/lib/plan-limits');
-    const result = await checkSocialAccountLimit('user-pro-fb2', 'facebook');
-    expect(result.allowed).toBe(true);
-    expect(result.current).toBe(2);
-  });
-
-  it('user PRO con 3 cuentas de facebook NO puede conectar la 4ta (max 3 por red)', async () => {
-    userScenarios['user-pro-fb3'] = {
-      plan: 'pro',
-      connections: [
-        { platform: 'facebook', connected: true },
-        { platform: 'facebook', connected: true },
-        { platform: 'facebook', connected: true },
-      ],
-    };
-    const { checkSocialAccountLimit } = await import('@/lib/plan-limits');
-    const result = await checkSocialAccountLimit('user-pro-fb3', 'facebook');
+    const result = await checkSocialAccountLimit('u', 'facebook');
     expect(result.allowed).toBe(false);
-    expect(result.reason).toContain('hasta 3 cuentas de facebook');
+    expect(result.reason).toContain('hasta 2 cuentas de facebook');
   });
 
-  it('user PRO con 12 cuentas NO puede conectar mas (tope total=12)', async () => {
-    userScenarios['user-pro-full'] = {
-      plan: 'pro',
-      connections: Array.from({ length: 12 }, (_, i) => ({
-        platform: ['facebook', 'instagram', 'x', 'youtube'][i % 4],
-        connected: true,
-      })),
-    };
+  it('ENTERPRISE con 8 cuentas (2 por red) NO puede conectar mas (tope total = 8)', async () => {
+    userScenarios['u'] = { plan: 'enterprise', connections: mix(8) }; // 2 por cada red
     const { checkSocialAccountLimit } = await import('@/lib/plan-limits');
-    const result = await checkSocialAccountLimit('user-pro-full', 'youtube');
+    const result = await checkSocialAccountLimit('u', 'instagram');
     expect(result.allowed).toBe(false);
-    expect(result.limit).toBe(12);
+    expect(result.reason).toContain('limite de 8');
   });
 
-  it('user ENTERPRISE con 1 facebook SI puede conectar segunda facebook (multi-cuenta)', async () => {
-    userScenarios['user-ent-fb'] = {
-      plan: 'enterprise',
-      connections: [{ platform: 'facebook', connected: true }],
-    };
-    const { checkSocialAccountLimit } = await import('@/lib/plan-limits');
-    const result = await checkSocialAccountLimit('user-ent-fb', 'facebook');
-    expect(result.allowed).toBe(true);
-    expect(result.limit).toBe(20);
-  });
-
-  it('user ENTERPRISE con 20 cuentas NO puede conectar la 21va (tope total=20)', async () => {
-    userScenarios['user-ent-full'] = {
-      plan: 'enterprise',
-      connections: Array.from({ length: 20 }, (_, i) => ({
-        platform: ['facebook', 'instagram', 'x', 'youtube'][i % 4],
-        connected: true,
-      })),
-    };
-    const { checkSocialAccountLimit } = await import('@/lib/plan-limits');
-    const result = await checkSocialAccountLimit('user-ent-full', 'instagram');
-    expect(result.allowed).toBe(false);
-    expect(result.reason).toContain('limite de 20');
-  });
-
-  it('user ENTERPRISE con 5 cuentas (mix) puede seguir conectando', async () => {
-    userScenarios['user-ent-mix'] = {
+  it('ENTERPRISE con 5 cuentas (mix) puede seguir conectando una red no saturada', async () => {
+    userScenarios['u'] = {
       plan: 'enterprise',
       connections: [
         { platform: 'facebook', connected: true },
         { platform: 'facebook', connected: true },
         { platform: 'instagram', connected: true },
-        { platform: 'youtube', connected: true },
         { platform: 'x', connected: true },
+        { platform: 'youtube', connected: true },
       ],
     };
     const { checkSocialAccountLimit } = await import('@/lib/plan-limits');
-    const result = await checkSocialAccountLimit('user-ent-mix', 'youtube');
+    const result = await checkSocialAccountLimit('u', 'youtube'); // youtube tiene 1 (<2)
     expect(result.allowed).toBe(true);
     expect(result.current).toBe(5);
   });
 
-  it('user con plan inexistente recibe error explicito', async () => {
-    userScenarios['user-phantom'] = { plan: 'phantom-plan', connections: [] };
+  // ─────────────────────────────── Casos borde ──────────────────────────────────
+  it('plan inexistente recibe error explicito', async () => {
+    userScenarios['u'] = { plan: 'phantom-plan', connections: [] };
     const { checkSocialAccountLimit } = await import('@/lib/plan-limits');
-    const result = await checkSocialAccountLimit('user-phantom', 'youtube');
+    const result = await checkSocialAccountLimit('u', 'youtube');
     expect(result.allowed).toBe(false);
     expect(result.reason).toContain('Plan');
   });
 
-  it('user inexistente recibe error explicito', async () => {
+  it('usuario inexistente recibe error explicito', async () => {
     const { checkSocialAccountLimit } = await import('@/lib/plan-limits');
     const result = await checkSocialAccountLimit('user-no-existe', 'youtube');
     expect(result.allowed).toBe(false);
@@ -213,15 +200,15 @@ describe('Integration: planes + OAuth limit enforcement', () => {
   });
 
   it('cuentas DESCONECTADAS no cuentan para el limite', async () => {
-    userScenarios['user-with-disconnected'] = {
+    userScenarios['u'] = {
       plan: 'free',
       connections: [
-        { platform: 'youtube', connected: false }, // desconectada, no cuenta
-        { platform: 'facebook', connected: false }, // desconectada, no cuenta
+        { platform: 'youtube', connected: false },
+        { platform: 'facebook', connected: false },
       ],
     };
     const { checkSocialAccountLimit } = await import('@/lib/plan-limits');
-    const result = await checkSocialAccountLimit('user-with-disconnected', 'instagram');
+    const result = await checkSocialAccountLimit('u', 'instagram');
     expect(result.allowed).toBe(true);
     expect(result.current).toBe(0);
   });
