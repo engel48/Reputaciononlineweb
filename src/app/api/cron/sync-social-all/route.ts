@@ -4,6 +4,7 @@ import {
   SocialPlatform,
   SyncResult,
 } from '@/lib/social-sync';
+import { sendPlatformDisconnectedEmail } from '@/lib/email-service';
 
 /**
  * Cron endpoint: sincroniza menciones de las 4 redes para TODOS los usuarios conectados.
@@ -134,12 +135,44 @@ export async function POST(request: NextRequest) {
     const failed401 = allResults.filter(
       (r) => !r.success && /401|403|unauthorized|forbidden|invalid.*token/i.test(r.error || '')
     );
+    // Avisar por correo SOLO en la transición conectado->desconectado (sin spam por corrida).
+    const seenDisc = new Set<string>();
     for (const f of failed401) {
+      const key = `${f.user_id}|${f.platform}`;
+      if (seenDisc.has(key)) continue;
+      seenDisc.add(key);
+
+      const { data: wasConnected } = await supabase
+        .from('social_media')
+        .select('id')
+        .eq('user_id', f.user_id)
+        .eq('platform', f.platform)
+        .eq('connected', true)
+        .limit(1);
+
       await supabase
         .from('social_media')
         .update({ connected: false })
         .eq('user_id', f.user_id)
         .eq('platform', f.platform);
+
+      if (wasConnected && wasConnected.length > 0) {
+        try {
+          const { data: u } = await supabase
+            .from('users')
+            .select('email, name')
+            .eq('id', f.user_id)
+            .single();
+          if (u?.email) {
+            await sendPlatformDisconnectedEmail(u.email, u.name || 'Usuario', {
+              platform: f.platform,
+              reason: 'Tu token de acceso expiró o fue revocado. Reconecta tu cuenta para seguir monitoreando.',
+            });
+          }
+        } catch (e) {
+          console.error('CRON sync-social-all: fallo enviando aviso de desconexión:', e);
+        }
+      }
     }
 
     // 5. Log a system_logs

@@ -54,20 +54,20 @@ export async function GET(request: NextRequest) {
 
     for (const user of users) {
       try {
-        // Current month mentions
+        // Current month mentions (columnas reales: published_at, reach_estimate, likes/comments/shares, metadata)
         const { data: currentMentions } = await supabase
           .from('mentions')
-          .select('sentiment, reach, engagement')
+          .select('metadata, likes, comments, shares, reach_estimate, published_at')
           .eq('user_id', user.id)
-          .gte('created_at', thisMonthStart);
+          .gte('published_at', thisMonthStart);
 
         // Previous month mentions
         const { data: prevMentions } = await supabase
           .from('mentions')
-          .select('sentiment, reach, engagement')
+          .select('metadata, likes, comments, shares, reach_estimate, published_at')
           .eq('user_id', user.id)
-          .gte('created_at', lastMonthStart)
-          .lte('created_at', lastMonthEnd);
+          .gte('published_at', lastMonthStart)
+          .lte('published_at', lastMonthEnd);
 
         // News mentions count
         const { data: newsCount } = await supabase
@@ -96,15 +96,20 @@ export async function GET(request: NextRequest) {
         const curr = currentMentions || [];
         const prev = prevMentions || [];
 
+        // El sentimiento vive en metadata.sentiment; engagement = likes+comments+shares; reach = reach_estimate.
+        const sentOf = (m: any): string => {
+          const s = m?.metadata?.sentiment;
+          return s === 'positive' || s === 'negative' || s === 'neutral' ? s : 'neutral';
+        };
         const calcSentiment = (mentions: any[]) => {
-          const pos = mentions.filter(m => m.sentiment === 'positive').length;
+          const pos = mentions.filter(m => sentOf(m) === 'positive').length;
           const total = mentions.length || 1;
           return Math.round((pos / total) * 100);
         };
 
-        const calcReach = (mentions: any[]) => mentions.reduce((sum, m) => sum + (m.reach || 0), 0);
+        const calcReach = (mentions: any[]) => mentions.reduce((sum, m) => sum + (m.reach_estimate || 0), 0);
         const calcEngagement = (mentions: any[]) => {
-          const total = mentions.reduce((sum, m) => sum + (m.engagement || 0), 0);
+          const total = mentions.reduce((sum, m) => sum + (m.likes || 0) + (m.comments || 0) + (m.shares || 0), 0);
           return mentions.length > 0 ? Math.round((total / mentions.length) * 100) / 100 : 0;
         };
 

@@ -50,10 +50,10 @@ export async function GET(request: NextRequest) {
         // Get mentions from last 7 days
         const { data: mentions } = await supabase
           .from('mentions')
-          .select('content, source, sentiment, sentiment_score, created_at')
+          .select('content, platform, metadata, published_at')
           .eq('user_id', user.id)
-          .gte('created_at', sevenDaysAgo)
-          .order('created_at', { ascending: false })
+          .gte('published_at', sevenDaysAgo)
+          .order('published_at', { ascending: false })
           .limit(50);
 
         // Get news mentions from last 7 days
@@ -77,9 +77,14 @@ export async function GET(request: NextRequest) {
           .eq('user_id', user.id)
           .eq('connected', true);
 
+        // El sentimiento de las menciones sociales vive en metadata.sentiment.
+        const sentOf = (m: any): string => {
+          const s = m?.metadata?.sentiment;
+          return s === 'positive' || s === 'negative' || s === 'neutral' ? s : 'neutral';
+        };
         const allMentions = mentions || [];
-        const positive = allMentions.filter(m => m.sentiment === 'positive').length;
-        const negative = allMentions.filter(m => m.sentiment === 'negative').length;
+        const positive = allMentions.filter(m => sentOf(m) === 'positive').length;
+        const negative = allMentions.filter(m => sentOf(m) === 'negative').length;
 
         // Build period string
         const endDate = new Date();
@@ -94,8 +99,8 @@ export async function GET(request: NextRequest) {
           negativeMentions: negative,
           topMentions: allMentions.slice(0, 5).map(m => ({
             content: m.content || '',
-            source: m.source || 'desconocido',
-            sentiment: m.sentiment || 'neutral',
+            source: m.platform || 'desconocido',
+            sentiment: sentOf(m),
           })),
           platforms: (platforms || []).map(p => ({
             name: p.platform,
