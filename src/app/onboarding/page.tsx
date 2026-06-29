@@ -67,7 +67,15 @@ export default function OnboardingPage() {
     otherCategory: '',
     additionalSources: []
   });
-  
+
+  // Datos politicos (solo si la categoria es "Político / gubernamental").
+  // Estado aparte para no perderlos cuando el CategorySelector reescribe categoryData.
+  const [politicalData, setPoliticalData] = useState({
+    partidoPolitico: user?.partidoPolitico || '',
+    cargoActual: user?.cargoActual || '',
+    propuestasPrincipales: user?.propuestasPrincipales || ''
+  });
+
   const [connectedNetworks, setConnectedNetworks] = useState<SocialConnectionsState | null>(null);
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [erroresValidacion, setErroresValidacion] = useState<{[key: string]: string}>({});
@@ -305,6 +313,14 @@ export default function OnboardingPage() {
           brandName: categoryData.brandName?.trim() || undefined,
           otherCategory: categoryData.otherCategory?.trim() || undefined,
           additionalSources: categoryData.additionalSources,
+          // Datos politicos solo si la categoria es politica (mismo usuario, sin portal aparte).
+          ...(categoryData.category === 'Político / gubernamental'
+            ? {
+                partidoPolitico: politicalData.partidoPolitico?.trim() || undefined,
+                cargoActual: politicalData.cargoActual?.trim() || undefined,
+                propuestasPrincipales: politicalData.propuestasPrincipales?.trim() || undefined,
+              }
+            : {}),
         }),
         new Promise((_, reject) => {
           controller.signal.addEventListener('abort', () => {
@@ -669,6 +685,47 @@ export default function OnboardingPage() {
                     onCategoryChange={handleCategoryChange}
                     initialCategory={categoryData.category}
                   />
+
+                  {categoryData.category === 'Político / gubernamental' && (
+                    <div className="mt-8 space-y-5 border-t border-gray-200 pt-6">
+                      <h3 className="text-sm font-semibold text-gray-700">
+                        Datos de tu perfil político <span className="text-gray-400 font-normal">(opcional)</span>
+                      </h3>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Partido político</label>
+                        <input
+                          type="text"
+                          value={politicalData.partidoPolitico}
+                          onChange={(e) => setPoliticalData((p) => ({ ...p, partidoPolitico: e.target.value }))}
+                          className="w-full px-4 py-3 border border-gray-300 bg-white rounded-xl focus:ring-2 focus:ring-[#00E5FF]/30 focus:border-[#00E5FF] text-gray-900 placeholder-gray-400 transition-all"
+                          placeholder="Ej: Partido X"
+                          maxLength={120}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Cargo actual</label>
+                        <input
+                          type="text"
+                          value={politicalData.cargoActual}
+                          onChange={(e) => setPoliticalData((p) => ({ ...p, cargoActual: e.target.value }))}
+                          className="w-full px-4 py-3 border border-gray-300 bg-white rounded-xl focus:ring-2 focus:ring-[#00E5FF]/30 focus:border-[#00E5FF] text-gray-900 placeholder-gray-400 transition-all"
+                          placeholder="Ej: Concejal, Alcalde, Candidato..."
+                          maxLength={120}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Propuestas principales</label>
+                        <textarea
+                          value={politicalData.propuestasPrincipales}
+                          onChange={(e) => setPoliticalData((p) => ({ ...p, propuestasPrincipales: e.target.value }))}
+                          rows={4}
+                          maxLength={500}
+                          className="w-full px-4 py-3 border border-gray-300 bg-white rounded-xl focus:ring-2 focus:ring-[#00E5FF]/30 focus:border-[#00E5FF] text-gray-900 placeholder-gray-400 transition-all resize-none"
+                          placeholder="Resume tus propuestas o ejes de trabajo (máx. 500 caracteres)"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </motion.div>
               )}
 

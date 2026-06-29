@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { sendWelcomeEmail } from '@/lib/email-service';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || '',
@@ -34,6 +35,20 @@ async function verifyCode(code: string, userId: string) {
     .from('users')
     .update({ email_verified: true, updated_at: new Date().toISOString() })
     .eq('id', userId);
+
+  // Correo de bienvenida (no bloqueante): solo en la verificacion exitosa.
+  try {
+    const { data: u } = await supabaseAdmin
+      .from('users')
+      .select('email, name')
+      .eq('id', userId)
+      .single();
+    if (u?.email) {
+      await sendWelcomeEmail(u.email, u.name || 'Usuario');
+    }
+  } catch (e) {
+    console.error('VERIFY-EMAIL: fallo enviando bienvenida (no bloqueante):', e);
+  }
 
   return { success: true, message: 'Correo verificado exitosamente' };
 }

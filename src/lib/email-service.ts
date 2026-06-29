@@ -17,7 +17,7 @@ function getFromEmail(): string {
 }
 
 function getAppUrl(): string {
-  return process.env.NEXTAUTH_URL || 'http://localhost:3000';
+  return process.env.NEXTAUTH_URL || 'https://reputaciononline.com.co';
 }
 
 // Create fresh Resend instance each call to avoid stale/empty key caching
@@ -150,6 +150,8 @@ function baseTemplate(content: string, headerIcon?: string): string {
                       <a href="${getAppUrl()}/dashboard/configuracion" style="color: ${BRAND_LIGHT}; text-decoration: none; font-weight: 500;">Configuracion</a>
                       &nbsp;&nbsp;&#x2022;&nbsp;&nbsp;
                       <a href="${getAppUrl()}/dashboard/soporte" style="color: ${BRAND_LIGHT}; text-decoration: none; font-weight: 500;">Soporte</a>
+                      &nbsp;&nbsp;&#x2022;&nbsp;&nbsp;
+                      <a href="${getAppUrl()}/dashboard/configuracion" style="color: ${BRAND_LIGHT}; text-decoration: none; font-weight: 500;">Preferencias de correo</a>
                     </p>
                     <p style="margin: 8px 0 0 0; color: #94a3b8; font-size: 12px;">
                       &copy; ${new Date().getFullYear()} ${APP_NAME}. Todos los derechos reservados.
@@ -265,6 +267,38 @@ export async function sendVerificationEmail(email: string, code: string, name: s
   }
 }
 
+// 1b. Send welcome email (tras verificar la cuenta)
+export async function sendWelcomeEmail(email: string, name: string): Promise<boolean> {
+  try {
+    const html = baseTemplate(`
+      <h2 style="margin: 0 0 8px 0; color: #0f172a; font-size: 22px; font-weight: 700;">Bienvenido a ${APP_NAME}</h2>
+      <div style="width: 48px; height: 4px; background: ${BRAND_GRADIENT}; border-radius: 2px; margin-bottom: 24px;"></div>
+
+      <p style="color: #475569; font-size: 15px; line-height: 1.7; margin: 0 0 16px 0;">
+        Hola <strong style="color: #0f172a;">${name}</strong>, tu cuenta ya esta verificada y lista para usarse. Estos
+        son los primeros pasos para sacarle el maximo provecho a tu monitoreo de reputacion:
+      </p>
+
+      ${infoBox(`
+        <p style="margin: 0 0 10px 0; color: #334155; font-size: 14px; line-height: 1.6;"><strong style="color: #0f172a;">1.</strong> Conecta tus redes sociales (Facebook, Instagram, X, YouTube).</p>
+        <p style="margin: 0 0 10px 0; color: #334155; font-size: 14px; line-height: 1.6;"><strong style="color: #0f172a;">2.</strong> Configura tus palabras clave para monitorear menciones y noticias.</p>
+        <p style="margin: 0; color: #334155; font-size: 14px; line-height: 1.6;"><strong style="color: #0f172a;">3.</strong> Revisa tu dashboard y deja que Julia (IA) analice tu reputacion.</p>
+      `)}
+
+      ${emailButton('Ir al dashboard', `${getAppUrl()}/dashboard`)}
+
+      <p style="color: #64748b; font-size: 13px; line-height: 1.5; margin: 16px 0 0 0;">
+        Si tienes dudas, escribenos desde <a href="${getAppUrl()}/dashboard/soporte" style="color: ${BRAND_LIGHT}; text-decoration: none;">Soporte</a>. Estamos para ayudarte.
+      </p>
+    `, '&#x1F44B;');
+
+    return await sendEmail(email, `Bienvenido a ${APP_NAME}`, html);
+  } catch (error) {
+    console.error('EMAIL SERVICE EXCEPTION [welcome]:', error);
+    return false;
+  }
+}
+
 // 2. Send password reset email
 export async function sendPasswordResetEmail(email: string, token: string, name: string): Promise<boolean> {
   try {
@@ -344,7 +378,7 @@ export async function sendPlanChangeEmail(email: string, name: string, oldPlan: 
         </tr>
       </table>
 
-      ${emailButton('Ver mi plan', `${getAppUrl()}/dashboard/credito`)}
+      ${emailButton('Ver mi plan', `${getAppUrl()}/dashboard/creditos`)}
 
       <p style="color: #64748b; font-size: 13px; line-height: 1.5; margin: 0; text-align: center;">
         Si tienes alguna pregunta sobre tu nuevo plan, no dudes en contactarnos.
@@ -403,7 +437,7 @@ export async function sendPurchaseConfirmationEmail(
         </table>
       `, '#f0fdf4', '#bbf7d0')}
 
-      ${emailButton('Ver mis creditos', `${getAppUrl()}/dashboard/credito`)}
+      ${emailButton('Ver mis creditos', `${getAppUrl()}/dashboard/creditos`)}
     `, '&#x2705;');
 
     return await sendEmail(email, `Confirmacion de compra - ${details.plan} | ${APP_NAME}`, html);
@@ -478,7 +512,7 @@ export async function sendInvoiceEmail(
         Este documento sirve como comprobante de pago. Si necesitas una factura formal con NIT, contacta a nuestro equipo de soporte.
       </p>
 
-      ${emailButton('Ver mis creditos', `${getAppUrl()}/dashboard/credito`)}
+      ${emailButton('Ver mis creditos', `${getAppUrl()}/dashboard/creditos`)}
     `, '&#x1F9FE;');
 
     return await sendEmail(email, `Factura de compra #${invoice.transactionId} | ${APP_NAME}`, html);
